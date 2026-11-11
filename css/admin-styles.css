@@ -1,0 +1,16 @@
+
+.iconpicker-popover { z-index: 9999 !important; }
+.mds-icon-input-wrapper { display: inline-flex; align-items: center; }
+.mds-tab-pane { display: none; }
+.mds-tab-pane.active { display: block; }
+.mds-save-status { margin-left: 15px; font-weight: bold; color: #46b450; display: none; }
+.mds-panel { background: #fff; padding: 15px; border: 1px solid #ccd0d4; max-width: 800px; margin-bottom: 20px; }
+.mds-meta-section { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #ddd; width: 100%; }
+.mds-meta-section h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; }
+.mds-meta-table { width: 100%; border-collapse: collapse; }
+.mds-meta-table th { text-align: left; padding: 12px 10px; width: 25%; vertical-align: top; font-weight: 600; }
+.mds-meta-table td { padding: 12px 10px; }
+.mds-meta-table input[type="text"], .mds-meta-table input[type="url"], .mds-meta-table select, .mds-meta-table textarea { width: 100% !important; box-sizing: border-box; }
+.mds-streaming-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; width: 100%; }
+.mds-streaming-row select { flex: 0 0 30%; max-width: 200px; }
+.mds-streaming-row input[type="url"] { flex: 1; }

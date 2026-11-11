@@ -1,0 +1,66 @@
+<div class="mds-meta-section">
+    {nonce_field}
+    <h3>General Info</h3>
+    <table class="mds-meta-table">
+        <tr>
+            <th><label>Featured Image URL</label></th>
+            <td>
+                <input type="url" id="featured_image_url" name="featured_image_url" value="{featured_image_url}" />
+                <button type="button" class="button" id="mds_upload_image_btn">Select Image</button>
+                <div class="mds-image-preview">
+                    <img src="{preview_image}" id="featured_image_preview_img" style="max-width:150px; margin-top:10px;" />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th><label for="artist_id">Artist</label></th>
+            <td><select id="artist_id" name="artist_id">{artists_options_html}</select></td>
+        </tr>
+        <tr>
+            <th><label for="upc_ean">UPC/EAN *</label></th>
+            <td><input type="text" id="upc_ean" name="upc_ean" value="{upc_ean}" required /></td>
+        </tr>
+        <tr>
+            <th><label for="release_format">Release Format *</label></th>
+            <td><select id="release_format" name="release_format" required>{formats_options_html}</select></td>
+        </tr>
+        <tr>
+            <th><label for="record_label">Record Label</label></th>
+            <td><input type="text" id="record_label" name="record_label" value="{record_label}" /></td>
+        </tr>
+        <tr>
+            <th><label for="distributor">Distributor</label></th>
+            <td><input type="text" id="distributor" name="distributor" value="{distributor}" /></td>
+        </tr>
+    </table>
+</div>
+<div class="mds-meta-section">
+    <h3>Streaming Links</h3>
+    <div id="mds_streaming_links_wrapper">{streaming_rows_html}</div>
+    <button type="button" class="button button-primary" id="mds_add_streaming_row" style="margin-top: 10px;">+ Add Link</button>
+</div>
+<div class="mds-meta-section">
+    <h3>Advanced Settings</h3>
+    <table class="mds-meta-table">
+        <tr>
+            <th><label for="release_tags">Release Tags</label></th>
+            <td><input type="text" id="release_tags" name="release_tags" value="{release_tags}" /></td>
+        </tr>
+        <tr>
+            <th><label for="buy_now_link">Buy Now URL</label></th>
+            <td><input type="url" id="buy_now_link" name="buy_now_link" value="{buy_now_link}" /></td>
+        </tr>
+        <tr>
+            <th><label for="bandcamp_shortcode">Bandcamp Data / Shortcode</label></th>
+            <td><input type="text" id="bandcamp_shortcode" name="bandcamp_shortcode" value="{bandcamp_shortcode}" /></td>
+        </tr>
+        <tr>
+            <th><label for="audio_preview_url">Audio Preview URL (.mp3)</label></th>
+            <td>
+                <input type="url" id="audio_preview_url" name="audio_preview_url" value="{audio_preview_url}" />
+                <button type="button" class="button" id="mds_upload_audio_btn">Select Audio</button>
+            </td>
+        </tr>
+    </table>
+</div>
+<script>var mds_global_providers_html = `{global_providers_options}`;</script>

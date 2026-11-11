@@ -1,0 +1,32 @@
+<div class="wrap mds-settings-wrap">
+    <h1>Import / Export Data</h1>
+    
+    <div class="mds-panel" style="margin-top: 20px;">
+        <h2>Export Global Data</h2>
+        <p>Export all releases and mapped artist names across the multisite network into a CSV file.</p>
+        <form method="post" action="{admin_url}">
+            {nonce_field}
+            <input type="hidden" name="mds_action" value="export_csv" />
+            <button type="submit" class="button button-primary">Export to CSV</button>
+        </form>
+    </div>
+
+    <div class="mds-panel" style="margin-top: 20px;">
+        <h2>Import Releases</h2>
+        <p>Upload a CSV file to import releases. Required columns (or equivalent mapping structure): Title, Artist. Optional mapped columns: Year, Format, Studio, Link, Source.</p>
+        <div class="notice notice-info inline"><p><strong>Note:</strong> Uploaded CSV records will map <em>Studio</em> to <em>Record Label</em>, and append <em>Source</em> to the post's <em>About</em> content.</p></div>
+        <form method="post" enctype="multipart/form-data" action="{admin_url}" style="margin-top: 15px;">
+            {nonce_field}
+            <input type="hidden" name="mds_action" value="import_csv" />
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="mds_csv_file">CSV File</label></th>
+                    <td><input type="file" name="mds_csv_file" id="mds_csv_file" accept=".csv" required /></td>
+                </tr>
+            </table>
+            <p class="submit">
+                <button type="submit" class="button button-primary">Import CSV</button>
+            </p>
+        </form>
+    </div>
+</div>

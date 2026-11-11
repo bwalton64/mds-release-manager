@@ -1,0 +1,160 @@
+<div class="wrap mds-settings-wrap">
+    <h1>Release Manager Settings</h1>
+    
+    <h2 class="nav-tab-wrapper" id="mds-settings-tabs">
+        <a href="#tab-shortcode" class="nav-tab nav-tab-active">Widget Settings</a>
+        <a href="#tab-integrations" class="nav-tab">Integrations</a>
+        <a href="#tab-templates" class="nav-tab">Template Editor</a>
+    </h2>
+    
+    <form id="mds-settings-form" style="margin-top:20px;">
+        <!-- TAB 1: SHORTCODE WIDGET SETTINGS -->
+        <div id="tab-shortcode" class="mds-tab-pane active">
+            <div class="mds-panel">
+                <h3>Streaming Providers</h3>
+                <div id="mds_providers_repeater">{providers_html}</div>
+                <button type="button" class="button button-secondary" id="mds_add_provider_btn">+ Add Provider</button>
+                <hr />
+                <h3>Audio Preview Player</h3>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Select Active Player(s)</th>
+                        <td>{audio_players_html}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label>Bandcamp Shortcode Template</label></th>
+                        <td>
+                            <input type="text" name="mds_rm_bandcamp_template" id="mds_bandcamp_template" value="{bandcamp_template}" style="width:100%; max-width:600px;" />
+                            <p class="description">Only enabled if Blocks for Bandcamp is selected.</p>
+                        </td>
+                    </tr>
+                </table>
+                <hr />
+                <h3>Release Links Widget Styling</h3>
+                <table class="form-table">
+                    <tr><th><label>Text Color</label></th><td><input type="text" name="mds_rm_links_color" value="{links_color}" class="mds-color-picker" /></td></tr>
+                    <tr><th><label>Widget Background</label></th><td><input type="text" name="mds_rm_links_bg" value="{links_bg}" class="mds-color-picker" /></td></tr>
+                    <tr><th><label>Icon Bg Color</label></th><td><input type="text" name="mds_rm_links_icon_bg" value="{links_icon_bg}" class="mds-color-picker" /></td></tr>
+                    <tr><th><label>Border Radius</label></th><td><input type="text" name="mds_rm_links_radius" value="{links_radius}" /></td></tr>
+                    <tr><th><label>Column Gap</label></th><td><input type="text" name="mds_rm_links_gap" value="{links_gap}" /></td></tr>
+                    <tr><th><label>Padding</label></th><td><input type="text" name="mds_rm_links_padding" value="{links_padding}" /></td></tr>
+                    <tr><th><label>Alignment</label></th><td>
+                        <select name="mds_rm_links_align">
+                            <option value="flex-start" {links_align_start}>Left</option>
+                            <option value="center" {links_align_center}>Center</option>
+                            <option value="flex-end" {links_align_end}>Right</option>
+                        </select>
+                    </td></tr>
+                </table>
+                <hr />
+                <h3>Buy Now Link</h3>
+                <table class="form-table">
+                    <tr><th><label>Buy Now Icon</label></th><td><div class="mds-icon-input-wrapper"><input type="text" name="mds_rm_buy_now_icon" value="{buy_now_icon}" class="mds-icon-input" /></div></td></tr>
+                    <tr><th><label>Icon Color</label></th><td><input type="text" name="mds_rm_buy_now_color" value="{buy_now_color}" class="mds-color-picker" /></td></tr>
+                    <tr><th><label>Background Color</label></th><td><input type="text" name="mds_rm_buy_now_bg" value="{buy_now_bg}" class="mds-color-picker" /></td></tr>
+                </table>
+                <hr />
+                <h3>WooCommerce Meta Styling</h3>
+                <table class="form-table">
+                    <tr><th><label>Text Color</label></th><td><input type="text" name="mds_rm_meta_color" value="{meta_color}" class="mds-color-picker" /></td></tr>
+                    <tr><th><label>Background Color</label></th><td><input type="text" name="mds_rm_meta_bg" value="{meta_bg}" class="mds-color-picker" /></td></tr>
+                    <tr><th><label>Border Radius</label></th><td><input type="text" name="mds_rm_meta_radius" value="{meta_radius}" /></td></tr>
+                    <tr><th><label>Gap</label></th><td><input type="text" name="mds_rm_meta_gap" value="{meta_gap}" /></td></tr>
+                    <tr><th><label>Padding</label></th><td><input type="text" name="mds_rm_meta_padding" value="{meta_padding}" /></td></tr>
+                    <tr><th><label>Alignment</label></th><td>
+                        <select name="mds_rm_meta_align">
+                            <option value="flex-start" {meta_align_start}>Left</option>
+                            <option value="center" {meta_align_center}>Center</option>
+                            <option value="flex-end" {meta_align_end}>Right</option>
+                        </select>
+                    </td></tr>
+                </table>
+            </div>
+            
+            <div style="display:flex; align-items: center; margin-top:20px;">
+                <button type="submit" class="button button-primary mds-save-settings-btn">Save Settings</button>
+                <span class="mds-save-status">Settings saved! Cache purged.</span>
+            </div>
+        </div>
+        
+        <!-- TAB 2: INTEGRATIONS -->
+        <div id="tab-integrations" class="mds-tab-pane">
+            <div class="mds-panel">
+                <h2>WooCommerce Integration</h2>
+                <p><strong>WooCommerce Sync:</strong> Select the network sites that have WooCommerce installed.</p>
+                <table class="form-table" style="margin-bottom:20px;">
+                    <tr>
+                        <th scope="row">WooCommerce Sites</th>
+                        <td>{woo_sites_html}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Site-Wide Routing</th>
+                        <td>
+                            <label><input type="checkbox" name="mds_rm_global_redirect" value="1" {global_redirect_checked}> Redirect to Buy Now Link</label>
+                            <p class="description">Redirect visitors directly to the release's configured <em>Buy Now Link</em>.</p>
+                        </td>
+                    </tr>
+                </table>
+                <hr />
+                <h2>Font-Awesome Integration</h2>
+                <p class="description">Select which Font-Awesome source to use for the shortcode widgets.</p>
+                {fa_support_html}
+                
+                <hr />
+                <h2>Legacy Data Migration</h2>
+                <p class="description">If you recently updated to the unified global database schema, click this button to push all existing local posts into the network-wide <code>RELEASE_TABLE</code> and <code>ARTIST_TABLE</code>.</p>
+                <button type="button" class="button button-secondary" id="mds-run-migration-btn">Sync Local Data to Global Tables</button>
+                <span id="mds-migration-status" style="margin-left: 10px; font-weight: bold; color: #46b450; display: none;"></span>
+            </div>
+            
+            <div style="display:flex; align-items: center; margin-top:20px;">
+                <button type="submit" class="button button-primary mds-save-settings-btn">Save Settings</button>
+                <span class="mds-save-status">Settings saved! Cache purged.</span>
+            </div>
+        </div>
+    </form>
+    
+    <!-- TAB 3: TEMPLATE EDITOR -->
+    <div id="tab-templates" class="mds-tab-pane">
+        <form id="mds-template-form">
+            <div class="mds-panel">
+                <h3>Template & Asset Editor</h3>
+                <p>Select a file to edit and customize its logic. <strong>Note: changes here apply globally.</strong></p>
+                
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><label for="mds_template_file">Select File</label></th>
+                        <td>
+                            <select name="mds_template_file" id="mds_template_file">
+                                {file_options_html}
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                
+                <div style="margin-top: 15px;">
+                    <textarea name="mds_template_content" id="mds_template_content" rows="20" style="width:100%; font-family:monospace;"></textarea>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; display:flex; align-items:center;">
+                <button type="submit" id="mds-save-template-btn" class="button button-primary">Update File</button>
+                <span id="mds-template-status" class="mds-save-status">File updated!</span>
+            </div>
+        </form>
+        
+        <div class="mds-panel" style="margin-top: 20px;">
+            <h3>Template Token Legend</h3>
+            <table class="widefat striped">
+                <thead><tr><th>Token Name</th><th>Description</th><th>Example Output</th></tr></thead>
+                <tbody>
+                    <tr><td><code>{widget_bg}</code></td><td>Widget background color</td><td>#000000</td></tr>
+                    <tr><td><code>{icons_html}</code></td><td>Rendered streaming links</td><td>&lt;a href="..."&gt;&lt;i&gt;&lt;/i&gt;&lt;/a&gt;</td></tr>
+                    <tr><td><code>{audio_player_html}</code></td><td>Rendered audio player</td><td>&lt;audio src="..."&gt;</td></tr>
+                    <tr><td><code>{year_html}</code></td><td>WooCommerce Release Year markup</td><td>&lt;span&gt;2024&lt;/span&gt;</td></tr>
+                    <tr><td><code>{upc_html}</code></td><td>WooCommerce UPC markup</td><td>&lt;span&gt;123456789&lt;/span&gt;</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
