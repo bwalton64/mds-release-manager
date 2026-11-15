@@ -1,0 +1,19 @@
+<div class="mds-meta-section">
+    {nonce_field}
+    <table class="mds-meta-table">
+        <tr>
+            <th><label>Featured Image URL</label></th>
+            <td>
+                <input type="url" id="artist_featured_image" name="artist_featured_image" value="{artist_featured_image}" />
+                <button type="button" class="button" id="mds_upload_artist_image_btn">Select Image</button>
+                <div id="mds_artist_image_preview" style="margin-top:10px;">
+                    <img src="{preview_image}" style="max-width:150px; border: 1px solid #ddd; border-radius: 4px;" id="artist_featured_image_preview_img" />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th><label>Contact Info</label></th>
+            <td>{editor_html}</td>
+        </tr>
+    </table>
+</div>

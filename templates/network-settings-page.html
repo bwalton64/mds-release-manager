@@ -1,0 +1,48 @@
+<div class="wrap mds-settings-wrap">
+    <h1>MDS Release Manager - Network Settings</h1>
+    
+    <form id="mds-network-settings-form" style="margin-top:20px;">
+        <div class="mds-panel">
+            <h2>Network Architecture</h2>
+            <p class="description">Select the Main Site (Hub) where catalog items are created. The plugin will automatically broadcast and synchronize data from this site to all selected spoke sites below.</p>
+            <table class="form-table" style="margin-bottom:20px;">
+                <tr>
+                    <th scope="row">Hub Site</th>
+                    <td>{master_hub_html}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Spoke Sites</th>
+                    <td>{woo_sites_html}</td>
+                </tr>
+                <tr>
+                    <th scope="row">WooCommerce Integrated Sites</th>
+                    <td>
+                        {integrated_woo_sites_html}
+                        <p class="description">Select which of the above sites have WooCommerce installed and should be available for product linking from the Hub site.</p>
+                    </td>
+                </tr>
+
+            </table>
+
+            <hr />
+            <h2>Data Management</h2>
+            <table class="form-table" style="margin-bottom:20px;">
+                <tr>
+                    <th scope="row">Uninstall Behavior</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="mds_rm_wipe_on_uninstall" value="1" {wipe_on_uninstall}>
+                            Delete all data, even network settings, upon uninstall
+                        </label>
+                        <p class="description">By default, plugin settings stored in wp_sitemeta and global tables are preserved during uninstall to allow for safe reinstalls and upgrades. Check this box to perform a complete wipe upon deletion (including custom post types across the network).</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <div style="display:flex; align-items: center; margin-top:20px;">
+            <button type="submit" class="button button-primary mds-save-settings-btn">Save Network Settings</button>
+            <span class="mds-save-status" style="display:none; margin-left:15px; color:#46b450; font-weight:bold;">Settings saved!</span>
+        </div>
+    </form>
+</div>
