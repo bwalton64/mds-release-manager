@@ -46,31 +46,6 @@ jQuery(document).ready(function($) {
 
     
 
-    // Network Settings Form
-    $('#mds-network-settings-form').on('submit', function(e) {
-        e.preventDefault();
-        var $btn = $(this).find('.mds-save-settings-btn');
-        $btn.prop('disabled', true).text('Saving...');
-        $.ajax({
-            url: mds_rm_data.network_rest_url,
-            method: 'POST',
-            beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', mds_rm_data.nonce); },
-            data: new FormData($('#mds-network-settings-form')[0]),
-            processData: false,
-            contentType: false,
-            success: function(res) {
-                $btn.prop('disabled', false).text('Save Network Settings');
-                if (res.success) {
-                    $('#mds-network-settings-form .mds-save-status').fadeIn().delay(3000).fadeOut();
-                }
-            },
-            error: function() {
-                $btn.prop('disabled', false).text('Save Network Settings');
-                alert('Error saving network settings.');
-            }
-        });
-    });
-
     // Manual Sync Handler
     $('#mds-run-manual-sync-btn').on('click', function(e) {
         e.preventDefault();

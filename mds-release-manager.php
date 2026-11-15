@@ -28,7 +28,6 @@ require_once MDS_RM_PATH . 'includes/integrations.php';
 require_once MDS_RM_PATH . 'includes/elementor-tags.php';
 require_once MDS_RM_PATH . 'includes/csv-handler.php';
 require_once MDS_RM_PATH . 'includes/gutenberg-blocks.php';
-require_once MDS_RM_PATH . 'includes/woocommerce.php';
 require_once MDS_RM_PATH . 'includes/virtual-media.php';
 
 // --- 3. Enqueue Assets & Global Redirect ---
