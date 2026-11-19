@@ -1,11 +1,11 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Registers Gutenberg blocks and renders release metadata in core blocks.
  *
  * @package MDS_Release_Manager
  */
-
-declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

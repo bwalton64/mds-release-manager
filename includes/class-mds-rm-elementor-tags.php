@@ -1,11 +1,11 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Elementor integration for release manager tags and widgets.
  *
  * @package MDS_Release_Manager
  */
-
-declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

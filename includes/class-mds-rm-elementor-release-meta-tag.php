@@ -1,11 +1,11 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Registers the Elementor dynamic tag for release metadata.
  *
  * @package MDS_Release_Manager
  */
-
-declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

@@ -1,11 +1,11 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Registers and serves the plugin's frontend and admin assets.
  *
  * @package MDS_Release_Manager
  */
-
-declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

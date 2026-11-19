@@ -1,11 +1,11 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Registers the Release fallback Customizer settings.
  *
  * @package MDS_Release_Manager
  */
-
-declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
