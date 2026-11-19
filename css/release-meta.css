@@ -1,0 +1,102 @@
+.mds-release-meta {
+	display: flex;
+	flex-wrap: var(--mds-meta-wrap-desktop, wrap);
+	flex-direction: var(--mds-meta-direction-desktop, row);
+	align-items: var(--mds-meta-vertical-align-desktop, center);
+	width: var(--mds-meta-width-desktop, auto);
+	background: var(--mds-meta-background-desktop, #000);
+	color: var(--mds-meta-color-desktop, #fff);
+	font-family: var(--mds-meta-font-family-desktop, inherit);
+	font-size: var(--mds-meta-font-size-desktop, .95em);
+	font-weight: var(--mds-meta-font-weight-desktop, 500);
+	line-height: var(--mds-meta-line-height-desktop, 1.4);
+	gap: var(--mds-meta-gap-desktop, 15px);
+	justify-content: var(--mds-meta-align-desktop, flex-start);
+	padding: var(--mds-meta-padding-desktop, 12px 18px);
+	margin: var(--mds-meta-margin-desktop, 0 0 25px);
+	border-width: var(--mds-meta-border-width-desktop, 0);
+	border-style: var(--mds-meta-border-style-desktop, none);
+	border-color: var(--mds-meta-border-color-desktop, transparent);
+	border-radius: var(--mds-meta-radius-desktop, 0);
+}
+.mds-release-meta__item {
+	display: inline-flex;
+	align-items: center;
+	min-width: 0;
+	gap: var(--mds-meta-icon-gap-desktop, 6px);
+	overflow-wrap: anywhere;
+}
+.mds-release-meta__icon {
+	flex: none;
+	color: var(--mds-meta-icon-color-desktop, inherit);
+	font-size: var(--mds-meta-icon-size-desktop, 1em);
+	opacity: var(--mds-meta-icon-opacity-desktop, .8);
+}
+.mds-release-meta__icon.dashicons { width: 1em; height: 1em; }
+.mds-release-meta .screen-reader-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+@media (max-width: 1024px) {
+	.mds-release-meta {
+		flex-wrap: var(--mds-meta-wrap-tablet, var(--mds-meta-wrap-desktop, wrap));
+		flex-direction: var(--mds-meta-direction-tablet, var(--mds-meta-direction-desktop, row));
+		align-items: var(--mds-meta-vertical-align-tablet, var(--mds-meta-vertical-align-desktop, center));
+		width: var(--mds-meta-width-tablet, var(--mds-meta-width-desktop, auto));
+		background: var(--mds-meta-background-tablet, var(--mds-meta-background-desktop, #000));
+		color: var(--mds-meta-color-tablet, var(--mds-meta-color-desktop, #fff));
+		font-family: var(--mds-meta-font-family-tablet, var(--mds-meta-font-family-desktop, inherit));
+		font-size: var(--mds-meta-font-size-tablet, var(--mds-meta-font-size-desktop, .95em));
+		font-weight: var(--mds-meta-font-weight-tablet, var(--mds-meta-font-weight-desktop, 500));
+		line-height: var(--mds-meta-line-height-tablet, var(--mds-meta-line-height-desktop, 1.4));
+		gap: var(--mds-meta-gap-tablet, var(--mds-meta-gap-desktop, 15px));
+		justify-content: var(--mds-meta-align-tablet, var(--mds-meta-align-desktop, flex-start));
+		padding: var(--mds-meta-padding-tablet, var(--mds-meta-padding-desktop, 12px 18px));
+		margin: var(--mds-meta-margin-tablet, var(--mds-meta-margin-desktop, 0 0 25px));
+		border-width: var(--mds-meta-border-width-tablet, var(--mds-meta-border-width-desktop, 0));
+		border-style: var(--mds-meta-border-style-tablet, var(--mds-meta-border-style-desktop, none));
+		border-color: var(--mds-meta-border-color-tablet, var(--mds-meta-border-color-desktop, transparent));
+		border-radius: var(--mds-meta-radius-tablet, var(--mds-meta-radius-desktop, 0));
+	}
+	.mds-release-meta__item { gap: var(--mds-meta-icon-gap-tablet, var(--mds-meta-icon-gap-desktop, 6px)); }
+	.mds-release-meta__icon {
+		color: var(--mds-meta-icon-color-tablet, var(--mds-meta-icon-color-desktop, inherit));
+		font-size: var(--mds-meta-icon-size-tablet, var(--mds-meta-icon-size-desktop, 1em));
+		opacity: var(--mds-meta-icon-opacity-tablet, var(--mds-meta-icon-opacity-desktop, .8));
+	}
+}
+@media (max-width: 767px) {
+	.mds-release-meta {
+		flex-wrap: var(--mds-meta-wrap-mobile, var(--mds-meta-wrap-tablet, var(--mds-meta-wrap-desktop, wrap)));
+		flex-direction: var(--mds-meta-direction-mobile, var(--mds-meta-direction-tablet, var(--mds-meta-direction-desktop, row)));
+		align-items: var(--mds-meta-vertical-align-mobile, var(--mds-meta-vertical-align-tablet, var(--mds-meta-vertical-align-desktop, center)));
+		width: var(--mds-meta-width-mobile, var(--mds-meta-width-tablet, var(--mds-meta-width-desktop, auto)));
+		background: var(--mds-meta-background-mobile, var(--mds-meta-background-tablet, var(--mds-meta-background-desktop, #000)));
+		color: var(--mds-meta-color-mobile, var(--mds-meta-color-tablet, var(--mds-meta-color-desktop, #fff)));
+		font-family: var(--mds-meta-font-family-mobile, var(--mds-meta-font-family-tablet, var(--mds-meta-font-family-desktop, inherit)));
+		font-size: var(--mds-meta-font-size-mobile, var(--mds-meta-font-size-tablet, var(--mds-meta-font-size-desktop, .95em)));
+		font-weight: var(--mds-meta-font-weight-mobile, var(--mds-meta-font-weight-tablet, var(--mds-meta-font-weight-desktop, 500)));
+		line-height: var(--mds-meta-line-height-mobile, var(--mds-meta-line-height-tablet, var(--mds-meta-line-height-desktop, 1.4)));
+		gap: var(--mds-meta-gap-mobile, var(--mds-meta-gap-tablet, var(--mds-meta-gap-desktop, 15px)));
+		justify-content: var(--mds-meta-align-mobile, var(--mds-meta-align-tablet, var(--mds-meta-align-desktop, flex-start)));
+		padding: var(--mds-meta-padding-mobile, var(--mds-meta-padding-tablet, var(--mds-meta-padding-desktop, 12px 18px)));
+		margin: var(--mds-meta-margin-mobile, var(--mds-meta-margin-tablet, var(--mds-meta-margin-desktop, 0 0 25px)));
+		border-width: var(--mds-meta-border-width-mobile, var(--mds-meta-border-width-tablet, var(--mds-meta-border-width-desktop, 0)));
+		border-style: var(--mds-meta-border-style-mobile, var(--mds-meta-border-style-tablet, var(--mds-meta-border-style-desktop, none)));
+		border-color: var(--mds-meta-border-color-mobile, var(--mds-meta-border-color-tablet, var(--mds-meta-border-color-desktop, transparent)));
+		border-radius: var(--mds-meta-radius-mobile, var(--mds-meta-radius-tablet, var(--mds-meta-radius-desktop, 0)));
+	}
+	.mds-release-meta__item { gap: var(--mds-meta-icon-gap-mobile, var(--mds-meta-icon-gap-tablet, var(--mds-meta-icon-gap-desktop, 6px))); }
+	.mds-release-meta__icon {
+		color: var(--mds-meta-icon-color-mobile, var(--mds-meta-icon-color-tablet, var(--mds-meta-icon-color-desktop, inherit)));
+		font-size: var(--mds-meta-icon-size-mobile, var(--mds-meta-icon-size-tablet, var(--mds-meta-icon-size-desktop, 1em)));
+		opacity: var(--mds-meta-icon-opacity-mobile, var(--mds-meta-icon-opacity-tablet, var(--mds-meta-icon-opacity-desktop, .8)));
+	}
+}

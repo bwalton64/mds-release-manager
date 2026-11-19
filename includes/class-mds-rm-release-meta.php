@@ -1,0 +1,321 @@
+<?php
+/**
+ * Shared rendering and configuration for the Release Meta Block.
+ *
+ * @package MDS_Release_Manager
+ */
+
+declare(strict_types=1);
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+final class MDS_RM_Release_Meta {
+	public static function fields() {
+		return array(
+			'release_year'   => array( 'label' => 'Release Year', 'icon' => 'fas fa-calendar', 'enabled' => true ),
+			'record_label'   => array( 'label' => 'Record Label', 'icon' => 'fas fa-compact-disc', 'enabled' => true ),
+			'distributor'    => array( 'label' => 'Distributor', 'icon' => 'fas fa-tower-broadcast', 'enabled' => true ),
+			'upc_ean'        => array( 'label' => 'UPC/EAN', 'icon' => 'fas fa-barcode', 'enabled' => true ),
+			'release_format' => array( 'label' => 'Release Format', 'icon' => 'dashicons dashicons-album', 'enabled' => false ),
+			'release_date'   => array( 'label' => 'Full Release Date', 'icon' => 'fas fa-calendar', 'enabled' => false ),
+			'release_title'  => array( 'label' => 'Release Title', 'icon' => 'dashicons dashicons-album', 'enabled' => false ),
+			'artist'         => array( 'label' => 'Artist', 'icon' => 'dashicons dashicons-groups', 'enabled' => false ),
+			'release_tags'   => array( 'label' => 'Release Tags', 'icon' => 'dashicons dashicons-tag', 'enabled' => false ),
+		);
+	}
+
+	public static function default_items() {
+		$items = array();
+		foreach ( self::fields() as $key => $field ) {
+			$items[] = array(
+				'field'   => $key,
+				'enabled' => $field['enabled'],
+				'icon'    => $field['icon'],
+				'title'   => $field['label'],
+			);
+		}
+		return $items;
+	}
+
+	/**
+	 * Shared style names and input types for all three interfaces.
+	 */
+	public static function style_fields() {
+		return array(
+			'background'   => array( 'label' => 'Background Color', 'type' => 'color' ),
+			'color'        => array( 'label' => 'Text Color', 'type' => 'color' ),
+			'icon_color'   => array( 'label' => 'Icon Color', 'type' => 'color' ),
+			'font_family'  => array( 'label' => 'Font Family', 'type' => 'font' ),
+			'font_size'    => array( 'label' => 'Font Size', 'type' => 'length' ),
+			'font_weight'  => array( 'label' => 'Font Weight', 'type' => 'weight' ),
+			'line_height'  => array( 'label' => 'Line Height', 'type' => 'line_height' ),
+			'icon_size'    => array( 'label' => 'Icon Size', 'type' => 'length' ),
+			'icon_opacity' => array( 'label' => 'Icon Opacity', 'type' => 'opacity' ),
+			'icon_gap'     => array( 'label' => 'Icon-to-text Gap', 'type' => 'length' ),
+			'gap'          => array( 'label' => 'Item Gap', 'type' => 'length' ),
+			'align'        => array( 'label' => 'Main-axis Alignment', 'type' => 'align' ),
+			'vertical_align' => array( 'label' => 'Cross-axis Alignment', 'type' => 'vertical_align' ),
+			'direction'    => array( 'label' => 'Direction', 'type' => 'direction' ),
+			'wrap'         => array( 'label' => 'Wrapping', 'type' => 'wrap' ),
+			'width'        => array( 'label' => 'Width', 'type' => 'width' ),
+			'padding'      => array( 'label' => 'Padding', 'type' => 'spacing' ),
+			'margin'       => array( 'label' => 'Margin', 'type' => 'spacing' ),
+			'border_width' => array( 'label' => 'Border Width', 'type' => 'spacing' ),
+			'border_style' => array( 'label' => 'Border Style', 'type' => 'border_style' ),
+			'border_color' => array( 'label' => 'Border Color', 'type' => 'color' ),
+			'radius'       => array( 'label' => 'Border Radius', 'type' => 'spacing' ),
+		);
+	}
+
+	public static function register_assets() {
+		wp_register_style( 'mds-release-meta', MDS_RM_URL . 'css/release-meta.css', array( 'dashicons' ), filemtime( MDS_RM_PATH . 'css/release-meta.css' ) );
+	}
+
+	public static function enqueue_assets() {
+		if ( ! wp_style_is( 'mds-release-meta', 'registered' ) ) {
+			self::register_assets();
+		}
+		wp_enqueue_style( 'mds-release-meta' );
+		MDS_RM_Assets::mds_rm_enqueue_font_awesome();
+	}
+
+	/**
+	 * Resolve explicit UPCs first; extensions may provide a UPC for other contexts.
+	 */
+	public static function resolve_post( $upc = '', $context_post_id = 0 ) {
+		if ( ! is_scalar( $upc ) ) {
+			error_log( '[MDS Release Manager] Invalid Release Meta UPC/EAN.' );
+			return null;
+		}
+		$upc             = (string) $upc;
+		$context_post_id = absint( $context_post_id );
+		if ( '' === $upc && $context_post_id && 'release' === get_post_type( $context_post_id ) ) {
+			$post = get_post( $context_post_id );
+			return self::can_display( $post ) ? $post : null;
+		}
+		if ( '' === $upc ) {
+			$upc = apply_filters( 'mds_rm_release_meta_context_upc', '', $context_post_id );
+		}
+		if ( ! is_scalar( $upc ) ) {
+			error_log( '[MDS Release Manager] Invalid Release Meta context UPC/EAN.' );
+			return null;
+		}
+		$upc = (string) $upc;
+		if ( '' === $upc ) {
+			return null;
+		}
+		if ( ! preg_match( '/^\d+$/D', $upc ) ) {
+			error_log( '[MDS Release Manager] Invalid Release Meta UPC/EAN.' );
+			return null;
+		}
+		$posts = get_posts(
+			array(
+				'post_type'      => 'release',
+				'post_status'    => 'any',
+				'posts_per_page' => 2,
+				'meta_key'       => 'upc_ean',
+				'meta_value'     => (string) $upc,
+			)
+		);
+		if ( count( $posts ) > 1 ) {
+			error_log( '[MDS Release Manager] Cannot render metadata: duplicate UPC/EAN ' . $upc );
+			return null;
+		}
+		return isset( $posts[0] ) && self::can_display( $posts[0] ) ? $posts[0] : null;
+	}
+
+	private static function can_display( $post ) {
+		return $post instanceof WP_Post && 'release' === $post->post_type
+			&& ( 'publish' === $post->post_status || current_user_can( 'read_post', $post->ID ) );
+	}
+
+	private static function value( $field, $post ) {
+		switch ( $field ) {
+			case 'release_year':
+				return '0000-00-00 00:00:00' !== $post->post_date ? substr( $post->post_date, 0, 4 ) : '';
+			case 'release_date':
+				return '0000-00-00 00:00:00' !== $post->post_date ? mysql2date( get_option( 'date_format' ), $post->post_date ) : '';
+			case 'release_title':
+				return get_the_title( $post );
+			case 'release_format':
+				$value = MDS_RM_Release_Model::mds_rm_format_name( $post->ID );
+				if ( is_wp_error( $value ) ) {
+					error_log( '[MDS Release Manager] Release ' . $post->ID . ': ' . $value->get_error_message() );
+					return '';
+				}
+				return $value;
+			case 'release_tags':
+				$terms = wp_get_post_terms( $post->ID, 'release_tag', array( 'fields' => 'names' ) );
+				if ( is_wp_error( $terms ) ) {
+					error_log( '[MDS Release Manager] Release ' . $post->ID . ': ' . $terms->get_error_message() );
+					return '';
+				}
+				return $terms ? implode( ', ', $terms ) : get_post_meta( $post->ID, 'release_tags', true );
+			case 'artist':
+				$uuid = get_post_meta( $post->ID, 'artist_id', true );
+				if ( ! $uuid ) {
+					return '';
+				}
+				$artists = get_posts( array( 'post_type' => 'artist', 'post_status' => 'publish', 'posts_per_page' => 1, 'meta_key' => '_mds_artist_uuid', 'meta_value' => $uuid ) );
+				return $artists ? get_the_title( $artists[0] ) : '';
+			default:
+				return get_post_meta( $post->ID, $field, true );
+		}
+	}
+
+	public static function valid_style( $value, $type ) {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+		$value = trim( (string) $value );
+		if ( '' === $value ) {
+			return '';
+		}
+		$length = '(?:0|-?(?:\d+(?:\.\d+)?|\.\d+)(?:px|em|rem|%|vw|vh))';
+		switch ( $type ) {
+			case 'color':
+				return sanitize_hex_color( $value ) ?: ( 'transparent' === $value || 'inherit' === $value ? $value : '' );
+			case 'font':
+				$family = '(?:[a-zA-Z0-9_-]+(?:\s+[a-zA-Z0-9_-]+)*|"[a-zA-Z0-9 _-]+"|\'[a-zA-Z0-9 _-]+\')';
+				return preg_match( '/^' . $family . '(?:\s*,\s*' . $family . ')*$/D', $value ) ? $value : '';
+			case 'length':
+				return preg_match( '/^' . $length . '$/D', $value ) ? $value : '';
+			case 'width':
+				return 'auto' === $value || preg_match( '/^' . $length . '$/D', $value ) ? $value : '';
+			case 'spacing':
+				return preg_match( '/^' . $length . '(?:\s+' . $length . '){0,3}$/D', $value ) ? $value : '';
+			case 'weight':
+				return preg_match( '/^(normal|bold|[1-9]00)$/D', $value ) ? $value : '';
+			case 'line_height':
+				return preg_match( '/^(?:normal|\d+(?:\.\d+)?|' . $length . ')$/D', $value ) ? $value : '';
+			case 'opacity':
+				return is_numeric( $value ) && (float) $value >= 0 && (float) $value <= 1 ? $value : '';
+			case 'align':
+				return in_array( $value, array( 'flex-start', 'center', 'flex-end', 'space-between' ), true ) ? $value : '';
+			case 'vertical_align':
+				return in_array( $value, array( 'flex-start', 'center', 'flex-end', 'stretch' ), true ) ? $value : '';
+			case 'direction':
+				return in_array( $value, array( 'row', 'row-reverse', 'column', 'column-reverse' ), true ) ? $value : '';
+			case 'wrap':
+				return in_array( $value, array( 'wrap', 'nowrap', 'wrap-reverse' ), true ) ? $value : '';
+			case 'border_style':
+				return in_array( $value, array( 'none', 'solid', 'dashed', 'dotted', 'double' ), true ) ? $value : '';
+		}
+		return '';
+	}
+
+	public static function style_attribute( $styles, $fields = null, $prefix = 'meta' ) {
+		if ( ! is_array( $styles ) ) {
+			return '';
+		}
+		$fields = null === $fields ? self::style_fields() : $fields;
+		$declarations = array();
+		foreach ( array( 'desktop', 'tablet', 'mobile' ) as $device ) {
+			if ( empty( $styles[ $device ] ) || ! is_array( $styles[ $device ] ) ) {
+				continue;
+			}
+			foreach ( $fields as $name => $definition ) {
+				if ( ! array_key_exists( $name, $styles[ $device ] ) ) {
+					continue;
+				}
+				$value = self::valid_style( $styles[ $device ][ $name ], $definition['type'] );
+				if ( '' !== $value ) {
+					$declarations[] = '--mds-' . $prefix . '-' . str_replace( '_', '-', $name ) . '-' . $device . ':' . $value;
+				} elseif ( ! is_scalar( $styles[ $device ][ $name ] ) || '' !== (string) $styles[ $device ][ $name ] ) {
+					error_log( '[MDS Release Manager] Invalid Release ' . ( 'links' === $prefix ? 'Links' : 'Meta' ) . ' style: ' . $name . ' (' . $device . ')' );
+				}
+			}
+		}
+		return implode( ';', $declarations );
+	}
+
+	/**
+	 * Render one release. Empty values are omitted.
+	 */
+	public static function render( $attributes = array(), $context_post_id = 0 ) {
+		$upc  = isset( $attributes['upc'] ) ? $attributes['upc'] : '';
+		$post = self::resolve_post( $upc, $context_post_id );
+		if ( ! $post ) {
+			return '';
+		}
+		self::enqueue_assets();
+		$fields = self::fields();
+		$items  = isset( $attributes['items'] ) && is_array( $attributes['items'] ) ? $attributes['items'] : self::default_items();
+		$output = '';
+		foreach ( $items as $item ) {
+			if ( ! is_array( $item ) || empty( $item['field'] ) || ! is_string( $item['field'] ) || ! isset( $fields[ $item['field'] ] ) ) {
+				error_log( '[MDS Release Manager] Invalid Release Meta field.' );
+				continue;
+			}
+			if ( empty( $item['enabled'] ) ) {
+				continue;
+			}
+			$key   = $item['field'];
+			$value = self::value( $key, $post );
+			if ( ! is_scalar( $value ) || '' === (string) $value ) {
+				continue;
+			}
+			$title = isset( $item['title'] ) && is_string( $item['title'] ) ? $item['title'] : $fields[ $key ]['label'];
+			$icon  = isset( $item['icon'] ) && is_string( $item['icon'] ) ? trim( $item['icon'] ) : $fields[ $key ]['icon'];
+			if ( '' !== $icon && ! preg_match( '/^(?:dashicons dashicons-[a-z0-9-]+|(?:fa[srbl]|fa-(?:solid|regular|brands|light)) fa-[a-z0-9-]+)$/D', $icon ) ) {
+				error_log( '[MDS Release Manager] Invalid Release Meta icon for ' . $key );
+				$icon = '';
+			}
+			$output .= '<span class="mds-release-meta__item mds-release-meta__item--' . esc_attr( $key ) . '"' . ( '' !== $title ? ' title="' . esc_attr( $title ) . '"' : '' ) . '>';
+			if ( '' !== $icon ) {
+				$output .= '<i class="mds-release-meta__icon ' . esc_attr( $icon ) . '" aria-hidden="true"></i>';
+			}
+			$output .= '<span class="screen-reader-text">' . esc_html( $fields[ $key ]['label'] ) . ': </span><span>' . esc_html( (string) $value ) . '</span></span>';
+		}
+		if ( '' === $output ) {
+			return '';
+		}
+		$style = self::style_attribute( isset( $attributes['styles'] ) ? $attributes['styles'] : array() );
+		return '<div class="mds-release-meta"' . ( $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>' . $output . '</div>';
+	}
+
+	public static function shortcode( $atts ) {
+		$defaults = array( 'upc' => '', 'fields' => '' );
+		foreach ( self::fields() as $key => $field ) {
+			$defaults[ 'icon_' . $key ]  = $field['icon'];
+			$defaults[ 'title_' . $key ] = $field['label'];
+		}
+		foreach ( self::style_fields() as $key => $_definition ) {
+			foreach ( array( '', '_tablet', '_mobile' ) as $suffix ) {
+				$defaults[ $key . $suffix ] = '';
+			}
+		}
+		$atts     = shortcode_atts( $defaults, $atts, 'release-meta' );
+		$selected = '' === trim( $atts['fields'] ) ? null : array_map( 'trim', explode( ',', $atts['fields'] ) );
+		$items    = self::default_items();
+		if ( null !== $selected ) {
+			$by_key = array();
+			foreach ( $items as $item ) {
+				$by_key[ $item['field'] ] = $item;
+			}
+			$items = array();
+			foreach ( $selected as $key ) {
+				if ( isset( $by_key[ $key ] ) ) {
+					$by_key[ $key ]['enabled'] = true;
+					$items[]                   = $by_key[ $key ];
+				} else {
+					error_log( '[MDS Release Manager] Unknown Release Meta field: ' . sanitize_text_field( $key ) );
+				}
+			}
+		}
+		foreach ( $items as &$item ) {
+			$item['icon']  = $atts[ 'icon_' . $item['field'] ];
+			$item['title'] = $atts[ 'title_' . $item['field'] ];
+		}
+		unset( $item );
+		$styles = array();
+		foreach ( self::style_fields() as $key => $_definition ) {
+			foreach ( array( 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ) as $device => $suffix ) {
+				$styles[ $device ][ $key ] = $atts[ $key . $suffix ];
+			}
+		}
+		return self::render( array( 'upc' => $atts['upc'], 'items' => $items, 'styles' => $styles ), get_the_ID() );
+	}
+}

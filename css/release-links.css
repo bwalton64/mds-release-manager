@@ -1,0 +1,99 @@
+.mds-release-links {
+	display: flex;
+	background: var(--mds-links-background-desktop, transparent);
+	gap: var(--mds-links-gap-desktop, 15px);
+	justify-content: var(--mds-links-align-desktop, flex-start);
+	align-items: var(--mds-links-vertical-align-desktop, center);
+	flex-direction: var(--mds-links-direction-desktop, row);
+	flex-wrap: var(--mds-links-wrap-desktop, wrap);
+	width: var(--mds-links-width-desktop, auto);
+	padding: var(--mds-links-padding-desktop, 0);
+	margin: var(--mds-links-margin-desktop, 0);
+	border-width: var(--mds-links-border-width-desktop, 0);
+	border-style: var(--mds-links-border-style-desktop, none);
+	border-color: var(--mds-links-border-color-desktop, transparent);
+	border-radius: var(--mds-links-radius-desktop, 0);
+}
+.mds-release-links__buttons { display: flex; flex-wrap: wrap; gap: var(--mds-links-link-gap-desktop, 15px); }
+.mds-release-links__link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: var(--mds-links-button-size-desktop, 44px);
+	height: var(--mds-links-button-size-desktop, 44px);
+	border-radius: var(--mds-links-button-radius-desktop, 50%);
+	color: var(--mds-links-button-color-desktop, #fff);
+	background: var(--mds-links-button-background-desktop, var(--mds-links-provider-background, #333));
+	border-width: var(--mds-links-button-border-width-desktop, 0);
+	border-style: var(--mds-links-button-border-style-desktop, none);
+	border-color: var(--mds-links-button-border-color-desktop, transparent);
+	text-decoration: none;
+}
+.mds-release-links__link i { font-size: var(--mds-links-icon-size-desktop, 22px); }
+.mds-release-links__link .dashicons { width: 1em; height: 1em; }
+.mds-release-links__link:hover { opacity: var(--mds-links-hover-opacity-desktop, .9); }
+.mds-release-links__audio { flex: 0 1 auto; min-width: 0; max-width: 100%; width: var(--mds-links-audio-width-desktop, 300px); }
+.mds-release-links__audio iframe, .mds-release-links__audio audio { display: block; width: 100%; max-width: 100%; }
+@media (max-width: 1024px) {
+	.mds-release-links {
+		background: var(--mds-links-background-tablet, var(--mds-links-background-desktop, transparent));
+		gap: var(--mds-links-gap-tablet, var(--mds-links-gap-desktop, 15px));
+		justify-content: var(--mds-links-align-tablet, var(--mds-links-align-desktop, flex-start));
+		align-items: var(--mds-links-vertical-align-tablet, var(--mds-links-vertical-align-desktop, center));
+		flex-direction: var(--mds-links-direction-tablet, var(--mds-links-direction-desktop, row));
+		flex-wrap: var(--mds-links-wrap-tablet, var(--mds-links-wrap-desktop, wrap));
+		width: var(--mds-links-width-tablet, var(--mds-links-width-desktop, auto));
+		padding: var(--mds-links-padding-tablet, var(--mds-links-padding-desktop, 0));
+		margin: var(--mds-links-margin-tablet, var(--mds-links-margin-desktop, 0));
+		border-width: var(--mds-links-border-width-tablet, var(--mds-links-border-width-desktop, 0));
+		border-style: var(--mds-links-border-style-tablet, var(--mds-links-border-style-desktop, none));
+		border-color: var(--mds-links-border-color-tablet, var(--mds-links-border-color-desktop, transparent));
+		border-radius: var(--mds-links-radius-tablet, var(--mds-links-radius-desktop, 0));
+	}
+	.mds-release-links__buttons { gap: var(--mds-links-link-gap-tablet, var(--mds-links-link-gap-desktop, 15px)); }
+	.mds-release-links__link {
+		width: var(--mds-links-button-size-tablet, var(--mds-links-button-size-desktop, 44px));
+		height: var(--mds-links-button-size-tablet, var(--mds-links-button-size-desktop, 44px));
+		border-radius: var(--mds-links-button-radius-tablet, var(--mds-links-button-radius-desktop, 50%));
+		color: var(--mds-links-button-color-tablet, var(--mds-links-button-color-desktop, #fff));
+		background: var(--mds-links-button-background-tablet, var(--mds-links-button-background-desktop, var(--mds-links-provider-background, #333)));
+		border-width: var(--mds-links-button-border-width-tablet, var(--mds-links-button-border-width-desktop, 0));
+		border-style: var(--mds-links-button-border-style-tablet, var(--mds-links-button-border-style-desktop, none));
+		border-color: var(--mds-links-button-border-color-tablet, var(--mds-links-button-border-color-desktop, transparent));
+	}
+	.mds-release-links__link i { font-size: var(--mds-links-icon-size-tablet, var(--mds-links-icon-size-desktop, 22px)); }
+	.mds-release-links__link:hover { opacity: var(--mds-links-hover-opacity-tablet, var(--mds-links-hover-opacity-desktop, .9)); }
+	.mds-release-links__audio { width: var(--mds-links-audio-width-tablet, var(--mds-links-audio-width-desktop, 300px)); }
+}
+@media (max-width: 767px) {
+	.mds-release-links {
+		background: var(--mds-links-background-mobile, var(--mds-links-background-tablet, var(--mds-links-background-desktop, transparent)));
+		gap: var(--mds-links-gap-mobile, var(--mds-links-gap-tablet, var(--mds-links-gap-desktop, 15px)));
+		justify-content: var(--mds-links-align-mobile, var(--mds-links-align-tablet, var(--mds-links-align-desktop, flex-start)));
+		align-items: var(--mds-links-vertical-align-mobile, var(--mds-links-vertical-align-tablet, var(--mds-links-vertical-align-desktop, center)));
+		flex-direction: var(--mds-links-direction-mobile, var(--mds-links-direction-tablet, var(--mds-links-direction-desktop, row)));
+		flex-wrap: var(--mds-links-wrap-mobile, var(--mds-links-wrap-tablet, var(--mds-links-wrap-desktop, wrap)));
+		width: var(--mds-links-width-mobile, var(--mds-links-width-tablet, var(--mds-links-width-desktop, auto)));
+		padding: var(--mds-links-padding-mobile, var(--mds-links-padding-tablet, var(--mds-links-padding-desktop, 0)));
+		margin: var(--mds-links-margin-mobile, var(--mds-links-margin-tablet, var(--mds-links-margin-desktop, 0)));
+		border-width: var(--mds-links-border-width-mobile, var(--mds-links-border-width-tablet, var(--mds-links-border-width-desktop, 0)));
+		border-style: var(--mds-links-border-style-mobile, var(--mds-links-border-style-tablet, var(--mds-links-border-style-desktop, none)));
+		border-color: var(--mds-links-border-color-mobile, var(--mds-links-border-color-tablet, var(--mds-links-border-color-desktop, transparent)));
+		border-radius: var(--mds-links-radius-mobile, var(--mds-links-radius-tablet, var(--mds-links-radius-desktop, 0)));
+	}
+	.mds-release-links__buttons { gap: var(--mds-links-link-gap-mobile, var(--mds-links-link-gap-tablet, var(--mds-links-link-gap-desktop, 15px))); }
+	.mds-release-links__link {
+		width: var(--mds-links-button-size-mobile, var(--mds-links-button-size-tablet, var(--mds-links-button-size-desktop, 44px)));
+		height: var(--mds-links-button-size-mobile, var(--mds-links-button-size-tablet, var(--mds-links-button-size-desktop, 44px)));
+		border-radius: var(--mds-links-button-radius-mobile, var(--mds-links-button-radius-tablet, var(--mds-links-button-radius-desktop, 50%)));
+		color: var(--mds-links-button-color-mobile, var(--mds-links-button-color-tablet, var(--mds-links-button-color-desktop, #fff)));
+		background: var(--mds-links-button-background-mobile, var(--mds-links-button-background-tablet, var(--mds-links-button-background-desktop, var(--mds-links-provider-background, #333))));
+		border-width: var(--mds-links-button-border-width-mobile, var(--mds-links-button-border-width-tablet, var(--mds-links-button-border-width-desktop, 0)));
+		border-style: var(--mds-links-button-border-style-mobile, var(--mds-links-button-border-style-tablet, var(--mds-links-button-border-style-desktop, none)));
+		border-color: var(--mds-links-button-border-color-mobile, var(--mds-links-button-border-color-tablet, var(--mds-links-button-border-color-desktop, transparent)));
+	}
+	.mds-release-links__link i { font-size: var(--mds-links-icon-size-mobile, var(--mds-links-icon-size-tablet, var(--mds-links-icon-size-desktop, 22px))); }
+	.mds-release-links__link:hover { opacity: var(--mds-links-hover-opacity-mobile, var(--mds-links-hover-opacity-tablet, var(--mds-links-hover-opacity-desktop, .9))); }
+	.mds-release-links__audio { width: var(--mds-links-audio-width-mobile, var(--mds-links-audio-width-tablet, var(--mds-links-audio-width-desktop, 300px))); }
+}

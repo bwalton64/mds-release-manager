@@ -1,5 +1,36 @@
 # Changelog - MDS Release Manager
 
+## [1.0.0] - 2026-11-19
+### The Feature-Complete Release
+This major release introduces a comprehensive feature set for artist release management, WordPress Abilities API integration, and extensible plugin architecture. All core features are now production-ready with extensive customization and third-party integration support.
+
+### Added
+- Add a responsive Release Meta Block for Gutenberg and Elementor, plus the `[release-meta]` shortcode with per-field and per-device styling.
+- Add a separate, manually placed Release Links Block for Gutenberg and Elementor and the `[release-links]` shortcode, with per-provider overrides, audio visibility, and responsive styles.
+- Add a Release `the_content` fallback with responsive featured imagery, default Release Meta/Links components, builder detection, and fallback styling controls in the Customizer. Suppress duplicate theme thumbnails when the fallback renders the featured image.
+- Add an Artist content fallback, Artist-specific Customizer controls, and a reusable paginated Discography block and shortcode with column and cell filters.
+- Add optional per-Artist temporary routing to an official homepage, with an editor warning for invalid destinations.
+- Add WordPress Abilities API integration (WordPress 6.9+) exposing core plugin features as native MCP tools: Get Releases, Save Settings, Save Network Settings, and Sync Network Data. Automatically discoverable by the official WordPress MCP Adapter with `meta.mcp.public` metadata and comprehensive JSON Schema definitions.
+- Add comprehensive README.md with installation, usage, and contribution guidelines for Windows and cross-platform development.
+
+### Changed
+- Replace the Release and Artist whole-template overrides with guarded content fallbacks. Site-Wide Routing suppresses Release fallback composition; builder-authored content suppresses both fallbacks.
+- Rename the Release Customizer layout section to Release Fallback Template and expose its layout and component styles.
+- Hide the theme author byline on Release pages and place the default Release Meta component before the post content.
+- Require one Release Format (Single, EP, Album, or Digital) and a unique UPC/EAN for saved releases, with both fields grouped together.
+- Use the Release Format taxonomy for display and CSV export, report legacy conflicts, and synchronize UPC corrections to existing spoke releases.
+- Move product-context resolution, automatic product placement, and product-specific sync mapping to the WooCommerce integration; retain existing sync targets.
+- Remove the retired Release Links renderer, template, and widget-specific styles. Preserve stored release data and legacy settings; old embeds must be replaced with the current shortcode or block.
+- Remove the deprecated Artist image URL field; clean up its stored metadata in batches on each site's administrator visits and exclude it from synchronization. The WordPress featured image is used instead.
+- Hide the Release Data dynamic block controls in the Artist editor and preserve supported rich text in Artist contact information.
+
+### Fixed
+- Remove the remaining labels in Twenty Twenty-Five's Release and Artist byline pattern.
+- Load the WordPress color-picker dependency for Release fallback Customizer color controls.
+- Use the native WordPress tag editor and tag cloud in Release Metadata, and remove duplicate taxonomy panels from the block editor sidebar.
+- Recognize the current `html5` audio-player setting when displaying release previews, while retaining support for the legacy `native` value.
+- Allow all Release Formats to be cleared when editing a release. (Superseded by the required single-format model.)
+
 ## [0.9.0] - 2026-11-14
 ### The Extensibility Update
 This major release transitions MDS Release Manager from a monolithic plugin to a lightweight, extensible platform. Third-party integrations have been stripped from the core and moved to independent feature plugins.
