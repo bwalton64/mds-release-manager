@@ -1,0 +1,172 @@
+﻿Static option and metadata API call sites; NOT a complete key inventory. Multiline and dynamic keys require review.
+Source baseline: working tree on consolidation, 2026-11-20.
+
+includes\class-mds-rm-artist-routing.php:39:		$url      = get_post_meta( $post_id, 'artist_homepage_url', true );
+includes\class-mds-rm-artist-routing.php:40:		if ( '1' !== get_post_meta( $post_id, 'artist_homepage_routing', true ) || ! self::valid_url( $url, $post_id ) ) {
+includes\class-mds-rm-csv-handler.php:89:			$artist_uuid = get_post_meta( $artist->ID, '_mds_artist_uuid', true );
+includes\class-mds-rm-csv-handler.php:138:			$artist_id = get_post_meta( $release->ID, 'artist_id', true );
+includes\class-mds-rm-csv-handler.php:140:				get_post_meta( $release->ID, 'upc_ean', true ),
+includes\class-mds-rm-csv-handler.php:145:				get_post_meta( $release->ID, 'record_label', true ),
+includes\class-mds-rm-csv-handler.php:146:				get_post_meta( $release->ID, 'distributor', true ),
+includes\class-mds-rm-csv-handler.php:147:				get_post_meta( $release->ID, 'buy_now_link', true ),
+includes\class-mds-rm-csv-handler.php:148:				get_post_meta( $release->ID, 'bandcamp_shortcode', true ),
+includes\class-mds-rm-csv-handler.php:149:				get_post_meta( $release->ID, 'release_tags', true ),
+includes\class-mds-rm-csv-handler.php:150:				get_post_meta( $release->ID, 'featured_image_url', true ),
+includes\class-mds-rm-csv-handler.php:151:				get_post_meta( $release->ID, 'audio_preview_url', true ),
+includes\class-mds-rm-csv-handler.php:153:				get_post_meta( $release->ID, 'streaming_links', true ),
+includes\class-mds-rm-csv-handler.php:227:		$configured_providers = get_option( 'mds_rm_providers', array() );
+includes\class-mds-rm-csv-handler.php:318:				$artist_uuid    = get_post_meta( $artist_post_id, '_mds_artist_uuid', true );
+includes\class-mds-rm-csv-handler.php:329:				update_post_meta( $artist_post_id, '_mds_artist_uuid', $artist_uuid );
+includes\class-mds-rm-csv-handler.php:387:				update_post_meta( $release_post_id, 'featured_image_url', $featured_img );
+includes\class-mds-rm-csv-handler.php:390:				update_post_meta( $release_post_id, 'audio_preview_url', $audio_url );
+includes\class-mds-rm-csv-handler.php:394:			update_post_meta( $release_post_id, 'upc_ean', $upc );
+includes\class-mds-rm-csv-handler.php:395:			update_post_meta( $release_post_id, 'artist_id', $artist_uuid );
+includes\class-mds-rm-csv-handler.php:396:			update_post_meta( $release_post_id, 'record_label', $label );
+includes\class-mds-rm-csv-handler.php:397:			update_post_meta( $release_post_id, 'distributor', $distributor );
+includes\class-mds-rm-csv-handler.php:398:			update_post_meta( $release_post_id, 'buy_now_link', $buy_link );
+includes\class-mds-rm-csv-handler.php:399:			update_post_meta( $release_post_id, 'bandcamp_shortcode', $bandcamp );
+includes\class-mds-rm-csv-handler.php:400:			update_post_meta( $release_post_id, 'streaming_links', wp_slash( $streaming_json ) );
+includes\class-mds-rm-csv-handler.php:408:			delete_post_meta( $release_post_id, 'release_format' );
+includes\class-mds-rm-csv-handler.php:413:				update_post_meta( $release_post_id, 'release_tags', implode( ', ', $tag_array ) );
+uninstall.php:14:$wipe_all = get_site_option( 'mds_rm_wipe_on_uninstall', '0' ) === '1';
+uninstall.php:50:	delete_option( $opt );
+uninstall.php:55:	delete_site_option( 'mds_rm_master_blog_id' );
+uninstall.php:56:	delete_site_option( 'mds_rm_db_templates' );
+uninstall.php:57:	delete_site_option( 'mds_rm_wipe_on_uninstall' );
+includes\class-mds-rm-virtual-media.php:42:		$hub_url = get_post_meta( $post_id, '_mds_is_hub_media', true );
+includes\class-mds-rm-virtual-media.php:58:		$hub_url = get_post_meta( $attachment_id, '_mds_is_hub_media', true );
+includes\class-mds-rm-virtual-media.php:79:		$hub_url = get_post_meta( $object_id, '_mds_is_hub_media', true );
+includes\class-mds-rm-virtual-media.php:136:			if ( ! get_post_meta( $attach_id, '_wp_attached_file', true ) ) {
+includes\class-mds-rm-virtual-media.php:137:				update_post_meta( $attach_id, '_wp_attached_file', basename( $hub_image_url ) );
+includes\class-mds-rm-virtual-media.php:138:				update_post_meta(
+includes\class-mds-rm-virtual-media.php:161:			update_post_meta( $attach_id, '_mds_is_hub_media', $hub_image_url );
+includes\class-mds-rm-virtual-media.php:162:			update_post_meta( $attach_id, '_wp_attached_file', basename( $hub_image_url ) );
+includes\class-mds-rm-virtual-media.php:163:			update_post_meta(
+includes\class-mds-rm-virtual-media.php:186:		$hub_url = get_post_meta( $post->ID, '_mds_is_hub_media', true );
+includes\class-mds-rm-discography.php:51:		$uuid = get_post_meta( $artist->ID, '_mds_artist_uuid', true );
+includes\class-mds-rm-discography.php:114:										$meta_value = get_post_meta( $release->ID, $key, true );
+includes\class-mds-rm-admin-interface.php:51:		if ( ! current_user_can( 'manage_options' ) || '1' === get_option( 'mds_rm_artist_image_cleanup_complete', '0' ) ) {
+includes\class-mds-rm-admin-interface.php:66:			if ( ! delete_post_meta( $artist_id, 'artist_featured_image' ) ) {
+includes\class-mds-rm-admin-interface.php:72:			update_option( 'mds_rm_artist_image_cleanup_complete', '1', false );
+includes\class-mds-rm-admin-interface.php:272:		$contact = get_post_meta( $post->ID, 'artist_contact', true );
+includes\class-mds-rm-admin-interface.php:288:			'homepage_url'     => get_post_meta( $post->ID, 'artist_homepage_url', true ),
+includes\class-mds-rm-admin-interface.php:289:			'homepage_routing' => '1' === get_post_meta( $post->ID, 'artist_homepage_routing', true ),
+includes\class-mds-rm-admin-interface.php:304:		$artist_id = get_post_meta( $post->ID, 'artist_id', true );
+includes\class-mds-rm-admin-interface.php:321:			$a_uuid    = get_post_meta( $artist->ID, '_mds_artist_uuid', true );
+includes\class-mds-rm-admin-interface.php:328:		$global_providers = get_option( 'mds_rm_providers', array() );
+includes\class-mds-rm-admin-interface.php:339:		$streaming_links_value = get_post_meta( $post->ID, 'streaming_links', true );
+includes\class-mds-rm-admin-interface.php:346:		$upc_ean           = get_post_meta( $post->ID, 'upc_ean', true );
+includes\class-mds-rm-admin-interface.php:347:		$record_label      = get_post_meta( $post->ID, 'record_label', true );
+includes\class-mds-rm-admin-interface.php:348:		$distributor       = get_post_meta( $post->ID, 'distributor', true );
+includes\class-mds-rm-admin-interface.php:349:		$buy_now_link      = get_post_meta( $post->ID, 'buy_now_link', true );
+includes\class-mds-rm-admin-interface.php:350:		$audio_preview_url = get_post_meta( $post->ID, 'audio_preview_url', true );
+includes\class-mds-rm-admin-interface.php:408:		if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
+includes\class-mds-rm-admin-interface.php:426:		$uuid = get_post_meta( $post_id, '_mds_artist_uuid', true );
+includes\class-mds-rm-admin-interface.php:429:			update_post_meta( $post_id, '_mds_artist_uuid', $uuid );
+includes\class-mds-rm-admin-interface.php:434:			update_post_meta( $post_id, 'artist_contact', $artist_contact );
+includes\class-mds-rm-admin-interface.php:438:			update_post_meta( $post_id, 'artist_homepage_url', esc_url_raw( wp_unslash( $_POST['artist_homepage_url'] ) ) );
+includes\class-mds-rm-admin-interface.php:441:		update_post_meta( $post_id, 'artist_homepage_routing', isset( $_POST['artist_homepage_routing'] ) ? '1' : '0' );
+includes\class-mds-rm-admin-interface.php:442:		delete_post_meta( $post_id, 'artist_featured_image' );
+includes\class-mds-rm-admin-interface.php:482:		if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
+includes\class-mds-rm-admin-interface.php:501:			$previous_upc    = get_post_meta( $post_id, 'upc_ean', true );
+includes\class-mds-rm-admin-interface.php:503:			update_post_meta( $post_id, 'upc_ean', $upc_clean );
+includes\class-mds-rm-admin-interface.php:508:			update_post_meta( $post_id, 'artist_id', sanitize_text_field( wp_unslash( $_POST['artist_id'] ) ) );
+includes\class-mds-rm-admin-interface.php:512:			update_post_meta( $post_id, 'record_label', sanitize_text_field( wp_unslash( $_POST['record_label'] ) ) );
+includes\class-mds-rm-admin-interface.php:516:			update_post_meta( $post_id, 'distributor', sanitize_text_field( wp_unslash( $_POST['distributor'] ) ) );
+includes\class-mds-rm-admin-interface.php:520:			update_post_meta( $post_id, 'buy_now_link', esc_url_raw( wp_unslash( $_POST['buy_now_link'] ) ) );
+includes\class-mds-rm-admin-interface.php:525:			update_post_meta( $post_id, 'audio_preview_url', esc_url_raw( $audio_preview_url ) );
+includes\class-mds-rm-admin-interface.php:540:		update_post_meta( $post_id, 'streaming_links', wp_slash( wp_json_encode( $streaming_links_arr ) ) );
+includes\class-mds-rm-admin-interface.php:548:			delete_post_meta( $post_id, 'release_format' );
+includes\class-mds-rm-admin-interface.php:552:		MDS_RM_Release_Model::mds_rm_release_upc_lock( get_post_meta( $post_id, 'upc_ean', true ) );
+includes\class-mds-rm-admin-interface.php:606:		$global_providers = get_option( 'mds_rm_providers', array() );
+includes\class-mds-rm-admin-interface.php:615:		$active_players = get_option( 'mds_rm_audio_players', array( 'html5' ) );
+includes\class-mds-rm-admin-interface.php:630:			'active_fa_source'           => get_option( 'mds_rm_fa_support', 'cdn' ),
+includes\class-mds-rm-admin-interface.php:633:				'bandcamp_template' => get_option( 'mds_rm_bandcamp_template', '[bandcamp width=100% height=42 album={release_number} size=small bgcol=ffffff linkcol=0687f5 artwork=none]' ),
+includes\class-mds-rm-admin-interface.php:634:				'global_redirect'   => '1' === (string) get_option( 'mds_rm_global_redirect', '0' ),
+includes\class-mds-rm-abilities.php:367:				'upc'    => (string) get_post_meta( $rel->ID, 'upc_ean', true ),
+includes\class-mds-rm-abilities.php:407:			update_option( 'mds_rm_providers', $providers );
+includes\class-mds-rm-abilities.php:411:				update_option( 'mds_rm_audio_players', $players );
+includes\class-mds-rm-abilities.php:413:				update_option( 'mds_rm_audio_players', array() );
+includes\class-mds-rm-abilities.php:417:				update_option( 'mds_rm_global_redirect', '1' );
+includes\class-mds-rm-abilities.php:419:				update_option( 'mds_rm_global_redirect', '0' );
+includes\class-mds-rm-abilities.php:423:				update_option( 'mds_rm_fa_support', sanitize_text_field( wp_unslash( $input['fa_support'] ) ) );
+includes\class-mds-rm-abilities.php:450:				update_site_option( 'mds_rm_master_blog_id', absint( $input['master_blog_id'] ) );
+includes\class-mds-rm-abilities.php:454:				update_site_option( 'mds_rm_wipe_on_uninstall', '1' );
+includes\class-mds-rm-abilities.php:456:				update_site_option( 'mds_rm_wipe_on_uninstall', '0' );
+includes\class-mds-rm-abilities.php:479:		if ( get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
+includes\class-mds-rm-elementor-release-meta-tag.php:116:			$json     = get_post_meta( $post_id, 'streaming_links', true );
+includes\class-mds-rm-elementor-release-meta-tag.php:131:			$tags = get_post_meta( $post_id, 'release_tags', true );
+includes\class-mds-rm-elementor-release-meta-tag.php:146:			$image = get_post_meta( $post_id, 'featured_image_url', true );
+includes\class-mds-rm-elementor-release-meta-tag.php:153:		$value = get_post_meta( $post_id, $key, true );
+includes\class-mds-rm-builder-detection.php:70:			'builder' === get_post_meta( $post->ID, '_elementor_edit_mode', true )
+includes\class-mds-rm-builder-detection.php:71:			|| ! empty( get_post_meta( $post->ID, '_elementor_data', true ) )
+includes\class-mds-rm-builder-detection.php:86:		if ( 'on' === get_post_meta( $post->ID, '_et_pb_use_builder', true ) ) {
+includes\class-mds-rm-builder-detection.php:108:			'bricks' === get_post_meta( $post->ID, '_bricks_editor_mode', true )
+includes\class-mds-rm-builder-detection.php:109:			|| ! empty( get_post_meta( $post->ID, '_bricks_page_content_2', true ) )
+includes\class-mds-rm-builder-detection.php:124:		$status = get_post_meta( $post->ID, '_wpb_vc_js_status', true );
+includes\class-mds-rm-builder-detection.php:142:		$enabled = get_post_meta( $post->ID, '_fl_builder_enabled', true );
+includes\class-mds-rm-rest-api.php:123:				'upc'   => get_post_meta( $rel->ID, 'upc_ean', true ),
+includes\class-mds-rm-rest-api.php:159:		update_option( 'mds_rm_providers', $providers );
+includes\class-mds-rm-rest-api.php:163:			update_option( 'mds_rm_audio_players', $players );
+includes\class-mds-rm-rest-api.php:165:			update_option( 'mds_rm_audio_players', array() );
+includes\class-mds-rm-rest-api.php:169:			update_option( 'mds_rm_global_redirect', '1' );
+includes\class-mds-rm-rest-api.php:171:			update_option( 'mds_rm_global_redirect', '0' );
+includes\class-mds-rm-rest-api.php:175:			update_option( 'mds_rm_fa_support', sanitize_text_field( wp_unslash( $params['mds_rm_fa_support'] ) ) );
+includes\class-mds-rm-rest-api.php:194:			update_site_option( 'mds_rm_master_blog_id', absint( $params['mds_rm_master_blog_id'] ) );
+includes\class-mds-rm-rest-api.php:198:			update_site_option( 'mds_rm_wipe_on_uninstall', '1' );
+includes\class-mds-rm-rest-api.php:200:			update_site_option( 'mds_rm_wipe_on_uninstall', '0' );
+includes\class-mds-rm-rest-api.php:213:		if ( get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
+includes\class-mds-rm-gutenberg-blocks.php:232:			$json     = get_post_meta( $post_id, 'streaming_links', true );
+includes\class-mds-rm-gutenberg-blocks.php:236:			$val = get_post_meta( $post_id, $meta_field, true );
+includes\class-mds-rm-gutenberg-blocks.php:244:			$val = get_post_meta( $post_id, 'release_tags', true );
+includes\class-mds-rm-gutenberg-blocks.php:253:			$val = get_post_meta( $post_id, $meta_field, true );
+includes\class-mds-rm-release-links.php:139:		$players  = (array) get_option( 'mds_rm_audio_players', array( 'html5' ) );
+includes\class-mds-rm-release-links.php:140:		$bandcamp = get_post_meta( $post_id, 'bandcamp_shortcode', true );
+includes\class-mds-rm-release-links.php:146:				$template  = get_option( 'mds_rm_bandcamp_template', '[bandcamp width=100% height=42 album={release_number} size=small bgcol=ffffff linkcol=0687f5 artwork=none]' );
+includes\class-mds-rm-release-links.php:155:		$url = get_post_meta( $post_id, 'audio_preview_url', true );
+includes\class-mds-rm-release-links.php:167:		$stored = get_post_meta( $post->ID, 'streaming_links', true );
+includes\class-mds-rm-release-links.php:199:		$buy_url = get_post_meta( $post->ID, 'buy_now_link', true );
+includes\class-mds-rm-network-admin.php:53:		$master_hub_id = (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() );
+includes\class-mds-rm-network-admin.php:85:		$spoke_site_ids = array_map( 'intval', (array) get_site_option( 'spoke_sites', array() ) );
+includes\class-mds-rm-network-admin.php:105:			'wipe_on_uninstall' => '1' === (string) get_site_option( 'mds_rm_wipe_on_uninstall', '0' ),
+includes\class-mds-rm-network-admin.php:145:			return (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() );
+includes\class-mds-rm-network-admin.php:181:		update_site_option( 'mds_rm_master_blog_id', $master_hub_id );
+includes\class-mds-rm-network-admin.php:182:		update_site_option( 'spoke_sites', $spoke_site_ids );
+includes\class-mds-rm-network-admin.php:183:		update_site_option(
+includes\class-mds-rm-core-functions.php:66:		? get_site_option( 'mds_rm_db_templates', array() )
+includes\class-mds-rm-core-functions.php:67:		: get_option( 'mds_rm_db_templates', array() );
+includes\class-mds-rm-core-functions.php:226:		$master_hub_id   = (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() );
+includes\class-mds-rm-core-functions.php:244:		$uuid = get_post_meta( $post_id, 'artist' === $post_type ? '_mds_artist_uuid' : 'upc_ean', true );
+includes\class-mds-rm-core-functions.php:252:		$meta            = get_post_meta( $post_id );
+includes\class-mds-rm-core-functions.php:257:		$previous_upcs   = json_decode( get_post_meta( $post_id, '_mds_previous_upcs', true ), true );
+includes\class-mds-rm-core-functions.php:320:					$linked_key = get_post_meta( $candidate, '_mds_hub_release_key', true );
+includes\class-mds-rm-core-functions.php:380:				foreach ( array_keys( get_post_meta( $shadow_post_id ) ) as $ek ) {
+includes\class-mds-rm-core-functions.php:381:					delete_post_meta( $shadow_post_id, $ek );
+includes\class-mds-rm-core-functions.php:387:						add_post_meta( $shadow_post_id, $key, wp_slash( maybe_unserialize( $val ) ) );
+includes\class-mds-rm-core-functions.php:391:					update_post_meta( $shadow_post_id, '_mds_hub_release_key', $hub_release_key );
+includes\class-mds-rm-core-functions.php:449:		$providers = get_option( 'mds_rm_providers', false );
+includes\class-mds-rm-core-functions.php:481:			update_option( 'mds_rm_providers', $providers );
+includes\class-mds-rm-core-functions.php:499:				update_option( 'mds_rm_providers', $providers );
+includes\class-mds-rm-frontend-templates.php:50:			'contact' => get_post_meta( $post->ID, 'artist_contact', true ),
+includes\class-mds-rm-frontend-templates.php:77:			|| '1' === get_option( 'mds_rm_global_redirect', '0' )
+includes\class-mds-rm-frontend-templates.php:231:			|| '1' === get_option( 'mds_rm_global_redirect', '0' )
+includes\class-mds-rm-frontend-templates.php:317:		$image_url = get_post_meta( $post->ID, 'featured_image_url', true );
+includes\class-mds-rm-release-model.php:40:		register_post_meta(
+includes\class-mds-rm-release-model.php:166:		$legacy = get_post_meta( $post_id, 'release_format', true );
+includes\class-mds-rm-release-model.php:194:			$upc = get_post_meta( $id, 'upc_ean', true );
+includes\class-mds-rm-release-model.php:300:				foreach ( get_post_meta( $legacy_id, 'upc_ean', false ) as $legacy_upc ) {
+includes\class-mds-rm-release-model.php:368:		if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
+includes\class-mds-rm-release-model.php:386:				$upc = get_post_meta( $post_id, 'upc_ean', true );
+includes\class-mds-rm-release-model.php:436:		$upc     = is_array( $meta ) && array_key_exists( 'upc_ean', $meta ) ? $meta['upc_ean'] : ( $post_id ? get_post_meta( $post_id, 'upc_ean', true ) : '' );
+includes\class-mds-rm-release-model.php:452:			self::$previous_upcs[ $post_id ] = get_post_meta( $post_id, 'upc_ean', true );
+includes\class-mds-rm-release-model.php:468:		$history = json_decode( get_post_meta( $post_id, '_mds_previous_upcs', true ), true );
+includes\class-mds-rm-release-model.php:472:			update_post_meta( $post_id, '_mds_previous_upcs', wp_json_encode( $history ) );
+includes\class-mds-rm-release-model.php:488:		self::mds_rm_remember_previous_upc( $post->ID, $previous, get_post_meta( $post->ID, 'upc_ean', true ) );
+includes\class-mds-rm-release-model.php:489:		delete_post_meta( $post->ID, 'release_format' );
+includes\class-mds-rm-release-model.php:495:		self::mds_rm_release_upc_lock( get_post_meta( $post->ID, 'upc_ean', true ) );
+includes\class-mds-rm-assets.php:53:		$fa_support = get_option( 'mds_rm_fa_support', 'cdn' );
+includes\class-mds-rm-assets.php:74:		if ( get_option( 'mds_rm_global_redirect', '0' ) !== '1' ) {
+includes\class-mds-rm-release-meta.php:139:				return '0000-00-00 00:00:00' !== $post->post_date ? mysql2date( get_option( 'date_format' ), $post->post_date ) : '';
+includes\class-mds-rm-release-meta.php:155:				return $terms ? implode( ', ', $terms ) : get_post_meta( $post->ID, 'release_tags', true );
+includes\class-mds-rm-release-meta.php:157:				$uuid = get_post_meta( $post->ID, 'artist_id', true );
+includes\class-mds-rm-release-meta.php:164:				return get_post_meta( $post->ID, $field, true );

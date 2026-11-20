@@ -1,8 +1,8 @@
 ---
-mode: "agent"
+name: upd-docs
 description: "Update technical-blueprint.md, readme.md, and changelog.md based on recent session changes."
+disable-model-invocation: true
 ---
-
 Review all uncommitted changes and recent edits made during this session.
 
 Follow the rules in `.github/copilot-instructions.md` to update:

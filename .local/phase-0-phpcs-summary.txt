@@ -1,0 +1,41 @@
+﻿
+PHP CODE SNIFFER REPORT SUMMARY
+--------------------------------------------------------------------------------
+FILE                                                            ERRORS  WARNINGS
+--------------------------------------------------------------------------------
+...ins\mds-release-manager\includes\class-mds-rm-abilities.php  7       15
+...s-release-manager\includes\class-mds-rm-admin-interface.php  4       11
+...ds-release-manager\includes\class-mds-rm-artist-routing.php  6       1
+...lugins\mds-release-manager\includes\class-mds-rm-assets.php  4       0
+...release-manager\includes\class-mds-rm-builder-detection.php  2       0
+...ds-release-manager\includes\class-mds-rm-core-functions.php  6       12
+...s\mds-release-manager\includes\class-mds-rm-csv-handler.php  11      7
+...ns\mds-release-manager\includes\class-mds-rm-customizer.php  12      52
+...s\mds-release-manager\includes\class-mds-rm-discography.php  11      27
+...se-manager\includes\class-mds-rm-elementor-links-widget.php  25      1
+...anager\includes\class-mds-rm-elementor-release-meta-tag.php  2       1
+...ds-release-manager\includes\class-mds-rm-elementor-tags.php  2       0
+...-release-manager\includes\class-mds-rm-elementor-widget.php  20      12
+...elease-manager\includes\class-mds-rm-frontend-templates.php  7       9
+...-release-manager\includes\class-mds-rm-gutenberg-blocks.php  3       9
+...mds-release-manager\includes\class-mds-rm-network-admin.php  2       2
+...ns\mds-release-manager\includes\class-mds-rm-post-types.php  2       7
+...mds-release-manager\includes\class-mds-rm-release-links.php  5       7
+...\mds-release-manager\includes\class-mds-rm-release-meta.php  50      36
+...mds-release-manager\includes\class-mds-rm-release-model.php  20      24
+...gins\mds-release-manager\includes\class-mds-rm-rest-api.php  2       1
+...ns\mds-release-manager\includes\class-mds-rm-shortcodes.php  2       1
+...mds-release-manager\includes\class-mds-rm-virtual-media.php  2       2
+...t\plugins\mds-release-manager\templates\artist-fallback.php  2       0
+...t\plugins\mds-release-manager\templates\artist-meta-box.php  1       0
+...ins\mds-release-manager\templates\network-settings-page.php  1       0
+...\plugins\mds-release-manager\templates\release-meta-box.php  1       0
+...ent\plugins\mds-release-manager\templates\settings-page.php  2       0
+--------------------------------------------------------------------------------
+A TOTAL OF 214 ERRORS AND 237 WARNINGS WERE FOUND IN 28 FILES
+--------------------------------------------------------------------------------
+PHPCBF CAN FIX 264 OF THESE SNIFF VIOLATIONS AUTOMATICALLY
+--------------------------------------------------------------------------------
+
+Time: 8.62 secs; Memory: 24MB
+

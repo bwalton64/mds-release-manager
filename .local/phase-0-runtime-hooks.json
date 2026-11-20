@@ -1,0 +1,372 @@
+﻿{
+    "add_meta_boxes": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_add_meta_boxes",
+            "accepted_args": 2
+        }
+    ],
+    "admin_enqueue_scripts": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Assets::mds_rm_admin_assets",
+            "accepted_args": 1
+        }
+    ],
+    "admin_init": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_remove_legacy_artist_images",
+            "accepted_args": 1
+        }
+    ],
+    "admin_menu": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_register_settings_page",
+            "accepted_args": 1
+        },
+        {
+            "priority": 10,
+            "callback": "MDS_RM_CSV_Handler::mds_rm_register_csv_page",
+            "accepted_args": 1
+        }
+    ],
+    "admin_notices": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Model::mds_rm_show_audit_notice",
+            "accepted_args": 1
+        }
+    ],
+    "admin_post_mds_rm_export_csv": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_CSV_Handler::mds_rm_export_csv",
+            "accepted_args": 1
+        }
+    ],
+    "admin_post_mds_rm_import_csv": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_CSV_Handler::mds_rm_import_csv",
+            "accepted_args": 1
+        }
+    ],
+    "customize_register": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Customizer::mds_rm_customize_register",
+            "accepted_args": 1
+        }
+    ],
+    "elementor/dynamic_tags/register": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Elementor_Tags::mds_rm_register_elementor_tags",
+            "accepted_args": 1
+        }
+    ],
+    "elementor/widgets/register": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Elementor_Tags::mds_rm_register_elementor_widgets",
+            "accepted_args": 1
+        }
+    ],
+    "enqueue_block_assets": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Meta::enqueue_assets",
+            "accepted_args": 1
+        },
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Links::enqueue_assets",
+            "accepted_args": 1
+        },
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Frontend_Templates::mds_rm_enqueue_artist_assets",
+            "accepted_args": 1
+        }
+    ],
+    "enqueue_block_editor_assets": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Gutenberg_Blocks::mds_rm_enqueue_block_editor_assets",
+            "accepted_args": 1
+        }
+    ],
+    "get_post_metadata": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Virtual_Media::mds_rm_virtual_media_meta_fallback",
+            "accepted_args": 3
+        }
+    ],
+    "image_downsize": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Virtual_Media::mds_rm_virtual_image_downsize",
+            "accepted_args": 2
+        }
+    ],
+    "init": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Post_Types::mds_rm_register_cpts",
+            "accepted_args": 1
+        },
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Gutenberg_Blocks::mds_rm_register_gutenberg_widget_blocks",
+            "accepted_args": 1
+        },
+        {
+            "priority": 20,
+            "callback": "MDS_RM_Release_Model::mds_rm_register_fields_and_formats",
+            "accepted_args": 1
+        },
+        {
+            "priority": 99,
+            "callback": "MDS_RM_Elementor_Tags::mds_rm_add_elementor_support_artist",
+            "accepted_args": 1
+        }
+    ],
+    "manage_artist_posts_columns": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_add_featured_image_column",
+            "accepted_args": 1
+        }
+    ],
+    "manage_artist_posts_custom_column": [
+        {
+            "priority": 5,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_render_featured_image_column",
+            "accepted_args": 2
+        }
+    ],
+    "manage_edit-release_sortable_columns": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_add_sortable_release_taxonomy_columns",
+            "accepted_args": 1
+        }
+    ],
+    "manage_release_posts_columns": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_add_featured_image_column",
+            "accepted_args": 1
+        },
+        {
+            "priority": 99,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_order_release_columns",
+            "accepted_args": 1
+        }
+    ],
+    "manage_release_posts_custom_column": [
+        {
+            "priority": 5,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_render_featured_image_column",
+            "accepted_args": 2
+        }
+    ],
+    "map_meta_cap": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Model::mds_rm_protect_format_terms",
+            "accepted_args": 4
+        }
+    ],
+    "network_admin_edit_save_network_settings": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Network_Admin::mds_rm_save_settings",
+            "accepted_args": 1
+        }
+    ],
+    "network_admin_menu": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Network_Admin::mds_rm_register_menu",
+            "accepted_args": 1
+        }
+    ],
+    "post_thumbnail_html": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Frontend_Templates::mds_rm_filter_release_featured_image",
+            "accepted_args": 2
+        }
+    ],
+    "posts_orderby": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_order_release_taxonomy_posts",
+            "accepted_args": 2
+        }
+    ],
+    "pre_get_posts": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_prepare_release_taxonomy_sorting",
+            "accepted_args": 1
+        }
+    ],
+    "pre_insert_term": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Model::mds_rm_validate_format_term",
+            "accepted_args": 3
+        }
+    ],
+    "render_block": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Gutenberg_Blocks::mds_rm_render_core_block_with_meta",
+            "accepted_args": 2
+        },
+        {
+            "priority": 20,
+            "callback": "MDS_RM_Frontend_Templates::mds_rm_filter_release_author_group",
+            "accepted_args": 3
+        }
+    ],
+    "rest_after_insert_release": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Model::mds_rm_after_rest_save",
+            "accepted_args": 3
+        }
+    ],
+    "rest_api_init": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_REST_API::mds_rm_register_rest_routes",
+            "accepted_args": 1
+        }
+    ],
+    "rest_pre_insert_release": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Model::mds_rm_validate_rest_save",
+            "accepted_args": 2
+        }
+    ],
+    "rest_prepare_attachment": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Virtual_Media::mds_rm_force_rest_virtual_attachment",
+            "accepted_args": 2
+        }
+    ],
+    "rest_request_after_callbacks": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Model::mds_rm_report_rest_sync_error",
+            "accepted_args": 3
+        }
+    ],
+    "rest_request_before_callbacks": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Model::mds_rm_before_rest_request",
+            "accepted_args": 3
+        }
+    ],
+    "restrict_manage_posts": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_render_release_taxonomy_filters",
+            "accepted_args": 2
+        }
+    ],
+    "sanitize_post_meta_upc_ean_for_release": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Model::mds_rm_normalize_upc",
+            "accepted_args": 4
+        }
+    ],
+    "save_post_artist": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_save_artist_meta_data",
+            "accepted_args": 1
+        }
+    ],
+    "save_post_release": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Admin_Interface::mds_rm_save_release_meta_data",
+            "accepted_args": 1
+        }
+    ],
+    "template_redirect": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Assets::mds_rm_handle_global_redirect",
+            "accepted_args": 1
+        },
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Artist_Routing::redirect",
+            "accepted_args": 1
+        }
+    ],
+    "the_content": [
+        {
+            "priority": 20,
+            "callback": "MDS_RM_Frontend_Templates::mds_rm_filter_release_content",
+            "accepted_args": 1
+        },
+        {
+            "priority": 20,
+            "callback": "MDS_RM_Frontend_Templates::mds_rm_filter_artist_content",
+            "accepted_args": 1
+        }
+    ],
+    "wp_abilities_api_categories_init": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Abilities::register_ability_categories",
+            "accepted_args": 1
+        }
+    ],
+    "wp_abilities_api_init": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Abilities::register_abilities",
+            "accepted_args": 1
+        }
+    ],
+    "wp_enqueue_scripts": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Assets::mds_rm_enqueue_frontend_assets",
+            "accepted_args": 1
+        },
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Frontend_Templates::mds_rm_enqueue_release_fallback_assets",
+            "accepted_args": 1
+        }
+    ],
+    "wp_get_attachment_url": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Virtual_Media::mds_rm_virtual_attachment_url",
+            "accepted_args": 2
+        }
+    ],
+    "wp_insert_post_empty_content": [
+        {
+            "priority": 10,
+            "callback": "MDS_RM_Release_Model::mds_rm_validate_classic_save",
+            "accepted_args": 2
+        }
+    ]
+}
