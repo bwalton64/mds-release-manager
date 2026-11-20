@@ -23,7 +23,7 @@ final class MDS_RM_Gutenberg_Blocks {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_action( 'enqueue_block_editor_assets', array( self::class, 'enqueue_block_editor_assets' ) );
 		add_action( 'init', array( self::class, 'register_gutenberg_widget_blocks' ) );
 		add_filter( 'render_block', array( self::class, 'render_core_block_with_meta' ), 10, 2 );
@@ -34,7 +34,7 @@ final class MDS_RM_Gutenberg_Blocks {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function enqueue_block_editor_assets() {
+	public static function enqueue_block_editor_assets(): void {
 		$script_path = MDS_RM_PATH . 'blocks/core-block-extensions.js';
 
 		wp_register_script(
@@ -81,7 +81,7 @@ final class MDS_RM_Gutenberg_Blocks {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_gutenberg_widget_blocks() {
+	public static function register_gutenberg_widget_blocks(): void {
 		$edit_script = 'blocks/artist-discography/edit.js';
 		wp_register_script(
 			'mds-rm-artist-discography-editor',
@@ -100,7 +100,10 @@ final class MDS_RM_Gutenberg_Blocks {
 		self::register_release_block( 'release-links', 'render_gutenberg_release_links' );
 	}
 
-	private static function register_release_meta_block() {
+	/**
+	 * Registers the shared style control and Release Meta metadata.
+	 */
+	private static function register_release_meta_block(): void {
 		$style_script = 'blocks/style-control.js';
 		wp_register_script(
 			'mds-rm-block-style-control',
@@ -112,7 +115,14 @@ final class MDS_RM_Gutenberg_Blocks {
 		self::register_release_block( 'release-meta', 'render_gutenberg_release_meta', array( 'items' => MDS_RM_Release_Meta::default_items() ) );
 	}
 
-	private static function register_release_block( $slug, $callback, $defaults = array() ) {
+	/**
+	 * Registers a release block and its editor script.
+	 *
+	 * @param string $slug     Block slug and directory name.
+	 * @param string $callback Renderer method on this class.
+	 * @param array  $defaults Attribute defaults supplied by PHP.
+	 */
+	private static function register_release_block( string $slug, string $callback, array $defaults = array() ): void {
 		$edit_script = "blocks/{$slug}/edit.js";
 		wp_register_script(
 			"mds-rm-{$slug}-editor",
@@ -142,7 +152,15 @@ final class MDS_RM_Gutenberg_Blocks {
 		);
 	}
 
-	public static function render_gutenberg_release_links( $attributes, $_content, $block ) {
+	/**
+	 * Renders the Release Links block in its post context.
+	 *
+	 * @param array    $attributes Block attributes.
+	 * @param string   $_content   Block content required by the render callback.
+	 * @param WP_Block $block      The parsed block.
+	 * @return string The rendered release links.
+	 */
+	public static function render_gutenberg_release_links( $attributes, $_content, $block ): string {
 		$context_post_id      = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
 		$attributes['upc']    = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
 		$content              = MDS_RM_Release_Links::render( $attributes, $context_post_id );
@@ -158,7 +176,7 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @param WP_Block $block      The parsed block.
 	 * @return string The rendered metadata.
 	 */
-	public static function render_gutenberg_release_meta( $attributes, $_content, $block ) {
+	public static function render_gutenberg_release_meta( $attributes, $_content, $block ): string {
 		$context_post_id      = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
 		$attributes['upc']    = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
 		$content              = MDS_RM_Release_Meta::render( $attributes, $context_post_id );
@@ -169,11 +187,11 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * Replaces configured release metadata in supported core blocks.
 	 *
 	 * @since 0.9.0
-	 * @param string $block_content The rendered block content.
-	 * @param array  $block         The parsed block data.
-	 * @return string The updated block content.
+	 * @param mixed $block_content The current rendered block content.
+	 * @param array $block         The parsed block data.
+	 * @return mixed The updated content or the original filter value.
 	 */
-	public static function render_core_block_with_meta( $block_content, $block ) {
+	public static function render_core_block_with_meta( mixed $block_content, $block ): mixed {
 		if ( empty( $block['attrs']['mdsMetaField'] ) ) {
 			return $block_content;
 		}
