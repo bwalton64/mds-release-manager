@@ -439,7 +439,8 @@ not reproduce. No template paths or block definitions changed.
 ### Phase 5 — block.json migration
 
 Release Meta now registers from metadata. Its existing saved block passed editor
-validation and rendered on the frontend before and after the migration.
+validation and rendered on the frontend before and after the migration. Release
+Links also registers from metadata, with its saved attributes and editor preview verified.
 For each block (`release-meta`, `release-links`, `artist-discography`), one block per commit:
 1. Create `blocks/{name}/block.json` (apiVersion 3, same block name, attributes, supports,
    textdomain) and move its editor code out of `js/blocks.js` into `blocks/{name}/edit.js`.

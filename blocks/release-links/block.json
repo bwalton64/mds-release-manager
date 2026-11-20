@@ -1,0 +1,18 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "mds-rm/release-links",
+	"title": "Release Links Block",
+	"category": "widgets",
+	"icon": "album",
+	"textdomain": "mds-release-manager",
+	"usesContext": ["postId", "postType"],
+	"attributes": {
+		"upcOverride": { "type": "string", "default": "" },
+		"items": { "type": "array", "default": [], "items": { "type": "object", "additionalProperties": true } },
+		"newTab": { "type": "boolean", "default": true },
+		"showAudio": { "type": "boolean", "default": true },
+		"styles": { "type": "object", "default": {}, "additionalProperties": true }
+	},
+	"editorScript": "mds-rm-release-links-editor"
+}

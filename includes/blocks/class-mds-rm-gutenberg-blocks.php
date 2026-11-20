@@ -40,7 +40,7 @@ final class MDS_RM_Gutenberg_Blocks {
 		wp_register_script(
 			'mds-rm-blocks-js',
 			MDS_RM_URL . 'js/blocks.js',
-			array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-compose', 'wp-hooks', 'wp-server-side-render', 'wp-block-editor', 'wp-i18n', 'wp-data', 'mds-rm-block-style-control' ),
+			array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-compose', 'wp-hooks', 'wp-server-side-render', 'wp-block-editor', 'wp-i18n', 'wp-data' ),
 			filemtime( $script_path ),
 			true
 		);
@@ -55,7 +55,7 @@ final class MDS_RM_Gutenberg_Blocks {
 			)
 		);
 		wp_localize_script(
-			'mds-rm-blocks-js',
+			'mds-rm-release-links-editor',
 			'mdsReleaseLinks',
 			array(
 				'providers' => MDS_RM_Release_Links::providers(),
@@ -97,46 +97,11 @@ final class MDS_RM_Gutenberg_Blocks {
 			)
 		);
 		self::register_release_meta_block();
-		register_block_type(
-			'mds-rm/release-links',
-			array(
-				'api_version'     => 3,
-				'render_callback' => array( self::class, 'render_gutenberg_release_links' ),
-				'uses_context'    => array( 'postId', 'postType' ),
-				'attributes'      => array(
-					'upcOverride' => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-					'items'       => array(
-						'type'    => 'array',
-						'default' => array(),
-						'items'   => array(
-							'type'                 => 'object',
-							'additionalProperties' => true,
-						),
-					),
-					'newTab'      => array(
-						'type'    => 'boolean',
-						'default' => true,
-					),
-					'showAudio'   => array(
-						'type'    => 'boolean',
-						'default' => true,
-					),
-					'styles'      => array(
-						'type'                 => 'object',
-						'default'              => (object) array(),
-						'additionalProperties' => true,
-					),
-				),
-			)
-		);
+		self::register_release_block( 'release-links', 'render_gutenberg_release_links' );
 	}
 
 	private static function register_release_meta_block() {
 		$style_script = 'blocks/style-control.js';
-		$edit_script  = 'blocks/release-meta/edit.js';
 		wp_register_script(
 			'mds-rm-block-style-control',
 			MDS_RM_URL . $style_script,
@@ -144,27 +109,35 @@ final class MDS_RM_Gutenberg_Blocks {
 			filemtime( MDS_RM_PATH . $style_script ),
 			true
 		);
+		self::register_release_block( 'release-meta', 'render_gutenberg_release_meta', array( 'items' => MDS_RM_Release_Meta::default_items() ) );
+	}
+
+	private static function register_release_block( $slug, $callback, $defaults = array() ) {
+		$edit_script = "blocks/{$slug}/edit.js";
 		wp_register_script(
-			'mds-rm-release-meta-editor',
+			"mds-rm-{$slug}-editor",
 			MDS_RM_URL . $edit_script,
 			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-server-side-render', 'wp-block-editor', 'mds-rm-block-style-control' ),
 			filemtime( MDS_RM_PATH . $edit_script ),
 			true
 		);
 
-		$directory = MDS_RM_PATH . 'blocks/release-meta';
+		$directory = MDS_RM_PATH . 'blocks/' . $slug;
 		$metadata  = wp_json_file_decode( $directory . '/block.json', array( 'associative' => true ) );
 		if ( ! is_array( $metadata ) ) {
 			return;
 		}
-		$attributes                     = $metadata['attributes'];
-		$attributes['items']['default'] = MDS_RM_Release_Meta::default_items();
+		$attributes = $metadata['attributes'];
+		foreach ( $defaults as $name => $default ) {
+			$attributes[ $name ]['default'] = $default;
+		}
+		// Associative JSON decoding turns the empty object into an array.
 		$attributes['styles']['default'] = (object) $attributes['styles']['default'];
 		register_block_type(
 			$directory,
 			array(
 				'attributes'      => $attributes,
-				'render_callback' => array( self::class, 'render_gutenberg_release_meta' ),
+				'render_callback' => array( self::class, $callback ),
 			)
 		);
 	}

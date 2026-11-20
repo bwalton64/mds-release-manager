@@ -102,4 +102,24 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 				return canvas.querySelector('.editor-styles-wrapper .mds-release-meta, .block-editor-block-list__layout .mds-release-meta')?.textContent;
 			})).toContain(`${fixture.label} edited`);
 		});
+
+		await test.step('Previously saved Release Links block opens and renders', async () => {
+			const name = 'mds-rm/release-links';
+			const attributes = { items: [{ name: 'Spotify', enabled: true }], newTab: false, showAudio: false };
+			const markup = `<!-- wp:${name} ${JSON.stringify(attributes)} /-->`;
+			runWpCli(['eval', `if (is_wp_error(wp_update_post(array('ID' => ${fixture.state.release}, 'post_content' => ${JSON.stringify(markup)}), true))) WP_CLI::error('Could not save block fixture.');`]);
+			await page.goto(fixture.releaseUrl);
+			await expect(page.locator('.wp-block-mds-rm-release-links').getByRole('link', { name: /spotify/i }))
+				.toHaveAttribute('href', fixture.spotify);
+			await page.goto(`/wp-admin/post.php?post=${fixture.state.release}&action=edit`);
+			await expect.poll(() => page.evaluate((blockName) => {
+				const block = window.wp?.data?.select('core/block-editor')?.getBlocks()
+					.find(({ name }) => name === blockName);
+				return block && { isValid: block.isValid, items: block.attributes.items, newTab: block.attributes.newTab, showAudio: block.attributes.showAudio };
+			}, name)).toEqual({ isValid: true, ...attributes });
+			await expect.poll(() => page.evaluate(() => {
+				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
+				return canvas.querySelector('[data-type="mds-rm/release-links"] a[href*="open.spotify.com"]')?.href;
+			})).toBe(fixture.spotify);
+		});
 });
