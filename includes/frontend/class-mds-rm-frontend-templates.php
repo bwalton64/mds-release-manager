@@ -161,7 +161,7 @@ final class MDS_RM_Frontend_Templates {
 			|| (
 				$instance instanceof WP_Block
 				&& isset( $instance->context['postId'] )
-				&& $post_id !== absint( $instance->context['postId'] )
+				&& absint( $instance->context['postId'] ) !== $post_id
 			)
 		) {
 			return $block_content;
@@ -212,7 +212,7 @@ final class MDS_RM_Frontend_Templates {
 	 */
 	public static function filter_release_featured_image( $html, $post_id ) {
 		$artist = self::get_fallback_artist_post();
-		if ( $artist && $artist->ID === absint( $post_id ) && wp_get_attachment_image( get_post_thumbnail_id( $post_id ), 'large' ) ) {
+		if ( $artist && absint( $post_id ) === $artist->ID && wp_get_attachment_image( get_post_thumbnail_id( $post_id ), 'large' ) ) {
 			return '';
 		}
 		$post = self::get_fallback_release_post( $post_id );
@@ -245,7 +245,7 @@ final class MDS_RM_Frontend_Templates {
 		if (
 			! $post instanceof WP_Post
 			|| 'release' !== $post->post_type
-			|| ( $post_id && $post->ID !== absint( $post_id ) )
+			|| ( $post_id && absint( $post_id ) !== $post->ID )
 			|| '1' === get_option( 'mds_rm_global_redirect', '0' )
 			|| MDS_RM_Builder_Detection::detect_builder( $post->ID )
 		) {
