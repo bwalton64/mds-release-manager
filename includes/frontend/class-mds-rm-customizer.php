@@ -170,6 +170,11 @@ final class MDS_RM_Customizer {
 		}
 	}
 
+	/**
+	 * Builds inline custom properties for the Artist fallback.
+	 *
+	 * @return string CSS custom-property declarations.
+	 */
 	public static function get_artist_fallback_style_attribute(): string {
 		$settings = array(
 			'--mds-artist-width' => array( 'mds_rm_artist_fallback_width', 900, 320, 2000 ),
