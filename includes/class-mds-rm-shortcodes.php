@@ -30,14 +30,25 @@ final class MDS_RM_Shortcodes {
 	}
 
 	/**
+	 * Renders release metadata by UPC.
+	 *
+	 * @param string $upc               The release UPC.
+	 * @param bool   $include_shortcode Retained for compatibility; links are no longer embedded.
+	 * @return string The rendered release metadata.
+	 */
+	public static function render_meta_bar_html( $upc, $include_shortcode = true ) {
+		return MDS_RM_Release_Meta::render( array( 'upc' => $upc ) );
+	}
+
+	/**
 	 * Legacy entry point for rendering release metadata.
 	 *
 	 * @since 0.9.0
-	 * @param string $upc              The release UPC.
+	 * @param string $upc               The release UPC.
 	 * @param bool   $include_shortcode Retained for compatibility; links are no longer embedded.
 	 * @return string The rendered release metadata.
 	 */
 	public static function mds_rm_render_meta_bar_html( $upc, $include_shortcode = true ) {
-		return MDS_RM_Release_Meta::render( array( 'upc' => $upc ) );
+		return self::render_meta_bar_html( $upc, $include_shortcode );
 	}
 }

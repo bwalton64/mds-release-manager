@@ -363,7 +363,9 @@ only the expected callback renames, and both Playwright smoke tests passed after
 The Customizer sanitizers were exercised through their registered settings. The REST
 comparison also verified all four route registrations, anonymous permission outcomes,
 and the releases response. `Artist_Routing` already follows the naming convention and
-needed no changes. `Shortcodes` is next.
+needed no changes. `Shortcodes` is migrated; the legacy PHP renderer remains callable
+as a compatibility wrapper, and all three shortcode tags are unchanged.
+`Elementor_Tags` is next.
 
 **Separate follow-up:** The legacy Network Admin form action is `mds_rm_save_network_settings`,
 but its save callback is registered on `network_admin_edit_save_network_settings`. Core appends
