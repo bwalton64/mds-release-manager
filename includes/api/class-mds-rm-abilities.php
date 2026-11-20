@@ -64,7 +64,7 @@ final class MDS_RM_Abilities {
 			return;
 		}
 
-		// Get Releases ability
+		// Get Releases ability.
 		wp_register_ability(
 			'mds_rm_get_releases',
 			array(
@@ -137,7 +137,7 @@ final class MDS_RM_Abilities {
 			)
 		);
 
-		// Save Settings ability
+		// Save Settings ability.
 		wp_register_ability(
 			'mds_rm_save_settings',
 			array(
@@ -208,7 +208,7 @@ final class MDS_RM_Abilities {
 			)
 		);
 
-		// Save Network Settings ability
+		// Save Network Settings ability.
 		wp_register_ability(
 			'mds_rm_save_network_settings',
 			array(
@@ -253,7 +253,7 @@ final class MDS_RM_Abilities {
 			)
 		);
 
-		// Sync Network ability
+		// Sync Network ability.
 		wp_register_ability(
 			'mds_rm_sync_network',
 			array(
@@ -343,7 +343,7 @@ final class MDS_RM_Abilities {
 		$per_page = isset( $input['per_page'] ) ? absint( $input['per_page'] ) : 10;
 		$page     = isset( $input['page'] ) ? absint( $input['page'] ) : 1;
 
-		// Clamp per_page to safe range
+		// Clamp per_page to the supported range.
 		$per_page = min( max( $per_page, 1 ), 100 );
 
 		$args = array(
