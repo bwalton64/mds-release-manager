@@ -24,9 +24,9 @@ final class MDS_RM_CSV_Handler {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks() {
-		add_action( 'admin_menu', array( self::class, 'mds_rm_register_csv_page' ) );
-		add_action( 'admin_post_mds_rm_export_csv', array( self::class, 'mds_rm_export_csv' ) );
-		add_action( 'admin_post_mds_rm_import_csv', array( self::class, 'mds_rm_import_csv' ) );
+		add_action( 'admin_menu', array( self::class, 'register_csv_page' ) );
+		add_action( 'admin_post_mds_rm_export_csv', array( self::class, 'export_csv' ) );
+		add_action( 'admin_post_mds_rm_import_csv', array( self::class, 'import_csv' ) );
 	}
 
 	/**
@@ -34,14 +34,14 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_register_csv_page() {
+	public static function register_csv_page() {
 		add_submenu_page(
 			'edit.php?post_type=release',
 			'CSV Import/Export',
 			'CSV Import/Export',
 			'manage_options',
 			'mds-release-csv',
-			array( self::class, 'mds_rm_csv_page' )
+			array( self::class, 'csv_page' )
 		);
 	}
 
@@ -50,7 +50,7 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_verify_csv_request() {
+	public static function verify_csv_request() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die(
 				esc_html__( 'You are not allowed to manage CSV data.', 'mds-release-manager' ),
@@ -67,8 +67,8 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_export_csv() {
-		self::mds_rm_verify_csv_request();
+	public static function export_csv() {
+		self::verify_csv_request();
 
 		$releases             = get_posts(
 			array(
@@ -163,7 +163,7 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_import_csv() {
+	public static function import_csv() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die(
 				esc_html__( 'You are not allowed to manage CSV data.', 'mds-release-manager' ),
@@ -179,7 +179,7 @@ final class MDS_RM_CSV_Handler {
 			: '';
 
 		if ( empty( $tmp_name ) ) {
-			self::mds_rm_csv_redirect_with_message(
+			self::csv_redirect_with_message(
 				'mds_csv_missing_file',
 				__( 'Please select a CSV file to import.', 'mds-release-manager' ),
 				'error'
@@ -190,7 +190,7 @@ final class MDS_RM_CSV_Handler {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
 		if ( ! WP_Filesystem() ) {
-			self::mds_rm_csv_redirect_with_message(
+			self::csv_redirect_with_message(
 				'mds_csv_file_error',
 				__( 'The uploaded CSV file could not be opened.', 'mds-release-manager' ),
 				'error'
@@ -200,7 +200,7 @@ final class MDS_RM_CSV_Handler {
 		global $wp_filesystem;
 		$csv_content = $wp_filesystem->get_contents( $tmp_name );
 		if ( false === $csv_content ) {
-			self::mds_rm_csv_redirect_with_message(
+			self::csv_redirect_with_message(
 				'mds_csv_file_error',
 				__( 'The uploaded CSV file could not be opened.', 'mds-release-manager' ),
 				'error'
@@ -253,7 +253,7 @@ final class MDS_RM_CSV_Handler {
 				if ( in_array( 'UPC/EAN', $trimmed_row, true ) ) {
 					$headers = $trimmed_row;
 					if ( ! in_array( 'Release Format', $headers, true ) ) {
-						self::mds_rm_csv_redirect_with_message( 'mds_csv_missing_format', __( 'The CSV must include a Release Format column.', 'mds-release-manager' ), 'error' );
+						self::csv_redirect_with_message( 'mds_csv_missing_format', __( 'The CSV must include a Release Format column.', 'mds-release-manager' ), 'error' );
 					}
 				}
 				continue;
@@ -429,10 +429,10 @@ final class MDS_RM_CSV_Handler {
 		}
 
 		if ( ! $headers ) {
-			self::mds_rm_csv_redirect_with_message( 'mds_csv_missing_header', __( 'The CSV must include UPC/EAN and Release Format columns.', 'mds-release-manager' ), 'error' );
+			self::csv_redirect_with_message( 'mds_csv_missing_header', __( 'The CSV must include UPC/EAN and Release Format columns.', 'mds-release-manager' ), 'error' );
 		}
 		MDS_RM_Core_Functions::mds_rm_purge_cache();
-		self::mds_rm_csv_redirect_with_message(
+		self::csv_redirect_with_message(
 			'mds_csv_import_complete',
 			sprintf( 'CSV import complete: %1$d created, %2$d updated.', $imported, $updated ) . ( $errors ? ' ' . implode( ' ', $errors ) : '' ),
 			$errors ? 'warning' : 'success'
@@ -447,7 +447,7 @@ final class MDS_RM_CSV_Handler {
 	 * @param string $message The notice message.
 	 * @param string $type    The notice type.
 	 */
-	public static function mds_rm_csv_redirect_with_message( $code, $message, $type ) {
+	public static function csv_redirect_with_message( $code, $message, $type ) {
 		add_settings_error( 'mds_csv_msg', $code, $message, $type );
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 		wp_safe_redirect(
@@ -465,7 +465,7 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_csv_page() {
+	public static function csv_page() {
 		settings_errors( 'mds_csv_msg' );
 
 		$args = array(
