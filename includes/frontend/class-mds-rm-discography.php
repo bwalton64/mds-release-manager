@@ -27,8 +27,8 @@ final class MDS_RM_Discography {
 	 * Render discography from block.
 	 *
 	 * @param array<string, mixed> $attributes Block attributes.
-	 * @param string               $_content Block content.
-	 * @param WP_Block             $block Block instance.
+	 * @param string               $_content   Block content.
+	 * @param object               $block      Block instance with optional post context.
 	 * @return string The rendered HTML.
 	 */
 	public static function render_block( array $attributes, string $_content, object $block ): string {
