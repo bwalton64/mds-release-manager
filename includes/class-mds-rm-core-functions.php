@@ -393,7 +393,7 @@ final class MDS_RM_Core_Functions {
 
 				// Sync thumbnail via virtual attachment.
 				$virt_id = $thumbnail_id
-					? MDS_RM_Virtual_Media::mds_rm_get_or_create_virtual_attachment( $hub_img_url, $thumbnail_id )
+					? MDS_RM_Virtual_Media::get_or_create_virtual_attachment( $hub_img_url, $thumbnail_id )
 					: 0;
 				if ( $virt_id ) {
 					set_post_thumbnail( $shadow_post_id, $virt_id );

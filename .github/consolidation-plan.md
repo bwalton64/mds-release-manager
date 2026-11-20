@@ -369,7 +369,13 @@ as a compatibility wrapper, and all three shortcode tags are unchanged.
 with test doubles because Elementor is not installed on `dev-test`. `CSV_Handler` is
 migrated; the form actions, nonce fields, and export output matched the baseline.
 `Gutenberg_Blocks` is migrated; all three block names, attribute schemas, and context
-declarations matched the baseline. `Virtual_Media` is next.
+declarations matched the baseline. `Virtual_Media` is migrated; the attachment URL,
+dimensions, metadata, and REST response matched on `dev-test`. `Release_Model` is next.
+
+**Separate integration follow-up:** WooCommerce checks for a global
+`mds_rm_get_or_create_virtual_attachment()` before using its fallback. The main plugin
+already exposed only a class method, not that global function. The rename did not
+change the WooCommerce fallback.
 
 **Separate follow-up:** The legacy Network Admin form action is `mds_rm_save_network_settings`,
 but its save callback is registered on `network_admin_edit_save_network_settings`. Core appends

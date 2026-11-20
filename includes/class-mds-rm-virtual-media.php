@@ -24,10 +24,10 @@ final class MDS_RM_Virtual_Media {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks() {
-		add_filter( 'wp_get_attachment_url', array( self::class, 'mds_rm_virtual_attachment_url' ), 10, 2 );
-		add_filter( 'image_downsize', array( self::class, 'mds_rm_virtual_image_downsize' ), 10, 2 );
-		add_filter( 'get_post_metadata', array( self::class, 'mds_rm_virtual_media_meta_fallback' ), 10, 3 );
-		add_filter( 'rest_prepare_attachment', array( self::class, 'mds_rm_force_rest_virtual_attachment' ), 10, 2 );
+		add_filter( 'wp_get_attachment_url', array( self::class, 'virtual_attachment_url' ), 10, 2 );
+		add_filter( 'image_downsize', array( self::class, 'virtual_image_downsize' ), 10, 2 );
+		add_filter( 'get_post_metadata', array( self::class, 'virtual_media_meta_fallback' ), 10, 3 );
+		add_filter( 'rest_prepare_attachment', array( self::class, 'force_rest_virtual_attachment' ), 10, 2 );
 	}
 
 	/**
@@ -38,7 +38,7 @@ final class MDS_RM_Virtual_Media {
 	 * @param int    $post_id The attachment ID.
 	 * @return string The hub URL or original attachment URL.
 	 */
-	public static function mds_rm_virtual_attachment_url( $url, $post_id ) {
+	public static function virtual_attachment_url( $url, $post_id ) {
 		$hub_url = get_post_meta( $post_id, '_mds_is_hub_media', true );
 		if ( ! empty( $hub_url ) ) {
 			return $hub_url;
@@ -54,7 +54,7 @@ final class MDS_RM_Virtual_Media {
 	 * @param int   $attachment_id The attachment ID.
 	 * @return mixed The virtual image dimensions or original result.
 	 */
-	public static function mds_rm_virtual_image_downsize( $downsize, $attachment_id ) {
+	public static function virtual_image_downsize( $downsize, $attachment_id ) {
 		$hub_url = get_post_meta( $attachment_id, '_mds_is_hub_media', true );
 		if ( ! empty( $hub_url ) ) {
 			return array( $hub_url, 800, 800, false );
@@ -71,7 +71,7 @@ final class MDS_RM_Virtual_Media {
 	 * @param string $meta_key The metadata key.
 	 * @return mixed The virtual attachment metadata or original value.
 	 */
-	public static function mds_rm_virtual_media_meta_fallback( $value, $object_id, $meta_key ) {
+	public static function virtual_media_meta_fallback( $value, $object_id, $meta_key ) {
 		if ( ! in_array( $meta_key, array( '_wp_attached_file', '_wp_attachment_metadata' ), true ) ) {
 			return $value;
 		}
@@ -103,7 +103,7 @@ final class MDS_RM_Virtual_Media {
 	 * @param int    $hub_image_id  The hub attachment ID.
 	 * @return int The local virtual attachment ID, or zero on failure.
 	 */
-	public static function mds_rm_get_or_create_virtual_attachment( $hub_image_url, $hub_image_id ) {
+	public static function get_or_create_virtual_attachment( $hub_image_url, $hub_image_id ) {
 		if ( empty( $hub_image_url ) ) {
 			return 0;
 		}
@@ -182,7 +182,7 @@ final class MDS_RM_Virtual_Media {
 	 * @param WP_Post          $post     The attachment post.
 	 * @return WP_REST_Response The updated attachment REST response.
 	 */
-	public static function mds_rm_force_rest_virtual_attachment( $response, $post ) {
+	public static function force_rest_virtual_attachment( $response, $post ) {
 		$hub_url = get_post_meta( $post->ID, '_mds_is_hub_media', true );
 		if ( ! empty( $hub_url ) ) {
 			$data                  = $response->get_data();
