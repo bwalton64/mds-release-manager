@@ -53,8 +53,8 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 ## Prerequisites
 
 ### System Requirements
-- **WordPress:** 6.3+ (Abilities API: 6.9+)
-- **PHP:** 7.4 or higher with strict types support
+- **WordPress:** 6.9+
+- **PHP:** 8.0+
 - **Theme:** Any WordPress theme (uses fallback rendering as needed)
 
 ### Optional Dependencies
@@ -83,12 +83,12 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 
 2. **Verify PHP Requirements**
    ```powershell
-   php -v  # Verify PHP 7.4+
+   php -v  # Verify PHP 8.0+
    php --ini  # Confirm debugging configuration
    ```
 
 3. **No Build Step Required**
-   The plugin has no Composer or NPM dependencies — all PHP, CSS, and JavaScript is interpreted directly.
+   The plugin has no Composer or npm runtime dependencies. npm dependencies are used only for development smoke tests.
 
 4. **Activate in WordPress**
    - WordPress Admin → Plugins → Find "MDS Release Manager"
@@ -530,9 +530,7 @@ When reporting bugs, include:
 
 ## License
 
-MDS Release Manager is proprietary software.
-
-© 2026 Walton International Business Group. All rights reserved. No part of this plugin may be reproduced, distributed, or transmitted in any form without the prior written permission of the copyright holder.
+© 2026 Walton International Business Group. MDS Release Manager is licensed under the GNU General Public License, version 2 or (at your option) any later version. See [LICENSE.txt](./LICENSE.txt) for the license text.
 
 ---
 

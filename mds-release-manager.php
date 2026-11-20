@@ -3,7 +3,14 @@
  * Plugin Name: MDS Release Manager
  * Description: Comprehensive Artist Release Manager.
  * Version: 1.0.0
- * Author: ©2026 Walton International Business Group
+ * Requires at least: 6.9
+ * Requires PHP: 8.0
+ * Author: Walton International Business Group
+ * Author URI: https://mustydungeon.com
+ * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * Text Domain: mds-release-manager
+ * Domain Path: /languages
  * Network: true
  *
  * @package MDS_Release_Manager

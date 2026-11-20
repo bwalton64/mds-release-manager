@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phase 0 verification complete; Phase 1 not started
+**Status:** Approved — Phase 1 metadata verified on `dev-test`; Phase 2 not started
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -326,9 +326,20 @@ Dynamic post-meta access requires extra care:
    `Requires PHP: 8.0`, `License: GPL-2.0-or-later`, `License URI`, proper `Author`/`Author URI`.
 2. Add `readme.txt` (WordPress.org format: description, installation, FAQ, changelog pointer).
 3. Correct `technical-blueprint.md`: PHP 8.0+ / WP 6.9+, remove the claim of no-block.json.
-4. Add `languages/` with a generated `.pot` (`wp i18n make-pot . languages/mds-release-manager.pot`).
+4. Generate the translation template from the existing localized strings:
+
+   ```powershell
+   wp i18n make-pot . languages\mds-release-manager.pot --domain=mds-release-manager '--exclude=.github,.local,tests,test-results,playwright-report,playwright.config.js'
+   ```
 
 **Gate:** §6 + header lint via Plugin Check.
+
+**Phase 1 results:** PHP syntax, both Playwright specs, and Plugin Check 2.2.0's header and
+readme checks passed on `dev-test` (WordPress 7.1.5 / PHP 8.2.29). Runtime hooks were unchanged
+from the Phase 0 exit state. The full Plugin Check scan still reports 32 errors and 63
+warnings, and PHPCS is unchanged at 214 errors and 237 warnings. Translation extraction
+reported existing placeholder and translator-comment findings; generating a catalog does
+not complete localization. Verify WordPress 6.9 with PHP 8.0 before publication.
 
 ### Phase 2 — Method renames *(one class per commit)*
 Strip the `mds_rm_` prefix from methods in these classes, updating `register_hooks()` callbacks

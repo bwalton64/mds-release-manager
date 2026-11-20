@@ -7,10 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- Add WordPress.org distribution metadata, a directory readme, and a translation template for existing localized strings.
 - Add `.github/consolidation-plan.md`, the canonical phased plan for aligning plugin structure, nomenclature, blocks, and templates with WordPress standards. It supersedes the abandoned file-merge consolidation attempt, freezes the public API (hooks, blocks, shortcodes, routes, options, meta keys), and defines per-step verification gates.
 - Add an isolated Playwright smoke suite covering Release and Artist fallbacks, Gutenberg metadata persistence, REST settings saves, and rewrite setup and cleanup.
 
 ### Changed
+- Set the documented minimums to WordPress 6.9 and PHP 8.0 and license the plugin under GPL-2.0-or-later.
 - Move internal implementation summaries, refactoring reports, and the Abilities API reference documentation from the plugin root into the `.local/` directory. `README.md`, `changelog.md`, and `.github/technical-blueprint.md` are the canonical, maintained documentation.
 
 ### Fixed
