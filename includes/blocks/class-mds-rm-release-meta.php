@@ -234,8 +234,8 @@ final class MDS_RM_Release_Meta {
 				'post_type'      => 'release',
 				'post_status'    => 'any',
 				'posts_per_page' => 2,
-				'meta_key'       => 'upc_ean',
-				'meta_value'     => (string) $upc,
+				'meta_key'       => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Resolve an explicit UPC and detect ambiguous matches.
+				'meta_value'     => (string) $upc, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		);
 		if ( count( $posts ) > 1 ) {
@@ -295,8 +295,8 @@ final class MDS_RM_Release_Meta {
 						'post_type'      => 'artist',
 						'post_status'    => 'publish',
 						'posts_per_page' => 1,
-						'meta_key'       => '_mds_artist_uuid',
-						'meta_value'     => $uuid,
+						'meta_key'       => '_mds_artist_uuid', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Releases store the Artist UUID, not a local Artist post ID.
+						'meta_value'     => $uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 					)
 				);
 				return $artists ? get_the_title( $artists[0] ) : '';
