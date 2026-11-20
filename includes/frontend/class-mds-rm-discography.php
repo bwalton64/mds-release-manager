@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/** Renders the paginated list of releases associated with an Artist. */
 final class MDS_RM_Discography {
 	/**
 	 * Render discography from shortcode.
@@ -20,7 +21,8 @@ final class MDS_RM_Discography {
 	 */
 	public static function shortcode( array $attributes ): string {
 		$attributes = shortcode_atts( array( 'artist_id' => 0 ), $attributes, 'artist-discography' );
-		return self::render( absint( $attributes['artist_id'] ) ?: get_the_ID() );
+		$artist_id  = absint( $attributes['artist_id'] );
+		return self::render( $artist_id ? $artist_id : get_the_ID() );
 	}
 
 	/**
@@ -107,7 +109,13 @@ final class MDS_RM_Discography {
 			<?php if ( $query->posts ) : ?>
 				<div class="mds-discography__scroll" tabindex="0">
 					<table>
-						<thead><tr><?php foreach ( $columns as $label ) : ?><th scope="col"><?php echo esc_html( $label ); ?></th><?php endforeach; ?></tr></thead>
+						<?php
+						echo '<thead><tr>';
+						foreach ( $columns as $label ) {
+							echo '<th scope="col">' . esc_html( $label ) . '</th>';
+						}
+						echo '</tr></thead>' . "\n";
+						?>
 						<tbody>
 						<?php foreach ( $query->posts as $release ) : ?>
 							<tr>
