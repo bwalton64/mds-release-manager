@@ -25,6 +25,69 @@ final class MDS_RM_Post_Types {
 	 */
 	public static function register_hooks() {
 		add_action( 'init', array( self::class, 'mds_rm_register_cpts' ) );
+		register_activation_hook( MDS_RM_MAIN_FILE, array( self::class, 'activate' ) );
+		register_deactivation_hook( MDS_RM_MAIN_FILE, array( self::class, 'deactivate' ) );
+	}
+
+	/**
+	 * Registers the content types before refreshing rewrite rules on activation.
+	 *
+	 * @param bool $network_wide Whether the plugin is being network-activated.
+	 */
+	public static function activate( $network_wide = false ) {
+		self::mds_rm_register_cpts();
+		self::flush_rewrite_rules( $network_wide );
+	}
+
+	/**
+	 * Removes the content types before refreshing rewrite rules on deactivation.
+	 *
+	 * @param bool $network_wide Whether the plugin is being network-deactivated.
+	 */
+	public static function deactivate( $network_wide = false ) {
+		foreach ( array( 'release_tag', 'release_format' ) as $taxonomy ) {
+			if ( taxonomy_exists( $taxonomy ) ) {
+				unregister_taxonomy( $taxonomy );
+			}
+		}
+
+		foreach ( array( 'release', 'artist' ) as $post_type ) {
+			if ( post_type_exists( $post_type ) ) {
+				unregister_post_type( $post_type );
+			}
+		}
+
+		self::flush_rewrite_rules( $network_wide );
+	}
+
+	/**
+	 * Refreshes rewrite rules for the current site or every site on network changes.
+	 *
+	 * @param bool $network_wide Whether the plugin is being network-activated.
+	 */
+	private static function flush_rewrite_rules( $network_wide ) {
+		if ( ! is_multisite() || ! $network_wide ) {
+			flush_rewrite_rules();
+			return;
+		}
+
+		$site_ids = get_sites(
+			array(
+				'fields' => 'ids',
+				'number' => 0,
+			)
+		);
+
+		foreach ( $site_ids as $site_id ) {
+			switch_to_blog( (int) $site_id );
+			try {
+				flush_rewrite_rules( false );
+			} finally {
+				restore_current_blog();
+			}
+		}
+
+		flush_rewrite_rules();
 	}
 
 	/**

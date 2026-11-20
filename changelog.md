@@ -6,10 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- Add `.github/consolidation-plan.md`, the canonical phased plan for aligning plugin structure, nomenclature, blocks, and templates with WordPress standards. It supersedes the abandoned file-merge consolidation attempt, freezes the public API (hooks, blocks, shortcodes, routes, options, meta keys), and defines per-step verification gates.
+- Add an isolated Playwright smoke suite covering Release and Artist fallbacks, Gutenberg metadata persistence, REST settings saves, and rewrite setup and cleanup.
+
 ### Changed
 - Move internal implementation summaries, refactoring reports, and the Abilities API reference documentation from the plugin root into the `.local/` directory. `README.md`, `changelog.md`, and `.github/technical-blueprint.md` are the canonical, maintained documentation.
 
 ### Fixed
+- Flush custom post type rewrite rules on activation and deactivation, across all sites for network-wide changes, to prevent stale or missing Release and Artist routes.
 - Fix fatal `strict_types declaration must be the very first statement` errors by placing `declare(strict_types=1);` immediately after the opening `<?php` tag (before the file DocBlock) and removing UTF-8 byte-order marks across fifteen `includes/` class files and the `templates/artist-fallback.php` and `templates/settings-page.php` templates.
 
 ### Removed
