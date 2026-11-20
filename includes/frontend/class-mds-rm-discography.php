@@ -57,9 +57,17 @@ final class MDS_RM_Discography {
 
 		$page_key = 'mds_discography_page_' . $artist->ID;
 		$page     = 1;
-		if ( isset( $_GET[ $page_key ] ) && is_string( $_GET[ $page_key ] ) && ctype_digit( $_GET[ $page_key ] ) ) {
-			$page = max( 1, (int) $_GET[ $page_key ] );
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Public pagination only selects which published releases to display.
+		if ( isset( $_GET[ $page_key ] ) && is_string( $_GET[ $page_key ] ) ) {
+			$page_value = filter_var(
+				wp_unslash( $_GET[ $page_key ] ),
+				FILTER_VALIDATE_REGEXP,
+				array( 'options' => array( 'regexp' => '/\A[0-9]+\z/' ) )
+			);
+			$page       = max( 1, (int) $page_value );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
 		$query   = new WP_Query(
 			array(
 				'post_type'           => 'release',
