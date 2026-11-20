@@ -472,10 +472,10 @@ final class MDS_RM_Abilities {
 	 * Ability callback: Sync network data.
 	 *
 	 * @since 0.9.0
-	 * @param array $input The input parameters.
+	 * @param array $input Input supplied by the Abilities API; this ability takes no options.
 	 * @return array The ability response.
 	 */
-	public static function ability_sync_network( $input ): array {
+	public static function ability_sync_network( $input ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Preserve the callable's input parameter.
 		if ( get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
 			return array(
 				'success'         => false,
