@@ -23,7 +23,7 @@ final class MDS_RM_Shortcodes {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_shortcode( 'release-meta', array( MDS_RM_Release_Meta::class, 'shortcode' ) );
 		add_shortcode( 'release-links', array( MDS_RM_Release_Links::class, 'shortcode' ) );
 		add_shortcode( 'artist-discography', array( MDS_RM_Discography::class, 'shortcode' ) );
@@ -36,7 +36,7 @@ final class MDS_RM_Shortcodes {
 	 * @param bool   $include_shortcode Retained for compatibility; links are no longer embedded.
 	 * @return string The rendered release metadata.
 	 */
-	public static function render_meta_bar_html( $upc, $include_shortcode = true ) {
+	public static function render_meta_bar_html( $upc, $include_shortcode = true ): string {
 		return MDS_RM_Release_Meta::render( array( 'upc' => $upc ) );
 	}
 
@@ -48,7 +48,7 @@ final class MDS_RM_Shortcodes {
 	 * @param bool   $include_shortcode Retained for compatibility; links are no longer embedded.
 	 * @return string The rendered release metadata.
 	 */
-	public static function mds_rm_render_meta_bar_html( $upc, $include_shortcode = true ) {
+	public static function mds_rm_render_meta_bar_html( $upc, $include_shortcode = true ): string {
 		return self::render_meta_bar_html( $upc, $include_shortcode );
 	}
 }
