@@ -1,2 +1,12 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Exclude repository and development files from the WordPress release archive.
+/.gitattributes export-ignore
+/.github export-ignore
+/.gitignore export-ignore
+/.local export-ignore
+/package-lock.json export-ignore
+/package.json export-ignore
+/playwright.config.js export-ignore
+/tests export-ignore

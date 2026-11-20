@@ -347,6 +347,8 @@ mds-release-manager/
 
 ## Contributing
 
+For a WordPress release ZIP, run `git archive --format=zip --prefix=mds-release-manager/ --output=mds-release-manager.zip HEAD`. This packages the committed plugin without development tools and repository metadata.
+
 We welcome contributions! Follow these guidelines to maintain code quality and consistency.
 
 ### Getting Started
