@@ -292,9 +292,9 @@ final class MDS_RM_Release_Model {
 				'post_status'            => array_keys( get_post_stati() ),
 				'posts_per_page'         => 1,
 				'fields'                 => 'ids',
-				'post__not_in'           => $post_id ? array( (int) $post_id ) : array(),
-				'meta_key'               => 'upc_ean',
-				'meta_value'             => $upc,
+				'post__not_in'           => $post_id ? array( (int) $post_id ) : array(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- Exclude the record being edited before selecting the first conflict.
+				'meta_key'               => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Check for duplicate stored UPCs under the advisory lock.
+				'meta_value'             => $upc, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'no_found_rows'          => true,
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,
@@ -307,8 +307,8 @@ final class MDS_RM_Release_Model {
 					'post_status'            => array_keys( get_post_stati() ),
 					'posts_per_page'         => -1,
 					'fields'                 => 'ids',
-					'post__not_in'           => $post_id ? array( (int) $post_id ) : array(),
-					'meta_query'             => array(
+					'post__not_in'           => $post_id ? array( (int) $post_id ) : array(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- The edited record cannot be a conflicting legacy record.
+					'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Include unnormalized legacy UPCs that an exact match cannot find.
 						array(
 							'key'     => 'upc_ean',
 							'value'   => '[^0-9]',
@@ -388,7 +388,7 @@ final class MDS_RM_Release_Model {
 	 * @param array<string, mixed> $postarr Post data.
 	 * @return bool Existing empty-post result.
 	 */
-	public static function validate_classic_save( bool $empty, array $postarr ): bool {
+	public static function validate_classic_save( bool $empty, array $postarr ): bool { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.emptyFound -- Preserve the public parameter name for PHP named arguments.
 		if ( 'release' !== $postarr['post_type'] || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
 			return $empty;
 		}
@@ -546,9 +546,9 @@ final class MDS_RM_Release_Model {
 	 *
 	 * @param WP_Post         $post Saved post.
 	 * @param WP_REST_Request $request REST request.
-	 * @param bool            $creating Whether the post was created.
+	 * @param bool            $creating Whether the post was created; both paths use the same synchronization.
 	 */
-	public static function after_rest_save( $post, $request, $creating ): void {
+	public static function after_rest_save( $post, $request, $creating ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Preserve the registered REST callback signature.
 		if ( 'auto-draft' === $post->post_status ) {
 			return;
 		}
