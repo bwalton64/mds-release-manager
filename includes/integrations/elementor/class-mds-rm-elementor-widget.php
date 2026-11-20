@@ -14,23 +14,40 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/** Displays release metadata in Elementor. */
 class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
-	/** @return string The registered widget identifier. */
+	/**
+	 * Gets the registered widget identifier.
+	 *
+	 * @return string Widget identifier.
+	 */
 	public function get_name() {
 		return 'mds_release_meta';
 	}
 
-	/** @return string The translated editor title. */
+	/**
+	 * Gets the widget title shown in the editor.
+	 *
+	 * @return string Translated title.
+	 */
 	public function get_title() {
 		return __( 'Release Meta Block', 'mds-release-manager' );
 	}
 
-	/** @return string The editor icon classes. */
+	/**
+	 * Gets the widget icon shown in the editor.
+	 *
+	 * @return string Icon classes.
+	 */
 	public function get_icon() {
 		return 'dashicons dashicons-album';
 	}
 
-	/** @return string[] The Elementor widget categories. */
+	/**
+	 * Gets the editor categories containing this widget.
+	 *
+	 * @return string[] Category identifiers.
+	 */
 	public function get_categories() {
 		return array( 'general' );
 	}
