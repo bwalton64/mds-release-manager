@@ -1,5 +1,7 @@
 # 📖 MDS Release Manager - Refactoring Documentation Index
 
+> **Historical:** The reports indexed here reflect earlier work. For the current structure and verification status, see the [consolidation plan](../.github/consolidation-plan.md).
+
 **Status:** ✅ **COMPLETE & PRODUCTION-READY**
 
 ---

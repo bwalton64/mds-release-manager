@@ -1,5 +1,7 @@
 # MDS Release Manager - Block Reorganization Summary
 
+> **Historical:** The block organization described here was superseded by the [consolidation plan](../.github/consolidation-plan.md).
+
 ## Project Completion Status: ✅ COMPLETE
 
 ### Date: November 19, 2026

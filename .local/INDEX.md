@@ -1,5 +1,7 @@
 # MDS Release Manager - Security Refactoring Documentation Index
 
+> **Historical:** The reports indexed here reflect earlier work. For the current structure and verification status, see the [consolidation plan](../.github/consolidation-plan.md).
+
 ## Quick Start
 
 **New to this refactoring?** Start here:

@@ -596,6 +596,19 @@ extracted release package at `337e4d2`, PHPCS reported 0 errors and 24 warnings
 and Plugin Check 2.2.0 reported 0 errors and 23 warnings. The remaining
 findings concern metadata queries, post exclusions, and callback signatures.
 
+The approved query scope preserves the existing lookups and exclusions. Each
+remaining advisory is documented at the relevant line, and the callback
+signatures are unchanged. PHP lint and executable-token comparison passed for
+all ten affected files. Both Playwright tests passed on `dev-test`, with all
+48 tracked hooks unchanged. PHPCS and Plugin Check 2.2.0 each reported
+**0 errors and 0 warnings** on the extracted release package at `6eadc1d`.
+This is not a large-catalog performance benchmark.
+
+The uninstall inventory review found two remaining limits in the opt-in wipe:
+WordPress defaults to 100 sites when `get_sites()` has no arguments, and
+`post_status => 'any'` excludes Trash. Resolve and verify these edge cases
+before marking Phase 8 complete. No live site was uninstalled.
+
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
 3. Final full regression: Playwright suite + manual multisite hub/spoke sync test.

@@ -1,5 +1,7 @@
 # MDS Release Manager - Block Reorganization: COMPLETE ✅
 
+> **Historical:** The block organization described here was superseded by the [`block.json` migration](../.github/consolidation-plan.md#phase-5--blockjson-migration).
+
 ## Executive Summary
 
 The MDS Release Manager plugin's Gutenberg blocks have been successfully reorganized from a legacy monolithic structure to the **WordPress-recommended modular block folder structure**, matching the pattern used in the mds-bandcamp-integration plugin.

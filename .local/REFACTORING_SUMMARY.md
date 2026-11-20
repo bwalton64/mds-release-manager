@@ -1,5 +1,7 @@
 # 🔒 MDS Release Manager - Security Refactoring Complete
 
+> **Historical:** This summary describes an earlier refactor, not the current structure or release status. See the [consolidation plan](../.github/consolidation-plan.md).
+
 **Status:** ✅ **PRODUCTION READY**  
 **Date Completed:** November 2026  
 **Security Level:** 🔐 **Production-Grade**

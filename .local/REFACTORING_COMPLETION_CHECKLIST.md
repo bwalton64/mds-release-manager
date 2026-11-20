@@ -1,5 +1,7 @@
 # MDS Release Manager - Refactoring Completion Checklist
 
+> **Historical:** Superseded as an implementation and verification checklist by the [consolidation plan](../.github/consolidation-plan.md).
+
 **Project Status:** ✅ COMPLETE & VERIFIED
 
 ---
