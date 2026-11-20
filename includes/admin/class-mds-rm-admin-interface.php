@@ -409,7 +409,7 @@ final class MDS_RM_Admin_Interface {
 			return;
 		}
 
-		// Verify nonce first
+		// Verify nonce first.
 		$nonce = isset( $_POST['mds_artist_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mds_artist_meta_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mds_save_artist_data' ) ) {
 			return;
@@ -483,7 +483,7 @@ final class MDS_RM_Admin_Interface {
 			return;
 		}
 
-		// Verify nonce first
+		// Verify nonce first.
 		$nonce = isset( $_POST['mds_release_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mds_release_meta_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mds_save_release_data' ) ) {
 			return;
