@@ -17,10 +17,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class MDS_RM_Release_Model {
 	public const MDS_RM_FORMATS = array( 'Single', 'EP', 'Album', 'Digital' );
 
-	private static $previous_upcs    = array();
-	private static $upc_locks        = array();
+	/**
+	 * UPC values captured before REST updates, keyed by release ID.
+	 *
+	 * @var array<int, mixed>
+	 */
+	private static $previous_upcs = array();
+
+	/**
+	 * UPC locks held by this request, keyed by lock name.
+	 *
+	 * @var array<string, bool>
+	 */
+	private static $upc_locks = array();
+
+	/**
+	 * Sync errors to return to the REST client, keyed by request object ID.
+	 *
+	 * @var array<int, WP_Error>
+	 */
 	private static $rest_sync_errors = array();
-	private static $rest_requests    = array();
+
+	/**
+	 * Active REST methods, keyed by request object ID.
+	 *
+	 * @var array<int, string>
+	 */
+	private static $rest_requests = array();
 
 	/** Registers the release validation hooks. */
 	public static function register_hooks(): void {
@@ -371,7 +394,7 @@ final class MDS_RM_Release_Model {
 		}
 		$post_id = isset( $postarr['ID'] ) ? (int) $postarr['ID'] : 0;
 
-		// Verify nonce with proper sanitization
+		// Verify nonce with proper sanitization.
 		$nonce     = isset( $_POST['mds_release_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mds_release_meta_nonce'] ) ) : '';
 		$has_nonce = is_string( $nonce ) && wp_verify_nonce( $nonce, 'mds_save_release_data' );
 
