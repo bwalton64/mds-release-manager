@@ -529,10 +529,18 @@ plugin site options across the network; default uninstall behavior is unchanged.
 Default, full multisite, and full single-site paths passed an isolated test with
 WordPress API test doubles. No live site was uninstalled.
 
-The verified `git archive` release ZIP excludes repository and development files.
-Run the final Plugin Check against the release package. The remote Font Awesome
-stylesheet remains unresolved, along with the remaining PHPCS findings and the
-live hub/spoke regression.
+Font Awesome Free 6.4.0 now loads locally under the existing stylesheet handle.
+The `cdn` setting and legacy `internal` alias still work without a migration.
+Both Playwright smoke tests passed on `dev-test`, including the rendered Spotify
+glyph with off-origin requests blocked, the legacy alias, and disabled mode.
+All 48 tracked hooks matched.
+
+The verified `git archive` release ZIP excludes repository and development files
+and includes all 10 Font Awesome files, including the upstream license.
+Plugin Check 2.2.0 reported 0 errors and 63 warnings on the extracted release
+package. The full PHPCS scan remains at 73 errors and 62 warnings. Triage the
+remaining findings, run the live hub/spoke regression, and rerun both scanners
+on the final candidate before closing this phase.
 
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
