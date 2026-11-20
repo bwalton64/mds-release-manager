@@ -303,8 +303,8 @@ final class MDS_RM_CSV_Handler {
 			$release_found   = '' === $upc ? array() : get_posts(
 				array(
 					'post_type'   => 'release',
-					'meta_key'    => 'upc_ean',
-					'meta_value'  => $upc,
+					'meta_key'    => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Match the stored UPC to update a release or reject ambiguous matches.
+					'meta_value'  => $upc, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 					'post_status' => array_keys( get_post_stati() ),
 					'numberposts' => -1,
 				)
