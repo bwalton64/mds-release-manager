@@ -20,50 +20,50 @@ final class MDS_RM_Release_Meta {
 	public static function fields(): array {
 		return array(
 			'release_year'   => array(
-'label'   => 'Release Year',
-'icon'    => 'fas fa-calendar',
-'enabled' => true
-),
+				'label'   => 'Release Year',
+				'icon'    => 'fas fa-calendar',
+				'enabled' => true,
+			),
 			'record_label'   => array(
-'label'   => 'Record Label',
-'icon'    => 'fas fa-compact-disc',
-'enabled' => true
-),
+				'label'   => 'Record Label',
+				'icon'    => 'fas fa-compact-disc',
+				'enabled' => true,
+			),
 			'distributor'    => array(
-'label'   => 'Distributor',
-'icon'    => 'fas fa-tower-broadcast',
-'enabled' => true
-),
+				'label'   => 'Distributor',
+				'icon'    => 'fas fa-tower-broadcast',
+				'enabled' => true,
+			),
 			'upc_ean'        => array(
-'label'   => 'UPC/EAN',
-'icon'    => 'fas fa-barcode',
-'enabled' => true
-),
+				'label'   => 'UPC/EAN',
+				'icon'    => 'fas fa-barcode',
+				'enabled' => true,
+			),
 			'release_format' => array(
-'label'   => 'Release Format',
-'icon'    => 'dashicons dashicons-album',
-'enabled' => false
-),
+				'label'   => 'Release Format',
+				'icon'    => 'dashicons dashicons-album',
+				'enabled' => false,
+			),
 			'release_date'   => array(
-'label'   => 'Full Release Date',
-'icon'    => 'fas fa-calendar',
-'enabled' => false
-),
+				'label'   => 'Full Release Date',
+				'icon'    => 'fas fa-calendar',
+				'enabled' => false,
+			),
 			'release_title'  => array(
-'label'   => 'Release Title',
-'icon'    => 'dashicons dashicons-album',
-'enabled' => false
-),
+				'label'   => 'Release Title',
+				'icon'    => 'dashicons dashicons-album',
+				'enabled' => false,
+			),
 			'artist'         => array(
-'label'   => 'Artist',
-'icon'    => 'dashicons dashicons-groups',
-'enabled' => false
-),
+				'label'   => 'Artist',
+				'icon'    => 'dashicons dashicons-groups',
+				'enabled' => false,
+			),
 			'release_tags'   => array(
-'label'   => 'Release Tags',
-'icon'    => 'dashicons dashicons-tag',
-'enabled' => false
-),
+				'label'   => 'Release Tags',
+				'icon'    => 'dashicons dashicons-tag',
+				'enabled' => false,
+			),
 		);
 	}
 
@@ -91,93 +91,93 @@ final class MDS_RM_Release_Meta {
 	public static function style_fields(): array {
 		return array(
 			'background'     => array(
-'label' => 'Background Color',
-'type'  => 'color'
-),
+				'label' => 'Background Color',
+				'type'  => 'color',
+			),
 			'color'          => array(
-'label' => 'Text Color',
-'type'  => 'color'
-),
+				'label' => 'Text Color',
+				'type'  => 'color',
+			),
 			'icon_color'     => array(
-'label' => 'Icon Color',
-'type'  => 'color'
-),
+				'label' => 'Icon Color',
+				'type'  => 'color',
+			),
 			'font_family'    => array(
-'label' => 'Font Family',
-'type'  => 'font'
-),
+				'label' => 'Font Family',
+				'type'  => 'font',
+			),
 			'font_size'      => array(
-'label' => 'Font Size',
-'type'  => 'length'
-),
+				'label' => 'Font Size',
+				'type'  => 'length',
+			),
 			'font_weight'    => array(
-'label' => 'Font Weight',
-'type'  => 'weight'
-),
+				'label' => 'Font Weight',
+				'type'  => 'weight',
+			),
 			'line_height'    => array(
-'label' => 'Line Height',
-'type'  => 'line_height'
-),
+				'label' => 'Line Height',
+				'type'  => 'line_height',
+			),
 			'icon_size'      => array(
-'label' => 'Icon Size',
-'type'  => 'length'
-),
+				'label' => 'Icon Size',
+				'type'  => 'length',
+			),
 			'icon_opacity'   => array(
-'label' => 'Icon Opacity',
-'type'  => 'opacity'
-),
+				'label' => 'Icon Opacity',
+				'type'  => 'opacity',
+			),
 			'icon_gap'       => array(
-'label' => 'Icon-to-text Gap',
-'type'  => 'length'
-),
+				'label' => 'Icon-to-text Gap',
+				'type'  => 'length',
+			),
 			'gap'            => array(
-'label' => 'Item Gap',
-'type'  => 'length'
-),
+				'label' => 'Item Gap',
+				'type'  => 'length',
+			),
 			'align'          => array(
-'label' => 'Main-axis Alignment',
-'type'  => 'align'
-),
+				'label' => 'Main-axis Alignment',
+				'type'  => 'align',
+			),
 			'vertical_align' => array(
-'label' => 'Cross-axis Alignment',
-'type'  => 'vertical_align'
-),
+				'label' => 'Cross-axis Alignment',
+				'type'  => 'vertical_align',
+			),
 			'direction'      => array(
-'label' => 'Direction',
-'type'  => 'direction'
-),
+				'label' => 'Direction',
+				'type'  => 'direction',
+			),
 			'wrap'           => array(
-'label' => 'Wrapping',
-'type'  => 'wrap'
-),
+				'label' => 'Wrapping',
+				'type'  => 'wrap',
+			),
 			'width'          => array(
-'label' => 'Width',
-'type'  => 'width'
-),
+				'label' => 'Width',
+				'type'  => 'width',
+			),
 			'padding'        => array(
-'label' => 'Padding',
-'type'  => 'spacing'
-),
+				'label' => 'Padding',
+				'type'  => 'spacing',
+			),
 			'margin'         => array(
-'label' => 'Margin',
-'type'  => 'spacing'
-),
+				'label' => 'Margin',
+				'type'  => 'spacing',
+			),
 			'border_width'   => array(
-'label' => 'Border Width',
-'type'  => 'spacing'
-),
+				'label' => 'Border Width',
+				'type'  => 'spacing',
+			),
 			'border_style'   => array(
-'label' => 'Border Style',
-'type'  => 'border_style'
-),
+				'label' => 'Border Style',
+				'type'  => 'border_style',
+			),
 			'border_color'   => array(
-'label' => 'Border Color',
-'type'  => 'color'
-),
+				'label' => 'Border Color',
+				'type'  => 'color',
+			),
 			'radius'         => array(
-'label' => 'Border Radius',
-'type'  => 'spacing'
-),
+				'label' => 'Border Radius',
+				'type'  => 'spacing',
+			),
 		);
 	}
 
@@ -289,13 +289,15 @@ final class MDS_RM_Release_Meta {
 				if ( ! $uuid ) {
 					return '';
 				}
-				$artists = get_posts( array(
-'post_type'      => 'artist',
-'post_status'    => 'publish',
-'posts_per_page' => 1,
-'meta_key'       => '_mds_artist_uuid',
-'meta_value'     => $uuid
-) );
+				$artists = get_posts(
+					array(
+						'post_type'      => 'artist',
+						'post_status'    => 'publish',
+						'posts_per_page' => 1,
+						'meta_key'       => '_mds_artist_uuid',
+						'meta_value'     => $uuid,
+					)
+				);
 				return $artists ? get_the_title( $artists[0] ) : '';
 			default:
 				return get_post_meta( $post->ID, $field, true );
@@ -440,9 +442,9 @@ final class MDS_RM_Release_Meta {
 	 */
 	public static function shortcode( $atts ): string {
 		$defaults = array(
-'upc'    => '',
-'fields' => ''
-);
+			'upc'    => '',
+			'fields' => '',
+		);
 		foreach ( self::fields() as $key => $field ) {
 			$defaults[ 'icon_' . $key ]  = $field['icon'];
 			$defaults[ 'title_' . $key ] = $field['label'];
@@ -478,17 +480,20 @@ final class MDS_RM_Release_Meta {
 		$styles = array();
 		foreach ( self::style_fields() as $key => $_definition ) {
 			foreach ( array(
-'desktop' => '',
-'tablet'  => '_tablet',
-'mobile'  => '_mobile'
-) as $device => $suffix ) {
+				'desktop' => '',
+				'tablet'  => '_tablet',
+				'mobile'  => '_mobile',
+			) as $device => $suffix ) {
 				$styles[ $device ][ $key ] = $atts[ $key . $suffix ];
 			}
 		}
-		return self::render( array(
-'upc'    => $atts['upc'],
-'items'  => $items,
-'styles' => $styles
-), get_the_ID() );
+		return self::render(
+			array(
+				'upc'    => $atts['upc'],
+				'items'  => $items,
+				'styles' => $styles,
+			),
+			get_the_ID()
+		);
 	}
 }

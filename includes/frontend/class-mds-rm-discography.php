@@ -67,9 +67,9 @@ final class MDS_RM_Discography {
 				'meta_key'            => 'artist_id',
 				'meta_value'          => $uuid,
 				'orderby'             => array(
-'date' => 'DESC',
-'ID'   => 'DESC'
-),
+					'date' => 'DESC',
+					'ID'   => 'DESC',
+				),
 				'ignore_sticky_posts' => true,
 			)
 		);
@@ -88,9 +88,13 @@ final class MDS_RM_Discography {
 			error_log( '[MDS Release Manager] Invalid discography columns.' );
 			return '';
 		}
-		$columns = array_filter( $columns, static function ( $label, $key ) {
-			return is_string( $key ) && '' !== $key && is_string( $label ) && '' !== $label;
-		}, ARRAY_FILTER_USE_BOTH );
+		$columns = array_filter(
+			$columns,
+			static function ( $label, $key ) {
+				return is_string( $key ) && '' !== $key && is_string( $label ) && '' !== $label;
+			},
+			ARRAY_FILTER_USE_BOTH
+		);
 		if ( ! $columns ) {
 			error_log( '[MDS Release Manager] Discography has no valid columns.' );
 			return '';

@@ -360,5 +360,4 @@ final class MDS_RM_Frontend_Templates {
 			esc_attr( get_the_title( $post->ID ) )
 		);
 	}
-
 }

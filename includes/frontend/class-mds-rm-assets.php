@@ -161,7 +161,7 @@ final class MDS_RM_Assets {
 					'before'
 				);
 			}
-}
+		}
 
 		if ( $is_settings_screen ) {
 			wp_enqueue_style( 'wp-color-picker' );

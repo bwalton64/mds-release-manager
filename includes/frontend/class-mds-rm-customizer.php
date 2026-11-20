@@ -156,36 +156,51 @@ final class MDS_RM_Customizer {
 			'mds_rm_artist_fallback_table_font_size' => array( 'Discography font size (px)', 16, 12, 32, 1 ),
 		);
 		foreach ( $artist_controls as $setting => $control ) {
-			$wp_customize->add_setting( $setting, array(
-'default'           => $control[1],
-'sanitize_callback' => array( self::class, 'sanitize_fallback_number' )
-) );
-			$wp_customize->add_control( $setting, array(
-				'label'       => $control[0],
-				'section'     => 'mds_rm_artist_section',
-				'type'        => 'number',
-				'input_attrs' => array(
-'min'  => $control[2],
-'max'  => $control[3],
-'step' => $control[4]
-),
-			) );
+			$wp_customize->add_setting(
+				$setting,
+				array(
+					'default'           => $control[1],
+					'sanitize_callback' => array( self::class, 'sanitize_fallback_number' ),
+				)
+			);
+			$wp_customize->add_control(
+				$setting,
+				array(
+					'label'       => $control[0],
+					'section'     => 'mds_rm_artist_section',
+					'type'        => 'number',
+					'input_attrs' => array(
+						'min'  => $control[2],
+						'max'  => $control[3],
+						'step' => $control[4],
+					),
+				)
+			);
 		}
 		foreach ( array(
-'mds_rm_artist_fallback_contact_background' => 'Contact background',
-'mds_rm_artist_fallback_contact_color'      => 'Contact text color',
-'mds_rm_artist_fallback_table_background'   => 'Discography background',
-'mds_rm_artist_fallback_table_color'        => 'Discography text color',
-'mds_rm_artist_fallback_table_border'       => 'Discography border color'
-) as $setting => $label ) {
-			$wp_customize->add_setting( $setting, array(
-'default'           => '',
-'sanitize_callback' => 'sanitize_hex_color'
-) );
-			$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, $setting, array(
-'label'   => $label,
-'section' => 'mds_rm_artist_section'
-) ) );
+			'mds_rm_artist_fallback_contact_background' => 'Contact background',
+			'mds_rm_artist_fallback_contact_color'      => 'Contact text color',
+			'mds_rm_artist_fallback_table_background'   => 'Discography background',
+			'mds_rm_artist_fallback_table_color'        => 'Discography text color',
+			'mds_rm_artist_fallback_table_border'       => 'Discography border color',
+		) as $setting => $label ) {
+			$wp_customize->add_setting(
+				$setting,
+				array(
+					'default'           => '',
+					'sanitize_callback' => 'sanitize_hex_color',
+				)
+			);
+			$wp_customize->add_control(
+				new WP_Customize_Color_Control(
+					$wp_customize,
+					$setting,
+					array(
+						'label'   => $label,
+						'section' => 'mds_rm_artist_section',
+					)
+				)
+			);
 		}
 	}
 
@@ -209,12 +224,12 @@ final class MDS_RM_Customizer {
 			$styles[] = $property . ':' . min( $setting[3], max( $setting[2], $value ) ) . 'px';
 		}
 		foreach ( array(
-'--mds-artist-contact-background' => 'mds_rm_artist_fallback_contact_background',
-'--mds-artist-contact-color'      => 'mds_rm_artist_fallback_contact_color',
-'--mds-artist-table-background'   => 'mds_rm_artist_fallback_table_background',
-'--mds-artist-table-color'        => 'mds_rm_artist_fallback_table_color',
-'--mds-artist-table-border'       => 'mds_rm_artist_fallback_table_border'
-) as $property => $setting ) {
+			'--mds-artist-contact-background' => 'mds_rm_artist_fallback_contact_background',
+			'--mds-artist-contact-color'      => 'mds_rm_artist_fallback_contact_color',
+			'--mds-artist-table-background'   => 'mds_rm_artist_fallback_table_background',
+			'--mds-artist-table-color'        => 'mds_rm_artist_fallback_table_color',
+			'--mds-artist-table-border'       => 'mds_rm_artist_fallback_table_border',
+		) as $property => $setting ) {
 			$value = MDS_RM_Release_Meta::valid_style( get_theme_mod( $setting, '' ), 'color' );
 			if ( $value ) {
 				$styles[] = $property . ':' . $value;
