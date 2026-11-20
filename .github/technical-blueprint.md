@@ -125,9 +125,9 @@ mds-release-manager/
 - **`admin_menu`** → `MDS_RM_Admin_Interface::register_settings_page()` — Registers Releases Settings page.
 - **`network_admin_menu`** → `MDS_RM_Network_Admin::register_menu()` — Registers the network settings page.
 - **`network_admin_edit_save_network_settings`** → `MDS_RM_Network_Admin::save_settings()` — Registered network settings save callback.
-- **`enqueue_block_editor_assets`** → `MDS_RM_Gutenberg_Blocks::mds_rm_enqueue_block_editor_assets()` — Loads block editor JS.
-- **`init`** → `MDS_RM_Gutenberg_Blocks::mds_rm_register_gutenberg_widget_blocks()` — Registers `mds-rm/release-meta`, `mds-rm/release-links`, and `mds-rm/artist-discography`.
-- **`render_block`** → `MDS_RM_Gutenberg_Blocks::mds_rm_render_core_block_with_meta()` — Injects release meta into core blocks.
+- **`enqueue_block_editor_assets`** → `MDS_RM_Gutenberg_Blocks::enqueue_block_editor_assets()` — Loads block editor JS.
+- **`init`** → `MDS_RM_Gutenberg_Blocks::register_gutenberg_widget_blocks()` — Registers `mds-rm/release-meta`, `mds-rm/release-links`, and `mds-rm/artist-discography`.
+- **`render_block`** → `MDS_RM_Gutenberg_Blocks::render_core_block_with_meta()` — Injects release meta into core blocks.
 - **`the_content`** → `MDS_RM_Frontend_Templates::filter_release_content()` — Renders the named Release fallback partial only for singular Release main-loop content, unless Site-Wide Routing or a supported content builder is active. The default Meta component precedes the filtered post content; existing Meta/Links blocks and shortcodes (including synced patterns) suppress their matching defaults.
 - **`the_content`** → `MDS_RM_Frontend_Templates::filter_artist_content()` — Uses the active theme and adds the Artist featured image, content, Discography and contact, in that order. Existing Discography blocks or shortcodes, including synced patterns, suppress the default. Main-loop, query and builder guards apply.
 - **`post_thumbnail_html`** → `MDS_RM_Frontend_Templates::filter_release_featured_image()` — Suppresses the theme's duplicate main thumbnail only when the eligible Release or Artist fallback renders an image.

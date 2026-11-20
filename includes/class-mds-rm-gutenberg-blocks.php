@@ -24,9 +24,9 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks() {
-		add_action( 'enqueue_block_editor_assets', array( self::class, 'mds_rm_enqueue_block_editor_assets' ) );
-		add_action( 'init', array( self::class, 'mds_rm_register_gutenberg_widget_blocks' ) );
-		add_filter( 'render_block', array( self::class, 'mds_rm_render_core_block_with_meta' ), 10, 2 );
+		add_action( 'enqueue_block_editor_assets', array( self::class, 'enqueue_block_editor_assets' ) );
+		add_action( 'init', array( self::class, 'register_gutenberg_widget_blocks' ) );
+		add_filter( 'render_block', array( self::class, 'render_core_block_with_meta' ), 10, 2 );
 	}
 
 	/**
@@ -34,7 +34,7 @@ final class MDS_RM_Gutenberg_Blocks {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_enqueue_block_editor_assets() {
+	public static function enqueue_block_editor_assets() {
 		$script_path = MDS_RM_PATH . 'js/blocks.js';
 
 		wp_register_script(
@@ -81,7 +81,7 @@ final class MDS_RM_Gutenberg_Blocks {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_register_gutenberg_widget_blocks() {
+	public static function register_gutenberg_widget_blocks() {
 		register_block_type(
 			'mds-rm/artist-discography',
 			array(
@@ -100,7 +100,7 @@ final class MDS_RM_Gutenberg_Blocks {
 			'mds-rm/release-meta',
 			array(
 				'api_version'     => 3,
-				'render_callback' => array( self::class, 'mds_rm_render_gutenberg_release_meta' ),
+				'render_callback' => array( self::class, 'render_gutenberg_release_meta' ),
 				'uses_context'    => array( 'postId', 'postType' ),
 				'attributes'      => array(
 					'upcOverride' => array(
@@ -132,7 +132,7 @@ final class MDS_RM_Gutenberg_Blocks {
 			'mds-rm/release-links',
 			array(
 				'api_version'     => 3,
-				'render_callback' => array( self::class, 'mds_rm_render_gutenberg_release_links' ),
+				'render_callback' => array( self::class, 'render_gutenberg_release_links' ),
 				'uses_context'    => array( 'postId', 'postType' ),
 				'attributes'      => array(
 					'upcOverride' => array(
@@ -165,7 +165,7 @@ final class MDS_RM_Gutenberg_Blocks {
 		);
 	}
 
-	public static function mds_rm_render_gutenberg_release_links( $attributes, $_content, $block ) {
+	public static function render_gutenberg_release_links( $attributes, $_content, $block ) {
 		$context_post_id      = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
 		$attributes['upc']    = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
 		$content              = MDS_RM_Release_Links::render( $attributes, $context_post_id );
@@ -181,7 +181,7 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @param WP_Block $block      The parsed block.
 	 * @return string The rendered metadata.
 	 */
-	public static function mds_rm_render_gutenberg_release_meta( $attributes, $_content, $block ) {
+	public static function render_gutenberg_release_meta( $attributes, $_content, $block ) {
 		$context_post_id      = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
 		$attributes['upc']    = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
 		$content              = MDS_RM_Release_Meta::render( $attributes, $context_post_id );
@@ -196,7 +196,7 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @param array  $block         The parsed block data.
 	 * @return string The updated block content.
 	 */
-	public static function mds_rm_render_core_block_with_meta( $block_content, $block ) {
+	public static function render_core_block_with_meta( $block_content, $block ) {
 		if ( empty( $block['attrs']['mdsMetaField'] ) ) {
 			return $block_content;
 		}

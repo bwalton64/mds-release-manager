@@ -368,7 +368,8 @@ as a compatibility wrapper, and all three shortcode tags are unchanged.
 `Elementor_Tags` is migrated. The registration hooks and tag/widget IDs were verified
 with test doubles because Elementor is not installed on `dev-test`. `CSV_Handler` is
 migrated; the form actions, nonce fields, and export output matched the baseline.
-`Gutenberg_Blocks` is next.
+`Gutenberg_Blocks` is migrated; all three block names, attribute schemas, and context
+declarations matched the baseline. `Virtual_Media` is next.
 
 **Separate follow-up:** The legacy Network Admin form action is `mds_rm_save_network_settings`,
 but its save callback is registered on `network_admin_edit_save_network_settings`. Core appends
