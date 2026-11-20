@@ -158,7 +158,7 @@ class MDS_RM_Elementor_Links_Widget extends MDS_RM_Elementor_Widget {
 				}
 			}
 		}
-		echo MDS_RM_Release_Links::render(
+		$html = MDS_RM_Release_Links::render(
 			array(
 				'upc'       => isset( $settings['upc'] ) ? $settings['upc'] : '',
 				'items'     => $items,
@@ -168,5 +168,7 @@ class MDS_RM_Elementor_Links_Widget extends MDS_RM_Elementor_Widget {
 			),
 			get_the_ID()
 		);
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The renderer escapes values and sanitizes embedded audio.
+		echo $html;
 	}
 }

@@ -192,8 +192,14 @@ final class MDS_RM_Frontend_Templates {
 			return false;
 		}
 
-		return trim( wp_strip_all_tags( $children[0]['innerHTML'] ) ) === trim( __( 'Written by ', 'twentytwentyfive' ) )
-			&& trim( wp_strip_all_tags( $children[2]['innerHTML'] ) ) === trim( __( 'in', 'twentytwentyfive' ) );
+		// Compare against the theme's translations, not the plugin's translations.
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- This text is rendered by Twenty Twenty-Five.
+		$written_by = __( 'Written by ', 'twentytwentyfive' );
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- This text is rendered by Twenty Twenty-Five.
+		$in = __( 'in', 'twentytwentyfive' );
+
+		return trim( wp_strip_all_tags( $children[0]['innerHTML'] ) ) === trim( $written_by )
+			&& trim( wp_strip_all_tags( $children[2]['innerHTML'] ) ) === trim( $in );
 	}
 
 	/**

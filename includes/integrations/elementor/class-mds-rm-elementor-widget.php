@@ -222,8 +222,7 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 				}
 			}
 		}
-		// The shared renderer escapes every value and only emits validated style declarations.
-		echo MDS_RM_Release_Meta::render(
+		$html = MDS_RM_Release_Meta::render(
 			array(
 				'upc'    => isset( $settings['upc'] ) ? $settings['upc'] : '',
 				'items'  => $items,
@@ -231,5 +230,7 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 			),
 			get_the_ID()
 		);
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The shared renderer escapes values and validates CSS custom properties.
+		echo $html;
 	}
 }
