@@ -74,8 +74,8 @@ final class MDS_RM_Discography {
 				'post_status'         => 'publish',
 				'posts_per_page'      => 25,
 				'paged'               => $page,
-				'meta_key'            => 'artist_id',
-				'meta_value'          => $uuid,
+				'meta_key'            => 'artist_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Paginate releases related by the stored Artist UUID.
+				'meta_value'          => $uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'orderby'             => array(
 					'date' => 'DESC',
 					'ID'   => 'DESC',
