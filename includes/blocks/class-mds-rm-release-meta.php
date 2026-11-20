@@ -12,6 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MDS_RM_Release_Meta {
+	/**
+	 * Lists the supported metadata fields.
+	 *
+	 * @return array Field definitions keyed by field name.
+	 */
 	public static function fields(): array {
 		return array(
 			'release_year'   => array( 'label' => 'Release Year', 'icon' => 'fas fa-calendar', 'enabled' => true ),
@@ -26,6 +31,11 @@ final class MDS_RM_Release_Meta {
 		);
 	}
 
+	/**
+	 * Builds the default ordered list of metadata items.
+	 *
+	 * @return array Default renderer options for each field.
+	 */
 	public static function default_items(): array {
 		$items = array();
 		foreach ( self::fields() as $key => $field ) {
@@ -69,10 +79,12 @@ final class MDS_RM_Release_Meta {
 		);
 	}
 
+	/** Registers the frontend Release Meta stylesheet. */
 	public static function register_assets(): void {
 		wp_register_style( 'mds-release-meta', MDS_RM_URL . 'css/release-meta.css', array( 'dashicons' ), filemtime( MDS_RM_PATH . 'css/release-meta.css' ) );
 	}
 
+	/** Enqueues the frontend Release Meta stylesheet. */
 	public static function enqueue_assets(): void {
 		if ( ! wp_style_is( 'mds-release-meta', 'registered' ) ) {
 			self::register_assets();
@@ -83,6 +95,10 @@ final class MDS_RM_Release_Meta {
 
 	/**
 	 * Resolve explicit UPCs first; extensions may provide a UPC for other contexts.
+	 *
+	 * @param mixed      $upc             Explicit UPC/EAN, if supplied.
+	 * @param int|string $context_post_id Post ID to use when no UPC is supplied.
+	 * @return WP_Post|null The readable release, if found.
 	 */
 	public static function resolve_post( $upc = '', $context_post_id = 0 ): ?WP_Post {
 		if ( ! is_scalar( $upc ) ) {
@@ -137,6 +153,13 @@ final class MDS_RM_Release_Meta {
 			&& ( 'publish' === $post->post_status || current_user_can( 'read_post', $post->ID ) );
 	}
 
+	/**
+	 * Reads one supported metadata field.
+	 *
+	 * @param string  $field Metadata field name.
+	 * @param WP_Post $post  The release.
+	 * @return mixed The field value before display validation.
+	 */
 	private static function value( $field, $post ) {
 		switch ( $field ) {
 			case 'release_year':
@@ -171,6 +194,13 @@ final class MDS_RM_Release_Meta {
 		}
 	}
 
+	/**
+	 * Validates a CSS value against the configured control type.
+	 *
+	 * @param mixed  $value Submitted style value.
+	 * @param string $type  Style control type.
+	 * @return string The validated value, or an empty string.
+	 */
 	public static function valid_style( mixed $value, $type ): string {
 		if ( ! is_scalar( $value ) ) {
 			return '';
@@ -212,6 +242,14 @@ final class MDS_RM_Release_Meta {
 		return '';
 	}
 
+	/**
+	 * Builds responsive CSS custom-property declarations.
+	 *
+	 * @param mixed      $styles Responsive style values.
+	 * @param array|null $fields Optional supported style field definitions.
+	 * @param string     $prefix CSS custom-property namespace.
+	 * @return string CSS declarations.
+	 */
 	public static function style_attribute( $styles, $fields = null, $prefix = 'meta' ): string {
 		if ( ! is_array( $styles ) ) {
 			return '';
@@ -239,6 +277,10 @@ final class MDS_RM_Release_Meta {
 
 	/**
 	 * Render one release. Empty values are omitted.
+	 *
+	 * @param array      $attributes      Field and style overrides.
+	 * @param int|string $context_post_id Post ID to use when no UPC is supplied.
+	 * @return string The release metadata markup, or an empty string.
 	 */
 	public static function render( $attributes = array(), $context_post_id = 0 ) {
 		$upc  = isset( $attributes['upc'] ) ? $attributes['upc'] : '';
@@ -282,6 +324,12 @@ final class MDS_RM_Release_Meta {
 		return '<div class="mds-release-meta"' . ( $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>' . $output . '</div>';
 	}
 
+	/**
+	 * Converts Release Meta shortcode attributes to renderer options.
+	 *
+	 * @param array|string $atts Shortcode attributes.
+	 * @return string The rendered release metadata.
+	 */
 	public static function shortcode( $atts ): string {
 		$defaults = array( 'upc' => '', 'fields' => '' );
 		foreach ( self::fields() as $key => $field ) {
