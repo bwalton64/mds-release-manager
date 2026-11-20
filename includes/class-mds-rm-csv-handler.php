@@ -331,7 +331,7 @@ final class MDS_RM_CSV_Handler {
 
 			static $broadcasted_artists = array();
 			if ( ! empty( $artist_post_id ) && ! isset( $broadcasted_artists[ $artist_post_id ] ) ) {
-				$artist_sync = MDS_RM_Core_Functions::mds_rm_broadcast_to_spokes( $artist_post_id, 'artist' );
+				$artist_sync = MDS_RM_Sync::broadcast_to_spokes( $artist_post_id, 'artist' );
 				if ( is_wp_error( $artist_sync ) ) {
 					$errors[] = sprintf( __( 'Row %1$d: artist synchronization failed: %2$s', 'mds-release-manager' ), $row_number, $artist_sync->get_error_message() );
 				}
@@ -415,7 +415,7 @@ final class MDS_RM_CSV_Handler {
 				wp_set_post_terms( $release_post_id, array(), 'release_tag', false );
 			}
 
-			$release_sync = MDS_RM_Core_Functions::mds_rm_broadcast_to_spokes( $release_post_id, 'release' );
+			$release_sync = MDS_RM_Sync::broadcast_to_spokes( $release_post_id, 'release' );
 			MDS_RM_Release_Model::release_upc_lock( $upc );
 			if ( is_wp_error( $release_sync ) ) {
 				$errors[] = sprintf( __( 'Row %1$d: release saved but synchronization failed: %2$s', 'mds-release-manager' ), $row_number, $release_sync->get_error_message() );
@@ -431,7 +431,7 @@ final class MDS_RM_CSV_Handler {
 		if ( ! $headers ) {
 			self::csv_redirect_with_message( 'mds_csv_missing_header', __( 'The CSV must include UPC/EAN and Release Format columns.', 'mds-release-manager' ), 'error' );
 		}
-		MDS_RM_Core_Functions::mds_rm_purge_cache();
+		MDS_RM_Sync::purge_cache();
 		self::csv_redirect_with_message(
 			'mds_csv_import_complete',
 			sprintf( 'CSV import complete: %1$d created, %2$d updated.', $imported, $updated ) . ( $errors ? ' ' . implode( ' ', $errors ) : '' ),

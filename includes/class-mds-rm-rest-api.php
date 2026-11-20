@@ -175,7 +175,7 @@ final class MDS_RM_REST_API {
 			update_option( 'mds_rm_fa_support', sanitize_text_field( wp_unslash( $params['mds_rm_fa_support'] ) ) );
 		}
 
-		MDS_RM_Core_Functions::mds_rm_purge_cache();
+		MDS_RM_Sync::purge_cache();
 
 		return rest_ensure_response( array( 'success' => true ) );
 	}
@@ -224,7 +224,7 @@ final class MDS_RM_REST_API {
 		$artist_count = 0;
 		$errors = array();
 		foreach ( $artists as $a ) {
-			$result = MDS_RM_Core_Functions::mds_rm_broadcast_to_spokes( $a->ID, 'artist' );
+			$result = MDS_RM_Sync::broadcast_to_spokes( $a->ID, 'artist' );
 			if ( is_wp_error( $result ) ) {
 				$errors[] = sprintf( 'Artist %1$d: %2$s', $a->ID, $result->get_error_message() );
 				continue;
@@ -241,7 +241,7 @@ final class MDS_RM_REST_API {
 		);
 		$release_count = 0;
 		foreach ( $releases as $r ) {
-			$result = MDS_RM_Core_Functions::mds_rm_broadcast_to_spokes( $r->ID, 'release' );
+			$result = MDS_RM_Sync::broadcast_to_spokes( $r->ID, 'release' );
 			if ( is_wp_error( $result ) ) {
 				$errors[] = sprintf( 'Release %1$d: %2$s', $r->ID, $result->get_error_message() );
 				continue;
@@ -249,7 +249,7 @@ final class MDS_RM_REST_API {
 			++$release_count;
 		}
 
-		MDS_RM_Core_Functions::mds_rm_purge_cache();
+		MDS_RM_Sync::purge_cache();
 		if ( $errors ) {
 			return new WP_Error( 'mds_sync_failed', implode( ' ', $errors ), array( 'status' => 500 ) );
 		}

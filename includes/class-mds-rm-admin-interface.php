@@ -441,7 +441,7 @@ final class MDS_RM_Admin_Interface {
 		update_post_meta( $post_id, 'artist_homepage_routing', isset( $_POST['artist_homepage_routing'] ) ? '1' : '0' );
 		delete_post_meta( $post_id, 'artist_featured_image' );
 
-		$sync_result = MDS_RM_Core_Functions::mds_rm_broadcast_to_spokes( $post_id, 'artist' );
+		$sync_result = MDS_RM_Sync::broadcast_to_spokes( $post_id, 'artist' );
 
 		/**
 		 * Hook: mds_rm_save_custom_meta
@@ -452,7 +452,7 @@ final class MDS_RM_Admin_Interface {
 		 */
 		do_action( 'mds_rm_save_custom_meta', $post_id, $_POST );
 
-		MDS_RM_Core_Functions::mds_rm_purge_cache();
+		MDS_RM_Sync::purge_cache();
 		if ( is_wp_error( $sync_result ) ) {
 			wp_die(
 				esc_html(
@@ -548,7 +548,7 @@ final class MDS_RM_Admin_Interface {
 			delete_post_meta( $post_id, 'release_format' );
 		}
 
-		$sync_result = MDS_RM_Core_Functions::mds_rm_broadcast_to_spokes( $post_id, 'release' );
+		$sync_result = MDS_RM_Sync::broadcast_to_spokes( $post_id, 'release' );
 		MDS_RM_Release_Model::release_upc_lock( get_post_meta( $post_id, 'upc_ean', true ) );
 
 		/**
@@ -560,7 +560,7 @@ final class MDS_RM_Admin_Interface {
 		 */
 		do_action( 'mds_rm_save_custom_meta', $post_id, $_POST );
 
-		MDS_RM_Core_Functions::mds_rm_purge_cache();
+		MDS_RM_Sync::purge_cache();
 		if ( is_wp_error( $sync_result ) ) {
 			wp_die(
 				esc_html(

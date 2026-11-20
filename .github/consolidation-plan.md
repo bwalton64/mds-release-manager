@@ -400,7 +400,10 @@ the site settings REST form, not this legacy network form.
 **Progress:** `MDS_RM_Logger` is extracted. The legacy core logging method delegates
 to it; debug settings and the `mds_rm_log_message` action and payload are unchanged.
 Logger parity, autoloading, the hook comparison, and both smoke tests passed.
-`MDS_RM_Sync` is next.
+`MDS_RM_Sync` is extracted and the legacy core methods delegate to it. On `dev-test`,
+a temporary spoke verified artist shadow creation and update, extension hook payloads,
+blog context restoration, taxonomy term reuse, and cache purge behavior. The hook
+comparison and both smoke tests passed. `MDS_RM_Providers` is next.
 
 ### Phase 4 — Functional subfolders
 1. Add the explicit class→path map to the autoloader in `mds-release-manager.php` (covering both

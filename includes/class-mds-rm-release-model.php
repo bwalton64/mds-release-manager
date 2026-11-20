@@ -487,11 +487,11 @@ final class MDS_RM_Release_Model {
 		$previous = self::$previous_upcs[ $post->ID ] ?? '';
 		self::remember_previous_upc( $post->ID, $previous, get_post_meta( $post->ID, 'upc_ean', true ) );
 		delete_post_meta( $post->ID, 'release_format' );
-		$result = MDS_RM_Core_Functions::mds_rm_broadcast_to_spokes( $post->ID, 'release' );
+		$result = MDS_RM_Sync::broadcast_to_spokes( $post->ID, 'release' );
 		if ( is_wp_error( $result ) ) {
 			self::$rest_sync_errors[ spl_object_id( $request ) ] = $result;
 		}
-		MDS_RM_Core_Functions::mds_rm_purge_cache();
+		MDS_RM_Sync::purge_cache();
 		self::release_upc_lock( get_post_meta( $post->ID, 'upc_ean', true ) );
 	}
 
