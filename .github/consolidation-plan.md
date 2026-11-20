@@ -520,11 +520,19 @@ on `dev-test`. Both Playwright smoke tests passed after each change and all
 188 and 237); the placeholder-specific check passes. The full Plugin Check
 rerun and final runtime regression are still pending.
 
-The uninstall inventory comparison has started. It identified that the full-wipe
-branch does not remove the stored network `spoke_sites` option, and that site
-option removal currently runs only in the invoking site's context. No uninstall
-behavior has changed. The audit also flagged the remote Font Awesome stylesheet;
-preserving the available icons without a CDN needs a separate verified change.
+The next pass documented the existing renderer escaping and Twenty Twenty-Five
+translation boundaries without changing frontend markup. Both smoke tests passed
+and all 48 tracked hooks matched. PHPCS now reports 73 errors and 62 warnings.
+
+The opt-in uninstall wipe now removes `spoke_sites` and the existing list of
+plugin site options across the network; default uninstall behavior is unchanged.
+Default, full multisite, and full single-site paths passed an isolated test with
+WordPress API test doubles. No live site was uninstalled.
+
+The verified `git archive` release ZIP excludes repository and development files.
+Run the final Plugin Check against the release package. The remote Font Awesome
+stylesheet remains unresolved, along with the remaining PHPCS findings and the
+live hub/spoke regression.
 
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
