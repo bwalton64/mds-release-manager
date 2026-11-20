@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phase 2 complete; Phase 3 in progress
+**Status:** Approved — Phase 3 complete; Phase 4 not started
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -407,7 +407,9 @@ comparison and both smoke tests passed. `MDS_RM_Providers` is extracted and the 
 core method delegates to it. Defaults, brand color restoration, and proposed option
 writes matched the baseline without changing stored test settings. `MDS_RM_Template_Loader`
 is extracted. Bundled templates, theme override precedence, editable CSS/JS behavior,
-and shortcode sanitization matched the baseline. The core class now only delegates.
+and shortcode sanitization matched the baseline. The temporary core shim was removed
+in a separate commit after checking the plugin and both sibling integrations for
+remaining runtime callers and rerunning the runtime and smoke checks.
 
 ### Phase 4 — Functional subfolders
 1. Add the explicit class→path map to the autoloader in `mds-release-manager.php` (covering both

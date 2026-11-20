@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Fix fatal `strict_types declaration must be the very first statement` errors by placing `declare(strict_types=1);` immediately after the opening `<?php` tag (before the file DocBlock) and removing UTF-8 byte-order marks across fifteen `includes/` class files and the `templates/artist-fallback.php` and `templates/settings-page.php` templates.
 
 ### Removed
+- Remove the internal `MDS_RM_Core_Functions` shim after moving its methods into the Logger, Sync, Providers, and Template Loader classes. Custom PHP code that calls the old class directly should use the replacements in the [consolidation plan](.github/consolidation-plan.md#core_functions-split-map).
 - Remove the orphaned, incomplete `includes/class-mds-rm-blocks.php` fragment left over from an abandoned file-consolidation attempt. It duplicated part of `MDS_RM_Release_Meta`, failed PHP linting, and was never loaded at runtime.
 
 ## [1.0.0] - 2026-11-19

@@ -277,7 +277,10 @@ mds-release-manager/
 │   ├── class-mds-rm-artist-routing.php             # Artist homepage routing
 │   ├── class-mds-rm-assets.php                     # CSS/JS enqueuing
 │   ├── class-mds-rm-builder-detection.php          # Page-builder detection
-│   ├── class-mds-rm-core-functions.php             # Shared utilities
+│   ├── class-mds-rm-logger.php                     # Debug logging
+│   ├── class-mds-rm-sync.php                       # Network synchronization and cache purge
+│   ├── class-mds-rm-providers.php                  # Streaming provider defaults
+│   ├── class-mds-rm-template-loader.php            # Templates and editable assets
 │   ├── class-mds-rm-csv-handler.php                # CSV import/export
 │   ├── class-mds-rm-customizer.php                 # WordPress Customizer integration
 │   ├── class-mds-rm-discography.php                # Artist discography logic

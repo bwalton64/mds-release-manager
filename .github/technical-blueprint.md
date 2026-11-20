@@ -34,7 +34,6 @@ mds-release-manager/
 │   ├── class-mds-rm-artist-routing.php
 │   ├── class-mds-rm-assets.php
 │   ├── class-mds-rm-builder-detection.php
-│   ├── class-mds-rm-core-functions.php
 │   ├── class-mds-rm-logger.php
 │   ├── class-mds-rm-sync.php
 │   ├── class-mds-rm-providers.php
