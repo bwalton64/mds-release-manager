@@ -37,6 +37,7 @@ mds-release-manager/
 │   ├── class-mds-rm-core-functions.php
 │   ├── class-mds-rm-logger.php
 │   ├── class-mds-rm-sync.php
+│   ├── class-mds-rm-providers.php
 │   ├── class-mds-rm-csv-handler.php
 │   ├── class-mds-rm-customizer.php
 │   ├── class-mds-rm-discography.php

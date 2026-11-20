@@ -127,7 +127,7 @@ final class MDS_RM_Release_Links {
 	 * @return array Default streaming providers.
 	 */
 	public static function providers() {
-		return MDS_RM_Core_Functions::mds_rm_get_default_providers();
+		return MDS_RM_Providers::defaults();
 	}
 
 	public static function enqueue_assets() {

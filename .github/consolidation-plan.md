@@ -403,7 +403,10 @@ Logger parity, autoloading, the hook comparison, and both smoke tests passed.
 `MDS_RM_Sync` is extracted and the legacy core methods delegate to it. On `dev-test`,
 a temporary spoke verified artist shadow creation and update, extension hook payloads,
 blog context restoration, taxonomy term reuse, and cache purge behavior. The hook
-comparison and both smoke tests passed. `MDS_RM_Providers` is next.
+comparison and both smoke tests passed. `MDS_RM_Providers` is extracted and the legacy
+core method delegates to it. Defaults, brand color restoration, and proposed option
+writes matched the baseline without changing stored test settings. `MDS_RM_Template_Loader`
+is next.
 
 ### Phase 4 — Functional subfolders
 1. Add the explicit class→path map to the autoloader in `mds-release-manager.php` (covering both
