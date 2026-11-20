@@ -23,7 +23,7 @@ final class MDS_RM_Frontend_Templates {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_action( 'wp_enqueue_scripts', array( self::class, 'enqueue_release_fallback_assets' ) );
 		add_action( 'enqueue_block_assets', array( self::class, 'enqueue_artist_assets' ) );
 		add_filter( 'the_content', array( self::class, 'filter_release_content' ), 20 );
@@ -32,7 +32,7 @@ final class MDS_RM_Frontend_Templates {
 		add_filter( 'render_block', array( self::class, 'filter_release_author_group' ), 20, 3 );
 	}
 
-	public static function enqueue_artist_assets() {
+	public static function enqueue_artist_assets(): void {
 		MDS_RM_Template_Loader::enqueue_editable_style( 'mds-discography', 'css/artist-fallback.css' );
 	}
 
@@ -53,7 +53,7 @@ final class MDS_RM_Frontend_Templates {
 		return MDS_RM_Template_Loader::render( 'templates/artist-fallback.php', $args );
 	}
 
-	private static function get_fallback_artist_post() {
+	private static function get_fallback_artist_post(): WP_Post|false {
 		if ( is_admin() || is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ! is_singular( 'artist' ) || ! in_the_loop() || ! is_main_query() ) {
 			return false;
 		}
@@ -69,7 +69,7 @@ final class MDS_RM_Frontend_Templates {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function enqueue_release_fallback_assets() {
+	public static function enqueue_release_fallback_assets(): void {
 		$post_id = get_queried_object_id();
 		if (
 			! is_singular( 'release' )
@@ -164,7 +164,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param array $block The parsed block.
 	 * @return bool Whether this is the Twenty Twenty-Five byline pattern.
 	 */
-	private static function is_theme_byline( $block ) {
+	private static function is_theme_byline( $block ): bool {
 		if ( 'twentytwentyfive' !== get_template() || 'core/group' !== $block['blockName'] || ! isset( $block['innerBlocks'] ) || 4 !== count( $block['innerBlocks'] ) ) {
 			return false;
 		}
@@ -211,7 +211,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param int $post_id Optional post ID being filtered.
 	 * @return WP_Post|false The eligible Release, or false.
 	 */
-	private static function get_fallback_release_post( $post_id = 0 ) {
+	private static function get_fallback_release_post( $post_id = 0 ): WP_Post|false {
 		if (
 			is_admin()
 			|| is_feed()
@@ -246,7 +246,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param array  $visited_blocks Referenced synced patterns already inspected.
 	 * @return bool Whether the component is already present.
 	 */
-	private static function content_has_component( $content, $block_name, $shortcode_name, &$visited_blocks ) {
+	private static function content_has_component( $content, string $block_name, string $shortcode_name, array &$visited_blocks ): bool {
 		if ( has_block( $block_name, $content ) || has_shortcode( $content, $shortcode_name ) ) {
 			return true;
 		}
@@ -271,7 +271,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param array  $visited_blocks Referenced synced patterns already inspected.
 	 * @return bool Whether the component is already present.
 	 */
-	private static function block_tree_has_component( $blocks, $block_name, $shortcode_name, &$visited_blocks ) {
+	private static function block_tree_has_component( array $blocks, string $block_name, string $shortcode_name, array &$visited_blocks ): bool {
 		foreach ( $blocks as $block ) {
 			if ( 'core/block' !== $block['blockName'] || empty( $block['attrs']['ref'] ) ) {
 				if (
@@ -313,7 +313,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param WP_Post $post The Release post.
 	 * @return string The image markup, or an empty string.
 	 */
-	private static function get_release_image( WP_Post $post ) {
+	private static function get_release_image( WP_Post $post ): string {
 		$image_url = get_post_meta( $post->ID, 'featured_image_url', true );
 		if ( ! is_string( $image_url ) || '' === esc_url( $image_url ) ) {
 			$image_url = '';
