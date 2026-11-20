@@ -48,7 +48,7 @@ final class MDS_RM_Frontend_Templates {
 			'image' => wp_get_attachment_image( get_post_thumbnail_id( $post->ID ), 'large', false, array( 'class' => 'mds-artist-fallback__image' ) ),
 			'discography' => $has_discography ? '' : MDS_RM_Discography::render( $post->ID ),
 			'contact' => get_post_meta( $post->ID, 'artist_contact', true ),
-			'style' => MDS_RM_Customizer::mds_rm_get_artist_fallback_style_attribute(),
+			'style' => MDS_RM_Customizer::get_artist_fallback_style_attribute(),
 		);
 		return MDS_RM_Core_Functions::mds_rm_render_template( 'templates/artist-fallback.php', $args );
 	}
@@ -110,7 +110,7 @@ final class MDS_RM_Frontend_Templates {
 			'content'    => $content,
 			'image'      => self::mds_rm_get_release_image( $post ),
 			'layout'     => $layout,
-			'style'      => MDS_RM_Customizer::mds_rm_get_release_fallback_style_attribute(),
+			'style'      => MDS_RM_Customizer::get_release_fallback_style_attribute(),
 			'meta_html' => $has_meta ? '' : MDS_RM_Release_Meta::render( array(), $post->ID ),
 			'links_html' => $has_links ? '' : MDS_RM_Release_Links::render( array(), $post->ID ),
 		);

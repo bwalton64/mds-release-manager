@@ -24,7 +24,7 @@ final class MDS_RM_Customizer {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks() {
-		add_action( 'customize_register', array( self::class, 'mds_rm_customize_register' ) );
+		add_action( 'customize_register', array( self::class, 'customize_register' ) );
 	}
 
 	/**
@@ -33,7 +33,7 @@ final class MDS_RM_Customizer {
 	 * @since 0.9.0
 	 * @param WP_Customize_Manager $wp_customize The Customizer manager.
 	 */
-	public static function mds_rm_customize_register( $wp_customize ) {
+	public static function customize_register( $wp_customize ) {
 		$wp_customize->add_panel(
 			'mds_rm_panel',
 			array(
@@ -57,7 +57,7 @@ final class MDS_RM_Customizer {
 			'mds_rm_layout_style',
 			array(
 				'default'           => 'split',
-				'sanitize_callback' => array( self::class, 'mds_rm_sanitize_release_layout' ),
+				'sanitize_callback' => array( self::class, 'sanitize_release_layout' ),
 			)
 		);
 		$wp_customize->add_control(
@@ -93,7 +93,7 @@ final class MDS_RM_Customizer {
 				$setting,
 				array(
 					'default'           => $control[1],
-					'sanitize_callback' => array( self::class, 'mds_rm_sanitize_fallback_number' ),
+					'sanitize_callback' => array( self::class, 'sanitize_fallback_number' ),
 				)
 			);
 			$wp_customize->add_control(
@@ -156,7 +156,7 @@ final class MDS_RM_Customizer {
 			'mds_rm_artist_fallback_table_font_size' => array( 'Discography font size (px)', 16, 12, 32, 1 ),
 		);
 		foreach ( $artist_controls as $setting => $control ) {
-			$wp_customize->add_setting( $setting, array( 'default' => $control[1], 'sanitize_callback' => array( self::class, 'mds_rm_sanitize_fallback_number' ) ) );
+			$wp_customize->add_setting( $setting, array( 'default' => $control[1], 'sanitize_callback' => array( self::class, 'sanitize_fallback_number' ) ) );
 			$wp_customize->add_control( $setting, array(
 				'label' => $control[0],
 				'section' => 'mds_rm_artist_section',
@@ -170,7 +170,7 @@ final class MDS_RM_Customizer {
 		}
 	}
 
-	public static function mds_rm_get_artist_fallback_style_attribute() {
+	public static function get_artist_fallback_style_attribute() {
 		$settings = array(
 			'--mds-artist-width' => array( 'mds_rm_artist_fallback_width', 900, 320, 2000 ),
 			'--mds-artist-image-size' => array( 'mds_rm_artist_fallback_image_size', 300, 80, 800 ),
@@ -199,7 +199,7 @@ final class MDS_RM_Customizer {
 	 * @param string $value The selected layout.
 	 * @return string The valid layout.
 	 */
-	public static function mds_rm_sanitize_release_layout( $value ) {
+	public static function sanitize_release_layout( $value ) {
 		return in_array( $value, array( 'split', 'stacked' ), true ) ? $value : 'split';
 	}
 
@@ -209,7 +209,7 @@ final class MDS_RM_Customizer {
 	 * @param mixed $value The submitted value.
 	 * @return int The non-negative integer value.
 	 */
-	public static function mds_rm_sanitize_fallback_number( $value ) {
+	public static function sanitize_fallback_number( $value ) {
 		return is_scalar( $value ) ? min( 2000, absint( $value ) ) : 0;
 	}
 
@@ -218,7 +218,7 @@ final class MDS_RM_Customizer {
 	 *
 	 * @return string CSS custom-property declarations.
 	 */
-	public static function mds_rm_get_release_fallback_style_attribute() {
+	public static function get_release_fallback_style_attribute() {
 		$number_settings = array(
 			'--mds-fallback-max-width' => array( 'mds_rm_release_fallback_max_width', 1200, 480, 2000 ),
 			'--mds-fallback-column-gap' => array( 'mds_rm_release_fallback_column_gap', 40, 0, 120 ),

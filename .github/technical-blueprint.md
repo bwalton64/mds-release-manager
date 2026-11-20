@@ -116,7 +116,7 @@ mds-release-manager/
 - **`template_redirect`** → `MDS_RM_Assets::handle_global_redirect()` — Redirects release pages if enabled.
 - **`template_redirect`** → `MDS_RM_Artist_Routing::redirect()` — Redirects an Artist to its valid enabled homepage with HTTP 302, except in admin, previews, feeds, and REST requests. Invalid, missing, or self-referencing URLs leave the Artist page available and show a warning in Artist Settings.
 - **`admin_enqueue_scripts`** → `MDS_RM_Assets::admin_assets()` — Loads admin JS/CSS.
-- **`customize_register`** → `MDS_RM_Customizer::mds_rm_customize_register()` — Adds Customizer settings.
+- **`customize_register`** → `MDS_RM_Customizer::customize_register()` — Adds Customizer settings.
 - **`enqueue_block_assets`** → `MDS_RM_Release_Meta::enqueue_assets()` — Loads metadata CSS and icon assets in the frontend and editor.
 - **`rest_api_init`** → `MDS_RM_REST_API::mds_rm_register_rest_routes()` — Registers REST endpoints.
 - **`add_meta_boxes`** → `MDS_RM_Admin_Interface::add_meta_boxes()` — Adds release/artist meta boxes.
