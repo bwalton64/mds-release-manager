@@ -21,7 +21,7 @@ final class MDS_RM_Logger {
 	 *
 	 * @param mixed $message The value to log.
 	 */
-	public static function log( $message ) {
+	public static function log( mixed $message ): void {
 		if (
 			! defined( 'WP_DEBUG' )
 			|| true !== WP_DEBUG
