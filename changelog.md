@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Add an isolated Playwright smoke suite covering Release and Artist fallbacks, Gutenberg metadata persistence, REST settings saves, and rewrite setup and cleanup.
 
 ### Changed
+- Serve Font Awesome Free locally instead of using a CDN. Existing icon settings and source selections continue to work.
 - Load the five admin views from the plugin only, localize their labels, and move their layout styles into CSS. Theme overrides still work for the Artist and Release frontend fallbacks.
 - Register Release Meta, Release Links, and Artist Discography from `block.json` without changing their saved markup or PHP renderers. Move core-block metadata bindings into a dedicated editor script.
 - Organize PHP classes by function and register runtime hooks on `plugins_loaded`. Activation and deactivation callbacks still register when the plugin file loads.

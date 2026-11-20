@@ -76,6 +76,7 @@ try {
 	update_post_meta( $state['release'], 'streaming_links', wp_slash( wp_json_encode( array( 'Spotify' => $spotify ) ) ) );
 	$check( wp_set_post_terms( $state['release'], array( (int) $term->term_id ), 'release_format' ) );
 	update_option( 'mds_rm_global_redirect', '0' );
+	update_option( 'mds_rm_fa_support', 'cdn' );
 	update_option( 'mds_rm_artist_image_cleanup_complete', '1' );
 
 	echo 'MDS_RM_TEST_JSON:' . wp_json_encode( array(

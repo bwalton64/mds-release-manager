@@ -39,6 +39,33 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			const fallback = page.locator('.mds-release-fallback');
 			await expect(fallback.getByText(fixture.label, { exact: true })).toBeVisible();
 			await expect(fallback.getByRole('link', { name: /spotify/i })).toHaveAttribute('href', fixture.spotify);
+			const font = await fallback.getByRole('link', { name: /spotify/i }).locator('.fa-spotify').evaluate(async (icon) => {
+				const stylesheet = document.querySelector('#mds-font-awesome-css');
+				if (!stylesheet) {
+					return null;
+				}
+				const style = getComputedStyle(icon, '::before');
+				const [face] = await document.fonts.load(`${style.fontWeight} ${style.fontSize} ${style.fontFamily}`, '\uf1bc');
+				const { origin, pathname } = new URL(stylesheet.href);
+				return { origin, pathname, glyph: style.content, family: face?.family, status: face?.status };
+			});
+			expect(font).toEqual({
+				origin,
+				pathname: expect.stringMatching(/\/assets\/fontawesome\/css\/all\.css$/),
+				glyph: '"\uf1bc"',
+				family: 'Font Awesome 6 Brands',
+				status: 'loaded',
+			});
+		});
+
+		await test.step('Legacy Font Awesome source still loads; disabled source does not', async () => {
+			runWpCli(['option', 'update', 'mds_rm_fa_support', 'internal']);
+			await page.goto(fixture.releaseUrl);
+			await expect(page.locator('#mds-font-awesome-css')).toHaveAttribute('href', /\/assets\/fontawesome\/css\/all\.css/);
+			runWpCli(['option', 'update', 'mds_rm_fa_support', 'none']);
+			await page.goto(fixture.releaseUrl);
+			await expect(page.locator('#mds-font-awesome-css')).toHaveCount(0);
+			runWpCli(['option', 'update', 'mds_rm_fa_support', 'cdn']);
 		});
 
 		await test.step('Artist fallback renders the linked release in Discography', async () => {

@@ -62,6 +62,8 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 - **Elementor:** For Elementor widget integration (Free or Pro)
 - **LiteSpeed Cache:** Automatic cache purge on release updates
 
+Font Awesome Free is bundled and loaded locally by default. Under Releases > Settings, you can select a theme or plugin that already provides the icons, or disable the bundled stylesheet.
+
 ### Multisite Support
 - Fully compatible with WordPress Multisite networks
 - Network activation recommended for hub+spoke setups

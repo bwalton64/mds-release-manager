@@ -236,7 +236,7 @@ mds-release-manager/
 - `_wp_attached_file` (string) — Attached file path.
 
 ### wp_options Keys (Site-Level)
-- `mds_rm_fa_support` — Font Awesome source: `cdn`, `plugin`, `theme`, or `none` (`internal` is supported for legacy configurations).
+- `mds_rm_fa_support` — Font Awesome source: `cdn` and legacy `internal` load bundled Font Awesome Free 6.4.0; `plugin`, `theme`, and `none` do not enqueue the bundled library. Assets and upstream license are in `assets/fontawesome/`, from the official `@fortawesome/fontawesome-free@6.4.0` npm package.
 - Legacy widget options remain stored for review but do not style the Release Meta Block:
 - `mds_rm_widget_bg_color` — Widget background color.
 - `mds_rm_shortcode_gap` — Gap between shortcode elements.

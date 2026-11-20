@@ -616,7 +616,7 @@ final class MDS_RM_Admin_Interface {
 		$active_players = is_array( $active_players ) ? $active_players : array();
 
 		$fa_sources = array(
-			'cdn'    => __( 'Load Free Font-Awesome 6 via CDN', 'mds-release-manager' ),
+			'cdn'    => __( 'Load bundled Font Awesome Free 6', 'mds-release-manager' ),
 			'plugin' => __( 'Use existing plugin (Font Awesome Official)', 'mds-release-manager' ),
 			'theme'  => __( 'Use theme provided Font-Awesome', 'mds-release-manager' ),
 			'none'   => __( 'Do not load Font-Awesome', 'mds-release-manager' ),

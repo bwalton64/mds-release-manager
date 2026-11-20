@@ -57,7 +57,7 @@ final class MDS_RM_Assets {
 		if ( in_array( 'internal', (array) $fa_support, true ) || in_array( 'cdn', (array) $fa_support, true ) ) {
 			wp_register_style(
 				'mds-font-awesome',
-				'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+				MDS_RM_URL . 'assets/fontawesome/css/all.css',
 				array(),
 				'6.4.0'
 			);

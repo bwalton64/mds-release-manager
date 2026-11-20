@@ -16,6 +16,8 @@ MDS Release Manager adds Release and Artist post types. Organize releases by for
 
 Release and Artist pages include default layouts when applicable. Use the Release Meta, Release Links, and Artist Discography blocks or shortcodes to place the same components in your own layouts. CSV import and export help manage larger catalogs.
 
+The default icon source is Font Awesome Free 6.4.0, bundled locally with its [upstream license](https://fontawesome.com/license/free). The [upstream source](https://github.com/FortAwesome/Font-Awesome/tree/6.4.0) is available on GitHub.
+
 == Installation ==
 
 1. Upload the `mds-release-manager` folder to `wp-content/plugins`, or upload the plugin ZIP through Plugins > Add New > Upload Plugin.
