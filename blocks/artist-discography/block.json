@@ -1,0 +1,14 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "mds-rm/artist-discography",
+	"title": "Artist Discography",
+	"category": "widgets",
+	"icon": "album",
+	"textdomain": "mds-release-manager",
+	"usesContext": ["postId", "postType"],
+	"attributes": {
+		"artistId": { "type": "integer", "default": 0 }
+	},
+	"editorScript": "mds-rm-artist-discography-editor"
+}

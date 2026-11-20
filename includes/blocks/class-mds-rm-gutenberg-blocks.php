@@ -35,11 +35,11 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @since 0.9.0
 	 */
 	public static function enqueue_block_editor_assets() {
-		$script_path = MDS_RM_PATH . 'js/blocks.js';
+		$script_path = MDS_RM_PATH . 'blocks/core-block-extensions.js';
 
 		wp_register_script(
 			'mds-rm-blocks-js',
-			MDS_RM_URL . 'js/blocks.js',
+			MDS_RM_URL . 'blocks/core-block-extensions.js',
 			array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-compose', 'wp-hooks', 'wp-server-side-render', 'wp-block-editor', 'wp-i18n', 'wp-data' ),
 			filemtime( $script_path ),
 			true
@@ -77,23 +77,23 @@ final class MDS_RM_Gutenberg_Blocks {
 	}
 
 	/**
-	 * Registers the Release Meta Block.
+	 * Registers the plugin's dynamic blocks.
 	 *
 	 * @since 0.9.0
 	 */
 	public static function register_gutenberg_widget_blocks() {
+		$edit_script = 'blocks/artist-discography/edit.js';
+		wp_register_script(
+			'mds-rm-artist-discography-editor',
+			MDS_RM_URL . $edit_script,
+			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-server-side-render', 'wp-block-editor' ),
+			filemtime( MDS_RM_PATH . $edit_script ),
+			true
+		);
 		register_block_type(
-			'mds-rm/artist-discography',
+			MDS_RM_PATH . 'blocks/artist-discography',
 			array(
-				'api_version'     => 3,
 				'render_callback' => array( MDS_RM_Discography::class, 'render_block' ),
-				'uses_context'    => array( 'postId', 'postType' ),
-				'attributes'      => array(
-					'artistId' => array(
-						'type'    => 'integer',
-						'default' => 0,
-					),
-				),
 			)
 		);
 		self::register_release_meta_block();

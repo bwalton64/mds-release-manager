@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phase 4 complete; Phase 5 in progress
+**Status:** Approved — Phases 0–5 complete
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -108,7 +108,7 @@ mds-release-manager/
 │   ├── artist-fallback.php
 │   └── release-fallback.php
 ├── css/                                 # Unchanged (admin/frontend styles)
-├── js/                                  # Admin scripts; blocks.js content moves to blocks/*/edit.js
+├── js/                                  # Admin scripts; Gutenberg editor scripts live in blocks/
 └── languages/                           # NEW — generated .pot file
 ```
 
@@ -438,9 +438,17 @@ not reproduce. No template paths or block definitions changed.
 
 ### Phase 5 — block.json migration
 
-Release Meta now registers from metadata. Its existing saved block passed editor
-validation and rendered on the frontend before and after the migration. Release
-Links also registers from metadata, with its saved attributes and editor preview verified.
+**Completed:** Release Meta, Release Links, and Artist Discography now register
+from metadata using their existing PHP renderers. The legacy editor bundle was
+removed after the migrated blocks passed the editor tests. The core-block
+metadata filters remain in `blocks/core-block-extensions.js`.
+
+On `dev-test` (WordPress 7.1.5 / PHP 8.2.29), all 48 tracked hooks and the three
+server block schemas and callbacks matched Phase 4. The three saved custom
+blocks and a metadata-bound Paragraph produced byte-identical rendered HTML
+before and after migration. Both smoke tests passed, including block validity,
+editor previews, and a Gutenberg re-save with no change to stored block markup.
+
 For each block (`release-meta`, `release-links`, `artist-discography`), one block per commit:
 1. Create `blocks/{name}/block.json` (apiVersion 3, same block name, attributes, supports,
    textdomain) and move its editor code out of `js/blocks.js` into `blocks/{name}/edit.js`.
@@ -490,4 +498,4 @@ can no longer override the admin view.
 - No Settings API migration (REST-based saving stays; it also backs the Abilities API).
 - No change to the hub/spoke sync model, Elementor widget behavior, or rendered frontend markup.
 - No new runtime dependencies (no Composer autoloading, no build pipeline for admin JS;
-  block.json blocks use plain ES5/vanilla JS consistent with current `blocks.js`).
+  block.json blocks use plain JavaScript with WordPress editor dependencies).

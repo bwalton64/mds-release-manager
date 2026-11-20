@@ -15,9 +15,21 @@ const test = base.extend({
 	}, { timeout: 30_000 }],
 });
 
+function saveMarkup(postId, markup) {
+	runWpCli(['eval', `if (is_wp_error(wp_update_post(array('ID' => ${postId}, 'post_content' => ${JSON.stringify(markup)}), true))) WP_CLI::error('Could not save block fixture.');`]);
+}
+
+async function expectUnchangedMarkup(page, markup) {
+	await expect.poll(() => page.evaluate(() => {
+		const editor = window.wp?.data?.select('core/block-editor');
+		return editor && window.wp.blocks.serialize(editor.getBlocks());
+	})).toBe(markup);
+}
+
 test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', async ({ page, fixture }) => {
-	test.setTimeout(60_000);
+		test.setTimeout(90_000);
 		const origin = new URL(process.env.MDS_RM_TEST_URL).origin;
+		const savedMarkup = [];
 		await page.route('**/*', (route) => new URL(route.request().url()).origin === origin
 			? route.continue()
 			: route.abort());
@@ -85,7 +97,8 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 				styles: { desktop: { color: '#123456' } },
 			};
 			const markup = `<!-- wp:${name} ${JSON.stringify(attributes)} /-->`;
-			runWpCli(['eval', `if (is_wp_error(wp_update_post(array('ID' => ${fixture.state.release}, 'post_content' => ${JSON.stringify(markup)}), true))) WP_CLI::error('Could not save block fixture.');`]);
+			savedMarkup.push(markup);
+			saveMarkup(fixture.state.release, markup);
 
 			await page.goto(fixture.releaseUrl);
 			await expect(page.locator('.wp-block-mds-rm-release-meta .mds-release-meta'))
@@ -101,13 +114,15 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
 				return canvas.querySelector('.editor-styles-wrapper .mds-release-meta, .block-editor-block-list__layout .mds-release-meta')?.textContent;
 			})).toContain(`${fixture.label} edited`);
+			await expectUnchangedMarkup(page, markup);
 		});
 
 		await test.step('Previously saved Release Links block opens and renders', async () => {
 			const name = 'mds-rm/release-links';
 			const attributes = { items: [{ name: 'Spotify', enabled: true }], newTab: false, showAudio: false };
 			const markup = `<!-- wp:${name} ${JSON.stringify(attributes)} /-->`;
-			runWpCli(['eval', `if (is_wp_error(wp_update_post(array('ID' => ${fixture.state.release}, 'post_content' => ${JSON.stringify(markup)}), true))) WP_CLI::error('Could not save block fixture.');`]);
+			savedMarkup.push(markup);
+			saveMarkup(fixture.state.release, markup);
 			await page.goto(fixture.releaseUrl);
 			await expect(page.locator('.wp-block-mds-rm-release-links').getByRole('link', { name: /spotify/i }))
 				.toHaveAttribute('href', fixture.spotify);
@@ -121,5 +136,61 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
 				return canvas.querySelector('[data-type="mds-rm/release-links"] a[href*="open.spotify.com"]')?.href;
 			})).toBe(fixture.spotify);
+			await expectUnchangedMarkup(page, markup);
+		});
+
+		await test.step('Previously saved Artist Discography and dynamic Paragraph open and render', async () => {
+			const name = 'mds-rm/artist-discography';
+			const artistId = fixture.state.artist;
+			const markup = [
+				`<!-- wp:${name} {"artistId":${artistId}} /-->`,
+				'<!-- wp:paragraph {"mdsMetaField":"record_label"} -->\n<p>Static fallback text.</p>\n<!-- /wp:paragraph -->',
+			].join('\n\n');
+			savedMarkup.push(markup);
+			saveMarkup(fixture.state.release, markup);
+			const title = `${fixture.title} edited`;
+			await page.goto(fixture.releaseUrl);
+			const discography = page.locator('.wp-block-mds-rm-artist-discography');
+			await expect(discography.getByRole('link', { name: title })).toHaveAttribute('href', fixture.releaseUrl);
+			await expect(page.getByText(`${fixture.label} edited`, { exact: true }).filter({ visible: true }).and(page.locator('p')))
+				.toBeVisible();
+			await expect(page.getByText('Static fallback text.', { exact: true })).toHaveCount(0);
+
+			await page.goto(`/wp-admin/post.php?post=${fixture.state.release}&action=edit`);
+			await expect.poll(() => page.evaluate((blockName) => {
+				const blocks = window.wp?.data?.select('core/block-editor')?.getBlocks();
+				const discography = blocks?.find(({ name }) => name === blockName);
+				const paragraph = blocks?.find(({ name }) => name === 'core/paragraph');
+				return {
+					artistId: discography?.attributes.artistId,
+					discographyValid: discography?.isValid,
+					metaField: paragraph?.attributes.mdsMetaField,
+					paragraphValid: paragraph?.isValid,
+				};
+			}, name)).toEqual({ artistId, discographyValid: true, metaField: 'record_label', paragraphValid: true });
+			await expect.poll(() => page.evaluate(() => {
+				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
+				return canvas.querySelector('[data-type="mds-rm/artist-discography"] .mds-discography a')?.href;
+			})).toBe(fixture.releaseUrl);
+			await expect.poll(() => page.evaluate(() => {
+				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
+				return !!canvas.querySelector('[data-type="core/paragraph"].mds-dynamic-block-active');
+			})).toBe(true);
+			await expectUnchangedMarkup(page, markup);
+		});
+
+		await test.step('Re-saving the blocks leaves stored markup byte-identical', async () => {
+			const markup = savedMarkup.join('\n\n');
+			const postId = fixture.state.release;
+			saveMarkup(postId, markup);
+			await page.goto(`/wp-admin/post.php?post=${postId}&action=edit`);
+			await expectUnchangedMarkup(page, markup);
+			const title = `${fixture.title} re-saved`;
+			await page.evaluate((newTitle) => window.wp.data.dispatch('core/editor').editPost({ title: newTitle }), title);
+			await page.getByRole('button', { name: 'Save', exact: true }).click();
+			await expect.poll(() => readWpJson([
+				'eval',
+				`echo 'MDS_RM_TEST_JSON:' . wp_json_encode(array(get_post_field('post_title', ${postId}, 'raw'), get_post_field('post_content', ${postId}, 'raw')));`,
+			])).toEqual([title, markup]);
 		});
 });

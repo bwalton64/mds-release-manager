@@ -14,7 +14,7 @@
 
 **Build Tools:**
 - None. Direct PHP class autoloading via SPL (not PSR-4 composer).
-- Assets: Vanilla JS. `/js/blocks.js` for the Gutenberg block editor; `/js/meta-boxes.js`, `/js/release-taxonomies.js`, and `/js/settings.js` for admin screens (using the jQuery bundled with WordPress).
+- Assets: Vanilla JS. Block editor scripts live in `/blocks/`; `/js/meta-boxes.js`, `/js/release-taxonomies.js`, and `/js/settings.js` are for admin screens (using the jQuery bundled with WordPress).
 - Styles: Vanilla CSS in `/css/frontend.css`, `/css/release-meta.css`, `/css/release-links.css`, `/css/release-fallback.css`, `/css/artist-fallback.css`, and `/css/admin-styles.css`.
 - No build pipeline; all code is interpreted live.
 
@@ -71,8 +71,13 @@ mds-release-manager/
 │   ├── release-fallback.php
 │   ├── release-meta-box.php
 │   └── settings-page.php
-├── js/                               # Editor and admin scripts
-│   ├── blocks.js                     # Gutenberg block editor registration
+├── blocks/                           # Gutenberg metadata and editor assets
+│   ├── artist-discography/           # block.json and edit.js
+│   ├── release-links/                # block.json and edit.js
+│   ├── release-meta/                 # block.json and edit.js
+│   ├── core-block-extensions.js       # Metadata bindings for core blocks
+│   └── style-control.js              # Shared Release block inspector controls
+├── js/                               # Admin scripts
 │   ├── meta-boxes.js                 # Meta box interactivity and shortcode copy
 │   ├── release-taxonomies.js         # Native tag editor integration
 │   └── settings.js                   # Settings page tabs
@@ -171,7 +176,7 @@ mds-release-manager/
 - Pagination uses `mds_discography_page_{artist_id}`. The table scrolls horizontally when necessary. Artist fallback Customizer table styles apply to the automatic table; independently placed blocks and shortcodes use their surrounding theme styles.
 
 ### Gutenberg Block
-- Release Meta and Release Links register from `blocks/{name}/block.json` with their existing PHP renderers. Artist Discography still uses inline registration and an editor definition in `js/blocks.js`.
+- Release Meta, Release Links, and Artist Discography register from `blocks/{name}/block.json` with their existing PHP renderers. The editor filters for metadata bindings on core blocks live separately in `blocks/core-block-extensions.js`.
 - **`mds-rm/release-meta`** — Dynamic API v3 block with `postId` context, `upcOverride`, ordered `items`, and per-device `styles`. The Elementor widget `mds_release_meta` uses the same renderer. The block icon is `dashicons-album`.
 - Available fields: `release_year`, `record_label`, `distributor`, `upc_ean`, `release_format`, `release_date`, `release_title`, `artist`, `release_tags`. Only the first four are enabled by default; empty values are omitted. Full date uses the site's date format; artist resolves the stored artist UUID.
 - Each field can be reordered, hidden, and assigned a tooltip and Dashicons or Font Awesome classes. Shortcode `fields` is a comma-separated ordered selection; `icon_FIELD` and `title_FIELD` override each field's icon and tooltip, for example:

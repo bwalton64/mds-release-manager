@@ -314,8 +314,14 @@ mds-release-manager/
 │   ├── release-links.css               # Release Links block/shortcode styles
 │   └── release-meta.css                # Release Meta block/shortcode styles
 │
-├── js/                                 # JavaScript directory
-│   ├── blocks.js                       # Gutenberg block editor registration
+├── blocks/                             # Gutenberg block.json files and editor scripts
+│   ├── artist-discography/
+│   ├── release-links/
+│   ├── release-meta/
+│   ├── core-block-extensions.js        # Metadata bindings for core blocks
+│   └── style-control.js                # Shared Release block style controls
+│
+├── js/                                 # Admin JavaScript
 │   ├── meta-boxes.js                   # Meta box interactivity and shortcode copy-to-clipboard
 │   ├── release-taxonomies.js           # Native tag editor integration for releases
 │   └── settings.js                     # Settings page tab navigation
@@ -335,7 +341,8 @@ mds-release-manager/
 - **includes/**: PHP classes using the `class-mds-rm-*.php` naming convention and WordPress PHP coding style
 - **templates/**: Reusable PHP templates for admin screens and frontend rendering
 - **css/**: Responsive stylesheets with mobile-first design
-- **js/**: Block editor scripts (WordPress packages) and admin scripts (jQuery bundled with WordPress)
+- **blocks/**: Gutenberg metadata and editor scripts; no build step required
+- **js/**: Admin scripts (jQuery bundled with WordPress)
 - **.github/**: Technical documentation and contributor guidance
 - **.local/**: Historical implementation summaries and audit reports kept for reference
 
