@@ -58,7 +58,7 @@ final class MDS_RM_Frontend_Templates {
 			return false;
 		}
 		$post = get_post();
-		if ( ! $post instanceof WP_Post || 'artist' !== $post->post_type || MDS_RM_Builder_Detection::mds_rm_detect_builder( $post->ID ) ) {
+		if ( ! $post instanceof WP_Post || 'artist' !== $post->post_type || MDS_RM_Builder_Detection::detect_builder( $post->ID ) ) {
 			return false;
 		}
 		return $post;
@@ -76,7 +76,7 @@ final class MDS_RM_Frontend_Templates {
 			|| is_admin()
 			|| '1' === get_option( 'mds_rm_global_redirect', '0' )
 			|| ! $post_id
-			|| MDS_RM_Builder_Detection::mds_rm_detect_builder( $post_id )
+			|| MDS_RM_Builder_Detection::detect_builder( $post_id )
 		) {
 			return;
 		}
@@ -145,7 +145,7 @@ final class MDS_RM_Frontend_Templates {
 
 		$post_id = get_queried_object_id();
 		if (
-			MDS_RM_Builder_Detection::mds_rm_detect_builder( $post_id )
+			MDS_RM_Builder_Detection::detect_builder( $post_id )
 			|| (
 				$instance instanceof WP_Block
 				&& isset( $instance->context['postId'] )
@@ -229,7 +229,7 @@ final class MDS_RM_Frontend_Templates {
 			|| 'release' !== $post->post_type
 			|| ( $post_id && $post->ID !== absint( $post_id ) )
 			|| '1' === get_option( 'mds_rm_global_redirect', '0' )
-			|| MDS_RM_Builder_Detection::mds_rm_detect_builder( $post->ID )
+			|| MDS_RM_Builder_Detection::detect_builder( $post->ID )
 		) {
 			return false;
 		}

@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phase 2 in progress
+**Status:** Approved — Phase 2 complete; Phase 3 not started
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -372,7 +372,11 @@ migrated; the form actions, nonce fields, and export output matched the baseline
 declarations matched the baseline. `Virtual_Media` is migrated; the attachment URL,
 dimensions, metadata, and REST response matched on `dev-test`. `Release_Model` is
 migrated, including its internal callers and registered UPC sanitizer. UPC normalization,
-format lookup, and invalid-input results matched the baseline. `Builder_Detection` is next.
+format lookup, and invalid-input results matched the baseline. `Builder_Detection`
+is migrated; all five builder detections via stored metadata and the extension filter
+matched the baseline. `Discography`, `Release_Meta`, and `Release_Links` already
+follow the naming convention. Their shortcode callbacks and the extension-facing
+`MDS_RM_Release_Meta::render()` remain callable. No further Phase 2 renames are needed.
 
 **Separate integration follow-up:** WooCommerce checks for a global
 `mds_rm_get_or_create_virtual_attachment()` before using its fallback. The main plugin

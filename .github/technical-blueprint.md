@@ -133,7 +133,7 @@ mds-release-manager/
 - **`post_thumbnail_html`** → `MDS_RM_Frontend_Templates::filter_release_featured_image()` — Suppresses the theme's duplicate main thumbnail only when the eligible Release or Artist fallback renders an image.
 - **`render_block`** → `MDS_RM_Frontend_Templates::filter_release_author_group()` — Hides theme author blocks on singular Release and Artist pages, including the complete Twenty Twenty-Five byline pattern; other sibling blocks, post content, and builder layouts are excluded.
 - **`wp_enqueue_scripts`** → `MDS_RM_Frontend_Templates::enqueue_release_fallback_assets()` — Loads fallback CSS before the header for eligible Release pages.
-- **Builder detection** → `MDS_RM_Builder_Detection::mds_rm_detect_builder()` — Detects Elementor, Divi 4/5, Bricks, WPBakery, and Beaver Builder. The `mds_rm_detected_content_builder` filter permits additional detection.
+- **Builder detection** → `MDS_RM_Builder_Detection::detect_builder()` — Detects Elementor, Divi 4/5, Bricks, WPBakery, and Beaver Builder. The `mds_rm_detected_content_builder` filter permits additional detection.
 - WooCommerce product hooks belong to the separate `mds-woocommerce-integration` plugin, not this plugin.
 
 ### Custom Hooks (Extensibility)
