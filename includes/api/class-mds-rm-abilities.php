@@ -26,7 +26,7 @@ final class MDS_RM_Abilities {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		if ( ! function_exists( 'wp_register_ability' ) ) {
 			return;
 		}
@@ -40,7 +40,7 @@ final class MDS_RM_Abilities {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_ability_categories() {
+	public static function register_ability_categories(): void {
 		if ( ! function_exists( 'wp_register_ability_category' ) ) {
 			return;
 		}
@@ -59,7 +59,7 @@ final class MDS_RM_Abilities {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_abilities() {
+	public static function register_abilities(): void {
 		if ( ! function_exists( 'wp_register_ability' ) ) {
 			return;
 		}
@@ -308,7 +308,7 @@ final class MDS_RM_Abilities {
 	 * @since 0.9.0
 	 * @return bool Whether the user has read capability.
 	 */
-	public static function check_read_permission() {
+	public static function check_read_permission(): bool {
 		return current_user_can( 'read' );
 	}
 
@@ -318,7 +318,7 @@ final class MDS_RM_Abilities {
 	 * @since 0.9.0
 	 * @return bool Whether the user has manage_options capability.
 	 */
-	public static function check_manage_options_permission() {
+	public static function check_manage_options_permission(): bool {
 		return current_user_can( 'manage_options' );
 	}
 
@@ -328,7 +328,7 @@ final class MDS_RM_Abilities {
 	 * @since 0.9.0
 	 * @return bool Whether the user has manage_network_options capability.
 	 */
-	public static function check_manage_network_options_permission() {
+	public static function check_manage_network_options_permission(): bool {
 		return current_user_can( 'manage_network_options' );
 	}
 
@@ -339,7 +339,7 @@ final class MDS_RM_Abilities {
 	 * @param array $input The input parameters.
 	 * @return array The ability response.
 	 */
-	public static function ability_get_releases( $input ) {
+	public static function ability_get_releases( $input ): array {
 		$per_page = isset( $input['per_page'] ) ? absint( $input['per_page'] ) : 10;
 		$page     = isset( $input['page'] ) ? absint( $input['page'] ) : 1;
 
@@ -383,7 +383,7 @@ final class MDS_RM_Abilities {
 	 * @param array $input The input parameters.
 	 * @return array The ability response.
 	 */
-	public static function ability_save_settings( $input ) {
+	public static function ability_save_settings( $input ): array {
 		try {
 			$providers = array();
 			if ( isset( $input['providers'] ) && is_array( $input['providers'] ) ) {
@@ -444,7 +444,7 @@ final class MDS_RM_Abilities {
 	 * @param array $input The input parameters.
 	 * @return array The ability response.
 	 */
-	public static function ability_save_network_settings( $input ) {
+	public static function ability_save_network_settings( $input ): array {
 		try {
 			if ( isset( $input['master_blog_id'] ) ) {
 				update_site_option( 'mds_rm_master_blog_id', absint( $input['master_blog_id'] ) );
@@ -475,7 +475,7 @@ final class MDS_RM_Abilities {
 	 * @param array $input The input parameters.
 	 * @return array The ability response.
 	 */
-	public static function ability_sync_network( $input ) {
+	public static function ability_sync_network( $input ): array {
 		if ( get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
 			return array(
 				'success' => false,
