@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phases 0–7 complete; Phase 8 in progress
+**Status:** Phases 0–8 complete
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -604,10 +604,20 @@ all ten affected files. Both Playwright tests passed on `dev-test`, with all
 **0 errors and 0 warnings** on the extracted release package at `6eadc1d`.
 This is not a large-catalog performance benchmark.
 
-The uninstall inventory review found two remaining limits in the opt-in wipe:
-WordPress defaults to 100 sites when `get_sites()` has no arguments, and
-`post_status => 'any'` excludes Trash. Resolve and verify these edge cases
-before marking Phase 8 complete. No live site was uninstalled.
+The uninstall inventory review found and resolved two limits in the opt-in wipe.
+The wipe now enumerates every site in the current network and includes trashed
+Release and Artist posts. The default uninstall behavior is unchanged.
+`php tests\uninstall.php` passed with WordPress test doubles for default,
+opt-in single-site, and opt-in multisite uninstall. The multisite fixture
+covered 105 sites and verified that a separate network and unrelated posts and
+settings were preserved. No live site was uninstalled.
+
+**Final gate passed at `f05b526`:** The extracted release package passed PHPCS
+and Plugin Check 2.2.0 with zero errors and zero warnings. Both Playwright
+smoke tests passed again on `dev-test`. The live core hub/spoke regression
+passed earlier in this phase. This phase did not test a live Elementor
+installation, sibling integration configuration, media synchronization, or the
+minimum PHP 8.0 / WordPress 6.9 combination. Nothing was submitted to WordPress.org.
 
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
