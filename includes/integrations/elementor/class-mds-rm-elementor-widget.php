@@ -59,8 +59,17 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 			);
 		}
 		$repeater = new Repeater();
-		$repeater->add_control( 'field', array( 'label' => __( 'Field', 'mds-release-manager' ), 'type' => Controls_Manager::SELECT, 'options' => $options ) );
-		$repeater->add_control( 'enabled', array( 'label' => __( 'Show field', 'mds-release-manager' ), 'type' => Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes' ) );
+		$repeater->add_control( 'field', array(
+'label'   => __( 'Field', 'mds-release-manager' ),
+'type'    => Controls_Manager::SELECT,
+'options' => $options
+) );
+		$repeater->add_control( 'enabled', array(
+'label'        => __( 'Show field', 'mds-release-manager' ),
+'type'         => Controls_Manager::SWITCHER,
+'return_value' => 'yes',
+'default'      => 'yes'
+) );
 		$repeater->add_control(
 			'icon_preset',
 			array(
@@ -68,18 +77,18 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'custom',
 				'options' => array(
-					'custom'                          => __( 'Custom icon classes', 'mds-release-manager' ),
-					'none'                            => __( 'No icon', 'mds-release-manager' ),
-					'dashicons dashicons-album'       => 'Album (Dashicons)',
+					'custom'                           => __( 'Custom icon classes', 'mds-release-manager' ),
+					'none'                             => __( 'No icon', 'mds-release-manager' ),
+					'dashicons dashicons-album'        => 'Album (Dashicons)',
 					'dashicons dashicons-calendar-alt' => 'Calendar (Dashicons)',
-					'dashicons dashicons-groups'      => 'Artist (Dashicons)',
-					'dashicons dashicons-tag'         => 'Tag (Dashicons)',
-					'dashicons dashicons-star-filled' => 'Star (Dashicons)',
-					'fas fa-calendar'                 => 'Calendar (Font Awesome)',
-					'fas fa-compact-disc'             => 'Disc (Font Awesome)',
-					'fas fa-tower-broadcast'          => 'Distributor (Font Awesome)',
-					'fas fa-barcode'                  => 'Barcode (Font Awesome)',
-					'fas fa-music'                    => 'Music (Font Awesome)',
+					'dashicons dashicons-groups'       => 'Artist (Dashicons)',
+					'dashicons dashicons-tag'          => 'Tag (Dashicons)',
+					'dashicons dashicons-star-filled'  => 'Star (Dashicons)',
+					'fas fa-calendar'                  => 'Calendar (Font Awesome)',
+					'fas fa-compact-disc'              => 'Disc (Font Awesome)',
+					'fas fa-tower-broadcast'           => 'Distributor (Font Awesome)',
+					'fas fa-barcode'                   => 'Barcode (Font Awesome)',
+					'fas fa-music'                     => 'Music (Font Awesome)',
 				),
 			)
 		);
@@ -92,7 +101,10 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 				'condition'   => array( 'icon_preset' => 'custom' ),
 			)
 		);
-		$repeater->add_control( 'title', array( 'label' => __( 'Tooltip title', 'mds-release-manager' ), 'type' => Controls_Manager::TEXT ) );
+		$repeater->add_control( 'title', array(
+'label' => __( 'Tooltip title', 'mds-release-manager' ),
+'type'  => Controls_Manager::TEXT
+) );
 		$this->add_control(
 			'items',
 			array(
@@ -105,7 +117,10 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 		);
 		$this->end_controls_section();
 
-		$this->start_controls_section( 'release_meta_style', array( 'label' => __( 'Release Meta Styles', 'mds-release-manager' ), 'tab' => Controls_Manager::TAB_STYLE ) );
+		$this->start_controls_section( 'release_meta_style', array(
+'label' => __( 'Release Meta Styles', 'mds-release-manager' ),
+'tab'   => Controls_Manager::TAB_STYLE
+) );
 		$this->add_control(
 			'responsive_note',
 			array(
@@ -130,9 +145,15 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 			);
 			if ( 'align' === $field['type'] ) {
 				$control['type']    = Controls_Manager::SELECT;
-				$control['options'] = array( '' => 'Default / inherit', 'flex-start' => 'Start', 'center' => 'Center', 'flex-end' => 'End', 'space-between' => 'Space between' );
+				$control['options'] = array(
+''              => 'Default / inherit',
+'flex-start'    => 'Start',
+'center'        => 'Center',
+'flex-end'      => 'End',
+'space-between' => 'Space between'
+);
 			} elseif ( in_array( $field['type'], array( 'vertical_align', 'direction', 'wrap' ), true ) ) {
-				$choices = array(
+				$choices            = array(
 					'vertical_align' => array( 'flex-start', 'center', 'flex-end', 'stretch' ),
 					'direction'      => array( 'row', 'row-reverse', 'column', 'column-reverse' ),
 					'wrap'           => array( 'wrap', 'nowrap', 'wrap-reverse' ),
@@ -144,7 +165,14 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 				}
 			} elseif ( 'border_style' === $field['type'] ) {
 				$control['type']    = Controls_Manager::SELECT;
-				$control['options'] = array( '' => 'Default / inherit', 'none' => 'None', 'solid' => 'Solid', 'dashed' => 'Dashed', 'dotted' => 'Dotted', 'double' => 'Double' );
+				$control['options'] = array(
+''       => 'Default / inherit',
+'none'   => 'None',
+'solid'  => 'Solid',
+'dashed' => 'Dashed',
+'dotted' => 'Dotted',
+'double' => 'Double'
+);
 			} elseif ( 'color' === $field['type'] ) {
 				$control['description'] = __( 'Hex color, transparent, or inherit.', 'mds-release-manager' );
 			} elseif ( in_array( $field['type'], array( 'length', 'spacing' ), true ) ) {
@@ -171,7 +199,11 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 		}
 		$styles = array();
 		foreach ( MDS_RM_Release_Meta::style_fields() as $key => $_field ) {
-			foreach ( array( 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ) as $device => $suffix ) {
+			foreach ( array(
+'desktop' => '',
+'tablet'  => '_tablet',
+'mobile'  => '_mobile'
+) as $device => $suffix ) {
 				$name = 'style_' . $key . $suffix;
 				if ( isset( $settings[ $name ] ) && '' !== $settings[ $name ] ) {
 					$styles[ $device ][ $key ] = $settings[ $name ];

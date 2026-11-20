@@ -53,13 +53,13 @@ final class MDS_RM_Admin_Interface {
 		}
 		$artists = get_posts(
 			array(
-				'post_type'       => 'artist',
-				'post_status'     => array_keys( get_post_stati() ),
-				'posts_per_page'  => 100,
-				'fields'          => 'ids',
-				'meta_key'        => 'artist_featured_image',
-				'orderby'         => 'ID',
-				'order'           => 'ASC',
+				'post_type'      => 'artist',
+				'post_status'    => array_keys( get_post_stati() ),
+				'posts_per_page' => 100,
+				'fields'         => 'ids',
+				'meta_key'       => 'artist_featured_image',
+				'orderby'        => 'ID',
+				'order'          => 'ASC',
 			)
 		);
 		foreach ( $artists as $artist_id ) {
@@ -498,8 +498,8 @@ final class MDS_RM_Admin_Interface {
 		}
 
 		if ( isset( $_POST['upc_ean'] ) && is_string( $_POST['upc_ean'] ) ) {
-			$previous_upc    = get_post_meta( $post_id, 'upc_ean', true );
-			$upc_clean       = preg_replace( '/[^0-9]/', '', sanitize_text_field( wp_unslash( $_POST['upc_ean'] ) ) );
+			$previous_upc = get_post_meta( $post_id, 'upc_ean', true );
+			$upc_clean    = preg_replace( '/[^0-9]/', '', sanitize_text_field( wp_unslash( $_POST['upc_ean'] ) ) );
 			update_post_meta( $post_id, 'upc_ean', $upc_clean );
 			MDS_RM_Release_Model::remember_previous_upc( $post_id, $previous_upc, $upc_clean );
 		}

@@ -33,7 +33,7 @@ final class MDS_RM_Discography {
 	 */
 	public static function render_block( array $attributes, string $_content, object $block ): string {
 		$artist_id = ! empty( $attributes['artistId'] ) ? absint( $attributes['artistId'] ) : ( isset( $block->context['postId'] ) ? absint( $block->context['postId'] ) : get_the_ID() );
-		$html = self::render( $artist_id );
+		$html      = self::render( $artist_id );
 		return $html ? '<div ' . get_block_wrapper_attributes() . '>' . $html . '</div>' : '';
 	}
 
@@ -54,29 +54,32 @@ final class MDS_RM_Discography {
 		}
 
 		$page_key = 'mds_discography_page_' . $artist->ID;
-		$page = 1;
+		$page     = 1;
 		if ( isset( $_GET[ $page_key ] ) && is_string( $_GET[ $page_key ] ) && ctype_digit( $_GET[ $page_key ] ) ) {
 			$page = max( 1, (int) $_GET[ $page_key ] );
 		}
-		$query = new WP_Query(
+		$query   = new WP_Query(
 			array(
-				'post_type' => 'release',
-				'post_status' => 'publish',
-				'posts_per_page' => 25,
-				'paged' => $page,
-				'meta_key' => 'artist_id',
-				'meta_value' => $uuid,
-				'orderby' => array( 'date' => 'DESC', 'ID' => 'DESC' ),
+				'post_type'           => 'release',
+				'post_status'         => 'publish',
+				'posts_per_page'      => 25,
+				'paged'               => $page,
+				'meta_key'            => 'artist_id',
+				'meta_value'          => $uuid,
+				'orderby'             => array(
+'date' => 'DESC',
+'ID'   => 'DESC'
+),
 				'ignore_sticky_posts' => true,
 			)
 		);
 		$columns = apply_filters(
 			'mds_rm_discography_columns',
 			array(
-				'title' => __( 'Title', 'mds-release-manager' ),
-				'upc_ean' => __( 'UPC/EAN', 'mds-release-manager' ),
+				'title'        => __( 'Title', 'mds-release-manager' ),
+				'upc_ean'      => __( 'UPC/EAN', 'mds-release-manager' ),
 				'record_label' => __( 'Label', 'mds-release-manager' ),
-				'distributor' => __( 'Distributor', 'mds-release-manager' ),
+				'distributor'  => __( 'Distributor', 'mds-release-manager' ),
 				'release_year' => __( 'Release Year', 'mds-release-manager' ),
 			),
 			$artist
@@ -112,7 +115,7 @@ final class MDS_RM_Discography {
 										$value = '0000-00-00 00:00:00' === $release->post_date ? '' : esc_html( substr( $release->post_date, 0, 4 ) );
 									} elseif ( in_array( $key, array( 'upc_ean', 'record_label', 'distributor' ), true ) ) {
 										$meta_value = get_post_meta( $release->ID, $key, true );
-										$value = is_scalar( $meta_value ) ? esc_html( (string) $meta_value ) : '';
+										$value      = is_scalar( $meta_value ) ? esc_html( (string) $meta_value ) : '';
 									} else {
 										$value = '';
 									}
@@ -138,10 +141,10 @@ final class MDS_RM_Discography {
 					echo wp_kses_post(
 						paginate_links(
 							array(
-								'base' => add_query_arg( $page_key, '%#%' ),
-								'format' => '',
-								'current' => $page,
-								'total' => $query->max_num_pages,
+								'base'      => add_query_arg( $page_key, '%#%' ),
+								'format'    => '',
+								'current'   => $page,
+								'total'     => $query->max_num_pages,
 								'prev_text' => __( 'Previous', 'mds-release-manager' ),
 								'next_text' => __( 'Next', 'mds-release-manager' ),
 							)

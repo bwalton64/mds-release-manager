@@ -96,7 +96,7 @@ final class MDS_RM_Sync {
 			return new WP_Error( 'mds_sync_invalid_format', __( 'Cannot synchronize a release with an invalid or conflicting format.', 'mds-release-manager' ) );
 		}
 
-		$meta            = get_post_meta( $post_id );
+		$meta = get_post_meta( $post_id );
 		if ( 'artist' === $post_type ) {
 			unset( $meta['artist_featured_image'] );
 		}
@@ -113,8 +113,8 @@ final class MDS_RM_Sync {
 			$terms_data[ $tax ] = $terms;
 		}
 
-		$thumbnail_id    = get_post_thumbnail_id( $post_id );
-		$hub_img_url     = $thumbnail_id ? wp_get_attachment_url( $thumbnail_id ) : '';
+		$thumbnail_id = get_post_thumbnail_id( $post_id );
+		$hub_img_url  = $thumbnail_id ? wp_get_attachment_url( $thumbnail_id ) : '';
 
 		$is_broadcasting = true;
 		$errors          = array();
@@ -128,7 +128,7 @@ final class MDS_RM_Sync {
 
 			// Prefer a stable hub identity; legacy shadows are adopted by their current or former UPC.
 			$shadow_post_id = 0;
-			$identifiers = 'artist' === $post_type
+			$identifiers    = 'artist' === $post_type
 				? array( array( '_mds_artist_uuid', $uuid ) )
 				: array_merge(
 					array( array( '_mds_hub_release_key', $hub_release_key ), array( 'upc_ean', $uuid ) ),
@@ -139,7 +139,7 @@ final class MDS_RM_Sync {
 						$previous_upcs
 					)
 				);
-			$sync_conflict = false;
+			$sync_conflict  = false;
 			foreach ( $identifiers as $identifier ) {
 				$shadow_posts = get_posts(
 					array(
@@ -163,7 +163,7 @@ final class MDS_RM_Sync {
 					break;
 				}
 				if ( $shadow_posts ) {
-					$candidate = (int) $shadow_posts[0];
+					$candidate  = (int) $shadow_posts[0];
 					$linked_key = get_post_meta( $candidate, '_mds_hub_release_key', true );
 					if ( 'release' === $post_type && $linked_key && $linked_key !== $hub_release_key ) {
 						$sync_conflict = true;
@@ -180,7 +180,7 @@ final class MDS_RM_Sync {
 				}
 			}
 			if ( 'release' === $post_type && ! $sync_conflict ) {
-				$conflicts = get_posts(
+				$conflicts     = get_posts(
 					array(
 						'post_type'      => 'release',
 						'post_status'    => array_keys( get_post_stati() ),
@@ -212,7 +212,7 @@ final class MDS_RM_Sync {
 
 			if ( $shadow_post_id ) {
 				$post_data['ID'] = $shadow_post_id;
-				$shadow_post_id = wp_update_post( $post_data, true );
+				$shadow_post_id  = wp_update_post( $post_data, true );
 			} else {
 				$shadow_post_id = wp_insert_post( $post_data, true );
 			}

@@ -285,8 +285,8 @@ final class MDS_RM_CSV_Handler {
 				continue;
 			}
 
-			$format_id = MDS_RM_Release_Model::format_id( $format );
-			$release_found = '' === $upc ? array() : get_posts(
+			$format_id       = MDS_RM_Release_Model::format_id( $format );
+			$release_found   = '' === $upc ? array() : get_posts(
 				array(
 					'post_type'   => 'release',
 					'meta_key'    => 'upc_ean',
@@ -296,9 +296,9 @@ final class MDS_RM_CSV_Handler {
 				)
 			);
 			$release_post_id = 1 === count( $release_found ) ? $release_found[0]->ID : 0;
-			$validation = MDS_RM_Release_Model::validate( $release_post_id, $upc, $format_id ? array( $format_id ) : array() );
+			$validation      = MDS_RM_Release_Model::validate( $release_post_id, $upc, $format_id ? array( $format_id ) : array() );
 			if ( count( $release_found ) > 1 || is_wp_error( $validation ) ) {
-				$message = count( $release_found ) > 1
+				$message  = count( $release_found ) > 1
 					? __( 'More than one release has this UPC/EAN.', 'mds-release-manager' )
 					: $validation->get_error_message();
 				$errors[] = sprintf( __( 'Row %1$d: %2$s', 'mds-release-manager' ), $row_number, $message );

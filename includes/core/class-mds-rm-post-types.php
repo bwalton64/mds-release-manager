@@ -156,18 +156,18 @@ final class MDS_RM_Post_Types {
 			'release_format',
 			'release',
 			array(
-				'labels'            => array(
+				'labels'             => array(
 					'name'          => 'Release Formats',
 					'singular_name' => 'Release Format',
 					'menu_name'     => 'Release Formats',
 				),
-				'hierarchical'      => true,
-				'show_admin_column' => true,
-				'show_ui'           => true,
-				'show_in_rest'      => true,
-				'meta_box_cb'       => false,
+				'hierarchical'       => true,
+				'show_admin_column'  => true,
+				'show_ui'            => true,
+				'show_in_rest'       => true,
+				'meta_box_cb'        => false,
 				'show_in_quick_edit' => false,
-				'rewrite'           => array( 'slug' => 'release-format' ),
+				'rewrite'            => array( 'slug' => 'release-format' ),
 			)
 		);
 	}

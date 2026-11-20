@@ -17,10 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class MDS_RM_Release_Model {
 	public const MDS_RM_FORMATS = array( 'Single', 'EP', 'Album', 'Digital' );
 
-	private static $previous_upcs = array();
-	private static $upc_locks = array();
+	private static $previous_upcs    = array();
+	private static $upc_locks        = array();
 	private static $rest_sync_errors = array();
-	private static $rest_requests = array();
+	private static $rest_requests    = array();
 
 	/** Registers the release validation hooks. */
 	public static function register_hooks(): void {
@@ -180,7 +180,7 @@ final class MDS_RM_Release_Model {
 		if ( ! $screen || 'edit' !== $screen->base || 'release' !== $screen->post_type || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		$posts = get_posts(
+		$posts  = get_posts(
 			array(
 				'post_type'      => 'release',
 				'post_status'    => array_diff( array_keys( get_post_stati() ), array( 'auto-draft', 'inherit' ) ),
@@ -191,7 +191,7 @@ final class MDS_RM_Release_Model {
 		$issues = array();
 		$upcs   = array();
 		foreach ( $posts as $id ) {
-			$upc = get_post_meta( $id, 'upc_ean', true );
+			$upc        = get_post_meta( $id, 'upc_ean', true );
 			$normalized = self::normalize_upc( $upc );
 			if ( '' === $normalized || ! is_string( $upc ) || $upc !== $normalized || is_wp_error( self::format_name( $id ) ) || self::has_legacy_format_conflict( $id ) ) {
 				$issues[ $id ] = true;
@@ -213,8 +213,8 @@ final class MDS_RM_Release_Model {
 		echo '<div class="notice notice-warning"><p>' . esc_html__( 'These releases need review for missing, malformed, or duplicate UPCs, invalid formats, or conflicting legacy format data:', 'mds-release-manager' ) . ' ';
 		$links = array();
 		foreach ( array_keys( $issues ) as $id ) {
-			$url = get_edit_post_link( $id, 'raw' );
-			$label = esc_html( get_the_title( $id ) . ' (#' . $id . ')' );
+			$url     = get_edit_post_link( $id, 'raw' );
+			$label   = esc_html( get_the_title( $id ) . ' (#' . $id . ')' );
 			$links[] = $url ? '<a href="' . esc_url( $url ) . '">' . $label . '</a>' : $label;
 		}
 		echo implode( ', ', $links ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Each link is escaped above.
@@ -369,51 +369,69 @@ final class MDS_RM_Release_Model {
 			return $empty;
 		}
 		$post_id = isset( $postarr['ID'] ) ? (int) $postarr['ID'] : 0;
-		
+
 		// Verify nonce with proper sanitization
-		$nonce = isset( $_POST['mds_release_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mds_release_meta_nonce'] ) ) : '';
+		$nonce     = isset( $_POST['mds_release_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mds_release_meta_nonce'] ) ) : '';
 		$has_nonce = is_string( $nonce ) && wp_verify_nonce( $nonce, 'mds_save_release_data' );
-		
+
 		if ( ! $has_nonce ) {
 			$action = isset( $_REQUEST['action'] ) && is_string( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
 			if ( in_array( $action, array( 'inline-save', 'edit' ), true ) && $post_id ) {
 				if ( isset( $postarr['tax_input']['release_format'] ) ) {
-					wp_die( esc_html__( 'Change the release format in the release editor.', 'mds-release-manager' ), '', array( 'response' => 400, 'back_link' => true ) );
+					wp_die( esc_html__( 'Change the release format in the release editor.', 'mds-release-manager' ), '', array(
+'response'  => 400,
+'back_link' => true
+) );
 				}
 				if ( self::has_legacy_format_conflict( $post_id ) ) {
-					wp_die( esc_html__( 'Resolve the release format conflict in the release editor first.', 'mds-release-manager' ), '', array( 'response' => 400, 'back_link' => true ) );
+					wp_die( esc_html__( 'Resolve the release format conflict in the release editor first.', 'mds-release-manager' ), '', array(
+'response'  => 400,
+'back_link' => true
+) );
 				}
-				$upc = get_post_meta( $post_id, 'upc_ean', true );
+				$upc     = get_post_meta( $post_id, 'upc_ean', true );
 				$formats = wp_get_post_terms( $post_id, 'release_format', array( 'fields' => 'ids' ) );
-				$result = is_wp_error( $formats ) ? $formats : self::validate( $post_id, $upc, $formats );
+				$result  = is_wp_error( $formats ) ? $formats : self::validate( $post_id, $upc, $formats );
 				if ( is_wp_error( $result ) ) {
-					wp_die( esc_html( $result->get_error_message() ), '', array( 'response' => 400, 'back_link' => true ) );
+					wp_die( esc_html( $result->get_error_message() ), '', array(
+'response'  => 400,
+'back_link' => true
+) );
 				}
 				self::release_upc_lock( $upc );
 			}
 			return $empty;
 		}
-		
+
 		$upc_raw = isset( $_POST['upc_ean'] ) && is_string( $_POST['upc_ean'] ) ? wp_unslash( $_POST['upc_ean'] ) : '';
 		$upc     = sanitize_text_field( $upc_raw );
-		
-		$format  = isset( $_POST['release_format'] ) && is_scalar( $_POST['release_format'] )
+
+		$format = isset( $_POST['release_format'] ) && is_scalar( $_POST['release_format'] )
 			? array( absint( wp_unslash( $_POST['release_format'] ) ) )
 			: ( $post_id ? wp_get_post_terms( $post_id, 'release_format', array( 'fields' => 'ids' ) ) : array() );
-		
+
 		if ( ! isset( $_POST['release_format'] ) && $post_id && self::has_legacy_format_conflict( $post_id ) ) {
-			wp_die( esc_html__( 'The saved format conflicts with legacy data. Choose a release format explicitly.', 'mds-release-manager' ), '', array( 'response' => 400, 'back_link' => true ) );
+			wp_die( esc_html__( 'The saved format conflicts with legacy data. Choose a release format explicitly.', 'mds-release-manager' ), '', array(
+'response'  => 400,
+'back_link' => true
+) );
 		}
 		if ( is_wp_error( $format ) ) {
 			wp_die( esc_html( $format->get_error_message() ) );
 		}
 		$taxonomy = get_taxonomy( 'release_format' );
 		if ( isset( $_POST['release_format'] ) && ( ! $taxonomy || ! current_user_can( $taxonomy->cap->assign_terms ) ) ) {
-			wp_die( esc_html__( 'You are not allowed to assign a release format.', 'mds-release-manager' ), '', array( 'response' => 403, 'back_link' => true ) );
+			wp_die( esc_html__( 'You are not allowed to assign a release format.', 'mds-release-manager' ), '', array(
+'response'  => 403,
+'back_link' => true
+) );
 		}
-		$result  = self::validate( $post_id, $upc, $format );
+		$result = self::validate( $post_id, $upc, $format );
 		if ( is_wp_error( $result ) ) {
-			wp_die( esc_html( $result->get_error_message() ), esc_html__( 'Invalid release', 'mds-release-manager' ), array( 'response' => 400, 'back_link' => true ) );
+			wp_die( esc_html( $result->get_error_message() ), esc_html__( 'Invalid release', 'mds-release-manager' ), array(
+'response'  => 400,
+'back_link' => true
+) );
 		}
 		return $empty;
 	}

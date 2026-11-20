@@ -222,7 +222,7 @@ final class MDS_RM_REST_API {
 			)
 		);
 		$artist_count = 0;
-		$errors = array();
+		$errors       = array();
 		foreach ( $artists as $a ) {
 			$result = MDS_RM_Sync::broadcast_to_spokes( $a->ID, 'artist' );
 			if ( is_wp_error( $result ) ) {

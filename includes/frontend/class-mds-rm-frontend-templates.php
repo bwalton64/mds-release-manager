@@ -48,14 +48,14 @@ final class MDS_RM_Frontend_Templates {
 		if ( ! $post ) {
 			return $content;
 		}
-		$visited_blocks = array();
+		$visited_blocks  = array();
 		$has_discography = self::content_has_component( $post->post_content, 'mds-rm/artist-discography', 'artist-discography', $visited_blocks );
-		$args = array(
-			'content' => $content,
-			'image' => wp_get_attachment_image( get_post_thumbnail_id( $post->ID ), 'large', false, array( 'class' => 'mds-artist-fallback__image' ) ),
+		$args            = array(
+			'content'     => $content,
+			'image'       => wp_get_attachment_image( get_post_thumbnail_id( $post->ID ), 'large', false, array( 'class' => 'mds-artist-fallback__image' ) ),
 			'discography' => $has_discography ? '' : MDS_RM_Discography::render( $post->ID ),
-			'contact' => get_post_meta( $post->ID, 'artist_contact', true ),
-			'style' => MDS_RM_Customizer::get_artist_fallback_style_attribute(),
+			'contact'     => get_post_meta( $post->ID, 'artist_contact', true ),
+			'style'       => MDS_RM_Customizer::get_artist_fallback_style_attribute(),
 		);
 		return MDS_RM_Template_Loader::render( 'templates/artist-fallback.php', $args );
 	}
@@ -113,7 +113,7 @@ final class MDS_RM_Frontend_Templates {
 		$has_meta       = self::content_has_component( $post->post_content, 'mds-rm/release-meta', 'release-meta', $visited_blocks );
 		$visited_blocks = array();
 		$has_links      = self::content_has_component( $post->post_content, 'mds-rm/release-links', 'release-links', $visited_blocks );
-		$layout = get_theme_mod( 'mds_rm_layout_style', 'split' );
+		$layout         = get_theme_mod( 'mds_rm_layout_style', 'split' );
 		if ( ! in_array( $layout, array( 'split', 'stacked' ), true ) ) {
 			$layout = 'split';
 		}
@@ -123,7 +123,7 @@ final class MDS_RM_Frontend_Templates {
 			'image'      => self::get_release_image( $post ),
 			'layout'     => $layout,
 			'style'      => MDS_RM_Customizer::get_release_fallback_style_attribute(),
-			'meta_html' => $has_meta ? '' : MDS_RM_Release_Meta::render( array(), $post->ID ),
+			'meta_html'  => $has_meta ? '' : MDS_RM_Release_Meta::render( array(), $post->ID ),
 			'links_html' => $has_links ? '' : MDS_RM_Release_Links::render( array(), $post->ID ),
 		);
 
@@ -298,7 +298,7 @@ final class MDS_RM_Frontend_Templates {
 			$reference = absint( $block['attrs']['ref'] );
 			if ( $reference && ! isset( $visited_blocks[ $reference ] ) ) {
 				$visited_blocks[ $reference ] = true;
-				$reusable_block = get_post( $reference );
+				$reusable_block               = get_post( $reference );
 				if (
 					$reusable_block instanceof WP_Post
 					&& 'wp_block' === $reusable_block->post_type

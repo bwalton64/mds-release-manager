@@ -161,9 +161,9 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @return string The rendered release links.
 	 */
 	public static function render_gutenberg_release_links( $attributes, $_content, $block ): string {
-		$context_post_id      = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
-		$attributes['upc']    = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
-		$content              = MDS_RM_Release_Links::render( $attributes, $context_post_id );
+		$context_post_id   = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
+		$attributes['upc'] = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
+		$content           = MDS_RM_Release_Links::render( $attributes, $context_post_id );
 		return $content ? '<div ' . get_block_wrapper_attributes() . '>' . $content . '</div>' : '';
 	}
 
@@ -177,9 +177,9 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @return string The rendered metadata.
 	 */
 	public static function render_gutenberg_release_meta( $attributes, $_content, $block ): string {
-		$context_post_id      = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
-		$attributes['upc']    = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
-		$content              = MDS_RM_Release_Meta::render( $attributes, $context_post_id );
+		$context_post_id   = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
+		$attributes['upc'] = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
+		$content           = MDS_RM_Release_Meta::render( $attributes, $context_post_id );
 		return $content ? '<div ' . get_block_wrapper_attributes() . '>' . $content . '</div>' : '';
 	}
 

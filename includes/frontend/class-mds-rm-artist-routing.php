@@ -45,7 +45,7 @@ final class MDS_RM_Artist_Routing {
 			return;
 		}
 		$post_id = get_queried_object_id();
-		$url      = get_post_meta( $post_id, 'artist_homepage_url', true );
+		$url     = get_post_meta( $post_id, 'artist_homepage_url', true );
 		if ( '1' !== get_post_meta( $post_id, 'artist_homepage_routing', true ) || ! self::valid_url( $url, $post_id ) ) {
 			return;
 		}

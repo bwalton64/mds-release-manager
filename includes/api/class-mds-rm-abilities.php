@@ -154,18 +154,18 @@ final class MDS_RM_Abilities {
 							'description' => __( 'Release providers configuration', 'mds-release-manager' ),
 							'properties'  => array(
 								'name'  => array(
-									'type'  => 'array',
-									'items' => array( 'type' => 'string' ),
+									'type'        => 'array',
+									'items'       => array( 'type' => 'string' ),
 									'description' => __( 'Provider names', 'mds-release-manager' ),
 								),
 								'icon'  => array(
-									'type'  => 'array',
-									'items' => array( 'type' => 'string' ),
+									'type'        => 'array',
+									'items'       => array( 'type' => 'string' ),
 									'description' => __( 'Provider icon classes or URLs', 'mds-release-manager' ),
 								),
 								'color' => array(
-									'type'  => 'array',
-									'items' => array( 'type' => 'string' ),
+									'type'        => 'array',
+									'items'       => array( 'type' => 'string' ),
 									'description' => __( 'Provider brand colors', 'mds-release-manager' ),
 								),
 							),
@@ -269,15 +269,15 @@ final class MDS_RM_Abilities {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'success'       => array(
+						'success'         => array(
 							'type'        => 'boolean',
 							'description' => __( 'Whether sync completed successfully', 'mds-release-manager' ),
 						),
-						'message'       => array(
+						'message'         => array(
 							'type'        => 'string',
 							'description' => __( 'Sync result message with counts', 'mds-release-manager' ),
 						),
-						'artists_synced' => array(
+						'artists_synced'  => array(
 							'type'        => 'integer',
 							'description' => __( 'Number of artists synchronized', 'mds-release-manager' ),
 						),
@@ -285,9 +285,9 @@ final class MDS_RM_Abilities {
 							'type'        => 'integer',
 							'description' => __( 'Number of releases synchronized', 'mds-release-manager' ),
 						),
-						'errors'        => array(
-							'type'  => 'array',
-							'items' => array( 'type' => 'string' ),
+						'errors'          => array(
+							'type'        => 'array',
+							'items'       => array( 'type' => 'string' ),
 							'description' => __( 'Any errors that occurred during sync', 'mds-release-manager' ),
 						),
 					),
@@ -478,8 +478,8 @@ final class MDS_RM_Abilities {
 	public static function ability_sync_network( $input ): array {
 		if ( get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
 			return array(
-				'success' => false,
-				'message' => __( 'Sync must be run from the master hub site', 'mds-release-manager' ),
+				'success'         => false,
+				'message'         => __( 'Sync must be run from the master hub site', 'mds-release-manager' ),
 				'artists_synced'  => 0,
 				'releases_synced' => 0,
 				'errors'          => array(),
