@@ -23,7 +23,7 @@ final class MDS_RM_Customizer {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_action( 'customize_register', array( self::class, 'customize_register' ) );
 	}
 
@@ -33,7 +33,7 @@ final class MDS_RM_Customizer {
 	 * @since 0.9.0
 	 * @param WP_Customize_Manager $wp_customize The Customizer manager.
 	 */
-	public static function customize_register( $wp_customize ) {
+	public static function customize_register( $wp_customize ): void {
 		$wp_customize->add_panel(
 			'mds_rm_panel',
 			array(
@@ -170,7 +170,7 @@ final class MDS_RM_Customizer {
 		}
 	}
 
-	public static function get_artist_fallback_style_attribute() {
+	public static function get_artist_fallback_style_attribute(): string {
 		$settings = array(
 			'--mds-artist-width' => array( 'mds_rm_artist_fallback_width', 900, 320, 2000 ),
 			'--mds-artist-image-size' => array( 'mds_rm_artist_fallback_image_size', 300, 80, 800 ),
@@ -196,10 +196,10 @@ final class MDS_RM_Customizer {
 	/**
 	 * Sanitizes the split/stacked fallback choice.
 	 *
-	 * @param string $value The selected layout.
+	 * @param mixed $value The submitted layout.
 	 * @return string The valid layout.
 	 */
-	public static function sanitize_release_layout( $value ) {
+	public static function sanitize_release_layout( mixed $value ): string {
 		return in_array( $value, array( 'split', 'stacked' ), true ) ? $value : 'split';
 	}
 
@@ -209,7 +209,7 @@ final class MDS_RM_Customizer {
 	 * @param mixed $value The submitted value.
 	 * @return int The non-negative integer value.
 	 */
-	public static function sanitize_fallback_number( $value ) {
+	public static function sanitize_fallback_number( mixed $value ): int {
 		return is_scalar( $value ) ? min( 2000, absint( $value ) ) : 0;
 	}
 
@@ -218,7 +218,7 @@ final class MDS_RM_Customizer {
 	 *
 	 * @return string CSS custom-property declarations.
 	 */
-	public static function get_release_fallback_style_attribute() {
+	public static function get_release_fallback_style_attribute(): string {
 		$number_settings = array(
 			'--mds-fallback-max-width' => array( 'mds_rm_release_fallback_max_width', 1200, 480, 2000 ),
 			'--mds-fallback-column-gap' => array( 'mds_rm_release_fallback_column_gap', 40, 0, 120 ),
