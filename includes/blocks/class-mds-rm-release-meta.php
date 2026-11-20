@@ -205,7 +205,7 @@ final class MDS_RM_Release_Meta {
 	 */
 	public static function resolve_post( $upc = '', $context_post_id = 0 ): ?WP_Post {
 		if ( ! is_scalar( $upc ) ) {
-			error_log( '[MDS Release Manager] Invalid Release Meta UPC/EAN.' );
+			MDS_RM_Logger::diagnostic( 'Invalid Release Meta UPC/EAN.' );
 			return null;
 		}
 		$upc             = (string) $upc;
@@ -218,7 +218,7 @@ final class MDS_RM_Release_Meta {
 			$upc = apply_filters( 'mds_rm_release_meta_context_upc', '', $context_post_id );
 		}
 		if ( ! is_scalar( $upc ) ) {
-			error_log( '[MDS Release Manager] Invalid Release Meta context UPC/EAN.' );
+			MDS_RM_Logger::diagnostic( 'Invalid Release Meta context UPC/EAN.' );
 			return null;
 		}
 		$upc = (string) $upc;
@@ -226,7 +226,7 @@ final class MDS_RM_Release_Meta {
 			return null;
 		}
 		if ( ! preg_match( '/^\d+$/D', $upc ) ) {
-			error_log( '[MDS Release Manager] Invalid Release Meta UPC/EAN.' );
+			MDS_RM_Logger::diagnostic( 'Invalid Release Meta UPC/EAN.' );
 			return null;
 		}
 		$posts = get_posts(
@@ -239,7 +239,7 @@ final class MDS_RM_Release_Meta {
 			)
 		);
 		if ( count( $posts ) > 1 ) {
-			error_log( '[MDS Release Manager] Cannot render metadata: duplicate UPC/EAN ' . $upc );
+			MDS_RM_Logger::report_failure( 'Cannot render metadata: duplicate UPC/EAN ' . $upc );
 			return null;
 		}
 		return isset( $posts[0] ) && self::can_display( $posts[0] ) ? $posts[0] : null;
@@ -274,14 +274,14 @@ final class MDS_RM_Release_Meta {
 			case 'release_format':
 				$value = MDS_RM_Release_Model::format_name( $post->ID );
 				if ( is_wp_error( $value ) ) {
-					error_log( '[MDS Release Manager] Release ' . $post->ID . ': ' . $value->get_error_message() );
+					MDS_RM_Logger::report_failure( 'Release ' . $post->ID . ': ' . $value->get_error_message() );
 					return '';
 				}
 				return $value;
 			case 'release_tags':
 				$terms = wp_get_post_terms( $post->ID, 'release_tag', array( 'fields' => 'names' ) );
 				if ( is_wp_error( $terms ) ) {
-					error_log( '[MDS Release Manager] Release ' . $post->ID . ': ' . $terms->get_error_message() );
+					MDS_RM_Logger::report_failure( 'Release ' . $post->ID . ': ' . $terms->get_error_message() );
 					return '';
 				}
 				return $terms ? implode( ', ', $terms ) : get_post_meta( $post->ID, 'release_tags', true );
@@ -380,7 +380,7 @@ final class MDS_RM_Release_Meta {
 				if ( '' !== $value ) {
 					$declarations[] = '--mds-' . $prefix . '-' . str_replace( '_', '-', $name ) . '-' . $device . ':' . $value;
 				} elseif ( ! is_scalar( $styles[ $device ][ $name ] ) || '' !== (string) $styles[ $device ][ $name ] ) {
-					error_log( '[MDS Release Manager] Invalid Release ' . ( 'links' === $prefix ? 'Links' : 'Meta' ) . ' style: ' . $name . ' (' . $device . ')' );
+					MDS_RM_Logger::diagnostic( 'Invalid Release ' . ( 'links' === $prefix ? 'Links' : 'Meta' ) . ' style: ' . $name . ' (' . $device . ')' );
 				}
 			}
 		}
@@ -406,7 +406,7 @@ final class MDS_RM_Release_Meta {
 		$output = '';
 		foreach ( $items as $item ) {
 			if ( ! is_array( $item ) || empty( $item['field'] ) || ! is_string( $item['field'] ) || ! isset( $fields[ $item['field'] ] ) ) {
-				error_log( '[MDS Release Manager] Invalid Release Meta field.' );
+				MDS_RM_Logger::diagnostic( 'Invalid Release Meta field.' );
 				continue;
 			}
 			if ( empty( $item['enabled'] ) ) {
@@ -420,7 +420,7 @@ final class MDS_RM_Release_Meta {
 			$title = isset( $item['title'] ) && is_string( $item['title'] ) ? $item['title'] : $fields[ $key ]['label'];
 			$icon  = isset( $item['icon'] ) && is_string( $item['icon'] ) ? trim( $item['icon'] ) : $fields[ $key ]['icon'];
 			if ( '' !== $icon && ! preg_match( '/^(?:dashicons dashicons-[a-z0-9-]+|(?:fa[srbl]|fa-(?:solid|regular|brands|light)) fa-[a-z0-9-]+)$/D', $icon ) ) {
-				error_log( '[MDS Release Manager] Invalid Release Meta icon for ' . $key );
+				MDS_RM_Logger::diagnostic( 'Invalid Release Meta icon for ' . $key );
 				$icon = '';
 			}
 			$output .= '<span class="mds-release-meta__item mds-release-meta__item--' . esc_attr( $key ) . '"' . ( '' !== $title ? ' title="' . esc_attr( $title ) . '"' : '' ) . '>';
@@ -470,7 +470,7 @@ final class MDS_RM_Release_Meta {
 					$by_key[ $key ]['enabled'] = true;
 					$items[]                   = $by_key[ $key ];
 				} else {
-					error_log( '[MDS Release Manager] Unknown Release Meta field: ' . sanitize_text_field( $key ) );
+					MDS_RM_Logger::diagnostic( 'Unknown Release Meta field: ' . sanitize_text_field( $key ) );
 				}
 			}
 		}
