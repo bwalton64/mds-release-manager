@@ -20,9 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Move internal implementation summaries, refactoring reports, and the Abilities API reference documentation from the plugin root into the `.local/` directory. `README.md`, `changelog.md`, and `.github/technical-blueprint.md` are the canonical, maintained documentation.
 
 ### Fixed
+- Validate that the CSV importer reads only temporary files received through an HTTP upload.
 - When the full uninstall wipe is enabled, clear the stored spoke selection and Release Manager site options on every site in the network. The default uninstall behavior is unchanged.
 - Flush custom post type rewrite rules on activation and deactivation, across all sites for network-wide changes, to prevent stale or missing Release and Artist routes.
-- Fix fatal `strict_types declaration must be the very first statement` errors by placing `declare(strict_types=1);` immediately after the opening `<?php` tag (before the file DocBlock) and removing UTF-8 byte-order marks across fifteen `includes/` class files and the `templates/artist-fallback.php` and `templates/settings-page.php` templates.
+- Prevent strict-types parse errors by keeping `declare(strict_types=1);` as the first executable statement after the file DocBlock and removing stray UTF-8 byte-order marks.
 
 ### Removed
 - Remove the internal `MDS_RM_Core_Functions` shim after moving its methods into the Logger, Sync, Providers, and Template Loader classes. Custom PHP code that calls the old class directly should use the replacements in the [consolidation plan](.github/consolidation-plan.md#core_functions-split-map).

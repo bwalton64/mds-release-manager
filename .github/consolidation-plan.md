@@ -560,10 +560,24 @@ validates the unslashed query value, and six HTTP cases passed for valid,
 zero, and malformed values. Both Playwright smoke tests passed and all 48
 tracked hooks matched after each batch.
 
-PHPCS now reports 1 error and 58 warnings. The remaining error concerns how
-the CSV importer validates the temporary upload path. Verify that change with
-a real multipart upload, triage the warnings, and rerun both scanners on the
-final release package before closing this phase.
+The CSV importer now checks that PHP received the temporary file as an HTTP
+upload before reading it. A real multipart upload on `dev-test` updated the
+fixture Release in place, and the missing-file notice still appeared when the
+form was submitted without a file. Both Playwright smoke tests passed and all
+48 tracked hooks matched.
+
+On the extracted release package at `49f9ce3`, PHPCS reported 0 errors and 58
+warnings, and Plugin Check 2.2.0 reported 0 errors and 55 warnings. Remaining
+warnings include:
+
+- Debug logging: review call sites and preserve troubleshooting behavior.
+- Query performance: review metadata lookups and exclusions before changing
+  their semantics. The prepared `GET_LOCK` and `RELEASE_LOCK` calls manage
+  UPC uniqueness across writes and must not be cached.
+- Nonce checks: the remaining two findings refer to the read-only Network
+  Settings success notice, not the settings save handler.
+- Coding style and callback signatures: address local style findings without
+  changing callable contracts.
 
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
