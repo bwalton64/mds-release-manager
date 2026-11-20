@@ -121,7 +121,7 @@ class MDS_RM_Elementor_Release_Meta_Tag extends \Elementor\Core\DynamicTags\Data
 		if ( 'release_format' === $key ) {
 			$format = MDS_RM_Release_Model::format_name( $post_id );
 			if ( is_wp_error( $format ) ) {
-				error_log( '[MDS Release Manager] Release ' . $post_id . ': ' . $format->get_error_message() );
+				MDS_RM_Logger::report_failure( 'Release ' . $post_id . ': ' . $format->get_error_message() );
 				return '';
 			}
 			return $format;
