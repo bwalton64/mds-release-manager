@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// --- 1. Native Logging & Cache Purge ---.
 /**
  * Provides shared logging, rendering, asset, and synchronization helpers.
  *
@@ -20,27 +19,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class MDS_RM_Core_Functions {
 
 	/**
-	 * Writes a message to the error log when WordPress debugging is enabled.
+	 * Compatibility entry point for plugin debug logging.
 	 *
 	 * @since 0.9.0
 	 * @param mixed $message The value to log.
 	 */
 	public static function mds_rm_log( $message ) {
-		if (
-			! defined( 'WP_DEBUG' )
-			|| true !== WP_DEBUG
-			|| ! defined( 'WP_DEBUG_LOG' )
-			|| true !== WP_DEBUG_LOG
-		) {
-			return;
-		}
-
-		$prefix  = '[MDS Release Manager] ';
-		$message = is_array( $message ) || is_object( $message ) ? wp_json_encode( $message ) : $message;
-		if ( false === $message ) {
-			$message = '[Unable to encode log message]';
-		}
-		do_action( 'mds_rm_log_message', $prefix . $message );
+		MDS_RM_Logger::log( $message );
 	}
 
 	/**

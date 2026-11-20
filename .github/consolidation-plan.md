@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phase 2 complete; Phase 3 not started
+**Status:** Approved — Phase 2 complete; Phase 3 in progress
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -396,6 +396,11 @@ the site settings REST form, not this legacy network form.
    classes; delete it in a final commit once greps show zero remaining references.
 
 **Gate:** §6 per commit.
+
+**Progress:** `MDS_RM_Logger` is extracted. The legacy core logging method delegates
+to it; debug settings and the `mds_rm_log_message` action and payload are unchanged.
+Logger parity, autoloading, the hook comparison, and both smoke tests passed.
+`MDS_RM_Sync` is next.
 
 ### Phase 4 — Functional subfolders
 1. Add the explicit class→path map to the autoloader in `mds-release-manager.php` (covering both
