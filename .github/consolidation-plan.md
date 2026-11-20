@@ -426,8 +426,10 @@ remaining runtime callers and rerunning the runtime and smoke checks.
 original flat paths. The seven `core/` classes moved without content changes.
 All 26 classes resolved to the expected paths before and after the move, using
 test doubles for the optional Elementor base classes. All 47 tracked hooks were
-unchanged and both smoke tests passed after each step. `admin/` is next; bootstrap
-timing has not changed.
+unchanged and both smoke tests passed after each step. The three `admin/` classes and
+six `frontend/` classes also moved without content changes. All 26 class paths, 47
+tracked hooks, and both smoke tests were verified after each move. `blocks/` is next;
+template paths and bootstrap timing have not changed.
 
 ### Phase 5 — block.json migration
 For each block (`release-meta`, `release-links`, `artist-discography`), one block per commit:

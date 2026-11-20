@@ -273,9 +273,10 @@ mds-release-manager/
 │
 ├── includes/                           # Core plugin classes (SPL-autoloaded)
 │   ├── class-mds-rm-abilities.php                  # WordPress Abilities API (MCP tools)
-│   ├── class-mds-rm-admin-interface.php            # Settings and admin UI
-│   ├── class-mds-rm-artist-routing.php             # Artist homepage routing
-│   ├── class-mds-rm-assets.php                     # CSS/JS enqueuing
+│   ├── admin/
+│   │   ├── class-mds-rm-admin-interface.php        # Settings and admin UI
+│   │   ├── class-mds-rm-csv-handler.php             # CSV import/export
+│   │   └── class-mds-rm-network-admin.php           # Multisite network settings
 │   ├── core/
 │   │   ├── class-mds-rm-builder-detection.php      # Page-builder detection
 │   │   ├── class-mds-rm-logger.php                 # Debug logging
@@ -284,20 +285,21 @@ mds-release-manager/
 │   │   ├── class-mds-rm-release-model.php          # Release data model, validation, and sync
 │   │   ├── class-mds-rm-sync.php                   # Network synchronization and cache purge
 │   │   └── class-mds-rm-template-loader.php        # Templates and editable assets
-│   ├── class-mds-rm-csv-handler.php                # CSV import/export
-│   ├── class-mds-rm-customizer.php                 # WordPress Customizer integration
-│   ├── class-mds-rm-discography.php                # Artist discography logic
+│   ├── frontend/
+│   │   ├── class-mds-rm-artist-routing.php          # Artist homepage routing
+│   │   ├── class-mds-rm-assets.php                  # CSS/JS enqueuing
+│   │   ├── class-mds-rm-customizer.php              # WordPress Customizer integration
+│   │   ├── class-mds-rm-discography.php             # Artist discography logic
+│   │   ├── class-mds-rm-frontend-templates.php      # Content fallback rendering
+│   │   └── class-mds-rm-shortcodes.php              # Shortcode registration
 │   ├── class-mds-rm-elementor-links-widget.php     # Elementor Release Links widget
 │   ├── class-mds-rm-elementor-release-meta-tag.php # Elementor Release Meta dynamic tag
 │   ├── class-mds-rm-elementor-tags.php             # Elementor registration
 │   ├── class-mds-rm-elementor-widget.php           # Elementor Release Meta widget
-│   ├── class-mds-rm-frontend-templates.php         # Content fallback rendering
 │   ├── class-mds-rm-gutenberg-blocks.php           # Gutenberg block registration
-│   ├── class-mds-rm-network-admin.php              # Multisite network settings
 │   ├── class-mds-rm-release-links.php              # Provider link management
 │   ├── class-mds-rm-release-meta.php               # Release metadata rendering
 │   ├── class-mds-rm-rest-api.php                   # REST API endpoints
-│   ├── class-mds-rm-shortcodes.php                 # Shortcode registration
 │   └── class-mds-rm-virtual-media.php              # Hub media fallback integration
 │
 ├── templates/                          # PHP template files

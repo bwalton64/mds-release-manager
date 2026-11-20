@@ -30,9 +30,10 @@ mds-release-manager/
 ├── changelog.md                      # Version history (Keep a Changelog format)
 ├── includes/                         # All class definitions (SPL autoloader)
 │   ├── class-mds-rm-abilities.php           # WordPress Abilities API integration
-│   ├── class-mds-rm-admin-interface.php
-│   ├── class-mds-rm-artist-routing.php
-│   ├── class-mds-rm-assets.php
+│   ├── admin/
+│   │   ├── class-mds-rm-admin-interface.php
+│   │   ├── class-mds-rm-csv-handler.php
+│   │   └── class-mds-rm-network-admin.php
 │   ├── core/
 │   │   ├── class-mds-rm-builder-detection.php
 │   │   ├── class-mds-rm-logger.php
@@ -41,20 +42,21 @@ mds-release-manager/
 │   │   ├── class-mds-rm-release-model.php  # Release format/UPC validation and sync model
 │   │   ├── class-mds-rm-sync.php
 │   │   └── class-mds-rm-template-loader.php
-│   ├── class-mds-rm-csv-handler.php
-│   ├── class-mds-rm-customizer.php
-│   ├── class-mds-rm-discography.php
+│   ├── frontend/
+│   │   ├── class-mds-rm-artist-routing.php
+│   │   ├── class-mds-rm-assets.php
+│   │   ├── class-mds-rm-customizer.php
+│   │   ├── class-mds-rm-discography.php
+│   │   ├── class-mds-rm-frontend-templates.php
+│   │   └── class-mds-rm-shortcodes.php
 │   ├── class-mds-rm-elementor-tags.php
 │   ├── class-mds-rm-elementor-widget.php
 │   ├── class-mds-rm-elementor-links-widget.php
 │   ├── class-mds-rm-elementor-release-meta-tag.php
 │   ├── class-mds-rm-gutenberg-blocks.php
-│   ├── class-mds-rm-frontend-templates.php
 │   ├── class-mds-rm-release-meta.php
 │   ├── class-mds-rm-release-links.php
-│   ├── class-mds-rm-network-admin.php
 │   ├── class-mds-rm-rest-api.php
-│   ├── class-mds-rm-shortcodes.php
 │   └── class-mds-rm-virtual-media.php
 ├── templates/                        # Frontend/backend templates
 │   ├── artist-fallback.php
