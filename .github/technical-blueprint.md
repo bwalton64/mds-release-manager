@@ -119,10 +119,10 @@ mds-release-manager/
 - **`customize_register`** → `MDS_RM_Customizer::mds_rm_customize_register()` — Adds Customizer settings.
 - **`enqueue_block_assets`** → `MDS_RM_Release_Meta::enqueue_assets()` — Loads metadata CSS and icon assets in the frontend and editor.
 - **`rest_api_init`** → `MDS_RM_REST_API::mds_rm_register_rest_routes()` — Registers REST endpoints.
-- **`add_meta_boxes`** → `MDS_RM_Admin_Interface::mds_rm_add_meta_boxes()` — Adds release/artist meta boxes.
-- **`save_post_release`** → `MDS_RM_Admin_Interface::mds_rm_save_release_meta_data()` — Saves release meta.
-- **`save_post_artist`** → `MDS_RM_Admin_Interface::mds_rm_save_artist_meta_data()` — Saves artist meta.
-- **`admin_menu`** → `MDS_RM_Admin_Interface::mds_rm_register_settings_page()` — Registers Releases Settings page.
+- **`add_meta_boxes`** → `MDS_RM_Admin_Interface::add_meta_boxes()` — Adds release/artist meta boxes.
+- **`save_post_release`** → `MDS_RM_Admin_Interface::save_release_meta_data()` — Saves release meta.
+- **`save_post_artist`** → `MDS_RM_Admin_Interface::save_artist_meta_data()` — Saves artist meta.
+- **`admin_menu`** → `MDS_RM_Admin_Interface::register_settings_page()` — Registers Releases Settings page.
 - **`network_admin_menu`** → `MDS_RM_Network_Admin::mds_rm_register_menu()` — Registers network settings page.
 - **`network_admin_edit_save_network_settings`** → `MDS_RM_Network_Admin::mds_rm_save_settings()` — Saves network settings.
 - **`enqueue_block_editor_assets`** → `MDS_RM_Gutenberg_Blocks::mds_rm_enqueue_block_editor_assets()` — Loads block editor JS.

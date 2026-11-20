@@ -26,20 +26,20 @@ final class MDS_RM_Admin_Interface {
 	 * @return void
 	 */
 	public static function register_hooks(): void {
-		add_filter( 'manage_release_posts_columns', array( self::class, 'mds_rm_add_featured_image_column' ), 10 );
-		add_filter( 'manage_release_posts_columns', array( self::class, 'mds_rm_order_release_columns' ), 99 );
-		add_filter( 'manage_edit-release_sortable_columns', array( self::class, 'mds_rm_add_sortable_release_taxonomy_columns' ) );
-		add_filter( 'manage_artist_posts_columns', array( self::class, 'mds_rm_add_featured_image_column' ), 10 );
-		add_action( 'pre_get_posts', array( self::class, 'mds_rm_prepare_release_taxonomy_sorting' ) );
-		add_filter( 'posts_orderby', array( self::class, 'mds_rm_order_release_taxonomy_posts' ), 10, 2 );
-		add_action( 'restrict_manage_posts', array( self::class, 'mds_rm_render_release_taxonomy_filters' ), 10, 2 );
-		add_action( 'manage_release_posts_custom_column', array( self::class, 'mds_rm_render_featured_image_column' ), 5, 2 );
-		add_action( 'manage_artist_posts_custom_column', array( self::class, 'mds_rm_render_featured_image_column' ), 5, 2 );
-		add_action( 'add_meta_boxes', array( self::class, 'mds_rm_add_meta_boxes' ), 10, 2 );
-		add_action( 'save_post_artist', array( self::class, 'mds_rm_save_artist_meta_data' ) );
-		add_action( 'admin_init', array( self::class, 'mds_rm_remove_legacy_artist_images' ) );
-		add_action( 'save_post_release', array( self::class, 'mds_rm_save_release_meta_data' ) );
-		add_action( 'admin_menu', array( self::class, 'mds_rm_register_settings_page' ) );
+		add_filter( 'manage_release_posts_columns', array( self::class, 'add_featured_image_column' ), 10 );
+		add_filter( 'manage_release_posts_columns', array( self::class, 'order_release_columns' ), 99 );
+		add_filter( 'manage_edit-release_sortable_columns', array( self::class, 'add_sortable_release_taxonomy_columns' ) );
+		add_filter( 'manage_artist_posts_columns', array( self::class, 'add_featured_image_column' ), 10 );
+		add_action( 'pre_get_posts', array( self::class, 'prepare_release_taxonomy_sorting' ) );
+		add_filter( 'posts_orderby', array( self::class, 'order_release_taxonomy_posts' ), 10, 2 );
+		add_action( 'restrict_manage_posts', array( self::class, 'render_release_taxonomy_filters' ), 10, 2 );
+		add_action( 'manage_release_posts_custom_column', array( self::class, 'render_featured_image_column' ), 5, 2 );
+		add_action( 'manage_artist_posts_custom_column', array( self::class, 'render_featured_image_column' ), 5, 2 );
+		add_action( 'add_meta_boxes', array( self::class, 'add_meta_boxes' ), 10, 2 );
+		add_action( 'save_post_artist', array( self::class, 'save_artist_meta_data' ) );
+		add_action( 'admin_init', array( self::class, 'remove_legacy_artist_images' ) );
+		add_action( 'save_post_release', array( self::class, 'save_release_meta_data' ) );
+		add_action( 'admin_menu', array( self::class, 'register_settings_page' ) );
 	}
 
 	/**
@@ -47,7 +47,7 @@ final class MDS_RM_Admin_Interface {
 	 *
 	 * @return void
 	 */
-	public static function mds_rm_remove_legacy_artist_images(): void {
+	public static function remove_legacy_artist_images(): void {
 		if ( ! current_user_can( 'manage_options' ) || '1' === get_option( 'mds_rm_artist_image_cleanup_complete', '0' ) ) {
 			return;
 		}
@@ -81,7 +81,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param array<string, string> $columns Existing columns.
 	 * @return array<string, string> The updated columns.
 	 */
-	public static function mds_rm_add_featured_image_column( array $columns ): array {
+	public static function add_featured_image_column( array $columns ): array {
 		$new_columns = array();
 		foreach ( $columns as $key => $title ) {
 			if ( 'title' === $key ) {
@@ -99,7 +99,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param array<string, string> $columns Existing columns.
 	 * @return array<string, string> The reordered columns.
 	 */
-	public static function mds_rm_order_release_columns( array $columns ): array {
+	public static function order_release_columns( array $columns ): array {
 		$column_order = array( 'cb', 'mds_thumb', 'title', 'taxonomy-release_tag', 'taxonomy-release_format', 'date' );
 		$ordered      = array();
 
@@ -125,7 +125,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param array<string, string> $columns Existing sortable columns.
 	 * @return array<string, string> The updated sortable columns.
 	 */
-	public static function mds_rm_add_sortable_release_taxonomy_columns( array $columns ): array {
+	public static function add_sortable_release_taxonomy_columns( array $columns ): array {
 		$columns['taxonomy-release_tag']    = 'release_tag';
 		$columns['taxonomy-release_format'] = 'release_format';
 
@@ -139,7 +139,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param WP_Query $query The query being modified.
 	 * @return void
 	 */
-	public static function mds_rm_prepare_release_taxonomy_sorting( WP_Query $query ): void {
+	public static function prepare_release_taxonomy_sorting( WP_Query $query ): void {
 		if ( ! is_admin() || ! $query->is_main_query() || 'release' !== $query->get( 'post_type' ) ) {
 			return;
 		}
@@ -161,7 +161,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param WP_Query $query   The query being modified.
 	 * @return string The updated ORDER BY clause.
 	 */
-	public static function mds_rm_order_release_taxonomy_posts( string $orderby, WP_Query $query ): string {
+	public static function order_release_taxonomy_posts( string $orderby, WP_Query $query ): string {
 		$taxonomy = $query->get( 'mds_rm_sort_taxonomy' );
 		if ( ! in_array( $taxonomy, array( 'release_tag', 'release_format' ), true ) ) {
 			return $orderby;
@@ -186,7 +186,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param string $which     The location of the filter controls.
 	 * @return void
 	 */
-	public static function mds_rm_render_release_taxonomy_filters( string $post_type, string $which ): void {
+	public static function render_release_taxonomy_filters( string $post_type, string $which ): void {
 		if ( 'release' !== $post_type || 'top' !== $which ) {
 			return;
 		}
@@ -230,7 +230,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param int    $post_id Post ID.
 	 * @return void
 	 */
-	public static function mds_rm_render_featured_image_column( string $column, int $post_id ): void {
+	public static function render_featured_image_column( string $column, int $post_id ): void {
 		if ( 'mds_thumb' === $column ) {
 			echo get_the_post_thumbnail( $post_id, array( 50, 50 ) );
 		}
@@ -245,13 +245,13 @@ final class MDS_RM_Admin_Interface {
 	 * @param WP_Post $post      Post object.
 	 * @return void
 	 */
-	public static function mds_rm_add_meta_boxes( string $post_type, WP_Post $post ): void {
+	public static function add_meta_boxes( string $post_type, WP_Post $post ): void {
 		if ( 'release' === $post_type ) {
-			add_meta_box( 'mds_release_settings', 'Release Settings', array( self::class, 'mds_rm_render_release_settings_box' ), 'release', 'normal', 'high' );
+			add_meta_box( 'mds_release_settings', 'Release Settings', array( self::class, 'render_release_settings_box' ), 'release', 'normal', 'high' );
 		}
 
 		if ( 'artist' === $post_type ) {
-			add_meta_box( 'mds_artist_settings', 'Artist Settings', array( self::class, 'mds_rm_render_artist_settings_box' ), 'artist', 'normal', 'high' );
+			add_meta_box( 'mds_artist_settings', 'Artist Settings', array( self::class, 'render_artist_settings_box' ), 'artist', 'normal', 'high' );
 		}
 
 		/**
@@ -268,7 +268,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
-	public static function mds_rm_render_artist_settings_box( WP_Post $post ): void {
+	public static function render_artist_settings_box( WP_Post $post ): void {
 		$contact = get_post_meta( $post->ID, 'artist_contact', true );
 
 		ob_start();
@@ -300,7 +300,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
-	public static function mds_rm_render_release_settings_box( WP_Post $post ): void {
+	public static function render_release_settings_box( WP_Post $post ): void {
 		$artist_id = get_post_meta( $post->ID, 'artist_id', true );
 		if ( ! $artist_id ) {
 			$artist_id = '';
@@ -404,7 +404,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param int $post_id Post ID.
 	 * @return void
 	 */
-	public static function mds_rm_save_artist_meta_data( int $post_id ): void {
+	public static function save_artist_meta_data( int $post_id ): void {
 		if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
 			return;
 		}
@@ -478,7 +478,7 @@ final class MDS_RM_Admin_Interface {
 	 * @param int $post_id Post ID.
 	 * @return void
 	 */
-	public static function mds_rm_save_release_meta_data( int $post_id ): void {
+	public static function save_release_meta_data( int $post_id ): void {
 		if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
 			return;
 		}
@@ -585,14 +585,14 @@ final class MDS_RM_Admin_Interface {
 	 * @since 0.9.0
 	 * @return void
 	 */
-	public static function mds_rm_register_settings_page(): void {
+	public static function register_settings_page(): void {
 		add_submenu_page(
 			'edit.php?post_type=release',
 			'Release Settings',
 			'Settings',
 			'manage_options',
 			'mds-release-settings',
-			array( self::class, 'mds_rm_settings_page' )
+			array( self::class, 'settings_page' )
 		);
 	}
 
@@ -602,7 +602,7 @@ final class MDS_RM_Admin_Interface {
 	 * @since 0.9.0
 	 * @return void
 	 */
-	public static function mds_rm_settings_page(): void {
+	public static function settings_page(): void {
 		$global_providers = get_option( 'mds_rm_providers', array() );
 		if ( ! is_array( $global_providers ) ) {
 			$global_providers = array();

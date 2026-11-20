@@ -357,9 +357,9 @@ Rules:
 
 **Gate:** §6 per class; hook-snapshot diff must show identical hook names/priorities.
 
-**Progress:** `Assets` and `Post_Types` are migrated. Each `dev-test` hook comparison found
-only the expected callback renames, and both Playwright smoke tests passed after each step.
-`Admin_Interface` is next.
+**Progress:** `Assets`, `Post_Types`, and `Admin_Interface` are migrated. Each `dev-test`
+hook comparison found only the expected callback renames, and both Playwright smoke tests
+passed after each step. `Network_Admin` is next.
 
 ### Phase 3 — Split `MDS_RM_Core_Functions`
 1. Create `MDS_RM_Logger`, `MDS_RM_Sync`, `MDS_RM_Providers`, `MDS_RM_Template_Loader` per the
