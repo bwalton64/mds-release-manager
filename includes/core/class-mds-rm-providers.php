@@ -21,7 +21,7 @@ final class MDS_RM_Providers {
 	 *
 	 * @return array The configured provider data.
 	 */
-	public static function defaults() {
+	public static function defaults(): array {
 		$providers = get_option( 'mds_rm_providers', false );
 
 		if ( empty( $providers ) || ! is_array( $providers ) ) {
