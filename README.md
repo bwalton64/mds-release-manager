@@ -124,6 +124,7 @@ Font Awesome Free is bundled and loaded locally by default. Under Releases > Set
    define( 'WP_DEBUG_LOG', true );
    define( 'WP_DEBUG_DISPLAY', false );
    ```
+   Routine Release Manager diagnostics appear in the PHP log only when both debug flags are `true`. Operational failures are logged even when debugging is off.
 
 #### Multisite Installation
 

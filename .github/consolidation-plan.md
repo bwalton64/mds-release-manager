@@ -587,6 +587,13 @@ is reported at the correct line number, and the final record is still imported
 without a trailing newline. Both Playwright smoke tests passed and the 48
 tracked hooks matched. Plugin Check still needs a rerun on the next package.
 
+The approved hybrid logging policy is in place: routine diagnostics require
+both WordPress debug flags, while operational failures retain their PHP log
+messages. The existing `mds_rm_log_message` action behavior is unchanged.
+All four combinations of debug flags passed the focused logging check; both
+Playwright smoke tests passed and the 48 tracked hooks matched. PHPCS now
+reports 0 errors and 24 warnings, primarily about metadata queries.
+
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
 3. Final full regression: Playwright suite + manual multisite hub/spoke sync test.

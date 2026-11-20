@@ -460,7 +460,7 @@ public static function mds_rm_render_widget( array $attributes, WP_Block $block 
 4. **Use strict type declarations** — `declare(strict_types=1);` in every new file, with type hints on function parameters and return values.
 5. **Register hooks at plugin load time** via static `register_hooks()` method in each class. Call it once from `mds-release-manager.php`.
 6. **Respect multisite separation** — use `get_site_option()` for network-wide settings, `get_option()` for site-local settings. Use `switch_to_blog()` / `restore_current_blog()` when accessing data on other sites.
-7. **Use `MDS_RM_Logger::log()` for debugging.** It fires `mds_rm_log_message` when `WP_DEBUG` and `WP_DEBUG_LOG` are both `true`. The old core method delegates to it for compatibility.
+7. **Route diagnostics through the logger.** `MDS_RM_Logger::diagnostic()` writes routine messages to the PHP log only when `WP_DEBUG` and `WP_DEBUG_LOG` are both `true`. `report_failure()` logs operational failures regardless of debug settings. `log()` still publishes to `mds_rm_log_message` under the same debug flags without writing to the PHP log.
 8. **Follow the autoloader pattern** — class files must be named `includes/class-mds-rm-*.php` to auto-load.
 9. **Cache-aware:** Call `MDS_RM_Sync::purge_cache()` when release data changes. It requests a purge only when LiteSpeed is available.
 10. **Provide extension hooks** — when adding new features, include `do_action()` or `apply_filters()` with `mds_rm_` prefix to allow third-party plugins to extend the functionality.
