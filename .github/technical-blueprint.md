@@ -123,8 +123,8 @@ mds-release-manager/
 - **`save_post_release`** → `MDS_RM_Admin_Interface::save_release_meta_data()` — Saves release meta.
 - **`save_post_artist`** → `MDS_RM_Admin_Interface::save_artist_meta_data()` — Saves artist meta.
 - **`admin_menu`** → `MDS_RM_Admin_Interface::register_settings_page()` — Registers Releases Settings page.
-- **`network_admin_menu`** → `MDS_RM_Network_Admin::mds_rm_register_menu()` — Registers network settings page.
-- **`network_admin_edit_save_network_settings`** → `MDS_RM_Network_Admin::mds_rm_save_settings()` — Saves network settings.
+- **`network_admin_menu`** → `MDS_RM_Network_Admin::register_menu()` — Registers the network settings page.
+- **`network_admin_edit_save_network_settings`** → `MDS_RM_Network_Admin::save_settings()` — Registered network settings save callback.
 - **`enqueue_block_editor_assets`** → `MDS_RM_Gutenberg_Blocks::mds_rm_enqueue_block_editor_assets()` — Loads block editor JS.
 - **`init`** → `MDS_RM_Gutenberg_Blocks::mds_rm_register_gutenberg_widget_blocks()` — Registers `mds-rm/release-meta`, `mds-rm/release-links`, and `mds-rm/artist-discography`.
 - **`render_block`** → `MDS_RM_Gutenberg_Blocks::mds_rm_render_core_block_with_meta()` — Injects release meta into core blocks.

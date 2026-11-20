@@ -357,9 +357,15 @@ Rules:
 
 **Gate:** §6 per class; hook-snapshot diff must show identical hook names/priorities.
 
-**Progress:** `Assets`, `Post_Types`, and `Admin_Interface` are migrated. Each `dev-test`
+**Progress:** `Assets`, `Post_Types`, `Admin_Interface`, and `Network_Admin` are migrated. Each `dev-test`
 hook comparison found only the expected callback renames, and both Playwright smoke tests
-passed after each step. `Network_Admin` is next.
+passed after each step. `Customizer` is next.
+
+**Separate follow-up:** The legacy Network Admin form action is `mds_rm_save_network_settings`,
+but its save callback is registered on `network_admin_edit_save_network_settings`. Core appends
+the form action to `network_admin_edit_`, so the form does not dispatch that callback. This
+pre-existing mismatch was left unchanged in the rename. The passing settings smoke test covers
+the site settings REST form, not this legacy network form.
 
 ### Phase 3 — Split `MDS_RM_Core_Functions`
 1. Create `MDS_RM_Logger`, `MDS_RM_Sync`, `MDS_RM_Providers`, `MDS_RM_Template_Loader` per the

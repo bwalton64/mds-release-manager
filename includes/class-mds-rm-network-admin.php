@@ -24,8 +24,8 @@ final class MDS_RM_Network_Admin {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks(): void {
-		add_action( 'network_admin_menu', array( self::class, 'mds_rm_register_menu' ) );
-		add_action( 'network_admin_edit_save_network_settings', array( self::class, 'mds_rm_save_settings' ) );
+		add_action( 'network_admin_menu', array( self::class, 'register_menu' ) );
+		add_action( 'network_admin_edit_save_network_settings', array( self::class, 'save_settings' ) );
 	}
 
 	/**
@@ -33,14 +33,14 @@ final class MDS_RM_Network_Admin {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_register_menu(): void {
+	public static function register_menu(): void {
 		add_submenu_page(
 			'settings.php',
 			'MDS Release Manager',
 			'MDS Release Manager',
 			'manage_network_options',
 			'mds-release-network-settings',
-			array( self::class, 'mds_rm_render_settings_page' )
+			array( self::class, 'render_settings_page' )
 		);
 	}
 
@@ -49,10 +49,10 @@ final class MDS_RM_Network_Admin {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_render_settings_page(): void {
+	public static function render_settings_page(): void {
 		$master_hub_id = (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() );
 		$sites         = function_exists( 'get_sites' ) ? get_sites() : array();
-		$args          = self::mds_rm_get_settings_template_args( $sites, $master_hub_id );
+		$args          = self::get_settings_template_args( $sites, $master_hub_id );
 
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and renders trusted extension markup.
 		echo MDS_RM_Core_Functions::mds_rm_render_template( 'templates/network-settings-page.php', $args );
@@ -63,14 +63,14 @@ final class MDS_RM_Network_Admin {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_save_settings(): void {
-		self::mds_rm_verify_save_permission();
+	public static function save_settings(): void {
+		self::verify_save_permission();
 		check_admin_referer( 'mds_rm_save_network_settings' );
 
-		$master_hub_id  = self::mds_rm_get_posted_master_hub_id();
-		$spoke_site_ids = self::mds_rm_get_posted_spoke_site_ids( $master_hub_id );
-		self::mds_rm_persist_settings( $master_hub_id, $spoke_site_ids );
-		self::mds_rm_redirect_after_save();
+		$master_hub_id  = self::get_posted_master_hub_id();
+		$spoke_site_ids = self::get_posted_spoke_site_ids( $master_hub_id );
+		self::persist_settings( $master_hub_id, $spoke_site_ids );
+		self::redirect_after_save();
 	}
 
 	/**
@@ -81,7 +81,7 @@ final class MDS_RM_Network_Admin {
 	 * @param int   $master_hub_id The master hub site ID.
 	 * @return array Template arguments.
 	 */
-	private static function mds_rm_get_settings_template_args( array $sites, int $master_hub_id ): array {
+	private static function get_settings_template_args( array $sites, int $master_hub_id ): array {
 		$spoke_site_ids = array_map( 'intval', (array) get_site_option( 'spoke_sites', array() ) );
 		$site_data      = array();
 
@@ -98,7 +98,7 @@ final class MDS_RM_Network_Admin {
 		return array(
 			'form_action'       => network_admin_url( 'edit.php?action=mds_rm_save_network_settings' ),
 			'nonce_field'       => wp_nonce_field( 'mds_rm_save_network_settings', '_wpnonce', false, false ),
-			'settings_saved'    => self::mds_rm_is_settings_saved(),
+			'settings_saved'    => self::is_settings_saved(),
 			'sites'             => $site_data,
 			'master_hub_id'     => $master_hub_id,
 			'spoke_site_ids'    => $spoke_site_ids,
@@ -113,7 +113,7 @@ final class MDS_RM_Network_Admin {
 	 * @since 0.9.0
 	 * @return bool Whether the settings were just saved.
 	 */
-	private static function mds_rm_is_settings_saved(): bool {
+	private static function is_settings_saved(): bool {
 		if ( ! isset( $_GET['updated'] ) || 'true' !== sanitize_text_field( wp_unslash( $_GET['updated'] ) ) ) {
 			return false;
 		}
@@ -126,7 +126,7 @@ final class MDS_RM_Network_Admin {
 	 *
 	 * @since 0.9.0
 	 */
-	private static function mds_rm_verify_save_permission(): void {
+	private static function verify_save_permission(): void {
 		if ( ! current_user_can( 'manage_network_options' ) ) {
 			wp_die( esc_html__( 'You are not allowed to manage network settings.', 'mds-release-manager' ) );
 		}
@@ -138,7 +138,7 @@ final class MDS_RM_Network_Admin {
 	 * @since 0.9.0
 	 * @return int The master hub site ID.
 	 */
-	private static function mds_rm_get_posted_master_hub_id(): int {
+	private static function get_posted_master_hub_id(): int {
 		check_admin_referer( 'mds_rm_save_network_settings' );
 
 		if ( ! isset( $_POST['mds_rm_master_blog_id'] ) ) {
@@ -155,7 +155,7 @@ final class MDS_RM_Network_Admin {
 	 * @param int $master_hub_id The master hub site ID.
 	 * @return array Spoke site IDs.
 	 */
-	private static function mds_rm_get_posted_spoke_site_ids( int $master_hub_id ): array {
+	private static function get_posted_spoke_site_ids( int $master_hub_id ): array {
 		check_admin_referer( 'mds_rm_save_network_settings' );
 
 		if ( ! isset( $_POST['spoke_sites'] ) || ! is_array( $_POST['spoke_sites'] ) ) {
@@ -175,7 +175,7 @@ final class MDS_RM_Network_Admin {
 	 * @param int   $master_hub_id The master hub site ID.
 	 * @param array $spoke_site_ids The spoke site IDs.
 	 */
-	private static function mds_rm_persist_settings( int $master_hub_id, array $spoke_site_ids ): void {
+	private static function persist_settings( int $master_hub_id, array $spoke_site_ids ): void {
 		check_admin_referer( 'mds_rm_save_network_settings' );
 
 		update_site_option( 'mds_rm_master_blog_id', $master_hub_id );
@@ -191,7 +191,7 @@ final class MDS_RM_Network_Admin {
 	 *
 	 * @since 0.9.0
 	 */
-	private static function mds_rm_redirect_after_save(): void {
+	private static function redirect_after_save(): void {
 		wp_safe_redirect( network_admin_url( 'settings.php?page=mds-release-network-settings&updated=true' ) );
 		exit;
 	}
