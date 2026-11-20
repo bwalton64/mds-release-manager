@@ -591,8 +591,10 @@ The approved hybrid logging policy is in place: routine diagnostics require
 both WordPress debug flags, while operational failures retain their PHP log
 messages. The existing `mds_rm_log_message` action behavior is unchanged.
 All four combinations of debug flags passed the focused logging check; both
-Playwright smoke tests passed and the 48 tracked hooks matched. PHPCS now
-reports 0 errors and 24 warnings, primarily about metadata queries.
+Playwright smoke tests passed and the 48 tracked hooks matched. On the
+extracted release package at `337e4d2`, PHPCS reported 0 errors and 24 warnings
+and Plugin Check 2.2.0 reported 0 errors and 23 warnings. The remaining
+findings concern metadata queries, post exclusions, and callback signatures.
 
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
