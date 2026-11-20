@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Provides shared rendering and asset helpers and legacy entry points.
+ * Provides legacy entry points for the extracted helpers.
  *
  * @since 0.9.0
  */
@@ -38,7 +38,6 @@ final class MDS_RM_Core_Functions {
 		MDS_RM_Sync::purge_cache();
 	}
 
-	// --- 2. Database-Backed Editable Assets ---.
 	/**
 	 * Retrieves editable asset contents stored in the database.
 	 *
@@ -46,10 +45,7 @@ final class MDS_RM_Core_Functions {
 	 * @return array The saved asset contents.
 	 */
 	public static function mds_rm_get_db_templates() {
-		$templates = is_multisite()
-		? get_site_option( 'mds_rm_db_templates', array() )
-		: get_option( 'mds_rm_db_templates', array() );
-		return is_array( $templates ) ? $templates : array();
+		return MDS_RM_Template_Loader::get_db_templates();
 	}
 
 	/**
@@ -61,32 +57,7 @@ final class MDS_RM_Core_Functions {
 	 * @return string Rendered template.
 	 */
 	public static function mds_rm_render_template( $template_name, $args = array() ) {
-		if (
-			! is_string( $template_name )
-			|| 'templates' !== dirname( $template_name )
-			|| 'php' !== strtolower( pathinfo( $template_name, PATHINFO_EXTENSION ) )
-		) {
-			wp_die( esc_html__( 'The requested Release Manager template is invalid.', 'mds-release-manager' ) );
-			return '';
-		}
-
-		if ( ! is_array( $args ) ) {
-			wp_die( esc_html__( 'The requested Release Manager template arguments are invalid.', 'mds-release-manager' ) );
-			return '';
-		}
-
-		$theme_template = locate_template( 'mds-release-manager/' . $template_name );
-		$template_path  = $theme_template ? $theme_template : MDS_RM_PATH . $template_name;
-
-		if ( ! is_readable( $template_path ) ) {
-			wp_die( esc_html__( 'The requested Release Manager template could not be found.', 'mds-release-manager' ) );
-			return '';
-		}
-
-		ob_start();
-		load_template( $template_path, false, $args );
-
-		return (string) ob_get_clean();
+		return MDS_RM_Template_Loader::render( $template_name, $args );
 	}
 
 	/**
@@ -97,26 +68,7 @@ final class MDS_RM_Core_Functions {
 	 * @return string Sanitized HTML.
 	 */
 	public static function mds_rm_kses_shortcode_html( $html ) {
-		$allowed_html           = wp_kses_allowed_html( 'post' );
-		$allowed_html['iframe'] = array(
-			'allow'             => true,
-			'allowfullscreen'   => true,
-			'allowtransparency' => true,
-			'class'             => true,
-			'frameborder'       => true,
-			'height'            => true,
-			'loading'           => true,
-			'name'              => true,
-			'referrerpolicy'    => true,
-			'scrolling'         => true,
-			'seamless'          => true,
-			'src'               => true,
-			'style'             => true,
-			'title'             => true,
-			'width'             => true,
-		);
-
-		return wp_kses( $html, $allowed_html );
+		return MDS_RM_Template_Loader::kses_shortcode_html( $html );
 	}
 
 	/**
@@ -128,16 +80,7 @@ final class MDS_RM_Core_Functions {
 	 * @param array  $deps     The stylesheet dependencies.
 	 */
 	public static function mds_rm_enqueue_editable_style( $handle, $rel_path, $deps = array() ) {
-		$db_templates = self::mds_rm_get_db_templates();
-		if ( isset( $db_templates[ $rel_path ] ) && trim( $db_templates[ $rel_path ] ) !== '' ) {
-			wp_register_style( $handle, false, $deps, MDS_RELEASE_MANAGER_VERSION );
-			wp_enqueue_style( $handle );
-			wp_add_inline_style( $handle, $db_templates[ $rel_path ] );
-		} else {
-			$asset_path = MDS_RM_PATH . $rel_path;
-			wp_register_style( $handle, MDS_RM_URL . $rel_path, $deps, filemtime( $asset_path ) );
-			wp_enqueue_style( $handle );
-		}
+		MDS_RM_Template_Loader::enqueue_editable_style( $handle, $rel_path, $deps );
 	}
 
 	/**
@@ -150,16 +93,7 @@ final class MDS_RM_Core_Functions {
 	 * @param bool   $in_footer Whether to enqueue the script in the footer.
 	 */
 	public static function mds_rm_enqueue_editable_script( $handle, $rel_path, $deps = array(), $in_footer = true ) {
-		$db_templates = self::mds_rm_get_db_templates();
-		if ( isset( $db_templates[ $rel_path ] ) && trim( $db_templates[ $rel_path ] ) !== '' ) {
-			wp_register_script( $handle, false, $deps, MDS_RELEASE_MANAGER_VERSION, $in_footer );
-			wp_enqueue_script( $handle );
-			wp_add_inline_script( $handle, $db_templates[ $rel_path ] );
-		} else {
-			$asset_path = MDS_RM_PATH . $rel_path;
-			wp_register_script( $handle, MDS_RM_URL . $rel_path, $deps, filemtime( $asset_path ), $in_footer );
-			wp_enqueue_script( $handle );
-		}
+		MDS_RM_Template_Loader::enqueue_editable_script( $handle, $rel_path, $deps, $in_footer );
 	}
 
 	/**

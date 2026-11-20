@@ -40,7 +40,7 @@ final class MDS_RM_Assets {
 		self::enqueue_font_awesome();
 		MDS_RM_Release_Meta::enqueue_assets();
 
-		MDS_RM_Core_Functions::mds_rm_enqueue_editable_style( 'mds-release-links-css', 'css/frontend.css' );
+		MDS_RM_Template_Loader::enqueue_editable_style( 'mds-release-links-css', 'css/frontend.css' );
 		if ( is_singular( 'release' ) ) {
 			wp_add_inline_style(
 				'mds-release-links-css',
@@ -124,8 +124,8 @@ final class MDS_RM_Assets {
 		if ( $is_content_screen ) {
 			wp_enqueue_media();
 
-			MDS_RM_Core_Functions::mds_rm_enqueue_editable_style( 'mds-admin-styles', 'css/admin-styles.css' );
-			MDS_RM_Core_Functions::mds_rm_enqueue_editable_script(
+			MDS_RM_Template_Loader::enqueue_editable_style( 'mds-admin-styles', 'css/admin-styles.css' );
+			MDS_RM_Template_Loader::enqueue_editable_script(
 				'mds-meta-boxes-js',
 				'js/meta-boxes.js',
 				array( 'jquery' ),
@@ -136,7 +136,7 @@ final class MDS_RM_Assets {
 				$is_block_editor = $screen->is_block_editor();
 				$dependencies    = array( 'jquery', 'tags-box' );
 				$dependencies    = array_merge( $dependencies, $is_block_editor ? array( 'wp-data', 'wp-dom-ready', 'wp-edit-post', 'wp-hooks' ) : array( 'post' ) );
-				MDS_RM_Core_Functions::mds_rm_enqueue_editable_script(
+				MDS_RM_Template_Loader::enqueue_editable_script(
 					'mds-release-taxonomies',
 					'js/release-taxonomies.js',
 					$dependencies,
@@ -152,9 +152,9 @@ final class MDS_RM_Assets {
 		}
 
 		if ( $screen && 'release_page_mds-release-settings' === $screen->id ) {
-			MDS_RM_Core_Functions::mds_rm_enqueue_editable_style( 'mds-admin-styles', 'css/admin-styles.css' );
+			MDS_RM_Template_Loader::enqueue_editable_style( 'mds-admin-styles', 'css/admin-styles.css' );
 			wp_enqueue_style( 'wp-color-picker' );
-			MDS_RM_Core_Functions::mds_rm_enqueue_editable_script(
+			MDS_RM_Template_Loader::enqueue_editable_script(
 				'mds-settings-js',
 				'js/settings.js',
 				array( 'jquery', 'wp-color-picker', 'jquery-ui-sortable' ),

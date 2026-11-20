@@ -406,7 +406,8 @@ blog context restoration, taxonomy term reuse, and cache purge behavior. The hoo
 comparison and both smoke tests passed. `MDS_RM_Providers` is extracted and the legacy
 core method delegates to it. Defaults, brand color restoration, and proposed option
 writes matched the baseline without changing stored test settings. `MDS_RM_Template_Loader`
-is next.
+is extracted. Bundled templates, theme override precedence, editable CSS/JS behavior,
+and shortcode sanitization matched the baseline. The core class now only delegates.
 
 ### Phase 4 — Functional subfolders
 1. Add the explicit class→path map to the autoloader in `mds-release-manager.php` (covering both

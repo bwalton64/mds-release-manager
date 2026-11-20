@@ -38,6 +38,7 @@ mds-release-manager/
 │   ├── class-mds-rm-logger.php
 │   ├── class-mds-rm-sync.php
 │   ├── class-mds-rm-providers.php
+│   ├── class-mds-rm-template-loader.php
 │   ├── class-mds-rm-csv-handler.php
 │   ├── class-mds-rm-customizer.php
 │   ├── class-mds-rm-discography.php
@@ -485,7 +486,7 @@ if ( ! is_array( $links_array ) ) {
     $links_array = array();
 }
 // Process and render...
-echo wp_kses_post( MDS_RM_Core_Functions::mds_rm_kses_shortcode_html( $output ) );
+echo wp_kses_post( MDS_RM_Template_Loader::kses_shortcode_html( $output ) );
 ```
 
 **Registering a Customizer Setting:**

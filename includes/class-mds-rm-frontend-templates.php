@@ -33,7 +33,7 @@ final class MDS_RM_Frontend_Templates {
 	}
 
 	public static function enqueue_artist_assets() {
-		MDS_RM_Core_Functions::mds_rm_enqueue_editable_style( 'mds-discography', 'css/artist-fallback.css' );
+		MDS_RM_Template_Loader::enqueue_editable_style( 'mds-discography', 'css/artist-fallback.css' );
 	}
 
 	public static function filter_artist_content( $content ) {
@@ -50,7 +50,7 @@ final class MDS_RM_Frontend_Templates {
 			'contact' => get_post_meta( $post->ID, 'artist_contact', true ),
 			'style' => MDS_RM_Customizer::get_artist_fallback_style_attribute(),
 		);
-		return MDS_RM_Core_Functions::mds_rm_render_template( 'templates/artist-fallback.php', $args );
+		return MDS_RM_Template_Loader::render( 'templates/artist-fallback.php', $args );
 	}
 
 	private static function get_fallback_artist_post() {
@@ -81,7 +81,7 @@ final class MDS_RM_Frontend_Templates {
 			return;
 		}
 
-		MDS_RM_Core_Functions::mds_rm_enqueue_editable_style( 'mds-release-fallback', 'css/release-fallback.css' );
+		MDS_RM_Template_Loader::enqueue_editable_style( 'mds-release-fallback', 'css/release-fallback.css' );
 	}
 
 	/**
@@ -115,7 +115,7 @@ final class MDS_RM_Frontend_Templates {
 			'links_html' => $has_links ? '' : MDS_RM_Release_Links::render( array(), $post->ID ),
 		);
 
-		return MDS_RM_Core_Functions::mds_rm_render_template( 'templates/release-fallback.php', $args );
+		return MDS_RM_Template_Loader::render( 'templates/release-fallback.php', $args );
 	}
 
 	/**

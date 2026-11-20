@@ -290,7 +290,7 @@ final class MDS_RM_Admin_Interface {
 			'post_id'          => $post->ID,
 		);
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo MDS_RM_Core_Functions::mds_rm_render_template( 'templates/artist-meta-box.php', $args );
+		echo MDS_RM_Template_Loader::render( 'templates/artist-meta-box.php', $args );
 	}
 
 	/**
@@ -394,7 +394,7 @@ final class MDS_RM_Admin_Interface {
 		);
 
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo MDS_RM_Core_Functions::mds_rm_render_template( 'templates/release-meta-box.php', $args );
+		echo MDS_RM_Template_Loader::render( 'templates/release-meta-box.php', $args );
 	}
 
 	/**
@@ -636,6 +636,6 @@ final class MDS_RM_Admin_Interface {
 		);
 
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and renders trusted extension markup.
-		echo MDS_RM_Core_Functions::mds_rm_render_template( 'templates/settings-page.php', $args );
+		echo MDS_RM_Template_Loader::render( 'templates/settings-page.php', $args );
 	}
 }

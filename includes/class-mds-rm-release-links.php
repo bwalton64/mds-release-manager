@@ -148,7 +148,7 @@ final class MDS_RM_Release_Links {
 				$shortcode = str_replace( array( '{release_number}', '{album_number}' ), $album_id, $template );
 			}
 			if ( shortcode_exists( 'bandcamp' ) ) {
-				return MDS_RM_Core_Functions::mds_rm_kses_shortcode_html( do_shortcode( sanitize_text_field( $shortcode ) ) );
+				return MDS_RM_Template_Loader::kses_shortcode_html( do_shortcode( sanitize_text_field( $shortcode ) ) );
 			}
 			error_log( '[MDS Release Manager] Bandcamp audio is configured but its shortcode is unavailable.' );
 		}
