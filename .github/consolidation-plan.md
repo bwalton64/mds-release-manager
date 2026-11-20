@@ -579,6 +579,14 @@ warnings include:
 - Coding style and callback signatures: address local style findings without
   changing callable contracts.
 
+The next pass made CSV row iteration explicit and documented two intentional
+exceptions: the read-only network notice needs no nonce, and MySQL advisory
+locks cannot use the object cache. PHPCS now reports 0 errors and 48 warnings.
+A multipart CSV fixture verified that blank rows are skipped, a malformed row
+is reported at the correct line number, and the final record is still imported
+without a trailing newline. Both Playwright smoke tests passed and the 48
+tracked hooks matched. Plugin Check still needs a rerun on the next package.
+
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
 3. Final full regression: Playwright suite + manual multisite hub/spoke sync test.
