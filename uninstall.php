@@ -46,9 +46,13 @@ $options = array(
 	'mds_rm_artist_image_cleanup_complete',
 );
 
-foreach ( $options as $opt ) {
-	delete_option( $opt );
-}
+$delete_local_options = static function () use ( $options ): void {
+	foreach ( $options as $opt ) {
+		delete_option( $opt );
+	}
+};
+
+$delete_local_options();
 
 if ( $wipe_all ) {
 	// Delete Network Options.
@@ -58,9 +62,14 @@ if ( $wipe_all ) {
 
 	// Delete all CPTs network-wide.
 	if ( is_multisite() ) {
-		$sites = function_exists( 'get_sites' ) ? get_sites() : array();
+		delete_site_option( 'spoke_sites' );
+		$current_blog_id = get_current_blog_id();
+		$sites           = function_exists( 'get_sites' ) ? get_sites() : array();
 		foreach ( $sites as $site ) {
 			switch_to_blog( (int) $site->blog_id );
+			if ( $current_blog_id !== (int) $site->blog_id ) {
+				$delete_local_options();
+			}
 			$release_posts = get_posts(
 				array(
 					'post_type'   => array( 'release', 'artist' ),

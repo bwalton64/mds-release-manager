@@ -272,7 +272,7 @@ mds-release-manager/
 - `mds_rm_master_blog_id` — Hub site ID for multisite network.
 - `spoke_sites` (array) — Array of spoke site IDs.
 - `mds_rm_woo_sites` (array) — Existing sync targets and automatic-injection eligibility, read by the WooCommerce integration.
-- `mds_rm_wipe_on_uninstall` — Wipe all data on uninstall ('0' or '1').
+- `mds_rm_wipe_on_uninstall` — Opt in to deleting network settings (including the stored spoke selection), plugin site options across the network, and Release and Artist posts on uninstall ('0' or '1').
 
 ### Customizer Settings
 - `mds_rm_primary_color` — Primary accent color (default: #2271b1).
