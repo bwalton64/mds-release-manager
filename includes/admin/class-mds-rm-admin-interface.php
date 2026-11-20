@@ -57,7 +57,7 @@ final class MDS_RM_Admin_Interface {
 				'post_status'    => array_keys( get_post_stati() ),
 				'posts_per_page' => 100,
 				'fields'         => 'ids',
-				'meta_key'       => 'artist_featured_image',
+				'meta_key'       => 'artist_featured_image', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- The migration batches only artists that still have the deprecated field.
 				'orderby'        => 'ID',
 				'order'          => 'ASC',
 			)
