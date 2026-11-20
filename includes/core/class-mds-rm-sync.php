@@ -21,7 +21,7 @@ final class MDS_RM_Sync {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function purge_cache() {
+	public static function purge_cache(): void {
 		if ( defined( 'LSCWP_V' ) || has_action( 'litespeed_purge_all' ) ) {
 			do_action( 'litespeed_purge_all' );
 		}
@@ -37,7 +37,7 @@ final class MDS_RM_Sync {
 	 * @param string $taxonomy  The taxonomy name.
 	 * @return int|null The term ID, or null if creation failed.
 	 */
-	public static function ensure_term_exists( $term_name, $taxonomy ) {
+	public static function ensure_term_exists( $term_name, $taxonomy ): ?int {
 		if ( empty( $term_name ) ) {
 			return null;
 		}
@@ -59,15 +59,15 @@ final class MDS_RM_Sync {
 	 * @param string $post_type The source post type.
 	 * @return true|WP_Error|null True on success, an error on failure, or null when synchronization is not applicable.
 	 */
-	public static function broadcast_to_spokes( $post_id, $post_type ) {
+	public static function broadcast_to_spokes( $post_id, $post_type ): bool|WP_Error|null {
 		if ( ! is_multisite() ) {
-			return;
+			return null;
 		}
 
 		// Prevent infinite loops if saving happens inside a switched context.
 		static $is_broadcasting = false;
 		if ( $is_broadcasting ) {
-			return;
+			return null;
 		}
 
 		$master_hub_id   = (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() );
@@ -75,17 +75,17 @@ final class MDS_RM_Sync {
 
 		// Only broadcast if we are saving on the Master Hub.
 		if ( $current_blog_id !== $master_hub_id ) {
-			return;
+			return null;
 		}
 
 		$post = get_post( $post_id );
 		if ( ! $post || ! in_array( $post_type, array( 'release', 'artist' ), true ) ) {
-			return;
+			return null;
 		}
 
 		$spokes = array_map( 'intval', (array) apply_filters( 'mds_rm_sync_target_sites', array(), $post_id, $post_type ) );
 		if ( empty( $spokes ) ) {
-			return;
+			return null;
 		}
 
 		$uuid = get_post_meta( $post_id, 'artist' === $post_type ? '_mds_artist_uuid' : 'upc_ean', true );
