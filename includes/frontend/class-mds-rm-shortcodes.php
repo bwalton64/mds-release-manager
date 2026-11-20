@@ -36,7 +36,7 @@ final class MDS_RM_Shortcodes {
 	 * @param bool   $include_shortcode Retained for compatibility; links are no longer embedded.
 	 * @return string The rendered release metadata.
 	 */
-	public static function render_meta_bar_html( $upc, $include_shortcode = true ): string {
+	public static function render_meta_bar_html( $upc, $include_shortcode = true ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Preserve the legacy optional argument, including named calls.
 		return MDS_RM_Release_Meta::render( array( 'upc' => $upc ) );
 	}
 
