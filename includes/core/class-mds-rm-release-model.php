@@ -357,7 +357,7 @@ final class MDS_RM_Release_Model {
 	/**
 	 * Validates classic editor fields before WordPress saves the post.
 	 *
-	 * @param bool  $empty   Whether the post is empty.
+	 * @param bool                 $empty   Whether the post is empty.
 	 * @param array<string, mixed> $postarr Post data.
 	 * @return bool Existing empty-post result.
 	 */
