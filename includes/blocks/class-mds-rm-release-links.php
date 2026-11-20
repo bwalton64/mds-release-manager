@@ -20,7 +20,7 @@ final class MDS_RM_Release_Links {
 	 *
 	 * @return array<string, array{label: string, type: string}>
 	 */
-	public static function style_fields() {
+	public static function style_fields(): array {
 		return array(
 			'background'          => array(
 				'label' => 'Background Color',
@@ -126,16 +126,22 @@ final class MDS_RM_Release_Links {
 	 *
 	 * @return array Default streaming providers.
 	 */
-	public static function providers() {
+	public static function providers(): array {
 		return MDS_RM_Providers::defaults();
 	}
 
-	public static function enqueue_assets() {
+	public static function enqueue_assets(): void {
 		wp_enqueue_style( 'mds-release-links-block', MDS_RM_URL . 'css/release-links.css', array( 'dashicons' ), filemtime( MDS_RM_PATH . 'css/release-links.css' ) );
 		MDS_RM_Assets::enqueue_font_awesome();
 	}
 
-	private static function audio( $post_id ) {
+	/**
+	 * Renders the enabled audio preview for a release.
+	 *
+	 * @param int|string $post_id Release post ID.
+	 * @return string Audio markup, or an empty string when unavailable.
+	 */
+	private static function audio( int|string $post_id ): string {
 		$players  = (array) get_option( 'mds_rm_audio_players', array( 'html5' ) );
 		$bandcamp = get_post_meta( $post_id, 'bandcamp_shortcode', true );
 		if ( in_array( 'blocks_for_bandcamp', $players, true ) && is_string( $bandcamp ) && '' !== trim( $bandcamp ) ) {
@@ -159,7 +165,7 @@ final class MDS_RM_Release_Links {
 		return '';
 	}
 
-	public static function render( $attributes = array(), $context_post_id = 0 ) {
+	public static function render( $attributes = array(), $context_post_id = 0 ): string {
 		$post = MDS_RM_Release_Meta::resolve_post( isset( $attributes['upc'] ) ? $attributes['upc'] : '', $context_post_id );
 		if ( ! $post ) {
 			return '';
@@ -266,7 +272,7 @@ final class MDS_RM_Release_Links {
 			( $audio ? '<div class="mds-release-links__audio">' . $audio . '</div>' : '' ) . '</div>';
 	}
 
-	public static function shortcode( $atts ) {
+	public static function shortcode( $atts ): string {
 		$atts   = (array) $atts;
 		$items  = array();
 		$order  = isset( $atts['order'] ) ? array_map( 'trim', explode( ',', $atts['order'] ) ) : array();
@@ -329,7 +335,14 @@ final class MDS_RM_Release_Links {
 		);
 	}
 
-	private static function shortcode_toggle( $atts, $name ) {
+	/**
+	 * Reads an optional shortcode flag, which defaults to enabled.
+	 *
+	 * @param array  $atts Shortcode attributes.
+	 * @param string $name Flag name.
+	 * @return bool Whether the flag is enabled.
+	 */
+	private static function shortcode_toggle( array $atts, string $name ): bool {
 		if ( ! isset( $atts[ $name ] ) || '1' === $atts[ $name ] ) {
 			return true;
 		}
