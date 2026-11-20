@@ -552,8 +552,18 @@ after a UPC change, with the correct label and format. The spoke and hub
 fixtures were removed; no network settings were changed. This tested the core
 sync path, not sibling integration configuration or media synchronization.
 
-Triage the remaining findings and rerun both scanners on the final candidate
-before closing this phase.
+The next pass fixed the remaining class documentation and style errors. The
+Discography shortcode output was byte-identical on the same fixture before and
+after the markup cleanup. UPC input still uses the same sanitization; the
+sanitizer now wraps the request read directly. Public Discography pagination
+validates the unslashed query value, and six HTTP cases passed for valid,
+zero, and malformed values. Both Playwright smoke tests passed and all 48
+tracked hooks matched after each batch.
+
+PHPCS now reports 1 error and 58 warnings. The remaining error concerns how
+the CSV importer validates the temporary upload path. Verify that change with
+a real multipart upload, triage the warnings, and rerun both scanners on the
+final release package before closing this phase.
 
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
