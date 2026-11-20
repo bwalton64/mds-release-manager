@@ -245,7 +245,11 @@ final class MDS_RM_CSV_Handler {
 			}
 		}
 
-		while ( ( $row = $csv_stream->fgetcsv() ) !== false ) {
+		while ( true ) {
+			$row = $csv_stream->fgetcsv();
+			if ( false === $row ) {
+				break;
+			}
 			++$row_number;
 			$nonempty = array_filter(
 				$row,
@@ -308,7 +312,7 @@ final class MDS_RM_CSV_Handler {
 			$release_post_id = 1 === count( $release_found ) ? $release_found[0]->ID : 0;
 			$validation      = MDS_RM_Release_Model::validate( $release_post_id, $upc, $format_id ? array( $format_id ) : array() );
 			if ( count( $release_found ) > 1 || is_wp_error( $validation ) ) {
-				$message  = count( $release_found ) > 1
+				$message = count( $release_found ) > 1
 					? __( 'More than one release has this UPC/EAN.', 'mds-release-manager' )
 					: $validation->get_error_message();
 				/* translators: %1$d: CSV row number. %2$s: Error message. */
