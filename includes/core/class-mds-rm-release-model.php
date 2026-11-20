@@ -67,6 +67,7 @@ final class MDS_RM_Release_Model {
 				add_action(
 					'admin_notices',
 					static function () use ( $format ) {
+						/* translators: %s: Release format name. */
 						echo '<div class="notice notice-error"><p>' . esc_html( sprintf( __( 'Could not register the release format "%s". Check the server error log.', 'mds-release-manager' ), $format ) ) . '</p></div>';
 					}
 				);
@@ -551,6 +552,7 @@ final class MDS_RM_Release_Model {
 		if ( isset( self::$rest_sync_errors[ $key ] ) ) {
 			$error = self::$rest_sync_errors[ $key ];
 			unset( self::$rest_sync_errors[ $key ] );
+			/* translators: %s: synchronization error message */
 			return new WP_Error( 'mds_sync_failed', sprintf( __( 'The release was saved, but synchronization failed: %s', 'mds-release-manager' ), $error->get_error_message() ), array( 'status' => 500 ) );
 		}
 		return $response;

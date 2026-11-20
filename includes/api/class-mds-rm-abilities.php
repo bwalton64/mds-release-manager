@@ -530,7 +530,8 @@ final class MDS_RM_Abilities {
 		return array(
 			'success'         => $success,
 			'message'         => sprintf(
-				__( 'Successfully synced %d releases and %d artists to spoke sites.', 'mds-release-manager' ),
+				/* translators: %1$d: Release count. %2$d: Artist count. */
+				__( 'Successfully synced %1$d releases and %2$d artists to spoke sites.', 'mds-release-manager' ),
 				$release_count,
 				$artist_count
 			),

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-20T14:53:05+00:00\n"
+"POT-Creation-Date: 2026-11-20T16:03:57+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mds-release-manager\n"
@@ -43,7 +43,7 @@ msgstr ""
 
 #. translators: %s: synchronization error message
 #: includes/admin/class-mds-rm-admin-interface.php:569
-#: includes/core/class-mds-rm-release-model.php:512
+#: includes/core/class-mds-rm-release-model.php:556
 #, php-format
 msgid "The release was saved, but synchronization failed: %s"
 msgstr ""
@@ -69,68 +69,75 @@ msgid "Do not load Font-Awesome"
 msgstr ""
 
 #: includes/admin/class-mds-rm-csv-handler.php:56
-#: includes/admin/class-mds-rm-csv-handler.php:169
+#: includes/admin/class-mds-rm-csv-handler.php:171
 msgid "You are not allowed to manage CSV data."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:99
+#. translators: %d: Release post ID.
+#: includes/admin/class-mds-rm-csv-handler.php:100
 #, php-format
 msgid "Cannot export release %d: its format conflicts with legacy data. Resolve the conflict first."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:102
+#. translators: %1$d: Release post ID. %2$s: Error message.
+#: includes/admin/class-mds-rm-csv-handler.php:104
 #, php-format
 msgid "Cannot export release %1$d: %2$s"
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:111
+#: includes/admin/class-mds-rm-csv-handler.php:113
 msgid "Could not create the CSV export."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:184
+#: includes/admin/class-mds-rm-csv-handler.php:186
 msgid "Please select a CSV file to import."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:195
-#: includes/admin/class-mds-rm-csv-handler.php:205
+#: includes/admin/class-mds-rm-csv-handler.php:197
+#: includes/admin/class-mds-rm-csv-handler.php:207
 msgid "The uploaded CSV file could not be opened."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:256
+#: includes/admin/class-mds-rm-csv-handler.php:258
 msgid "The CSV must include a Release Format column."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:263
+#. translators: %d: CSV row number.
+#: includes/admin/class-mds-rm-csv-handler.php:266
 #, php-format
 msgid "Row %d: incorrect number of columns."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:302
+#: includes/admin/class-mds-rm-csv-handler.php:305
 msgid "More than one release has this UPC/EAN."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:304
-#: includes/admin/class-mds-rm-csv-handler.php:404
+#. translators: %1$d: CSV row number. %2$s: Error message.
+#: includes/admin/class-mds-rm-csv-handler.php:308
+#: includes/admin/class-mds-rm-csv-handler.php:411
 #, php-format
 msgid "Row %1$d: %2$s"
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:336
+#. translators: %1$d: CSV row number. %2$s: Error message.
+#: includes/admin/class-mds-rm-csv-handler.php:341
 #, php-format
 msgid "Row %1$d: artist synchronization failed: %2$s"
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:380
+#. translators: %d: CSV row number.
+#: includes/admin/class-mds-rm-csv-handler.php:386
 #, php-format
 msgid "Row %d: could not save the release."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:421
+#. translators: %1$d: CSV row number. %2$s: Error message.
+#: includes/admin/class-mds-rm-csv-handler.php:429
 #, php-format
 msgid "Row %1$d: release saved but synchronization failed: %2$s"
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:432
+#: includes/admin/class-mds-rm-csv-handler.php:440
 msgid "The CSV must include UPC/EAN and Release Format columns."
 msgstr ""
 
@@ -299,7 +306,7 @@ msgid "Record Label"
 msgstr ""
 
 #: includes/admin/views/release-meta-box.php:71
-#: includes/frontend/class-mds-rm-discography.php:79
+#: includes/frontend/class-mds-rm-discography.php:82
 msgid "Distributor"
 msgstr ""
 
@@ -325,7 +332,7 @@ msgstr ""
 
 #: includes/admin/views/release-meta-box.php:115
 #: includes/admin/views/settings-page.php:36
-#: includes/frontend/class-mds-rm-assets.php:180
+#: includes/frontend/class-mds-rm-assets.php:182
 msgid "Remove"
 msgstr ""
 
@@ -370,7 +377,7 @@ msgid "Configure streaming providers used in the release editor."
 msgstr ""
 
 #: includes/admin/views/settings-page.php:31
-#: includes/frontend/class-mds-rm-assets.php:178
+#: includes/frontend/class-mds-rm-assets.php:180
 msgid "Provider Name"
 msgstr ""
 
@@ -592,70 +599,72 @@ msgstr ""
 msgid "Sync must be run from the master hub site"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:533
+#. translators: %1$d: Release count. %2$d: Artist count.
+#: includes/api/class-mds-rm-abilities.php:534
 #, php-format
-msgid "Successfully synced %d releases and %d artists to spoke sites."
+msgid "Successfully synced %1$d releases and %2$d artists to spoke sites."
 msgstr ""
 
-#: includes/blocks/class-mds-rm-release-links.php:242
+#: includes/blocks/class-mds-rm-release-links.php:256
 msgid "Buy Now"
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:70
+#. translators: %s: Release format name.
+#: includes/core/class-mds-rm-release-model.php:71
 #, php-format
 msgid "Could not register the release format \"%s\". Check the server error log."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:100
+#: includes/core/class-mds-rm-release-model.php:101
 msgid "Release formats must be Single, EP, Album, or Digital without a parent."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:154
+#: includes/core/class-mds-rm-release-model.php:155
 msgid "The release must have exactly one valid release format."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:213
+#: includes/core/class-mds-rm-release-model.php:214
 msgid "These releases need review for missing, malformed, or duplicate UPCs, invalid formats, or conflicting legacy format data:"
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:250
+#: includes/core/class-mds-rm-release-model.php:251
 msgid "A UPC/EAN is required."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:254
+#: includes/core/class-mds-rm-release-model.php:255
 msgid "Select exactly one release format."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:258
+#: includes/core/class-mds-rm-release-model.php:259
 msgid "Select Single, EP, Album, or Digital."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:310
+#: includes/core/class-mds-rm-release-model.php:311
 msgid "This UPC/EAN is already assigned to another release."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:329
+#: includes/core/class-mds-rm-release-model.php:330
 msgid "Could not reserve this UPC/EAN for saving. Please try again."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:381
+#: includes/core/class-mds-rm-release-model.php:383
 msgid "Change the release format in the release editor."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:384
+#: includes/core/class-mds-rm-release-model.php:393
 msgid "Resolve the release format conflict in the release editor first."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:405
-#: includes/core/class-mds-rm-release-model.php:439
+#: includes/core/class-mds-rm-release-model.php:428
+#: includes/core/class-mds-rm-release-model.php:482
 msgid "The saved format conflicts with legacy data. Choose a release format explicitly."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:412
+#: includes/core/class-mds-rm-release-model.php:442
 msgid "You are not allowed to assign a release format."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:416
+#: includes/core/class-mds-rm-release-model.php:454
 msgid "Invalid release"
 msgstr ""
 
@@ -667,22 +676,26 @@ msgstr ""
 msgid "Cannot synchronize a release with an invalid or conflicting format."
 msgstr ""
 
-#: includes/core/class-mds-rm-sync.php:197
+#. translators: %d: Spoke site ID.
+#: includes/core/class-mds-rm-sync.php:198
 #, php-format
 msgid "Site %d has conflicting identifiers."
 msgstr ""
 
-#: includes/core/class-mds-rm-sync.php:221
+#. translators: %d: Spoke site ID.
+#: includes/core/class-mds-rm-sync.php:223
 #, php-format
 msgid "Could not save the shadow record on site %d."
 msgstr ""
 
-#: includes/core/class-mds-rm-sync.php:263
+#. translators: %d: Spoke site ID.
+#: includes/core/class-mds-rm-sync.php:266
 #, php-format
 msgid "Could not synchronize a taxonomy term on site %d."
 msgstr ""
 
-#: includes/core/class-mds-rm-sync.php:274
+#. translators: %1$d: Spoke site ID. %2$s: Error message.
+#: includes/core/class-mds-rm-sync.php:278
 #, php-format
 msgid "Could not synchronize taxonomy on site %1$d: %2$s"
 msgstr ""
@@ -700,7 +713,7 @@ msgstr ""
 msgid "The requested Release Manager template could not be found."
 msgstr ""
 
-#: includes/frontend/class-mds-rm-assets.php:179
+#: includes/frontend/class-mds-rm-assets.php:181
 msgid "Hex Color"
 msgstr ""
 
@@ -708,165 +721,165 @@ msgstr ""
 msgid "No releases found."
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:76
+#: includes/frontend/class-mds-rm-discography.php:79
 msgid "Title"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:77
+#: includes/frontend/class-mds-rm-discography.php:80
 msgid "UPC/EAN"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:78
+#: includes/frontend/class-mds-rm-discography.php:81
 msgid "Label"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:80
+#: includes/frontend/class-mds-rm-discography.php:83
 msgid "Release Year"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:98
-#: includes/frontend/class-mds-rm-discography.php:99
+#: includes/frontend/class-mds-rm-discography.php:105
+#: includes/frontend/class-mds-rm-discography.php:106
 msgid "Discography"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:133
+#: includes/frontend/class-mds-rm-discography.php:140
 msgid "No releases found on this page."
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:136
+#: includes/frontend/class-mds-rm-discography.php:143
 msgid "Discography pages"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:145
+#: includes/frontend/class-mds-rm-discography.php:152
 msgid "Previous"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:146
+#: includes/frontend/class-mds-rm-discography.php:153
 msgid "Next"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:23
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:25
 msgid "Release Links Block"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:27
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:30
 msgid "Release Links"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:28
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:39
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:34
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:44
 msgid "UPC/EAN Override"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:28
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:41
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:36
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:46
 msgid "Leave blank to use the current release or supported context."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:29
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:43
 msgid "Open links in a new tab"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:30
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:52
 msgid "Show audio player"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:32
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:62
 msgid "Provider name"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:32
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:64
 msgid "Use the provider name from Release Settings, or __buy_now for Buy Now."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:33
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:70
 msgid "Show link"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:34
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:84
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:79
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:104
 msgid "Icon classes"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:34
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:81
 msgid "Leave blank for the provider default. Dashicons and Font Awesome are supported."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:35
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:90
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:87
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:113
 msgid "Tooltip title"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:35
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:89
 msgid "Leave blank for the provider name."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:43
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:108
 msgid "Provider overrides"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:43
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:113
 msgid "Reorder or hide links here. Other saved providers remain visible."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:46
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:121
 msgid "Release Links Styles"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:47
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:108
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:129
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:140
 msgid "Tablet styles apply at 1024px and below; mobile styles apply at 767px and below. Blank values inherit."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:23
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:25
 msgid "Release Meta Block"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:35
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:40
 msgid "Release Meta"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:57
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:65
 msgid "Field"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:58
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:73
 msgid "Show field"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:62
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:82
 msgid "Choose icon"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:66
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:86
 msgid "Custom icon classes"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:67
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:87
 msgid "No icon"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:86
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:106
 msgid "Use Dashicons or Font Awesome classes; leave blank for no icon."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:94
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:120
 msgid "Fields"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:103
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:132
 msgid "Release Meta Styles"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:139
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:189
 msgid "Hex color, transparent, or inherit."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:141
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:191
 msgid "CSS lengths such as 12px or 1em; spacing accepts up to four values."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:143
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:193
 msgid "Use auto or a CSS length such as 100% or 20rem."
 msgstr ""
 

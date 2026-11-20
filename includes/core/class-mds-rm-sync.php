@@ -194,6 +194,7 @@ final class MDS_RM_Sync {
 				$sync_conflict = ! empty( $conflicts );
 			}
 			if ( $sync_conflict ) {
+				/* translators: %d: Spoke site ID. */
 				$errors[] = sprintf( __( 'Site %d has conflicting identifiers.', 'mds-release-manager' ), $spoke_id );
 				restore_current_blog();
 				continue;
@@ -218,6 +219,7 @@ final class MDS_RM_Sync {
 			}
 
 			if ( ! $shadow_post_id || is_wp_error( $shadow_post_id ) ) {
+				/* translators: %d: Spoke site ID. */
 				$errors[] = sprintf( __( 'Could not save the shadow record on site %d.', 'mds-release-manager' ), $spoke_id );
 				restore_current_blog();
 				continue;
@@ -260,6 +262,7 @@ final class MDS_RM_Sync {
 							if ( $tid ) {
 								$term_ids[] = $tid;
 							} else {
+								/* translators: %d: Spoke site ID. */
 								$errors[] = sprintf( __( 'Could not synchronize a taxonomy term on site %d.', 'mds-release-manager' ), $spoke_id );
 							}
 						}
@@ -271,6 +274,7 @@ final class MDS_RM_Sync {
 						$result = wp_set_post_terms( $shadow_post_id, $names, $tax, false );
 					}
 					if ( is_wp_error( $result ) ) {
+						/* translators: %1$d: Spoke site ID. %2$s: Error message. */
 						$errors[] = sprintf( __( 'Could not synchronize taxonomy on site %1$d: %2$s', 'mds-release-manager' ), $spoke_id, $result->get_error_message() );
 					}
 				}

@@ -96,9 +96,11 @@ final class MDS_RM_CSV_Handler {
 		foreach ( $releases as $release ) {
 			$format = MDS_RM_Release_Model::format_name( $release->ID );
 			if ( MDS_RM_Release_Model::has_legacy_format_conflict( $release->ID ) ) {
+				/* translators: %d: Release post ID. */
 				wp_die( esc_html( sprintf( __( 'Cannot export release %d: its format conflicts with legacy data. Resolve the conflict first.', 'mds-release-manager' ), $release->ID ) ) );
 			}
 			if ( is_wp_error( $format ) ) {
+				/* translators: %1$d: Release post ID. %2$s: Error message. */
 				wp_die( esc_html( sprintf( __( 'Cannot export release %1$d: %2$s', 'mds-release-manager' ), $release->ID, $format->get_error_message() ) ) );
 			}
 			$release_formats[ $release->ID ] = $format;
@@ -260,6 +262,7 @@ final class MDS_RM_CSV_Handler {
 			}
 
 			if ( count( $headers ) !== count( $row ) ) {
+				/* translators: %d: CSV row number. */
 				$errors[] = sprintf( __( 'Row %d: incorrect number of columns.', 'mds-release-manager' ), $row_number );
 				continue;
 			}
@@ -301,6 +304,7 @@ final class MDS_RM_CSV_Handler {
 				$message  = count( $release_found ) > 1
 					? __( 'More than one release has this UPC/EAN.', 'mds-release-manager' )
 					: $validation->get_error_message();
+				/* translators: %1$d: CSV row number. %2$s: Error message. */
 				$errors[] = sprintf( __( 'Row %1$d: %2$s', 'mds-release-manager' ), $row_number, $message );
 				continue;
 			}
@@ -333,6 +337,7 @@ final class MDS_RM_CSV_Handler {
 			if ( ! empty( $artist_post_id ) && ! isset( $broadcasted_artists[ $artist_post_id ] ) ) {
 				$artist_sync = MDS_RM_Sync::broadcast_to_spokes( $artist_post_id, 'artist' );
 				if ( is_wp_error( $artist_sync ) ) {
+					/* translators: %1$d: CSV row number. %2$s: Error message. */
 					$errors[] = sprintf( __( 'Row %1$d: artist synchronization failed: %2$s', 'mds-release-manager' ), $row_number, $artist_sync->get_error_message() );
 				}
 				$broadcasted_artists[ $artist_post_id ] = true;
@@ -377,6 +382,7 @@ final class MDS_RM_CSV_Handler {
 				$release_post_id = wp_insert_post( $post_args, true );
 			}
 			if ( is_wp_error( $release_post_id ) || ! $release_post_id ) {
+				/* translators: %d: CSV row number. */
 				$errors[] = sprintf( __( 'Row %d: could not save the release.', 'mds-release-manager' ), $row_number );
 				MDS_RM_Release_Model::release_upc_lock( $upc );
 				continue;
@@ -401,6 +407,7 @@ final class MDS_RM_CSV_Handler {
 
 			$result = wp_set_post_terms( $release_post_id, array( $format_id ), 'release_format', false );
 			if ( is_wp_error( $result ) ) {
+				/* translators: %1$d: CSV row number. %2$s: Error message. */
 				$errors[] = sprintf( __( 'Row %1$d: %2$s', 'mds-release-manager' ), $row_number, $result->get_error_message() );
 				MDS_RM_Release_Model::release_upc_lock( $upc );
 				continue;
@@ -418,6 +425,7 @@ final class MDS_RM_CSV_Handler {
 			$release_sync = MDS_RM_Sync::broadcast_to_spokes( $release_post_id, 'release' );
 			MDS_RM_Release_Model::release_upc_lock( $upc );
 			if ( is_wp_error( $release_sync ) ) {
+				/* translators: %1$d: CSV row number. %2$s: Error message. */
 				$errors[] = sprintf( __( 'Row %1$d: release saved but synchronization failed: %2$s', 'mds-release-manager' ), $row_number, $release_sync->get_error_message() );
 			}
 
