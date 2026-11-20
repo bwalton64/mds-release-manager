@@ -439,8 +439,7 @@ final class MDS_RM_Release_Model {
 			return $empty;
 		}
 
-		$upc_raw = isset( $_POST['upc_ean'] ) && is_string( $_POST['upc_ean'] ) ? wp_unslash( $_POST['upc_ean'] ) : '';
-		$upc     = sanitize_text_field( $upc_raw );
+		$upc = sanitize_text_field( isset( $_POST['upc_ean'] ) && is_string( $_POST['upc_ean'] ) ? wp_unslash( $_POST['upc_ean'] ) : '' );
 
 		$format = isset( $_POST['release_format'] ) && is_scalar( $_POST['release_format'] )
 			? array( absint( wp_unslash( $_POST['release_format'] ) ) )
