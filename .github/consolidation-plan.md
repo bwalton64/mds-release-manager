@@ -357,11 +357,13 @@ Rules:
 
 **Gate:** §6 per class; hook-snapshot diff must show identical hook names/priorities.
 
-**Progress:** `Assets`, `Post_Types`, `Admin_Interface`, `Network_Admin`, `Customizer`, and
-`Frontend_Templates` are migrated. Each `dev-test` hook comparison found only the expected
-callback renames, and both Playwright smoke tests passed after each step. The Customizer
-layout and numeric sanitizers were also exercised through their registered settings.
-`Artist_Routing` already follows the naming convention and needed no changes. `REST_API` is next.
+**Progress:** `Assets`, `Post_Types`, `Admin_Interface`, `Network_Admin`, `Customizer`,
+`Frontend_Templates`, and `REST_API` are migrated. Each `dev-test` hook comparison found
+only the expected callback renames, and both Playwright smoke tests passed after each step.
+The Customizer sanitizers were exercised through their registered settings. The REST
+comparison also verified all four route registrations, anonymous permission outcomes,
+and the releases response. `Artist_Routing` already follows the naming convention and
+needed no changes. `Shortcodes` is next.
 
 **Separate follow-up:** The legacy Network Admin form action is `mds_rm_save_network_settings`,
 but its save callback is registered on `network_admin_edit_save_network_settings`. Core appends

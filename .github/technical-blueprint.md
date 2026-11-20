@@ -118,7 +118,7 @@ mds-release-manager/
 - **`admin_enqueue_scripts`** → `MDS_RM_Assets::admin_assets()` — Loads admin JS/CSS.
 - **`customize_register`** → `MDS_RM_Customizer::customize_register()` — Adds Customizer settings.
 - **`enqueue_block_assets`** → `MDS_RM_Release_Meta::enqueue_assets()` — Loads metadata CSS and icon assets in the frontend and editor.
-- **`rest_api_init`** → `MDS_RM_REST_API::mds_rm_register_rest_routes()` — Registers REST endpoints.
+- **`rest_api_init`** → `MDS_RM_REST_API::register_rest_routes()` — Registers REST endpoints.
 - **`add_meta_boxes`** → `MDS_RM_Admin_Interface::add_meta_boxes()` — Adds release/artist meta boxes.
 - **`save_post_release`** → `MDS_RM_Admin_Interface::save_release_meta_data()` — Saves release meta.
 - **`save_post_artist`** → `MDS_RM_Admin_Interface::save_artist_meta_data()` — Saves artist meta.
