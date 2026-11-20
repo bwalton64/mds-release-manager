@@ -23,7 +23,7 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_action( 'admin_menu', array( self::class, 'register_csv_page' ) );
 		add_action( 'admin_post_mds_rm_export_csv', array( self::class, 'export_csv' ) );
 		add_action( 'admin_post_mds_rm_import_csv', array( self::class, 'import_csv' ) );
@@ -34,7 +34,7 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_csv_page() {
+	public static function register_csv_page(): void {
 		add_submenu_page(
 			'edit.php?post_type=release',
 			'CSV Import/Export',
@@ -50,7 +50,7 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function verify_csv_request() {
+	public static function verify_csv_request(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die(
 				esc_html__( 'You are not allowed to manage CSV data.', 'mds-release-manager' ),
@@ -67,7 +67,7 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function export_csv() {
+	public static function export_csv(): void {
 		self::verify_csv_request();
 
 		$releases             = get_posts(
@@ -163,7 +163,7 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function import_csv() {
+	public static function import_csv(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die(
 				esc_html__( 'You are not allowed to manage CSV data.', 'mds-release-manager' ),
@@ -447,7 +447,7 @@ final class MDS_RM_CSV_Handler {
 	 * @param string $message The notice message.
 	 * @param string $type    The notice type.
 	 */
-	public static function csv_redirect_with_message( $code, $message, $type ) {
+	public static function csv_redirect_with_message( $code, $message, $type ): void {
 		add_settings_error( 'mds_csv_msg', $code, $message, $type );
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 		wp_safe_redirect(
@@ -465,7 +465,7 @@ final class MDS_RM_CSV_Handler {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function csv_page() {
+	public static function csv_page(): void {
 		settings_errors( 'mds_csv_msg' );
 
 		$args = array(
