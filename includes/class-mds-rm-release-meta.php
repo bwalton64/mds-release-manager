@@ -78,7 +78,7 @@ final class MDS_RM_Release_Meta {
 			self::register_assets();
 		}
 		wp_enqueue_style( 'mds-release-meta' );
-		MDS_RM_Assets::mds_rm_enqueue_font_awesome();
+		MDS_RM_Assets::enqueue_font_awesome();
 	}
 
 	/**

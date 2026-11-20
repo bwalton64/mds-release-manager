@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phase 1 metadata verified on `dev-test`; Phase 2 not started
+**Status:** Approved — Phase 2 in progress
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -356,6 +356,9 @@ Rules:
 - `MDS_RM_Core_Functions` is excluded here — it is handled in Phase 3.
 
 **Gate:** §6 per class; hook-snapshot diff must show identical hook names/priorities.
+
+**Progress:** `Assets` is migrated. The `dev-test` hook comparison found only the three
+expected callback renames, and both Playwright smoke tests passed. `Post_Types` is next.
 
 ### Phase 3 — Split `MDS_RM_Core_Functions`
 1. Create `MDS_RM_Logger`, `MDS_RM_Sync`, `MDS_RM_Providers`, `MDS_RM_Template_Loader` per the

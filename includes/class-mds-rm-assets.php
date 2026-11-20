@@ -24,11 +24,11 @@ final class MDS_RM_Assets {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks() {
-		add_action( 'wp_enqueue_scripts', array( self::class, 'mds_rm_enqueue_frontend_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( self::class, 'enqueue_frontend_assets' ) );
 		add_action( 'enqueue_block_assets', array( MDS_RM_Release_Meta::class, 'enqueue_assets' ) );
 		add_action( 'enqueue_block_assets', array( MDS_RM_Release_Links::class, 'enqueue_assets' ) );
-		add_action( 'template_redirect', array( self::class, 'mds_rm_handle_global_redirect' ) );
-		add_action( 'admin_enqueue_scripts', array( self::class, 'mds_rm_admin_assets' ) );
+		add_action( 'template_redirect', array( self::class, 'handle_global_redirect' ) );
+		add_action( 'admin_enqueue_scripts', array( self::class, 'admin_assets' ) );
 	}
 
 	/**
@@ -36,8 +36,8 @@ final class MDS_RM_Assets {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_enqueue_frontend_assets() {
-		self::mds_rm_enqueue_font_awesome();
+	public static function enqueue_frontend_assets() {
+		self::enqueue_font_awesome();
 		MDS_RM_Release_Meta::enqueue_assets();
 
 		MDS_RM_Core_Functions::mds_rm_enqueue_editable_style( 'mds-release-links-css', 'css/frontend.css' );
@@ -49,7 +49,7 @@ final class MDS_RM_Assets {
 		}
 	}
 
-	public static function mds_rm_enqueue_font_awesome() {
+	public static function enqueue_font_awesome() {
 		$fa_support = get_option( 'mds_rm_fa_support', 'cdn' );
 		if ( in_array( 'internal', (array) $fa_support, true ) || in_array( 'cdn', (array) $fa_support, true ) ) {
 			wp_register_style(
@@ -67,7 +67,7 @@ final class MDS_RM_Assets {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_handle_global_redirect() {
+	public static function handle_global_redirect() {
 		if ( is_admin() || ! is_singular( 'release' ) ) {
 			return;
 		}
@@ -115,7 +115,7 @@ final class MDS_RM_Assets {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_admin_assets() {
+	public static function admin_assets() {
 		$screen            = get_current_screen();
 		$is_content_screen = $screen
 			&& in_array( $screen->base, array( 'post', 'edit' ), true )

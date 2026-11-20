@@ -112,10 +112,10 @@ mds-release-manager/
 
 ### Core Actions & Filters
 - **`init`** → `MDS_RM_Post_Types::mds_rm_register_cpts()` — Registers release and artist CPTs.
-- **`wp_enqueue_scripts`** → `MDS_RM_Assets::mds_rm_enqueue_frontend_assets()` — Loads frontend CSS and Font Awesome.
-- **`template_redirect`** → `MDS_RM_Assets::mds_rm_handle_global_redirect()` — Redirects release pages if enabled.
+- **`wp_enqueue_scripts`** → `MDS_RM_Assets::enqueue_frontend_assets()` — Loads frontend CSS and Font Awesome.
+- **`template_redirect`** → `MDS_RM_Assets::handle_global_redirect()` — Redirects release pages if enabled.
 - **`template_redirect`** → `MDS_RM_Artist_Routing::redirect()` — Redirects an Artist to its valid enabled homepage with HTTP 302, except in admin, previews, feeds, and REST requests. Invalid, missing, or self-referencing URLs leave the Artist page available and show a warning in Artist Settings.
-- **`admin_enqueue_scripts`** → `MDS_RM_Assets::mds_rm_admin_assets()` — Loads admin JS/CSS.
+- **`admin_enqueue_scripts`** → `MDS_RM_Assets::admin_assets()` — Loads admin JS/CSS.
 - **`customize_register`** → `MDS_RM_Customizer::mds_rm_customize_register()` — Adds Customizer settings.
 - **`enqueue_block_assets`** → `MDS_RM_Release_Meta::enqueue_assets()` — Loads metadata CSS and icon assets in the frontend and editor.
 - **`rest_api_init`** → `MDS_RM_REST_API::mds_rm_register_rest_routes()` — Registers REST endpoints.
@@ -345,7 +345,7 @@ The plugin exposes core features as native MCP tools using the WordPress Abiliti
 
 ### Naming Conventions
 - **Classes:** `MDS_RM_` prefix, PascalCase. Example: `MDS_RM_Post_Types`.
-- **Functions:** Lowercase with underscores, `mds_rm_` prefix. Example: `mds_rm_enqueue_frontend_assets()`.
+- **Functions:** Lowercase with underscores and an `mds_rm_` prefix for global functions. Class methods omit the redundant prefix as they are migrated, e.g. `MDS_RM_Assets::enqueue_frontend_assets()`.
 - **Constants:** `MDS_RELEASE_MANAGER_VERSION`, `MDS_RM_PATH`, `MDS_RM_URL`, `MDS_RM_MAIN_FILE`.
 - **Hooks:** `mds_rm_` prefix. Example: `do_action( 'mds_rm_save_custom_meta' )`.
 - **Options:** `mds_rm_` prefix. Example: `get_option( 'mds_rm_links_color' )`.

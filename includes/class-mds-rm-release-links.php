@@ -132,7 +132,7 @@ final class MDS_RM_Release_Links {
 
 	public static function enqueue_assets() {
 		wp_enqueue_style( 'mds-release-links-block', MDS_RM_URL . 'css/release-links.css', array( 'dashicons' ), filemtime( MDS_RM_PATH . 'css/release-links.css' ) );
-		MDS_RM_Assets::mds_rm_enqueue_font_awesome();
+		MDS_RM_Assets::enqueue_font_awesome();
 	}
 
 	private static function audio( $post_id ) {
