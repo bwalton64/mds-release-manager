@@ -24,9 +24,9 @@ final class MDS_RM_Elementor_Tags {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks() {
-		add_action( 'init', array( self::class, 'mds_rm_add_elementor_support_artist' ), 99 );
-		add_action( 'elementor/dynamic_tags/register', array( self::class, 'mds_rm_register_elementor_tags' ) );
-		add_action( 'elementor/widgets/register', array( self::class, 'mds_rm_register_elementor_widgets' ) );
+		add_action( 'init', array( self::class, 'add_elementor_support_artist' ), 99 );
+		add_action( 'elementor/dynamic_tags/register', array( self::class, 'register_elementor_tags' ) );
+		add_action( 'elementor/widgets/register', array( self::class, 'register_elementor_widgets' ) );
 	}
 
 	/**
@@ -34,7 +34,7 @@ final class MDS_RM_Elementor_Tags {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_add_elementor_support_artist() {
+	public static function add_elementor_support_artist() {
 		add_post_type_support( 'artist', 'elementor' );
 	}
 
@@ -44,7 +44,7 @@ final class MDS_RM_Elementor_Tags {
 	 * @since 0.9.0
 	 * @param object $dynamic_tags_manager Elementor's dynamic tags manager.
 	 */
-	public static function mds_rm_register_elementor_tags( $dynamic_tags_manager ) {
+	public static function register_elementor_tags( $dynamic_tags_manager ) {
 		if ( ! class_exists( '\Elementor\Core\DynamicTags\Data_Tag' ) ) {
 			return;
 		}
@@ -58,7 +58,7 @@ final class MDS_RM_Elementor_Tags {
 	 * @since 0.9.0
 	 * @param object $widgets_manager Elementor's widgets manager.
 	 */
-	public static function mds_rm_register_elementor_widgets( $widgets_manager ) {
+	public static function register_elementor_widgets( $widgets_manager ) {
 		if ( ! class_exists( '\Elementor\Widget_Base' ) ) {
 			return;
 		}
