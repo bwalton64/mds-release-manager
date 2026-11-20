@@ -157,7 +157,7 @@ final class MDS_RM_Release_Links {
 			if ( shortcode_exists( 'bandcamp' ) ) {
 				return MDS_RM_Template_Loader::kses_shortcode_html( do_shortcode( sanitize_text_field( $shortcode ) ) );
 			}
-			error_log( '[MDS Release Manager] Bandcamp audio is configured but its shortcode is unavailable.' );
+			MDS_RM_Logger::report_failure( 'Bandcamp audio is configured but its shortcode is unavailable.' );
 		}
 		$url = get_post_meta( $post_id, 'audio_preview_url', true );
 		if ( ( in_array( 'html5', $players, true ) || in_array( 'native', $players, true ) ) && is_string( $url ) && esc_url( $url ) ) {
@@ -182,7 +182,7 @@ final class MDS_RM_Release_Links {
 		$links  = json_decode( is_string( $stored ) ? $stored : '', true );
 		if ( ! is_array( $links ) ) {
 			if ( ! empty( $stored ) ) {
-				error_log( '[MDS Release Manager] Invalid streaming links for release ' . $post->ID );
+				MDS_RM_Logger::report_failure( 'Invalid streaming links for release ' . $post->ID );
 			}
 			$links = array();
 		}
@@ -195,7 +195,7 @@ final class MDS_RM_Release_Links {
 					'color' => '',
 				);
 			} elseif ( ! empty( $url ) ) {
-				error_log( '[MDS Release Manager] Invalid streaming link for release ' . $post->ID );
+				MDS_RM_Logger::report_failure( 'Invalid streaming link for release ' . $post->ID );
 			}
 		}
 		foreach ( self::providers() as $provider ) {
@@ -222,7 +222,7 @@ final class MDS_RM_Release_Links {
 		$overrides = isset( $attributes['items'] ) && is_array( $attributes['items'] ) ? $attributes['items'] : array();
 		foreach ( $overrides as $item ) {
 			if ( ! is_array( $item ) || empty( $item['name'] ) || ! is_string( $item['name'] ) ) {
-				error_log( '[MDS Release Manager] Invalid Release Links provider override.' );
+				MDS_RM_Logger::diagnostic( 'Invalid Release Links provider override.' );
 				continue;
 			}
 			foreach ( $available as $name => $link ) {
@@ -257,12 +257,12 @@ final class MDS_RM_Release_Links {
 			$title = isset( $link['title'] ) && is_string( $link['title'] ) && '' !== $link['title'] ? $link['title'] : $label;
 			$icon  = isset( $link['icon'] ) && is_string( $link['icon'] ) ? trim( $link['icon'] ) : '';
 			if ( ! preg_match( '/^(?:dashicons dashicons-[a-z0-9-]+|(?:fa[srbl]|fa-(?:solid|regular|brands|light)) fa-[a-z0-9-]+)$/D', $icon ) ) {
-				error_log( '[MDS Release Manager] Invalid Release Links icon for ' . $label );
+				MDS_RM_Logger::diagnostic( 'Invalid Release Links icon for ' . $label );
 				$icon = 'fas fa-link';
 			}
 			$color = isset( $link['color'] ) ? MDS_RM_Release_Meta::valid_style( $link['color'], 'color' ) : '';
 			if ( '' === $color && ! empty( $link['color'] ) ) {
-				error_log( '[MDS Release Manager] Invalid Release Links provider color for ' . $label );
+				MDS_RM_Logger::diagnostic( 'Invalid Release Links provider color for ' . $label );
 			}
 			$output .= '<a class="mds-release-links__link" href="' . esc_url( $link['url'] ) . '" aria-label="' . esc_attr( $title ) . '" title="' . esc_attr( $title ) . '"' .
 				( $new_tab ? ' target="_blank" rel="noopener noreferrer"' : '' ) .
@@ -363,7 +363,7 @@ final class MDS_RM_Release_Links {
 		if ( '0' === $atts[ $name ] ) {
 			return false;
 		}
-		error_log( '[MDS Release Manager] Invalid Release Links shortcode option: ' . $name );
+		MDS_RM_Logger::diagnostic( 'Invalid Release Links shortcode option: ' . $name );
 		return true;
 	}
 }
