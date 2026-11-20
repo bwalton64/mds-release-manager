@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phase 4 complete; Phase 5 not started
+**Status:** Approved — Phase 4 complete; Phase 5 in progress
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -437,6 +437,9 @@ Both smoke tests passed twice after an initial editor response failure that did
 not reproduce. No template paths or block definitions changed.
 
 ### Phase 5 — block.json migration
+
+Release Meta now registers from metadata. Its existing saved block passed editor
+validation and rendered on the frontend before and after the migration.
 For each block (`release-meta`, `release-links`, `artist-discography`), one block per commit:
 1. Create `blocks/{name}/block.json` (apiVersion 3, same block name, attributes, supports,
    textdomain) and move its editor code out of `js/blocks.js` into `blocks/{name}/edit.js`.

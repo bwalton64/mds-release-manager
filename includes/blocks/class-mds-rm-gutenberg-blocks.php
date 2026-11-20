@@ -40,13 +40,13 @@ final class MDS_RM_Gutenberg_Blocks {
 		wp_register_script(
 			'mds-rm-blocks-js',
 			MDS_RM_URL . 'js/blocks.js',
-			array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-compose', 'wp-hooks', 'wp-server-side-render', 'wp-block-editor', 'wp-i18n', 'wp-data' ),
+			array( 'wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-compose', 'wp-hooks', 'wp-server-side-render', 'wp-block-editor', 'wp-i18n', 'wp-data', 'mds-rm-block-style-control' ),
 			filemtime( $script_path ),
 			true
 		);
 		wp_enqueue_script( 'mds-rm-blocks-js' );
 		wp_localize_script(
-			'mds-rm-blocks-js',
+			'mds-rm-release-meta-editor',
 			'mdsReleaseMeta',
 			array(
 				'items'  => MDS_RM_Release_Meta::default_items(),
@@ -96,38 +96,7 @@ final class MDS_RM_Gutenberg_Blocks {
 				),
 			)
 		);
-		register_block_type(
-			'mds-rm/release-meta',
-			array(
-				'api_version'     => 3,
-				'render_callback' => array( self::class, 'render_gutenberg_release_meta' ),
-				'uses_context'    => array( 'postId', 'postType' ),
-				'attributes'      => array(
-					'upcOverride' => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-					'items'       => array(
-						'type'    => 'array',
-						'default' => MDS_RM_Release_Meta::default_items(),
-						'items'   => array(
-							'type'       => 'object',
-							'properties' => array(
-								'field'   => array( 'type' => 'string' ),
-								'enabled' => array( 'type' => 'boolean' ),
-								'icon'    => array( 'type' => 'string' ),
-								'title'   => array( 'type' => 'string' ),
-							),
-						),
-					),
-					'styles'      => array(
-						'type'                 => 'object',
-						'default'              => (object) array(),
-						'additionalProperties' => true,
-					),
-				),
-			)
-		);
+		self::register_release_meta_block();
 		register_block_type(
 			'mds-rm/release-links',
 			array(
@@ -161,6 +130,41 @@ final class MDS_RM_Gutenberg_Blocks {
 						'additionalProperties' => true,
 					),
 				),
+			)
+		);
+	}
+
+	private static function register_release_meta_block() {
+		$style_script = 'blocks/style-control.js';
+		$edit_script  = 'blocks/release-meta/edit.js';
+		wp_register_script(
+			'mds-rm-block-style-control',
+			MDS_RM_URL . $style_script,
+			array( 'wp-element', 'wp-components' ),
+			filemtime( MDS_RM_PATH . $style_script ),
+			true
+		);
+		wp_register_script(
+			'mds-rm-release-meta-editor',
+			MDS_RM_URL . $edit_script,
+			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-server-side-render', 'wp-block-editor', 'mds-rm-block-style-control' ),
+			filemtime( MDS_RM_PATH . $edit_script ),
+			true
+		);
+
+		$directory = MDS_RM_PATH . 'blocks/release-meta';
+		$metadata  = wp_json_file_decode( $directory . '/block.json', array( 'associative' => true ) );
+		if ( ! is_array( $metadata ) ) {
+			return;
+		}
+		$attributes                     = $metadata['attributes'];
+		$attributes['items']['default'] = MDS_RM_Release_Meta::default_items();
+		$attributes['styles']['default'] = (object) $attributes['styles']['default'];
+		register_block_type(
+			$directory,
+			array(
+				'attributes'      => $attributes,
+				'render_callback' => array( self::class, 'render_gutenberg_release_meta' ),
 			)
 		);
 	}

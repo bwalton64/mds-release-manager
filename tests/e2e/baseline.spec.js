@@ -77,4 +77,29 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			const providers = readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_providers'));"]);
 			expect(providers).toEqual(expect.arrayContaining([expect.objectContaining({ name: fixture.label })]));
 		});
+
+		await test.step('Previously saved Release Meta block opens and renders', async () => {
+			const name = 'mds-rm/release-meta';
+			const attributes = {
+				items: [{ field: 'record_label', enabled: true, icon: '', title: 'Saved label' }],
+				styles: { desktop: { color: '#123456' } },
+			};
+			const markup = `<!-- wp:${name} ${JSON.stringify(attributes)} /-->`;
+			runWpCli(['eval', `if (is_wp_error(wp_update_post(array('ID' => ${fixture.state.release}, 'post_content' => ${JSON.stringify(markup)}), true))) WP_CLI::error('Could not save block fixture.');`]);
+
+			await page.goto(fixture.releaseUrl);
+			await expect(page.locator('.wp-block-mds-rm-release-meta .mds-release-meta'))
+				.toContainText(`${fixture.label} edited`);
+
+			await page.goto(`/wp-admin/post.php?post=${fixture.state.release}&action=edit`);
+			await expect.poll(() => page.evaluate((blockName) => {
+				const block = window.wp?.data?.select('core/block-editor')?.getBlocks()
+					.find(({ name }) => name === blockName);
+				return block && { isValid: block.isValid, items: block.attributes.items, styles: block.attributes.styles };
+			}, name)).toEqual({ isValid: true, ...attributes });
+			await expect.poll(() => page.evaluate(() => {
+				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
+				return canvas.querySelector('.editor-styles-wrapper .mds-release-meta, .block-editor-block-list__layout .mds-release-meta')?.textContent;
+			})).toContain(`${fixture.label} edited`);
+		});
 });
