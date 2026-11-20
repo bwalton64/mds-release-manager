@@ -23,7 +23,7 @@ final class MDS_RM_Assets {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_action( 'wp_enqueue_scripts', array( self::class, 'enqueue_frontend_assets' ) );
 		add_action( 'enqueue_block_assets', array( MDS_RM_Release_Meta::class, 'enqueue_assets' ) );
 		add_action( 'enqueue_block_assets', array( MDS_RM_Release_Links::class, 'enqueue_assets' ) );
@@ -36,7 +36,7 @@ final class MDS_RM_Assets {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function enqueue_frontend_assets() {
+	public static function enqueue_frontend_assets(): void {
 		self::enqueue_font_awesome();
 		MDS_RM_Release_Meta::enqueue_assets();
 
@@ -49,7 +49,10 @@ final class MDS_RM_Assets {
 		}
 	}
 
-	public static function enqueue_font_awesome() {
+	/**
+	 * Enqueues the configured Font Awesome source when the plugin supplies it.
+	 */
+	public static function enqueue_font_awesome(): void {
 		$fa_support = get_option( 'mds_rm_fa_support', 'cdn' );
 		if ( in_array( 'internal', (array) $fa_support, true ) || in_array( 'cdn', (array) $fa_support, true ) ) {
 			wp_register_style(
@@ -67,7 +70,7 @@ final class MDS_RM_Assets {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function handle_global_redirect() {
+	public static function handle_global_redirect(): void {
 		if ( is_admin() || ! is_singular( 'release' ) ) {
 			return;
 		}
@@ -115,7 +118,7 @@ final class MDS_RM_Assets {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function admin_assets() {
+	public static function admin_assets(): void {
 		$screen             = get_current_screen();
 		$is_content_screen  = $screen
 			&& in_array( $screen->base, array( 'post', 'edit' ), true )
