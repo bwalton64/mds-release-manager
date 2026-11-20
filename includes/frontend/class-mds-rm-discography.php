@@ -95,7 +95,7 @@ final class MDS_RM_Discography {
 			$artist
 		);
 		if ( ! is_array( $columns ) || ! $columns ) {
-			error_log( '[MDS Release Manager] Invalid discography columns.' );
+			MDS_RM_Logger::diagnostic( 'Invalid discography columns.' );
 			return '';
 		}
 		$columns = array_filter(
@@ -106,7 +106,7 @@ final class MDS_RM_Discography {
 			ARRAY_FILTER_USE_BOTH
 		);
 		if ( ! $columns ) {
-			error_log( '[MDS Release Manager] Discography has no valid columns.' );
+			MDS_RM_Logger::diagnostic( 'Discography has no valid columns.' );
 			return '';
 		}
 
@@ -141,7 +141,7 @@ final class MDS_RM_Discography {
 									}
 									$value = apply_filters( 'mds_rm_discography_cell', $value, $key, $release, $artist );
 									if ( ! is_string( $value ) ) {
-										error_log( '[MDS Release Manager] Invalid discography cell value for ' . $key );
+										MDS_RM_Logger::diagnostic( 'Invalid discography cell value for ' . $key );
 										$value = '';
 									}
 									?>
