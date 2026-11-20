@@ -15,14 +15,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class MDS_RM_Elementor_Links_Widget extends MDS_RM_Elementor_Widget {
+	/** @return string The registered widget identifier. */
 	public function get_name() {
 		return 'mds_release_links';
 	}
 
+	/** @return string The translated editor title. */
 	public function get_title() {
 		return __( 'Release Links Block', 'mds-release-manager' );
 	}
 
+	/** Registers the Release Links content and style controls. */
 	protected function register_controls() {
 		$this->start_controls_section( 'release_links_content', array( 'label' => __( 'Release Links', 'mds-release-manager' ) ) );
 		$this->add_control( 'upc', array( 'label' => __( 'UPC/EAN Override', 'mds-release-manager' ), 'type' => Controls_Manager::TEXT, 'description' => __( 'Leave blank to use the current release or supported context.', 'mds-release-manager' ), 'dynamic' => array( 'active' => true ) ) );
@@ -49,6 +52,7 @@ class MDS_RM_Elementor_Links_Widget extends MDS_RM_Elementor_Widget {
 		$this->end_controls_section();
 	}
 
+	/** Outputs release links using the shared renderer. */
 	protected function render() {
 		$settings = $this->get_settings_for_display();
 		$items = array();
