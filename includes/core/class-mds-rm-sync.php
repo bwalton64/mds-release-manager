@@ -147,8 +147,8 @@ final class MDS_RM_Sync {
 						'post_status'            => array_keys( get_post_stati() ),
 						'posts_per_page'         => 2,
 						'fields'                 => 'ids',
-						'meta_key'               => $identifier[0],
-						'meta_value'             => $identifier[1],
+						'meta_key'               => $identifier[0], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Shadows match stable hub identifiers or legacy UPCs, not local post IDs.
+						'meta_value'             => $identifier[1], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 						'orderby'                => array(
 							'date' => 'DESC',
 							'ID'   => 'DESC',
@@ -186,9 +186,9 @@ final class MDS_RM_Sync {
 						'post_status'    => array_keys( get_post_stati() ),
 						'posts_per_page' => 1,
 						'fields'         => 'ids',
-						'post__not_in'   => $shadow_post_id ? array( $shadow_post_id ) : array(),
-						'meta_key'       => 'upc_ean',
-						'meta_value'     => $uuid,
+						'post__not_in'   => $shadow_post_id ? array( $shadow_post_id ) : array(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- The matched shadow is not a conflict.
+						'meta_key'       => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Reject a competing spoke release with the same stored UPC.
+						'meta_value'     => $uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 					)
 				);
 				$sync_conflict = ! empty( $conflicts );
