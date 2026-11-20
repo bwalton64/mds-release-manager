@@ -15,7 +15,7 @@
 **Build Tools:**
 - None. Direct PHP class autoloading via SPL (not PSR-4 composer).
 - Assets: Vanilla JS. Block editor scripts live in `/blocks/`; `/js/meta-boxes.js`, `/js/release-taxonomies.js`, and `/js/settings.js` are for admin screens (using the jQuery bundled with WordPress).
-- Styles: Vanilla CSS in `/css/frontend.css`, `/css/release-meta.css`, `/css/release-links.css`, `/css/release-fallback.css`, `/css/artist-fallback.css`, and `/css/admin-styles.css`.
+- Styles: Vanilla CSS in `/css/`. Admin view layout is bundled in `admin-styles.css`; `admin-defaults.css` is the fallback for the existing stored `css/admin-styles.css` override key.
 - No build pipeline; all code is interpreted live.
 
 ---
@@ -33,7 +33,8 @@ mds-release-manager/
 │   ├── admin/
 │   │   ├── class-mds-rm-admin-interface.php
 │   │   ├── class-mds-rm-csv-handler.php
-│   │   └── class-mds-rm-network-admin.php
+│   │   ├── class-mds-rm-network-admin.php
+│   │   └── views/                    # Bundled admin views, never resolved through the theme
 │   ├── core/
 │   │   ├── class-mds-rm-builder-detection.php
 │   │   ├── class-mds-rm-logger.php
@@ -63,14 +64,9 @@ mds-release-manager/
 │           ├── class-mds-rm-elementor-widget.php
 │           ├── class-mds-rm-elementor-links-widget.php
 │           └── class-mds-rm-elementor-release-meta-tag.php
-├── templates/                        # Frontend/backend templates
+├── templates/                        # Theme-overridable frontend fallbacks
 │   ├── artist-fallback.php
-│   ├── artist-meta-box.php
-│   ├── csv-page.php
-│   ├── network-settings-page.php
-│   ├── release-fallback.php
-│   ├── release-meta-box.php
-│   └── settings-page.php
+│   └── release-fallback.php
 ├── blocks/                           # Gutenberg metadata and editor assets
 │   ├── artist-discography/           # block.json and edit.js
 │   ├── release-links/                # block.json and edit.js
@@ -82,6 +78,7 @@ mds-release-manager/
 │   ├── release-taxonomies.js         # Native tag editor integration
 │   └── settings.js                   # Settings page tabs
 ├── css/                              # Frontend and admin styles
+│   ├── admin-defaults.css
 │   ├── admin-styles.css
 │   ├── artist-fallback.css
 │   ├── frontend.css

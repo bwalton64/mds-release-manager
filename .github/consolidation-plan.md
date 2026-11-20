@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phases 0–5 complete
+**Status:** Approved — Phases 0–6 complete
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -462,6 +462,18 @@ For each block (`release-meta`, `release-links`, `artist-discography`), one bloc
 errors; re-save produces no markup diff.
 
 ### Phase 6 — Template hardening
+
+**Completed:** All five admin views are bundled and no longer resolved through
+the theme. The two frontend fallbacks still support theme overrides. Admin view
+strings and layout were moved into the translation catalog and bundled CSS,
+respectively, while retaining the existing stored admin stylesheet override key.
+
+On `dev-test`, both smoke tests passed, all 48 tracked hooks matched, and all
+five admin views were visually checked. A discoverable theme copy of the
+settings view was ignored, while a theme copy of the Artist fallback rendered.
+The Network Settings form was checked visually but not submitted. Plugin Check
+and PHPCS were rerun; remaining repository-wide findings are scoped to Phase 8.
+
 1. Move the five admin templates to `includes/admin/views/`; render them via a new
    `MDS_RM_Template_Loader::render_admin_view()` that does **not** consult `locate_template()`.
    `templates/` keeps only the two theme-overridable frontend partials.

@@ -106,13 +106,16 @@ jQuery(document).ready(function($) {
 
     $('#mds_add_provider_btn').on('click', function(e) {
         e.preventDefault();
-        var row = '<div class="mds-provider-row" style="display:flex; gap:10px; align-items:center; margin-bottom:10px; background:#f9f9f9; padding:10px; border:1px solid #ddd;">' +
-            '<span class="dashicons dashicons-menu" style="cursor:move; color:#999;"></span>' +
-            '<input type="text" name="mds_rm_providers[name][]" value="" placeholder="Provider Name" />' +
+        var row = '<div class="mds-provider-row mds-provider-row-new">' +
+            '<span class="dashicons dashicons-menu"></span>' +
+            '<input type="text" name="mds_rm_providers[name][]" value="" />' +
             '<div class="mds-icon-input-wrapper"><input type="text" name="mds_rm_providers[icon][]" value="" placeholder="fa-solid fa-link" class="mds-icon-input" /></div>' +
-            '<input type="text" name="mds_rm_providers[color][]" value="" placeholder="Hex Color" class="mds-color-picker-dynamic" />' +
-            '<button type="button" class="button mds-remove-provider" style="color:#d63638; border-color:#d63638;">Remove</button></div>';
+            '<input type="text" name="mds_rm_providers[color][]" value="" class="mds-color-picker-dynamic" />' +
+            '<button type="button" class="button mds-remove-provider"></button></div>';
         var $row = $(row);
+        $row.find('input[name="mds_rm_providers[name][]"]').attr('placeholder', mds_rm_data.provider_name);
+        $row.find('.mds-color-picker-dynamic').attr('placeholder', mds_rm_data.hex_color);
+        $row.find('.mds-remove-provider').text(mds_rm_data.remove);
         $('#mds_providers_repeater').append($row);
         $row.find('.mds-color-picker-dynamic').wpColorPicker();
         if ($.fn.iconpicker) {

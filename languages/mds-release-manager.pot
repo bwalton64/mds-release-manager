@@ -9,14 +9,14 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-20T13:17:06+00:00\n"
+"POT-Creation-Date: 2026-11-20T14:53:05+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mds-release-manager\n"
 
 #. Plugin Name of the plugin
 #: mds-release-manager.php
-#: includes/class-mds-rm-abilities.php:51
+#: includes/api/class-mds-rm-abilities.php:51
 msgid "MDS Release Manager"
 msgstr ""
 
@@ -35,532 +35,856 @@ msgstr ""
 msgid "https://mustydungeon.com"
 msgstr ""
 
-#: includes/class-mds-rm-abilities.php:52
-msgid "Manage artist releases, formats, and distribution settings"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:71
-msgid "Get Releases"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:72
-msgid "Retrieve a list of published artist releases with metadata"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:81
-msgid "Number of releases per page"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:88
-msgid "Page number for pagination"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:104
-msgid "Release post ID"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:108
-msgid "Release title"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:112
-msgid "UPC/EAN identifier"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:116
-msgid "Release format (Single, EP, Album, Digital)"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:123
-msgid "Total number of releases"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:127
-msgid "Total number of pages"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:144
-msgid "Save Plugin Settings"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:145
-msgid "Update plugin settings including providers, audio players, and global redirect"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:154
-msgid "Release providers configuration"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:159
-msgid "Provider names"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:164
-msgid "Provider icon classes or URLs"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:169
-msgid "Provider brand colors"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:176
-msgid "Enabled audio player slugs"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:180
-msgid "Enable global artist homepage redirect"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:184
-msgid "Font Awesome support setting"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:194
-#: includes/class-mds-rm-abilities.php:239
-msgid "Whether settings were saved successfully"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:198
-#: includes/class-mds-rm-abilities.php:243
-msgid "Response message"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:215
-msgid "Save Network Settings"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:216
-msgid "Update network-wide settings for the multisite release manager"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:225
-msgid "Master hub site blog ID"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:230
-msgid "Whether to delete all plugin data on uninstall"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:260
-msgid "Sync Network Data"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:261
-msgid "Synchronize releases and artists across all network sites"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:274
-msgid "Whether sync completed successfully"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:278
-msgid "Sync result message with counts"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:282
-msgid "Number of artists synchronized"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:286
-msgid "Number of releases synchronized"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:291
-msgid "Any errors that occurred during sync"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:430
-msgid "Settings saved successfully"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:461
-msgid "Network settings saved successfully"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:482
-msgid "Sync must be run from the master hub site"
-msgstr ""
-
-#: includes/class-mds-rm-abilities.php:533
-#, php-format
-msgid "Successfully synced %d releases and %d artists to spoke sites."
-msgstr ""
-
 #. translators: %s: synchronization error message
-#: includes/class-mds-rm-admin-interface.php:461
+#: includes/admin/class-mds-rm-admin-interface.php:461
 #, php-format
 msgid "The artist was saved, but synchronization failed: %s"
 msgstr ""
 
 #. translators: %s: synchronization error message
-#: includes/class-mds-rm-admin-interface.php:569
-#: includes/class-mds-rm-release-model.php:512
+#: includes/admin/class-mds-rm-admin-interface.php:569
+#: includes/core/class-mds-rm-release-model.php:512
 #, php-format
 msgid "The release was saved, but synchronization failed: %s"
 msgstr ""
 
-#: includes/class-mds-rm-core-functions.php:85
-msgid "The requested Release Manager template is invalid."
+#: includes/admin/class-mds-rm-admin-interface.php:612
+msgid "HTML5 Player (.mp3)"
 msgstr ""
 
-#: includes/class-mds-rm-core-functions.php:90
-msgid "The requested Release Manager template arguments are invalid."
+#: includes/admin/class-mds-rm-admin-interface.php:619
+msgid "Load Free Font-Awesome 6 via CDN"
 msgstr ""
 
-#: includes/class-mds-rm-core-functions.php:98
-msgid "The requested Release Manager template could not be found."
+#: includes/admin/class-mds-rm-admin-interface.php:620
+msgid "Use existing plugin (Font Awesome Official)"
 msgstr ""
 
-#: includes/class-mds-rm-core-functions.php:246
-msgid "Cannot synchronize a record without its identifier."
+#: includes/admin/class-mds-rm-admin-interface.php:621
+msgid "Use theme provided Font-Awesome"
 msgstr ""
 
-#: includes/class-mds-rm-core-functions.php:249
-msgid "Cannot synchronize a release with an invalid or conflicting format."
+#: includes/admin/class-mds-rm-admin-interface.php:622
+msgid "Do not load Font-Awesome"
 msgstr ""
 
-#: includes/class-mds-rm-core-functions.php:350
-#, php-format
-msgid "Site %d has conflicting identifiers."
-msgstr ""
-
-#: includes/class-mds-rm-core-functions.php:374
-#, php-format
-msgid "Could not save the shadow record on site %d."
-msgstr ""
-
-#: includes/class-mds-rm-core-functions.php:416
-#, php-format
-msgid "Could not synchronize a taxonomy term on site %d."
-msgstr ""
-
-#: includes/class-mds-rm-core-functions.php:427
-#, php-format
-msgid "Could not synchronize taxonomy on site %1$d: %2$s"
-msgstr ""
-
-#: includes/class-mds-rm-csv-handler.php:56
-#: includes/class-mds-rm-csv-handler.php:169
+#: includes/admin/class-mds-rm-csv-handler.php:56
+#: includes/admin/class-mds-rm-csv-handler.php:169
 msgid "You are not allowed to manage CSV data."
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:99
+#: includes/admin/class-mds-rm-csv-handler.php:99
 #, php-format
 msgid "Cannot export release %d: its format conflicts with legacy data. Resolve the conflict first."
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:102
+#: includes/admin/class-mds-rm-csv-handler.php:102
 #, php-format
 msgid "Cannot export release %1$d: %2$s"
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:111
+#: includes/admin/class-mds-rm-csv-handler.php:111
 msgid "Could not create the CSV export."
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:184
+#: includes/admin/class-mds-rm-csv-handler.php:184
 msgid "Please select a CSV file to import."
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:195
-#: includes/class-mds-rm-csv-handler.php:205
+#: includes/admin/class-mds-rm-csv-handler.php:195
+#: includes/admin/class-mds-rm-csv-handler.php:205
 msgid "The uploaded CSV file could not be opened."
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:256
+#: includes/admin/class-mds-rm-csv-handler.php:256
 msgid "The CSV must include a Release Format column."
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:263
+#: includes/admin/class-mds-rm-csv-handler.php:263
 #, php-format
 msgid "Row %d: incorrect number of columns."
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:302
+#: includes/admin/class-mds-rm-csv-handler.php:302
 msgid "More than one release has this UPC/EAN."
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:304
-#: includes/class-mds-rm-csv-handler.php:404
+#: includes/admin/class-mds-rm-csv-handler.php:304
+#: includes/admin/class-mds-rm-csv-handler.php:404
 #, php-format
 msgid "Row %1$d: %2$s"
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:336
+#: includes/admin/class-mds-rm-csv-handler.php:336
 #, php-format
 msgid "Row %1$d: artist synchronization failed: %2$s"
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:380
+#: includes/admin/class-mds-rm-csv-handler.php:380
 #, php-format
 msgid "Row %d: could not save the release."
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:421
+#: includes/admin/class-mds-rm-csv-handler.php:421
 #, php-format
 msgid "Row %1$d: release saved but synchronization failed: %2$s"
 msgstr ""
 
-#: includes/class-mds-rm-csv-handler.php:432
+#: includes/admin/class-mds-rm-csv-handler.php:432
 msgid "The CSV must include UPC/EAN and Release Format columns."
 msgstr ""
 
-#: includes/class-mds-rm-discography.php:53
-msgid "No releases found."
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:76
-msgid "Title"
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:77
-msgid "UPC/EAN"
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:78
-msgid "Label"
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:79
-msgid "Distributor"
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:80
-msgid "Release Year"
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:98
-#: includes/class-mds-rm-discography.php:99
-msgid "Discography"
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:133
-msgid "No releases found on this page."
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:136
-msgid "Discography pages"
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:145
-msgid "Previous"
-msgstr ""
-
-#: includes/class-mds-rm-discography.php:146
-msgid "Next"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:23
-msgid "Release Links Block"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:27
-msgid "Release Links"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:28
-#: includes/class-mds-rm-elementor-widget.php:39
-msgid "UPC/EAN Override"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:28
-#: includes/class-mds-rm-elementor-widget.php:41
-msgid "Leave blank to use the current release or supported context."
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:29
-msgid "Open links in a new tab"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:30
-msgid "Show audio player"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:32
-msgid "Provider name"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:32
-msgid "Use the provider name from Release Settings, or __buy_now for Buy Now."
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:33
-msgid "Show link"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:34
-#: includes/class-mds-rm-elementor-widget.php:84
-msgid "Icon classes"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:34
-msgid "Leave blank for the provider default. Dashicons and Font Awesome are supported."
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:35
-#: includes/class-mds-rm-elementor-widget.php:90
-msgid "Tooltip title"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:35
-msgid "Leave blank for the provider name."
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:43
-msgid "Provider overrides"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:43
-msgid "Reorder or hide links here. Other saved providers remain visible."
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:46
-msgid "Release Links Styles"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-links-widget.php:47
-#: includes/class-mds-rm-elementor-widget.php:108
-msgid "Tablet styles apply at 1024px and below; mobile styles apply at 767px and below. Blank values inherit."
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:23
-msgid "Release Meta Block"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:35
-msgid "Release Meta"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:57
-msgid "Field"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:58
-msgid "Show field"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:62
-msgid "Choose icon"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:66
-msgid "Custom icon classes"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:67
-msgid "No icon"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:86
-msgid "Use Dashicons or Font Awesome classes; leave blank for no icon."
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:94
-msgid "Fields"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:103
-msgid "Release Meta Styles"
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:139
-msgid "Hex color, transparent, or inherit."
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:141
-msgid "CSS lengths such as 12px or 1em; spacing accepts up to four values."
-msgstr ""
-
-#: includes/class-mds-rm-elementor-widget.php:143
-msgid "Use auto or a CSS length such as 100% or 20rem."
-msgstr ""
-
-#: includes/class-mds-rm-network-admin.php:131
+#: includes/admin/class-mds-rm-network-admin.php:131
 msgid "You are not allowed to manage network settings."
 msgstr ""
 
-#: includes/class-mds-rm-release-links.php:242
+#: includes/admin/views/artist-meta-box.php:19
+msgid "Official Homepage URL"
+msgstr ""
+
+#: includes/admin/views/artist-meta-box.php:22
+msgid "Redirect visitors to this homepage"
+msgstr ""
+
+#: includes/admin/views/artist-meta-box.php:24
+msgid "Routing is enabled, but the homepage URL is invalid or points to this artist page. Visitors will see the artist page instead."
+msgstr ""
+
+#: includes/admin/views/artist-meta-box.php:29
+msgid "Contact Info"
+msgstr ""
+
+#: includes/admin/views/csv-page.php:15
+msgid "Import / Export Data"
+msgstr ""
+
+#: includes/admin/views/csv-page.php:18
+msgid "Export Global Data"
+msgstr ""
+
+#: includes/admin/views/csv-page.php:19
+msgid "Export all releases and mapped artist names across the multisite network into a CSV file."
+msgstr ""
+
+#: includes/admin/views/csv-page.php:24
+msgid "Export to CSV"
+msgstr ""
+
+#: includes/admin/views/csv-page.php:29
+msgid "Import Releases"
+msgstr ""
+
+#. translators: %1$s and %2$s: literal CSV column names; %3$s: accepted CSV release format values.
+#: includes/admin/views/csv-page.php:34
+#, php-format
+msgid "Upload a CSV file to import or update releases. The header row and every release must include %1$s and %2$s (%3$s)."
+msgstr ""
+
+#: includes/admin/views/csv-page.php:42
+msgid "Supported Columns:"
+msgstr ""
+
+#. translators: %1$s: literal CSV column names; %2$s: provider column naming pattern; %3$s and %4$s: example provider columns.
+#: includes/admin/views/csv-page.php:46
+#, php-format
+msgid "%1$s, plus %2$s columns (e.g. %3$s, %4$s, or any custom provider configured in Settings)."
+msgstr ""
+
+#: includes/admin/views/csv-page.php:54
+msgid "Upsert Behavior:"
+msgstr ""
+
+#. translators: %s: literal CSV column name.
+#: includes/admin/views/csv-page.php:58
+#, php-format
+msgid "Existing releases matching %s on the current site are updated in place instead of creating duplicates."
+msgstr ""
+
+#: includes/admin/views/csv-page.php:71
+msgid "CSV File"
+msgstr ""
+
+#: includes/admin/views/csv-page.php:76
+msgid "Import CSV"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:15
+msgid "MDS Release Manager - Network Settings"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:17
+msgid "MDS Release Manager Network Settings have been saved."
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:24
+msgid "Network Architecture"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:27
+msgid "Hub Site"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:34
+msgid "Select the Main Site (Hub) where catalog items are created. The plugin will automatically broadcast and synchronize data from this site to all selected spoke sites below."
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:38
+msgid "Spoke Sites"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:41
+msgid "Single-site installation detected. Hub-and-Spoke broadcasting is not applicable."
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:62
+msgid "Data Management"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:65
+msgid "Uninstall Behavior"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:69
+msgid "Delete all data, even network settings, upon uninstall"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:71
+msgid "By default, plugin settings stored in wp_sitemeta and global tables are preserved during uninstall to allow for safe reinstalls and upgrades. Check this box to perform a complete wipe upon deletion (including custom post types across the network)."
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:78
+#: includes/api/class-mds-rm-abilities.php:215
+msgid "Save Network Settings"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:79
+msgid "Settings saved!"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:16
+#: includes/admin/views/release-meta-box.php:106
+msgid "Select Provider"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:31
+msgid "Required Fields"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:34
+msgid "UPC/EAN *"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:38
+msgid "Release Format *"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:41
+msgid "Unable to load release formats. Please reload the page."
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:45
+msgid "The existing format conflicts with legacy data. Choose the correct format to resolve it."
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:48
+msgid "Select a release format"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:64
+msgid "Metadata"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:67
+msgid "Record Label"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:71
+#: includes/frontend/class-mds-rm-discography.php:79
+msgid "Distributor"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:75
+msgid "Artist Profile"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:79
+msgid "No Artists Found. Please Create One."
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:81
+msgid "-- Select Artist --"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:92
+msgid "Release Tags"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:101
+msgid "Streaming Settings"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:115
+#: includes/admin/views/settings-page.php:36
+#: includes/frontend/class-mds-rm-assets.php:180
+msgid "Remove"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:119
+msgid "+ Add Link"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:123
+msgid "Audio Preview URL (.mp3)"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:126
+msgid "Select Audio"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:133
+msgid "Advanced Settings"
+msgstr ""
+
+#: includes/admin/views/release-meta-box.php:136
+msgid "Buy Now URL"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:15
+msgid "Release Manager Settings"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:18
+msgid "Release Data"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:19
+msgid "Integrations"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:25
+msgid "Streaming Provider Defaults"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:26
+msgid "Configure streaming providers used in the release editor."
+msgstr ""
+
+#: includes/admin/views/settings-page.php:31
+#: includes/frontend/class-mds-rm-assets.php:178
+msgid "Provider Name"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:41
+msgid "+ Add Provider"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:43
+msgid "Audio Preview Player"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:46
+msgid "Select Active Player(s)"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:57
+msgid "Bandcamp Shortcode Template"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:60
+msgid "Only enabled if Blocks for Bandcamp is selected."
+msgstr ""
+
+#: includes/admin/views/settings-page.php:71
+#: includes/admin/views/settings-page.php:113
+msgid "Save Settings"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:72
+#: includes/admin/views/settings-page.php:114
+msgid "Settings saved! Cache purged."
+msgstr ""
+
+#: includes/admin/views/settings-page.php:78
+msgid "Routing"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:81
+msgid "Site-Wide Routing"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:83
+msgid "Enable Site-Wide Routing"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:84
+msgid "Redirect releases with a Buy Now URL. When enabled, the automatic Release fallback composition is disabled for all releases."
+msgstr ""
+
+#. translators: %s: the emphasized Buy Now Link field name.
+#: includes/admin/views/settings-page.php:89
+#, php-format
+msgid "Redirect visitors directly to the release's configured %s."
+msgstr ""
+
+#: includes/admin/views/settings-page.php:90
+msgid "Buy Now Link"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:98
+msgid "Network Synchronization"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:99
+msgid "Manually force a broadcast of all Artists and Releases from this Hub site to all configured Spoke sites. This is useful if a Spoke site was added recently or if sync was interrupted."
+msgstr ""
+
+#: includes/admin/views/settings-page.php:100
+msgid "Run Manual Sync"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:103
+msgid "Font-Awesome Integration"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:104
+msgid "Select which Font-Awesome source to use for the shortcode widgets."
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:52
+msgid "Manage artist releases, formats, and distribution settings"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:71
+msgid "Get Releases"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:72
+msgid "Retrieve a list of published artist releases with metadata"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:81
+msgid "Number of releases per page"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:88
+msgid "Page number for pagination"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:104
+msgid "Release post ID"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:108
+msgid "Release title"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:112
+msgid "UPC/EAN identifier"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:116
+msgid "Release format (Single, EP, Album, Digital)"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:123
+msgid "Total number of releases"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:127
+msgid "Total number of pages"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:144
+msgid "Save Plugin Settings"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:145
+msgid "Update plugin settings including providers, audio players, and global redirect"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:154
+msgid "Release providers configuration"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:159
+msgid "Provider names"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:164
+msgid "Provider icon classes or URLs"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:169
+msgid "Provider brand colors"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:176
+msgid "Enabled audio player slugs"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:180
+msgid "Enable global artist homepage redirect"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:184
+msgid "Font Awesome support setting"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:194
+#: includes/api/class-mds-rm-abilities.php:239
+msgid "Whether settings were saved successfully"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:198
+#: includes/api/class-mds-rm-abilities.php:243
+msgid "Response message"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:216
+msgid "Update network-wide settings for the multisite release manager"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:225
+msgid "Master hub site blog ID"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:230
+msgid "Whether to delete all plugin data on uninstall"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:260
+msgid "Sync Network Data"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:261
+msgid "Synchronize releases and artists across all network sites"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:274
+msgid "Whether sync completed successfully"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:278
+msgid "Sync result message with counts"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:282
+msgid "Number of artists synchronized"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:286
+msgid "Number of releases synchronized"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:291
+msgid "Any errors that occurred during sync"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:430
+msgid "Settings saved successfully"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:461
+msgid "Network settings saved successfully"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:482
+msgid "Sync must be run from the master hub site"
+msgstr ""
+
+#: includes/api/class-mds-rm-abilities.php:533
+#, php-format
+msgid "Successfully synced %d releases and %d artists to spoke sites."
+msgstr ""
+
+#: includes/blocks/class-mds-rm-release-links.php:242
 msgid "Buy Now"
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:70
+#: includes/core/class-mds-rm-release-model.php:70
 #, php-format
 msgid "Could not register the release format \"%s\". Check the server error log."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:100
+#: includes/core/class-mds-rm-release-model.php:100
 msgid "Release formats must be Single, EP, Album, or Digital without a parent."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:154
+#: includes/core/class-mds-rm-release-model.php:154
 msgid "The release must have exactly one valid release format."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:213
+#: includes/core/class-mds-rm-release-model.php:213
 msgid "These releases need review for missing, malformed, or duplicate UPCs, invalid formats, or conflicting legacy format data:"
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:250
+#: includes/core/class-mds-rm-release-model.php:250
 msgid "A UPC/EAN is required."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:254
+#: includes/core/class-mds-rm-release-model.php:254
 msgid "Select exactly one release format."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:258
+#: includes/core/class-mds-rm-release-model.php:258
 msgid "Select Single, EP, Album, or Digital."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:310
+#: includes/core/class-mds-rm-release-model.php:310
 msgid "This UPC/EAN is already assigned to another release."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:329
+#: includes/core/class-mds-rm-release-model.php:329
 msgid "Could not reserve this UPC/EAN for saving. Please try again."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:381
+#: includes/core/class-mds-rm-release-model.php:381
 msgid "Change the release format in the release editor."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:384
+#: includes/core/class-mds-rm-release-model.php:384
 msgid "Resolve the release format conflict in the release editor first."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:405
-#: includes/class-mds-rm-release-model.php:439
+#: includes/core/class-mds-rm-release-model.php:405
+#: includes/core/class-mds-rm-release-model.php:439
 msgid "The saved format conflicts with legacy data. Choose a release format explicitly."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:412
+#: includes/core/class-mds-rm-release-model.php:412
 msgid "You are not allowed to assign a release format."
 msgstr ""
 
-#: includes/class-mds-rm-release-model.php:416
+#: includes/core/class-mds-rm-release-model.php:416
 msgid "Invalid release"
+msgstr ""
+
+#: includes/core/class-mds-rm-sync.php:93
+msgid "Cannot synchronize a record without its identifier."
+msgstr ""
+
+#: includes/core/class-mds-rm-sync.php:96
+msgid "Cannot synchronize a release with an invalid or conflicting format."
+msgstr ""
+
+#: includes/core/class-mds-rm-sync.php:197
+#, php-format
+msgid "Site %d has conflicting identifiers."
+msgstr ""
+
+#: includes/core/class-mds-rm-sync.php:221
+#, php-format
+msgid "Could not save the shadow record on site %d."
+msgstr ""
+
+#: includes/core/class-mds-rm-sync.php:263
+#, php-format
+msgid "Could not synchronize a taxonomy term on site %d."
+msgstr ""
+
+#: includes/core/class-mds-rm-sync.php:274
+#, php-format
+msgid "Could not synchronize taxonomy on site %1$d: %2$s"
+msgstr ""
+
+#: includes/core/class-mds-rm-template-loader.php:46
+#: includes/core/class-mds-rm-template-loader.php:70
+msgid "The requested Release Manager template is invalid."
+msgstr ""
+
+#: includes/core/class-mds-rm-template-loader.php:51
+msgid "The requested Release Manager template arguments are invalid."
+msgstr ""
+
+#: includes/core/class-mds-rm-template-loader.php:86
+msgid "The requested Release Manager template could not be found."
+msgstr ""
+
+#: includes/frontend/class-mds-rm-assets.php:179
+msgid "Hex Color"
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:53
+msgid "No releases found."
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:76
+msgid "Title"
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:77
+msgid "UPC/EAN"
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:78
+msgid "Label"
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:80
+msgid "Release Year"
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:98
+#: includes/frontend/class-mds-rm-discography.php:99
+msgid "Discography"
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:133
+msgid "No releases found on this page."
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:136
+msgid "Discography pages"
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:145
+msgid "Previous"
+msgstr ""
+
+#: includes/frontend/class-mds-rm-discography.php:146
+msgid "Next"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:23
+msgid "Release Links Block"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:27
+msgid "Release Links"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:28
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:39
+msgid "UPC/EAN Override"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:28
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:41
+msgid "Leave blank to use the current release or supported context."
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:29
+msgid "Open links in a new tab"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:30
+msgid "Show audio player"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:32
+msgid "Provider name"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:32
+msgid "Use the provider name from Release Settings, or __buy_now for Buy Now."
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:33
+msgid "Show link"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:34
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:84
+msgid "Icon classes"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:34
+msgid "Leave blank for the provider default. Dashicons and Font Awesome are supported."
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:35
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:90
+msgid "Tooltip title"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:35
+msgid "Leave blank for the provider name."
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:43
+msgid "Provider overrides"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:43
+msgid "Reorder or hide links here. Other saved providers remain visible."
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:46
+msgid "Release Links Styles"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:47
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:108
+msgid "Tablet styles apply at 1024px and below; mobile styles apply at 767px and below. Blank values inherit."
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:23
+msgid "Release Meta Block"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:35
+msgid "Release Meta"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:57
+msgid "Field"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:58
+msgid "Show field"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:62
+msgid "Choose icon"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:66
+msgid "Custom icon classes"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:67
+msgid "No icon"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:86
+msgid "Use Dashicons or Font Awesome classes; leave blank for no icon."
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:94
+msgid "Fields"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:103
+msgid "Release Meta Styles"
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:139
+msgid "Hex color, transparent, or inherit."
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:141
+msgid "CSS lengths such as 12px or 1em; spacing accepts up to four values."
+msgstr ""
+
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:143
+msgid "Use auto or a CSS length such as 100% or 20rem."
 msgstr ""
 
 #: templates/artist-fallback.php:22
 msgid "Contact Information"
 msgstr ""
 
-#: templates/artist-meta-box.php:24
-msgid "Routing is enabled, but the homepage URL is invalid or points to this artist page. Visitors will see the artist page instead."
+#: blocks/artist-discography/block.json
+msgctxt "block title"
+msgid "Artist Discography"
 msgstr ""
 
-#: templates/network-settings-page.php:17
-msgid "MDS Release Manager Network Settings have been saved."
+#: blocks/release-links/block.json
+msgctxt "block title"
+msgid "Release Links Block"
 msgstr ""
 
-#: templates/release-meta-box.php:41
-msgid "Unable to load release formats. Please reload the page."
-msgstr ""
-
-#: templates/release-meta-box.php:45
-msgid "The existing format conflicts with legacy data. Choose the correct format to resolve it."
-msgstr ""
-
-#: templates/release-meta-box.php:48
-msgid "Select a release format"
+#: blocks/release-meta/block.json
+msgctxt "block title"
+msgid "Release Meta Block"
 msgstr ""

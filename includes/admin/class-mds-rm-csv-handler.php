@@ -474,6 +474,6 @@ final class MDS_RM_CSV_Handler {
 		);
 
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes the URL and emits the nonce field.
-		echo MDS_RM_Template_Loader::render( 'templates/csv-page.php', $args );
+		echo MDS_RM_Template_Loader::render_admin_view( 'csv-page.php', $args );
 	}
 }

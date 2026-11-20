@@ -290,7 +290,7 @@ final class MDS_RM_Admin_Interface {
 			'post_id'          => $post->ID,
 		);
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo MDS_RM_Template_Loader::render( 'templates/artist-meta-box.php', $args );
+		echo MDS_RM_Template_Loader::render_admin_view( 'artist-meta-box.php', $args );
 	}
 
 	/**
@@ -394,7 +394,7 @@ final class MDS_RM_Admin_Interface {
 		);
 
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo MDS_RM_Template_Loader::render( 'templates/release-meta-box.php', $args );
+		echo MDS_RM_Template_Loader::render_admin_view( 'release-meta-box.php', $args );
 	}
 
 	/**
@@ -609,17 +609,17 @@ final class MDS_RM_Admin_Interface {
 		}
 
 		$audio_players = array(
-			'html5' => 'HTML5 Player (.mp3)',
+			'html5' => __( 'HTML5 Player (.mp3)', 'mds-release-manager' ),
 		);
 
 		$active_players = get_option( 'mds_rm_audio_players', array( 'html5' ) );
 		$active_players = is_array( $active_players ) ? $active_players : array();
 
 		$fa_sources = array(
-			'cdn'    => 'Load Free Font-Awesome 6 via CDN',
-			'plugin' => 'Use existing plugin (Font Awesome Official)',
-			'theme'  => 'Use theme provided Font-Awesome',
-			'none'   => 'Do not load Font-Awesome',
+			'cdn'    => __( 'Load Free Font-Awesome 6 via CDN', 'mds-release-manager' ),
+			'plugin' => __( 'Use existing plugin (Font Awesome Official)', 'mds-release-manager' ),
+			'theme'  => __( 'Use theme provided Font-Awesome', 'mds-release-manager' ),
+			'none'   => __( 'Do not load Font-Awesome', 'mds-release-manager' ),
 		);
 
 		$args = array(
@@ -636,6 +636,6 @@ final class MDS_RM_Admin_Interface {
 		);
 
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and renders trusted extension markup.
-		echo MDS_RM_Template_Loader::render( 'templates/settings-page.php', $args );
+		echo MDS_RM_Template_Loader::render_admin_view( 'settings-page.php', $args );
 	}
 }

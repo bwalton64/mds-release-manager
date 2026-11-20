@@ -116,15 +116,25 @@ final class MDS_RM_Assets {
 	 * @since 0.9.0
 	 */
 	public static function admin_assets() {
-		$screen            = get_current_screen();
-		$is_content_screen = $screen
+		$screen             = get_current_screen();
+		$is_content_screen  = $screen
 			&& in_array( $screen->base, array( 'post', 'edit' ), true )
 			&& in_array( $screen->post_type, array( 'release', 'artist' ), true );
+		$is_settings_screen = $screen && 'release_page_mds-release-settings' === $screen->id;
+		$is_csv_screen      = $screen && 'release_page_mds-release-csv' === $screen->id;
+		$is_network_screen  = $screen && 'settings_page_mds-release-network-settings-network' === $screen->id;
+
+		if ( $is_content_screen || $is_settings_screen || $is_csv_screen || $is_network_screen ) {
+			$stylesheet = 'css/admin-styles.css';
+			wp_enqueue_style( 'mds-admin-view-styles', MDS_RM_URL . $stylesheet, array(), filemtime( MDS_RM_PATH . $stylesheet ) );
+			if ( $is_content_screen || $is_settings_screen ) {
+				MDS_RM_Template_Loader::enqueue_editable_style( 'mds-admin-styles', $stylesheet, array( 'mds-admin-view-styles' ), 'css/admin-defaults.css' );
+			}
+		}
 
 		if ( $is_content_screen ) {
 			wp_enqueue_media();
 
-			MDS_RM_Template_Loader::enqueue_editable_style( 'mds-admin-styles', 'css/admin-styles.css' );
 			MDS_RM_Template_Loader::enqueue_editable_script(
 				'mds-meta-boxes-js',
 				'js/meta-boxes.js',
@@ -151,8 +161,7 @@ final class MDS_RM_Assets {
 
 		}
 
-		if ( $screen && 'release_page_mds-release-settings' === $screen->id ) {
-			MDS_RM_Template_Loader::enqueue_editable_style( 'mds-admin-styles', 'css/admin-styles.css' );
+		if ( $is_settings_screen ) {
 			wp_enqueue_style( 'wp-color-picker' );
 			MDS_RM_Template_Loader::enqueue_editable_script(
 				'mds-settings-js',
@@ -164,8 +173,11 @@ final class MDS_RM_Assets {
 				'mds-settings-js',
 				'mds_rm_data',
 				array(
-					'rest_url' => esc_url_raw( rest_url( 'mds/v1/settings' ) ),
-					'nonce'    => wp_create_nonce( 'wp_rest' ),
+					'rest_url'      => esc_url_raw( rest_url( 'mds/v1/settings' ) ),
+					'nonce'         => wp_create_nonce( 'wp_rest' ),
+					'provider_name' => __( 'Provider Name', 'mds-release-manager' ),
+					'hex_color'     => __( 'Hex Color', 'mds-release-manager' ),
+					'remove'        => __( 'Remove', 'mds-release-manager' ),
 				)
 			);
 		}

@@ -55,7 +55,7 @@ final class MDS_RM_Network_Admin {
 		$args          = self::get_settings_template_args( $sites, $master_hub_id );
 
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and renders trusted extension markup.
-		echo MDS_RM_Template_Loader::render( 'templates/network-settings-page.php', $args );
+		echo MDS_RM_Template_Loader::render_admin_view( 'network-settings-page.php', $args );
 	}
 
 	/**

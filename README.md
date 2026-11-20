@@ -276,7 +276,8 @@ mds-release-manager/
 │   ├── admin/
 │   │   ├── class-mds-rm-admin-interface.php        # Settings and admin UI
 │   │   ├── class-mds-rm-csv-handler.php             # CSV import/export
-│   │   └── class-mds-rm-network-admin.php           # Multisite network settings
+│   │   ├── class-mds-rm-network-admin.php           # Multisite network settings
+│   │   └── views/                                  # Bundled admin screens and meta boxes
 │   ├── core/
 │   │   ├── class-mds-rm-builder-detection.php      # Page-builder detection
 │   │   ├── class-mds-rm-logger.php                 # Debug logging
@@ -297,17 +298,13 @@ mds-release-manager/
 │   └── integrations/
 │       └── elementor/                   # Widgets and dynamic tags
 │
-├── templates/                          # PHP template files
+├── templates/                          # Theme-overridable frontend templates
 │   ├── artist-fallback.php             # Artist page fallback template
-│   ├── artist-meta-box.php             # Artist edit screen meta box
-│   ├── csv-page.php                    # CSV import/export admin interface
-│   ├── network-settings-page.php       # Multisite network settings
-│   ├── release-fallback.php            # Release page fallback template
-│   ├── release-meta-box.php            # Release edit screen meta box
-│   └── settings-page.php               # Plugin settings page
+│   └── release-fallback.php            # Release page fallback template
 │
 ├── css/                                # Stylesheet directory
-│   ├── admin-styles.css                # Admin interface styles
+│   ├── admin-defaults.css              # Default replaceable admin stylesheet
+│   ├── admin-styles.css                # Bundled admin view layout
 │   ├── artist-fallback.css             # Artist fallback template styles
 │   ├── frontend.css                    # General frontend styles
 │   ├── release-fallback.css            # Release fallback template styles
@@ -339,7 +336,7 @@ mds-release-manager/
 ### Key Directory Descriptions
 
 - **includes/**: PHP classes using the `class-mds-rm-*.php` naming convention and WordPress PHP coding style
-- **templates/**: Reusable PHP templates for admin screens and frontend rendering
+- **templates/**: Frontend fallbacks that can be overridden in a theme's `mds-release-manager/templates/` directory. Theme copies of admin views are no longer loaded.
 - **css/**: Responsive stylesheets with mobile-first design
 - **blocks/**: Gutenberg metadata and editor scripts; no build step required
 - **js/**: Admin scripts (jQuery bundled with WordPress)

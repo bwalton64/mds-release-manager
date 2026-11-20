@@ -65,6 +65,8 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			if (!(await labelField.isVisible())) {
 				await metaBoxes.press('Enter', { timeout: 10_000 });
 			}
+			await expect(page.locator('#mds_add_streaming_row')).toHaveCSS('margin-bottom', '20px');
+			await expect(page.locator('.mds-buy-now-field')).toHaveCSS('display', 'flex');
 			const label = `${fixture.label} edited`;
 			await labelField.fill(label, { timeout: 10_000 });
 			await page.evaluate((title) => window.wp.data.dispatch('core/editor').editPost({ title }), `${fixture.title} edited`);
@@ -77,7 +79,9 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 
 		await test.step('Settings form saves through REST and persists the provider', async () => {
 			await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings');
+			await expect(page.locator('#mds-settings-form')).toHaveCSS('margin-top', '20px');
 			await page.getByRole('button', { name: 'Add Provider' }).click();
+			await expect(page.locator('.mds-provider-row-new').last()).toHaveCSS('display', 'flex');
 			await page.getByPlaceholder('Provider Name').last().fill(fixture.label);
 			const [response] = await Promise.all([
 				page.waitForResponse((response) =>
@@ -88,6 +92,31 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			expect(await response.json()).toMatchObject({ success: true });
 			const providers = readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_providers'));"]);
 			expect(providers).toEqual(expect.arrayContaining([expect.objectContaining({ name: fixture.label })]));
+		});
+
+		await test.step('CSV, network settings, and Artist admin views remain usable', async () => {
+			await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-csv');
+			await expect(page.getByRole('button', { name: 'Export to CSV' })).toBeVisible();
+			await expect(page.getByLabel('CSV File')).toBeVisible();
+			await expect(page.locator('.mds-csv-import')).toHaveCSS('margin-top', '15px');
+
+			// Only the disposable fixture user needs network access, and fixture cleanup deletes it.
+			runWpCli(['super-admin', 'add', fixture.username]);
+			await page.goto('/wp-admin/network/settings.php?page=mds-release-network-settings');
+			await expect(page.getByRole('heading', { name: 'Network Architecture' })).toBeVisible();
+			await expect(page.getByRole('button', { name: 'Save Network Settings' })).toBeVisible();
+			await expect(page.locator('#mds-network-settings-form .mds-admin-save-actions')).toHaveCSS('display', 'flex');
+			runWpCli(['super-admin', 'remove', fixture.username]);
+
+			await page.goto(`/wp-admin/post.php?post=${fixture.state.artist}&action=edit`);
+			const homepage = page.getByLabel('Official Homepage URL');
+			const metaBoxes = page.getByRole('button', { name: 'Meta Boxes', exact: true });
+			await expect(homepage.or(metaBoxes).filter({ visible: true }).first()).toBeVisible();
+			if (!(await homepage.isVisible())) {
+				await metaBoxes.press('Enter');
+			}
+			await expect(homepage).toBeVisible();
+			await expect(page.getByLabel('Redirect visitors to this homepage')).toBeVisible();
 		});
 
 		await test.step('Previously saved Release Meta block opens and renders', async () => {
