@@ -348,6 +348,7 @@ final class MDS_RM_Release_Model {
 		if ( isset( self::$upc_locks[ $key ] ) ) {
 			return true;
 		}
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- A connection-scoped advisory lock must execute against MySQL, not the object cache.
 		$locked = $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $key, 5 ) );
 		if ( '1' !== (string) $locked ) {
 			return new WP_Error( 'mds_upc_lock_failed', __( 'Could not reserve this UPC/EAN for saving. Please try again.', 'mds-release-manager' ), array( 'status' => 503 ) );
@@ -356,6 +357,7 @@ final class MDS_RM_Release_Model {
 		register_shutdown_function(
 			static function () use ( $key, $wpdb ) {
 				if ( isset( self::$upc_locks[ $key ] ) ) {
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Release the advisory lock on its owning database connection.
 					$wpdb->get_var( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $key ) );
 					unset( self::$upc_locks[ $key ] );
 				}
@@ -373,6 +375,7 @@ final class MDS_RM_Release_Model {
 		global $wpdb;
 		$key = 'mds-upc-' . substr( hash( 'sha256', get_current_blog_id() . ':' . self::normalize_upc( $upc ) ), 0, 48 );
 		if ( isset( self::$upc_locks[ $key ] ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Release the advisory lock on its owning database connection.
 			$wpdb->get_var( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $key ) );
 			unset( self::$upc_locks[ $key ] );
 		}
