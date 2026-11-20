@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phase 3 complete; Phase 4 not started
+**Status:** Approved — Phase 3 complete; Phase 4 in progress
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -421,6 +421,11 @@ remaining runtime callers and rerunning the runtime and smoke checks.
 4. Update `technical-blueprint.md` §2 directory tree.
 
 **Gate:** §6 per commit; `wp eval 'var_dump( class_exists("MDS_RM_…") );'` for every class.
+
+**Progress:** The explicit class map supports both functional subfolders and the
+original flat paths. All 26 classes resolved from the flat paths, with Elementor
+base-class test doubles for the optional integration. All 47 tracked hooks were
+unchanged and both smoke tests passed. The `core/` folder move is next.
 
 ### Phase 5 — block.json migration
 For each block (`release-meta`, `release-links`, `artist-discography`), one block per commit:

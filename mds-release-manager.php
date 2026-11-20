@@ -28,7 +28,7 @@ define( 'MDS_RM_URL', plugin_dir_url( __FILE__ ) );
 define( 'MDS_RM_MAIN_FILE', __FILE__ );
 spl_autoload_register(
 	/**
-	 * Loads plugin classes from the includes directory.
+	 * Loads plugin classes from their functional folders or legacy flat paths.
 	 *
 	 * @since 0.9.0
 	 * @param string $class_name The requested class name.
@@ -39,7 +39,43 @@ spl_autoload_register(
 			return;
 		}
 
-		$class_file = MDS_RM_PATH . 'includes/class-' . strtolower( str_replace( '_', '-', $class_name ) ) . '.php';
+		static $class_paths = array(
+			'MDS_RM_POST_TYPES'                 => 'core/class-mds-rm-post-types.php',
+			'MDS_RM_RELEASE_MODEL'              => 'core/class-mds-rm-release-model.php',
+			'MDS_RM_BUILDER_DETECTION'          => 'core/class-mds-rm-builder-detection.php',
+			'MDS_RM_LOGGER'                     => 'core/class-mds-rm-logger.php',
+			'MDS_RM_SYNC'                       => 'core/class-mds-rm-sync.php',
+			'MDS_RM_PROVIDERS'                  => 'core/class-mds-rm-providers.php',
+			'MDS_RM_TEMPLATE_LOADER'            => 'core/class-mds-rm-template-loader.php',
+			'MDS_RM_ADMIN_INTERFACE'            => 'admin/class-mds-rm-admin-interface.php',
+			'MDS_RM_NETWORK_ADMIN'              => 'admin/class-mds-rm-network-admin.php',
+			'MDS_RM_CSV_HANDLER'                => 'admin/class-mds-rm-csv-handler.php',
+			'MDS_RM_ASSETS'                     => 'frontend/class-mds-rm-assets.php',
+			'MDS_RM_FRONTEND_TEMPLATES'         => 'frontend/class-mds-rm-frontend-templates.php',
+			'MDS_RM_CUSTOMIZER'                 => 'frontend/class-mds-rm-customizer.php',
+			'MDS_RM_ARTIST_ROUTING'             => 'frontend/class-mds-rm-artist-routing.php',
+			'MDS_RM_DISCOGRAPHY'                => 'frontend/class-mds-rm-discography.php',
+			'MDS_RM_SHORTCODES'                 => 'frontend/class-mds-rm-shortcodes.php',
+			'MDS_RM_GUTENBERG_BLOCKS'           => 'blocks/class-mds-rm-gutenberg-blocks.php',
+			'MDS_RM_RELEASE_META'               => 'blocks/class-mds-rm-release-meta.php',
+			'MDS_RM_RELEASE_LINKS'              => 'blocks/class-mds-rm-release-links.php',
+			'MDS_RM_REST_API'                   => 'api/class-mds-rm-rest-api.php',
+			'MDS_RM_ABILITIES'                  => 'api/class-mds-rm-abilities.php',
+			'MDS_RM_VIRTUAL_MEDIA'              => 'api/class-mds-rm-virtual-media.php',
+			'MDS_RM_ELEMENTOR_TAGS'             => 'integrations/elementor/class-mds-rm-elementor-tags.php',
+			'MDS_RM_ELEMENTOR_WIDGET'           => 'integrations/elementor/class-mds-rm-elementor-widget.php',
+			'MDS_RM_ELEMENTOR_LINKS_WIDGET'     => 'integrations/elementor/class-mds-rm-elementor-links-widget.php',
+			'MDS_RM_ELEMENTOR_RELEASE_META_TAG' => 'integrations/elementor/class-mds-rm-elementor-release-meta-tag.php',
+		);
+
+		$includes = MDS_RM_PATH . 'includes/';
+		$relative = $class_paths[ strtoupper( $class_name ) ] ?? null;
+		if ( null !== $relative && is_readable( $includes . $relative ) ) {
+			require_once $includes . $relative;
+			return;
+		}
+
+		$class_file = $includes . 'class-' . strtolower( str_replace( '_', '-', $class_name ) ) . '.php';
 		if ( is_readable( $class_file ) ) {
 			require_once $class_file;
 		}
