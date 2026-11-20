@@ -23,7 +23,7 @@ final class MDS_RM_Post_Types {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_action( 'init', array( self::class, 'register_cpts' ) );
 	}
 
@@ -32,7 +32,7 @@ final class MDS_RM_Post_Types {
 	 *
 	 * @param bool $network_wide Whether the plugin is being network-activated.
 	 */
-	public static function activate( $network_wide = false ) {
+	public static function activate( $network_wide = false ): void {
 		self::register_cpts();
 		self::flush_rewrite_rules( $network_wide );
 	}
@@ -42,7 +42,7 @@ final class MDS_RM_Post_Types {
 	 *
 	 * @param bool $network_wide Whether the plugin is being network-deactivated.
 	 */
-	public static function deactivate( $network_wide = false ) {
+	public static function deactivate( $network_wide = false ): void {
 		foreach ( array( 'release_tag', 'release_format' ) as $taxonomy ) {
 			if ( taxonomy_exists( $taxonomy ) ) {
 				unregister_taxonomy( $taxonomy );
@@ -61,9 +61,9 @@ final class MDS_RM_Post_Types {
 	/**
 	 * Refreshes rewrite rules for the current site or every site on network changes.
 	 *
-	 * @param bool $network_wide Whether the plugin is being network-activated.
+	 * @param mixed $network_wide Whether the operation applies to the whole network.
 	 */
-	private static function flush_rewrite_rules( $network_wide ) {
+	private static function flush_rewrite_rules( mixed $network_wide ): void {
 		if ( ! is_multisite() || ! $network_wide ) {
 			flush_rewrite_rules();
 			return;
@@ -93,7 +93,7 @@ final class MDS_RM_Post_Types {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_cpts() {
+	public static function register_cpts(): void {
 		register_post_type(
 			'release',
 			array(
