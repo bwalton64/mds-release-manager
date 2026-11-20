@@ -330,7 +330,7 @@ mds-release-manager/
 
 ### Key Directory Descriptions
 
-- **includes/**: All PHP classes using `class-mds-rm-*.php` naming convention with PSR-12 formatting
+- **includes/**: PHP classes using the `class-mds-rm-*.php` naming convention and WordPress PHP coding style
 - **templates/**: Reusable PHP templates for admin screens and frontend rendering
 - **css/**: Responsive stylesheets with mobile-first design
 - **js/**: Vanilla JavaScript (no jQuery dependency) for interactive features
@@ -356,7 +356,7 @@ We welcome contributions! Follow these guidelines to maintain code quality and c
    ```
 
 3. **Make Your Changes**
-   - Follow PSR-12 PHP formatting standards
+   - Follow the existing WordPress PHP formatting conventions (tabs and nearby code style)
    - Maintain strict type declarations (`declare(strict_types=1)`)
    - Add inline comments only when clarification is needed
    - Use the `MDS_RM_` class prefix for all new classes
@@ -369,13 +369,13 @@ We welcome contributions! Follow these guidelines to maintain code quality and c
 declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 final class MDS_RM_Feature_Name {
-    public static function register_hooks(): void {
-        add_action( 'hook_name', [ static::class, 'method_name' ] );
-    }
+	public static function register_hooks(): void {
+		add_action( 'hook_name', array( static::class, 'method_name' ) );
+	}
 }
 ```
 
@@ -393,8 +393,8 @@ final class MDS_RM_Feature_Name {
 - Escape output with `esc_html()`, `esc_attr()`, `esc_url()`
 
 #### Documentation
-- Add PHPDoc comments to all classes and public methods
-- Include `@since` version tags
+- Document public APIs, hooks, and non-obvious behavior with PHPDoc
+- Include historically accurate `@since` version tags
 - Provide parameter and return type hints
 - Document complex logic with inline comments (sparingly)
 
@@ -477,7 +477,7 @@ git commit -m "docs: Update README with installation steps"
    Steps to verify the changes work correctly
    
    ## Checklist
-   - [ ] Code follows PSR-12 standards
+   - [ ] Code follows existing WordPress PHP formatting conventions
    - [ ] No breaking changes
    - [ ] Updated documentation
    - [ ] Tested on Windows/macOS/Linux

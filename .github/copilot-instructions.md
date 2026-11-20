@@ -1,37 +1,34 @@
-# Copilot Coding & Style Rules
+# Copilot Coding Guidance
 
-## Coding Standards (PSR-12 Without Namespaces)
-- Strictly follow PSR-12 formatting (4-space indentation, opening braces for classes and methods on new lines, explicit visibility on all properties and methods, and `declare(strict_types=1);` at the top of files).
-- **DO NOT use PHP namespaces.** Leave one blank line after `declare(strict_types=1);` as required by PSR-12 for non-namespaced files.
-- Prefix all classes, interfaces, traits, global functions, and constants with `MDS_RM_`.
+## Scope and compatibility
 
-## Native WordPress APIs & Hooks First
-- **Never reinvent the wheel.** Replace custom PHP solutions with native WordPress hooks and APIs:
-  - Replace raw `$_POST` / `$_GET` form handlers with `admin_post_{action}` or `wp_ajax_{action}` hooks and `check_admin_referer()`.
-  - Replace raw cURL or `file_get_contents()` calls with the WordPress HTTP API (`wp_remote_get()`, `wp_remote_post()`).
-  - Replace raw `$wpdb` SQL queries with `WP_Query`, `get_posts()`, `get_option()`, or `update_post_meta()` wherever possible.
-  - Replace hardcoded `<script>` and `<link>` HTML tags with `wp_enqueue_script()` and `wp_enqueue_style()` hooked to `wp_enqueue_scripts` or `admin_enqueue_scripts`.
-  - Replace custom settings forms with the WordPress Settings API (`register_setting()`, `add_settings_section()`, `add_settings_field()`).
-  - Replace custom cron/scheduling logic with `wp_schedule_event()` and native cron hooks.
+- Make focused changes that solve the requested task. Preserve existing behavior, public interfaces, stored data, and WordPress compatibility unless changing them is part of the task.
+- Keep the documented minimum requirements at WordPress 6.3 and PHP 7.4 unless a task explicitly changes them.
+- Follow the conventions of nearby code and avoid unrelated reformatting. Existing PHP uses WordPress-style tabs, global `MDS_RM_` class names, strict types, and a class autoloader; use these conventions by default when extending the existing architecture.
+- A focused architectural refactor may introduce a different organization, including namespaces, when justified by the task. Avoid broad migrations or compatibility changes unless requested.
 
-## Include Consolidation & Simplification
-- Consolidate scattered `require` / `include` statements into a single `spl_autoload_register` function in the main plugin file mapped to `MDS_RM_*` class prefixes.
-- Convert loose procedural functions into static methods inside cohesive utility classes so they can be autoloaded.
-- Simplify nested `if/else` blocks using early returns (guard clauses) and delete dead code.
+## WordPress and PHP
 
-# WordPress Documentation Standards
-- Follow the official WordPress PHP Documentation Standards for all DocBlocks.
-- Every function and class method must have a DocBlock immediately preceding it.
-- Include a concise one-line summary ending with a period.
-- Add a `@since` tag (use `1.0.0` or the current plugin version if missing).
-- Document all parameters using `@param type $var Description.` with aligned spacing.
-- Document return values using `@return type Description.` (omit `@return` for `void` functions unless required by local PHPCS rules).
-- Do not modify any executable PHP logic; only add or update DocBlock comments.
-# WordPress Native MCP & Abilities API Guidelines
-- Target WordPress 6.9+ and PHP 8.0+.
-- Do NOT write a custom MCP server, SSE handler, or JSON-RPC transport.
-- Implement MCP support natively by registering capabilities via the WordPress core Abilities API (`wp_register_ability()` and `wp_register_ability_category()`).
-- Hook ability category registration to `wp_abilities_api_categories_init` and ability registration to `wp_abilities_api_init`.
-- Define strict JSON Schema arrays for `input_schema` and `output_schema`.
-- Always include a `permission_callback` using `current_user_can()` and sanitize all inputs.
-- Set `'meta' => [ 'show_in_rest' => true, 'mcp' => [ 'public' => true ] ]` so the official WordPress MCP Adapter plugin exposes the ability as an MCP tool.
+- Prefer native WordPress APIs and hooks when they fit the use case. Use appropriate nonce checks, capability checks, unslashing, validation, sanitization, and escaping for request data and output.
+- Use the WordPress HTTP API for WordPress plugin HTTP requests. Use prepared `$wpdb` queries or other suitable APIs when native query APIs do not cover the operation, such as custom-table work.
+- Use WordPress enqueue APIs for scripts and styles, and the Settings API for settings screens when appropriate; do not rewrite working code solely to adopt a different API.
+- Keep refactoring scoped to the task. Use guard clauses when they improve clarity, and remove code only when it is verified to be unused. Do not require conversion of procedural functions to static methods or consolidation of includes when the existing structure is adequate.
+
+## Documentation
+
+- Follow WordPress PHP documentation conventions for documented functions, classes, hooks, and public extension points. Add or update DocBlocks when they clarify or expose behavior; keep `@since` values historically accurate rather than guessing.
+- A documentation-only restriction applies only when the user explicitly requests documentation-only changes. Otherwise, make necessary executable-code changes for the task.
+
+## Testing
+
+- Prefer the project's existing tests and tools. Run the smallest relevant checks; do not add a test framework or scaffolding unless the task requires it.
+- Use WP-CLI or browser tests only when relevant and available. Do not assume commands run in a LocalWP Site Shell or require Playwright.
+- When a test creates data, track the specific IDs it created and clean up only those artifacts. Never delete records by selecting all posts of a post type.
+- Keep test credentials out of version control. Reuse existing authentication and environment configuration rather than requiring a particular setup.
+- For browser tests, prefer accessible, resilient locators such as role- and label-based selectors.
+
+## WordPress Abilities API
+
+- Apply these guidelines only when adding or changing Abilities API support. The plugin supports WordPress 6.3+; the Abilities API is available from WordPress 6.9, so keep that feature conditional rather than raising the plugin-wide minimum version.
+- Prefer the native Abilities API over a custom MCP transport. Register categories and abilities on their corresponding core hooks, use schemas and permission checks appropriate to each ability, and validate/sanitize inputs.
+- Expose abilities through MCP metadata only when MCP exposure is intended. Keep capability checks aligned with the data and actions each ability makes available.
