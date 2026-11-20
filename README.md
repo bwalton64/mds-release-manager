@@ -40,6 +40,7 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 ### Multisite & Network
 - ✅ **Network Sync:** Synchronize releases across WordPress Multisite installations
 - ✅ **Network Settings:** Centralized hub site and wipe-on-uninstall configuration
+  - The optional full wipe permanently removes Release and Artist posts, including Trash, from the current network. By default, uninstall keeps posts and network settings.
 - ✅ **Per-Site Control:** Individual site customization with network defaults
 
 ### API & Integration

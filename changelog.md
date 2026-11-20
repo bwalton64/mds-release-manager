@@ -22,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 - Validate that the CSV importer reads only temporary files received through an HTTP upload.
-- When the full uninstall wipe is enabled, clear the stored spoke selection and Release Manager site options on every site in the network. The default uninstall behavior is unchanged.
+- When the full uninstall wipe is enabled, clear the stored spoke selection and Release Manager site options across the current network, and remove Release and Artist posts including those in Trash. The default uninstall behavior is unchanged.
 - Flush custom post type rewrite rules on activation and deactivation, across all sites for network-wide changes, to prevent stale or missing Release and Artist routes.
 - Prevent strict-types parse errors by keeping `declare(strict_types=1);` as the first executable statement after the file DocBlock and removing stray UTF-8 byte-order marks.
 
