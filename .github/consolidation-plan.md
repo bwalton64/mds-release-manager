@@ -423,9 +423,11 @@ remaining runtime callers and rerunning the runtime and smoke checks.
 **Gate:** §6 per commit; `wp eval 'var_dump( class_exists("MDS_RM_…") );'` for every class.
 
 **Progress:** The explicit class map supports both functional subfolders and the
-original flat paths. All 26 classes resolved from the flat paths, with Elementor
-base-class test doubles for the optional integration. All 47 tracked hooks were
-unchanged and both smoke tests passed. The `core/` folder move is next.
+original flat paths. The seven `core/` classes moved without content changes.
+All 26 classes resolved to the expected paths before and after the move, using
+test doubles for the optional Elementor base classes. All 47 tracked hooks were
+unchanged and both smoke tests passed after each step. `admin/` is next; bootstrap
+timing has not changed.
 
 ### Phase 5 — block.json migration
 For each block (`release-meta`, `release-links`, `artist-discography`), one block per commit:

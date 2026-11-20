@@ -33,11 +33,14 @@ mds-release-manager/
 │   ├── class-mds-rm-admin-interface.php
 │   ├── class-mds-rm-artist-routing.php
 │   ├── class-mds-rm-assets.php
-│   ├── class-mds-rm-builder-detection.php
-│   ├── class-mds-rm-logger.php
-│   ├── class-mds-rm-sync.php
-│   ├── class-mds-rm-providers.php
-│   ├── class-mds-rm-template-loader.php
+│   ├── core/
+│   │   ├── class-mds-rm-builder-detection.php
+│   │   ├── class-mds-rm-logger.php
+│   │   ├── class-mds-rm-post-types.php
+│   │   ├── class-mds-rm-providers.php
+│   │   ├── class-mds-rm-release-model.php  # Release format/UPC validation and sync model
+│   │   ├── class-mds-rm-sync.php
+│   │   └── class-mds-rm-template-loader.php
 │   ├── class-mds-rm-csv-handler.php
 │   ├── class-mds-rm-customizer.php
 │   ├── class-mds-rm-discography.php
@@ -49,9 +52,7 @@ mds-release-manager/
 │   ├── class-mds-rm-frontend-templates.php
 │   ├── class-mds-rm-release-meta.php
 │   ├── class-mds-rm-release-links.php
-│   ├── class-mds-rm-release-model.php        # Release format/UPC validation and sync model
 │   ├── class-mds-rm-network-admin.php
-│   ├── class-mds-rm-post-types.php
 │   ├── class-mds-rm-rest-api.php
 │   ├── class-mds-rm-shortcodes.php
 │   └── class-mds-rm-virtual-media.php
