@@ -52,7 +52,7 @@ class MDS_RM_Elementor_Release_Meta_Tag extends \Elementor\Core\DynamicTags\Data
 	 * Returns the categories supported by the dynamic tag.
 	 *
 	 * @since 0.9.0
-	 * @return array The supported dynamic tag categories.
+	 * @return string[] The supported dynamic tag categories.
 	 */
 	public function get_categories() {
 		return array(
@@ -98,7 +98,7 @@ class MDS_RM_Elementor_Release_Meta_Tag extends \Elementor\Core\DynamicTags\Data
 	 *
 	 * @since 0.9.0
 	 * @param array $options Dynamic tag options.
-	 * @return mixed The selected metadata value.
+	 * @return mixed The selected metadata value, which can include structured image data.
 	 */
 	public function get_value( array $options = array() ) {
 		$key = $this->get_settings( 'mds_meta_key' );
