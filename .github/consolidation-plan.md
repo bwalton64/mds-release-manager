@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phases 0–7 complete
+**Status:** Approved — Phases 0–7 complete; Phase 8 in progress
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -513,6 +513,19 @@ function-documentation check passed. The full Phase 7 baseline for Phase 8 is
 **Gate:** §6 per class.
 
 ### Phase 8 — WordPress.org compliance audit
+
+The formatting and translation-placeholder passes are committed and verified
+on `dev-test`. Both Playwright smoke tests passed after each change and all
+48 tracked hooks matched. PHPCS is down to 85 errors and 62 warnings (from
+188 and 237); the placeholder-specific check passes. The full Plugin Check
+rerun and final runtime regression are still pending.
+
+The uninstall inventory comparison has started. It identified that the full-wipe
+branch does not remove the stored network `spoke_sites` option, and that site
+option removal currently runs only in the invoking site's context. No uninstall
+behavior has changed. The audit also flagged the remote Font Awesome stylesheet;
+preserving the available icons without a CDN needs a separate verified change.
+
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
 3. Final full regression: Playwright suite + manual multisite hub/spoke sync test.
