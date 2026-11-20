@@ -12,10 +12,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MDS_RM_Artist_Routing {
+	/** Registers the Artist homepage redirect. */
 	public static function register_hooks(): void {
 		add_action( 'template_redirect', array( self::class, 'redirect' ) );
 	}
 
+	/**
+	 * Checks whether a homepage URL can serve as the Artist redirect target.
+	 *
+	 * @param mixed $url     Candidate homepage URL.
+	 * @param int   $post_id Artist post ID.
+	 * @return bool Whether the target is valid.
+	 */
 	public static function valid_url( mixed $url, int $post_id ): bool {
 		if ( ! is_string( $url ) || '' === $url || esc_url_raw( $url, array( 'http', 'https' ) ) !== $url ) {
 			return false;
@@ -31,6 +39,7 @@ final class MDS_RM_Artist_Routing {
 		return true;
 	}
 
+	/** Redirects eligible Artist requests to their configured homepage. */
 	public static function redirect(): void {
 		if ( is_admin() || ! is_singular( 'artist' ) || is_preview() || is_customize_preview() || is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 			return;
