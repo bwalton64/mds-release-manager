@@ -29,7 +29,7 @@ mds-release-manager/
 ├── README.md                         # End-user and contributor documentation
 ├── changelog.md                      # Version history (Keep a Changelog format)
 ├── includes/                         # All class definitions (SPL autoloader)
-│   ├── class-mds-rm-abilities.php           # WordPress Abilities API integration
+│   ├── class-mds-rm-plugin.php
 │   ├── admin/
 │   │   ├── class-mds-rm-admin-interface.php
 │   │   ├── class-mds-rm-csv-handler.php
@@ -49,15 +49,20 @@ mds-release-manager/
 │   │   ├── class-mds-rm-discography.php
 │   │   ├── class-mds-rm-frontend-templates.php
 │   │   └── class-mds-rm-shortcodes.php
-│   ├── class-mds-rm-elementor-tags.php
-│   ├── class-mds-rm-elementor-widget.php
-│   ├── class-mds-rm-elementor-links-widget.php
-│   ├── class-mds-rm-elementor-release-meta-tag.php
-│   ├── class-mds-rm-gutenberg-blocks.php
-│   ├── class-mds-rm-release-meta.php
-│   ├── class-mds-rm-release-links.php
-│   ├── class-mds-rm-rest-api.php
-│   └── class-mds-rm-virtual-media.php
+│   ├── blocks/
+│   │   ├── class-mds-rm-gutenberg-blocks.php
+│   │   ├── class-mds-rm-release-meta.php
+│   │   └── class-mds-rm-release-links.php
+│   ├── api/
+│   │   ├── class-mds-rm-abilities.php
+│   │   ├── class-mds-rm-rest-api.php
+│   │   └── class-mds-rm-virtual-media.php
+│   └── integrations/
+│       └── elementor/
+│           ├── class-mds-rm-elementor-tags.php
+│           ├── class-mds-rm-elementor-widget.php
+│           ├── class-mds-rm-elementor-links-widget.php
+│           └── class-mds-rm-elementor-release-meta-tag.php
 ├── templates/                        # Frontend/backend templates
 │   ├── artist-fallback.php
 │   ├── artist-meta-box.php
@@ -166,7 +171,7 @@ mds-release-manager/
 - Pagination uses `mds_discography_page_{artist_id}`. The table scrolls horizontally when necessary. Artist fallback Customizer table styles apply to the automatic table; independently placed blocks and shortcodes use their surrounding theme styles.
 
 ### Gutenberg Block
-- Dynamic blocks are currently registered in `includes/class-mds-rm-gutenberg-blocks.php` with `register_block_type()` and use editor definitions in `js/blocks.js`. Migration to `block.json` is planned for Phase 5, not part of the metadata change.
+- Dynamic blocks are currently registered in `includes/blocks/class-mds-rm-gutenberg-blocks.php` with `register_block_type()` and use editor definitions in `js/blocks.js`. Migration to `block.json` is planned for Phase 5, not part of the metadata change.
 - **`mds-rm/release-meta`** — Dynamic API v3 block with `postId` context, `upcOverride`, ordered `items`, and per-device `styles`. The Elementor widget `mds_release_meta` uses the same renderer. The block icon is `dashicons-album`.
 - Available fields: `release_year`, `record_label`, `distributor`, `upc_ean`, `release_format`, `release_date`, `release_title`, `artist`, `release_tags`. Only the first four are enabled by default; empty values are omitted. Full date uses the site's date format; artist resolves the stored artist UUID.
 - Each field can be reordered, hidden, and assigned a tooltip and Dashicons or Font Awesome classes. Shortcode `fields` is a comma-separated ordered selection; `icon_FIELD` and `title_FIELD` override each field's icon and tooltip, for example:
@@ -338,7 +343,7 @@ The plugin exposes core features as native MCP tools using the WordPress Abiliti
    - **MCP Public:** ✓
 
 **Implementation:**
-- Class: `MDS_RM_Abilities` in `/includes/class-mds-rm-abilities.php`
+- Class: `MDS_RM_Abilities` in `includes/api/class-mds-rm-abilities.php`
 - Registered via `MDS_RM_Abilities::register_hooks()` in main plugin file
 - Includes graceful fallback: `if ( ! function_exists( 'wp_register_ability' ) ) return;`
 - Complete JSON Schema definitions for input/output with type, description, constraints

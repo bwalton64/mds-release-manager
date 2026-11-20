@@ -25,8 +25,6 @@ final class MDS_RM_Post_Types {
 	 */
 	public static function register_hooks() {
 		add_action( 'init', array( self::class, 'register_cpts' ) );
-		register_activation_hook( MDS_RM_MAIN_FILE, array( self::class, 'activate' ) );
-		register_deactivation_hook( MDS_RM_MAIN_FILE, array( self::class, 'deactivate' ) );
 	}
 
 	/**

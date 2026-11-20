@@ -1,6 +1,6 @@
 # MDS Release Manager — Structure Consolidation Plan
 
-**Status:** Approved — Phase 3 complete; Phase 4 in progress
+**Status:** Approved — Phase 4 complete; Phase 5 not started
 **Owner:** @bwalton64
 **Created:** 2026-11-20
 **Supersedes:** The abandoned file-merge consolidation effort (25 → 11 merged class files).
@@ -64,7 +64,7 @@ mds-release-manager/
 │   └── artist-discography/
 │       └── …
 ├── includes/
-│   ├── class-mds-rm-plugin.php          # NEW — bootstrap: registers all hooks on plugins_loaded
+│   ├── class-mds-rm-plugin.php          # Bootstrap: runtime hooks on plugins_loaded
 │   ├── core/
 │   │   ├── class-mds-rm-post-types.php
 │   │   ├── class-mds-rm-release-model.php
@@ -428,8 +428,13 @@ All 26 classes resolved to the expected paths before and after the move, using
 test doubles for the optional Elementor base classes. All 47 tracked hooks were
 unchanged and both smoke tests passed after each step. The three `admin/` classes and
 six `frontend/` classes also moved without content changes. All 26 class paths, 47
-tracked hooks, and both smoke tests were verified after each move. `blocks/` is next;
-template paths and bootstrap timing have not changed.
+tracked hooks, and both smoke tests were verified after each move. The remaining
+`blocks/`, `api/`, and `integrations/elementor/` classes moved in separate move-only
+commits with the same checks. Runtime registration now runs on `plugins_loaded`;
+activation and deactivation callbacks are registered immediately. All 27 class
+paths, the 47 existing hooks, and the three shortcode registrations were verified.
+Both smoke tests passed twice after an initial editor response failure that did
+not reproduce. No template paths or block definitions changed.
 
 ### Phase 5 — block.json migration
 For each block (`release-meta`, `release-links`, `artist-discography`), one block per commit:

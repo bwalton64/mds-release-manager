@@ -40,6 +40,7 @@ spl_autoload_register(
 		}
 
 		static $class_paths = array(
+			'MDS_RM_PLUGIN'                     => 'class-mds-rm-plugin.php',
 			'MDS_RM_POST_TYPES'                 => 'core/class-mds-rm-post-types.php',
 			'MDS_RM_RELEASE_MODEL'              => 'core/class-mds-rm-release-model.php',
 			'MDS_RM_BUILDER_DETECTION'          => 'core/class-mds-rm-builder-detection.php',
@@ -81,18 +82,4 @@ spl_autoload_register(
 		}
 	}
 );
-MDS_RM_Assets::register_hooks();
-MDS_RM_Post_Types::register_hooks();
-MDS_RM_Release_Model::register_hooks();
-MDS_RM_Admin_Interface::register_hooks();
-MDS_RM_Network_Admin::register_hooks();
-MDS_RM_Customizer::register_hooks();
-MDS_RM_Frontend_Templates::register_hooks();
-MDS_RM_Artist_Routing::register_hooks();
-MDS_RM_REST_API::register_hooks();
-MDS_RM_Shortcodes::register_hooks();
-MDS_RM_Elementor_Tags::register_hooks();
-MDS_RM_CSV_Handler::register_hooks();
-MDS_RM_Gutenberg_Blocks::register_hooks();
-MDS_RM_Virtual_Media::register_hooks();
-MDS_RM_Abilities::register_hooks();
+MDS_RM_Plugin::register_hooks();

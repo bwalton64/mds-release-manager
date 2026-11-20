@@ -272,7 +272,7 @@ mds-release-manager/
 ├── uninstall.php                       # Plugin cleanup on uninstall
 │
 ├── includes/                           # Core plugin classes (SPL-autoloaded)
-│   ├── class-mds-rm-abilities.php                  # WordPress Abilities API (MCP tools)
+│   ├── class-mds-rm-plugin.php                     # Plugin bootstrap
 │   ├── admin/
 │   │   ├── class-mds-rm-admin-interface.php        # Settings and admin UI
 │   │   ├── class-mds-rm-csv-handler.php             # CSV import/export
@@ -292,15 +292,10 @@ mds-release-manager/
 │   │   ├── class-mds-rm-discography.php             # Artist discography logic
 │   │   ├── class-mds-rm-frontend-templates.php      # Content fallback rendering
 │   │   └── class-mds-rm-shortcodes.php              # Shortcode registration
-│   ├── class-mds-rm-elementor-links-widget.php     # Elementor Release Links widget
-│   ├── class-mds-rm-elementor-release-meta-tag.php # Elementor Release Meta dynamic tag
-│   ├── class-mds-rm-elementor-tags.php             # Elementor registration
-│   ├── class-mds-rm-elementor-widget.php           # Elementor Release Meta widget
-│   ├── class-mds-rm-gutenberg-blocks.php           # Gutenberg block registration
-│   ├── class-mds-rm-release-links.php              # Provider link management
-│   ├── class-mds-rm-release-meta.php               # Release metadata rendering
-│   ├── class-mds-rm-rest-api.php                   # REST API endpoints
-│   └── class-mds-rm-virtual-media.php              # Hub media fallback integration
+│   ├── blocks/                         # Block registration and Release renderers
+│   ├── api/                            # REST, Abilities, and virtual media
+│   └── integrations/
+│       └── elementor/                   # Widgets and dynamic tags
 │
 ├── templates/                          # PHP template files
 │   ├── artist-fallback.php             # Artist page fallback template
