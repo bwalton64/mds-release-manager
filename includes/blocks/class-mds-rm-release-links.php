@@ -130,6 +130,7 @@ final class MDS_RM_Release_Links {
 		return MDS_RM_Providers::defaults();
 	}
 
+	/** Enqueues the frontend Release Links stylesheet. */
 	public static function enqueue_assets(): void {
 		wp_enqueue_style( 'mds-release-links-block', MDS_RM_URL . 'css/release-links.css', array( 'dashicons' ), filemtime( MDS_RM_PATH . 'css/release-links.css' ) );
 		MDS_RM_Assets::enqueue_font_awesome();
@@ -165,6 +166,13 @@ final class MDS_RM_Release_Links {
 		return '';
 	}
 
+	/**
+	 * Renders streaming links and the optional audio preview for a release.
+	 *
+	 * @param array      $attributes      Link, audio, and style overrides.
+	 * @param int|string $context_post_id Post ID to use when no UPC is supplied.
+	 * @return string The release links and audio markup, or an empty string.
+	 */
 	public static function render( $attributes = array(), $context_post_id = 0 ): string {
 		$post = MDS_RM_Release_Meta::resolve_post( isset( $attributes['upc'] ) ? $attributes['upc'] : '', $context_post_id );
 		if ( ! $post ) {
@@ -272,6 +280,12 @@ final class MDS_RM_Release_Links {
 			( $audio ? '<div class="mds-release-links__audio">' . $audio . '</div>' : '' ) . '</div>';
 	}
 
+	/**
+	 * Converts Release Links shortcode attributes to renderer options.
+	 *
+	 * @param array|string $atts Shortcode attributes.
+	 * @return string The rendered release links and audio markup.
+	 */
 	public static function shortcode( $atts ): string {
 		$atts   = (array) $atts;
 		$items  = array();
