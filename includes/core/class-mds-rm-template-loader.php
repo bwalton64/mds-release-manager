@@ -22,7 +22,7 @@ final class MDS_RM_Template_Loader {
 	 * @since 0.9.0
 	 * @return array The saved asset contents.
 	 */
-	public static function get_db_templates() {
+	public static function get_db_templates(): array {
 		$templates = is_multisite()
 		? get_site_option( 'mds_rm_db_templates', array() )
 		: get_option( 'mds_rm_db_templates', array() );
@@ -33,11 +33,11 @@ final class MDS_RM_Template_Loader {
 	 * Load a PHP template and return its rendered output.
 	 *
 	 * @since 0.9.0
-	 * @param string $template_name Template path relative to the plugin directory.
-	 * @param array  $args          Variables passed to the template.
+	 * @param mixed $template_name Template path relative to the plugin directory.
+	 * @param mixed $args          Variables passed to the template; must be an array.
 	 * @return string Rendered template.
 	 */
-	public static function render( $template_name, $args = array() ) {
+	public static function render( mixed $template_name, mixed $args = array() ): string {
 		if (
 			! is_string( $template_name )
 			|| 'templates' !== dirname( $template_name )
@@ -100,7 +100,7 @@ final class MDS_RM_Template_Loader {
 	 * @param string $html Shortcode output.
 	 * @return string Sanitized HTML.
 	 */
-	public static function kses_shortcode_html( $html ) {
+	public static function kses_shortcode_html( $html ): string {
 		$allowed_html           = wp_kses_allowed_html( 'post' );
 		$allowed_html['iframe'] = array(
 			'allow'             => true,
@@ -132,7 +132,7 @@ final class MDS_RM_Template_Loader {
 	 * @param array  $deps     The stylesheet dependencies.
 	 * @param string $fallback Optional bundled path when it differs from the stored asset key.
 	 */
-	public static function enqueue_editable_style( $handle, $rel_path, $deps = array(), $fallback = '' ) {
+	public static function enqueue_editable_style( $handle, $rel_path, $deps = array(), $fallback = '' ): void {
 		$db_templates = self::get_db_templates();
 		if ( isset( $db_templates[ $rel_path ] ) && trim( $db_templates[ $rel_path ] ) !== '' ) {
 			wp_register_style( $handle, false, $deps, MDS_RELEASE_MANAGER_VERSION );
@@ -154,7 +154,7 @@ final class MDS_RM_Template_Loader {
 	 * @param array  $deps     The script dependencies.
 	 * @param bool   $in_footer Whether to enqueue the script in the footer.
 	 */
-	public static function enqueue_editable_script( $handle, $rel_path, $deps = array(), $in_footer = true ) {
+	public static function enqueue_editable_script( $handle, $rel_path, $deps = array(), $in_footer = true ): void {
 		$db_templates = self::get_db_templates();
 		if ( isset( $db_templates[ $rel_path ] ) && trim( $db_templates[ $rel_path ] ) !== '' ) {
 			wp_register_script( $handle, false, $deps, MDS_RELEASE_MANAGER_VERSION, $in_footer );
