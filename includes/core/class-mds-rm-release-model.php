@@ -23,7 +23,7 @@ final class MDS_RM_Release_Model {
 	private static $rest_requests = array();
 
 	/** Registers the release validation hooks. */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_action( 'init', array( self::class, 'register_fields_and_formats' ), 20 );
 		add_filter( 'wp_insert_post_empty_content', array( self::class, 'validate_classic_save' ), 10, 2 );
 		add_filter( 'rest_pre_insert_release', array( self::class, 'validate_rest_save' ), 10, 2 );
@@ -36,7 +36,7 @@ final class MDS_RM_Release_Model {
 	}
 
 	/** Registers REST metadata and the supported format terms. */
-	public static function register_fields_and_formats() {
+	public static function register_fields_and_formats(): void {
 		register_post_meta(
 			'release',
 			'upc_ean',
@@ -80,7 +80,7 @@ final class MDS_RM_Release_Model {
 	 * @param mixed $value Submitted UPC/EAN.
 	 * @return string Digits in the identifier.
 	 */
-	public static function normalize_upc( $value ) {
+	public static function normalize_upc( mixed $value ): string {
 		return is_scalar( $value ) ? preg_replace( '/[^0-9]/', '', (string) $value ) : '';
 	}
 
@@ -134,7 +134,7 @@ final class MDS_RM_Release_Model {
 	 * @param WP_REST_Request $request Current request.
 	 * @return mixed Existing response.
 	 */
-	public static function before_rest_request( $response, $handler, $request ) {
+	public static function before_rest_request( mixed $response, $handler, $request ): mixed {
 		self::$rest_requests[ spl_object_id( $request ) ] = $request->get_method();
 		return $response;
 	}
@@ -145,7 +145,7 @@ final class MDS_RM_Release_Model {
 	 * @param int $post_id Release ID.
 	 * @return string|WP_Error Format name or validation error.
 	 */
-	public static function format_name( $post_id ) {
+	public static function format_name( $post_id ): string|WP_Error {
 		$terms = wp_get_post_terms( $post_id, 'release_format' );
 		if ( is_wp_error( $terms ) ) {
 			return $terms;
@@ -162,7 +162,7 @@ final class MDS_RM_Release_Model {
 	 * @param int $post_id Release ID.
 	 * @return bool Whether the legacy value needs review.
 	 */
-	public static function has_legacy_format_conflict( $post_id ) {
+	public static function has_legacy_format_conflict( $post_id ): bool {
 		$legacy = get_post_meta( $post_id, 'release_format', true );
 		if ( '' === $legacy ) {
 			return false;
@@ -175,7 +175,7 @@ final class MDS_RM_Release_Model {
 	}
 
 	/** Reports existing release data requiring administrator review. */
-	public static function show_audit_notice() {
+	public static function show_audit_notice(): void {
 		$screen = get_current_screen();
 		if ( ! $screen || 'edit' !== $screen->base || 'release' !== $screen->post_type || ! current_user_can( 'manage_options' ) ) {
 			return;
@@ -226,7 +226,7 @@ final class MDS_RM_Release_Model {
 	 * @param string $name Format name.
 	 * @return int Term ID, or zero if invalid or unavailable.
 	 */
-	public static function format_id( $name ) {
+	public static function format_id( $name ): int {
 		foreach ( self::MDS_RM_FORMATS as $format ) {
 			if ( 0 === strcasecmp( trim( $name ), $format ) ) {
 				$term = get_term_by( 'name', $format, 'release_format' );
@@ -244,7 +244,7 @@ final class MDS_RM_Release_Model {
 	 * @param array $format_ids Selected term IDs.
 	 * @return true|WP_Error True when valid, otherwise an error.
 	 */
-	public static function validate( $post_id, $upc, $format_ids ) {
+	public static function validate( $post_id, $upc, $format_ids ): bool|WP_Error {
 		$upc = self::normalize_upc( $upc );
 		if ( '' === $upc ) {
 			return new WP_Error( 'mds_upc_required', __( 'A UPC/EAN is required.', 'mds-release-manager' ), array( 'status' => 400 ) );
@@ -318,7 +318,7 @@ final class MDS_RM_Release_Model {
 	 * @param string $upc Normalized UPC.
 	 * @return true|WP_Error True when locked, otherwise an error.
 	 */
-	private static function lock_upc( $upc ) {
+	private static function lock_upc( string $upc ): bool|WP_Error {
 		global $wpdb;
 		$key = 'mds-upc-' . substr( hash( 'sha256', get_current_blog_id() . ':' . $upc ), 0, 48 );
 		if ( isset( self::$upc_locks[ $key ] ) ) {
@@ -345,7 +345,7 @@ final class MDS_RM_Release_Model {
 	 *
 	 * @param string $upc UPC to unlock.
 	 */
-	public static function release_upc_lock( $upc ) {
+	public static function release_upc_lock( $upc ): void {
 		global $wpdb;
 		$key = 'mds-upc-' . substr( hash( 'sha256', get_current_blog_id() . ':' . self::normalize_upc( $upc ) ), 0, 48 );
 		if ( isset( self::$upc_locks[ $key ] ) ) {
@@ -461,7 +461,7 @@ final class MDS_RM_Release_Model {
 	 * @param string $previous Previous UPC.
 	 * @param string $current Current UPC.
 	 */
-	public static function remember_previous_upc( $post_id, $previous, $current ) {
+	public static function remember_previous_upc( $post_id, $previous, $current ): void {
 		if ( '' === $previous || $previous === $current ) {
 			return;
 		}
@@ -480,7 +480,7 @@ final class MDS_RM_Release_Model {
 	 * @param WP_REST_Request $request REST request.
 	 * @param bool            $creating Whether the post was created.
 	 */
-	public static function after_rest_save( $post, $request, $creating ) {
+	public static function after_rest_save( $post, $request, $creating ): void {
 		if ( 'auto-draft' === $post->post_status ) {
 			return;
 		}
@@ -501,9 +501,9 @@ final class MDS_RM_Release_Model {
 	 * @param mixed           $response Existing response.
 	 * @param array           $handler Route handler.
 	 * @param WP_REST_Request $request REST request.
-	 * @return mixed|WP_Error Existing response or synchronization error.
+	 * @return mixed Existing response or synchronization error.
 	 */
-	public static function report_rest_sync_error( $response, $handler, $request ) {
+	public static function report_rest_sync_error( mixed $response, $handler, $request ): mixed {
 		$key = spl_object_id( $request );
 		unset( self::$rest_requests[ $key ] );
 		if ( isset( self::$rest_sync_errors[ $key ] ) ) {
