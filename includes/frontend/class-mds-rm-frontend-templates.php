@@ -32,10 +32,17 @@ final class MDS_RM_Frontend_Templates {
 		add_filter( 'render_block', array( self::class, 'filter_release_author_group' ), 20, 3 );
 	}
 
+	/** Enqueues fallback styles for eligible Artist pages. */
 	public static function enqueue_artist_assets(): void {
 		MDS_RM_Template_Loader::enqueue_editable_style( 'mds-discography', 'css/artist-fallback.css' );
 	}
 
+	/**
+	 * Wraps eligible Artist content in the fallback template.
+	 *
+	 * @param string $content The filtered post content.
+	 * @return string The content with fallback components, when applicable.
+	 */
 	public static function filter_artist_content( $content ) {
 		$post = self::get_fallback_artist_post();
 		if ( ! $post ) {
@@ -53,6 +60,11 @@ final class MDS_RM_Frontend_Templates {
 		return MDS_RM_Template_Loader::render( 'templates/artist-fallback.php', $args );
 	}
 
+	/**
+	 * Finds the Artist post eligible for fallback rendering.
+	 *
+	 * @return WP_Post|false The eligible Artist, or false.
+	 */
 	private static function get_fallback_artist_post(): WP_Post|false {
 		if ( is_admin() || is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ! is_singular( 'artist' ) || ! in_the_loop() || ! is_main_query() ) {
 			return false;
@@ -123,8 +135,8 @@ final class MDS_RM_Frontend_Templates {
 	 *
 	 * @since 0.9.0
 	 * @param string   $block_content The rendered block HTML.
-	 * @param array    $block The parsed block.
-	 * @param WP_Block $instance The rendered block instance.
+	 * @param array    $block         The parsed block.
+	 * @param WP_Block $instance      The rendered block instance.
 	 * @return string The block HTML, or an empty string for the byline.
 	 */
 	public static function filter_release_author_group( $block_content, $block, $instance ) {
@@ -240,10 +252,10 @@ final class MDS_RM_Frontend_Templates {
 	/**
 	 * Checks post content and referenced synced patterns for an existing component.
 	 *
-	 * @param string $content The serialized post content.
-	 * @param string $block_name The registered block name.
+	 * @param string $content        The serialized post content.
+	 * @param string $block_name     The registered block name.
 	 * @param string $shortcode_name The shortcode name.
-	 * @param array  $visited_blocks Referenced synced patterns already inspected.
+	 * @param array  $visited_blocks  Referenced synced patterns already inspected.
 	 * @return bool Whether the component is already present.
 	 */
 	private static function content_has_component( $content, string $block_name, string $shortcode_name, array &$visited_blocks ): bool {
@@ -265,10 +277,10 @@ final class MDS_RM_Frontend_Templates {
 	/**
 	 * Searches nested blocks for synced patterns containing the component.
 	 *
-	 * @param array  $blocks The parsed block tree.
-	 * @param string $block_name The registered block name.
+	 * @param array  $blocks         The parsed block tree.
+	 * @param string $block_name     The registered block name.
 	 * @param string $shortcode_name The shortcode name.
-	 * @param array  $visited_blocks Referenced synced patterns already inspected.
+	 * @param array  $visited_blocks  Referenced synced patterns already inspected.
 	 * @return bool Whether the component is already present.
 	 */
 	private static function block_tree_has_component( array $blocks, string $block_name, string $shortcode_name, array &$visited_blocks ): bool {
