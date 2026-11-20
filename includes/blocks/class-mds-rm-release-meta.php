@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MDS_RM_Release_Meta {
-	public static function fields() {
+	public static function fields(): array {
 		return array(
 			'release_year'   => array( 'label' => 'Release Year', 'icon' => 'fas fa-calendar', 'enabled' => true ),
 			'record_label'   => array( 'label' => 'Record Label', 'icon' => 'fas fa-compact-disc', 'enabled' => true ),
@@ -26,7 +26,7 @@ final class MDS_RM_Release_Meta {
 		);
 	}
 
-	public static function default_items() {
+	public static function default_items(): array {
 		$items = array();
 		foreach ( self::fields() as $key => $field ) {
 			$items[] = array(
@@ -42,7 +42,7 @@ final class MDS_RM_Release_Meta {
 	/**
 	 * Shared style names and input types for all three interfaces.
 	 */
-	public static function style_fields() {
+	public static function style_fields(): array {
 		return array(
 			'background'   => array( 'label' => 'Background Color', 'type' => 'color' ),
 			'color'        => array( 'label' => 'Text Color', 'type' => 'color' ),
@@ -69,11 +69,11 @@ final class MDS_RM_Release_Meta {
 		);
 	}
 
-	public static function register_assets() {
+	public static function register_assets(): void {
 		wp_register_style( 'mds-release-meta', MDS_RM_URL . 'css/release-meta.css', array( 'dashicons' ), filemtime( MDS_RM_PATH . 'css/release-meta.css' ) );
 	}
 
-	public static function enqueue_assets() {
+	public static function enqueue_assets(): void {
 		if ( ! wp_style_is( 'mds-release-meta', 'registered' ) ) {
 			self::register_assets();
 		}
@@ -84,7 +84,7 @@ final class MDS_RM_Release_Meta {
 	/**
 	 * Resolve explicit UPCs first; extensions may provide a UPC for other contexts.
 	 */
-	public static function resolve_post( $upc = '', $context_post_id = 0 ) {
+	public static function resolve_post( $upc = '', $context_post_id = 0 ): ?WP_Post {
 		if ( ! is_scalar( $upc ) ) {
 			error_log( '[MDS Release Manager] Invalid Release Meta UPC/EAN.' );
 			return null;
@@ -126,7 +126,13 @@ final class MDS_RM_Release_Meta {
 		return isset( $posts[0] ) && self::can_display( $posts[0] ) ? $posts[0] : null;
 	}
 
-	private static function can_display( $post ) {
+	/**
+	 * Checks whether a candidate is a readable release.
+	 *
+	 * @param mixed $post Candidate from a WordPress post lookup.
+	 * @return bool Whether the release can be displayed.
+	 */
+	private static function can_display( mixed $post ): bool {
 		return $post instanceof WP_Post && 'release' === $post->post_type
 			&& ( 'publish' === $post->post_status || current_user_can( 'read_post', $post->ID ) );
 	}
@@ -165,7 +171,7 @@ final class MDS_RM_Release_Meta {
 		}
 	}
 
-	public static function valid_style( $value, $type ) {
+	public static function valid_style( mixed $value, $type ): string {
 		if ( ! is_scalar( $value ) ) {
 			return '';
 		}
@@ -206,7 +212,7 @@ final class MDS_RM_Release_Meta {
 		return '';
 	}
 
-	public static function style_attribute( $styles, $fields = null, $prefix = 'meta' ) {
+	public static function style_attribute( $styles, $fields = null, $prefix = 'meta' ): string {
 		if ( ! is_array( $styles ) ) {
 			return '';
 		}
@@ -276,7 +282,7 @@ final class MDS_RM_Release_Meta {
 		return '<div class="mds-release-meta"' . ( $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>' . $output . '</div>';
 	}
 
-	public static function shortcode( $atts ) {
+	public static function shortcode( $atts ): string {
 		$defaults = array( 'upc' => '', 'fields' => '' );
 		foreach ( self::fields() as $key => $field ) {
 			$defaults[ 'icon_' . $key ]  = $field['icon'];
