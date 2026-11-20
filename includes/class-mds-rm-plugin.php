@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class MDS_RM_Plugin {
 
+	/** Registers the plugin lifecycle and bootstrap hooks. */
 	public static function register_hooks(): void {
 		// During activation, WordPress includes the plugin after plugins_loaded.
 		register_activation_hook( MDS_RM_MAIN_FILE, array( MDS_RM_Post_Types::class, 'activate' ) );
@@ -23,6 +24,7 @@ final class MDS_RM_Plugin {
 		add_action( 'plugins_loaded', array( self::class, 'init' ), 0 );
 	}
 
+	/** Registers the hooks for each plugin component. */
 	public static function init(): void {
 		MDS_RM_Assets::register_hooks();
 		MDS_RM_Post_Types::register_hooks();
