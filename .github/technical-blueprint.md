@@ -111,7 +111,7 @@ mds-release-manager/
   - Menu placement: Under Releases
 
 ### Core Actions & Filters
-- **`init`** → `MDS_RM_Post_Types::mds_rm_register_cpts()` — Registers release and artist CPTs.
+- **`init`** → `MDS_RM_Post_Types::register_cpts()` — Registers release and artist CPTs.
 - **`wp_enqueue_scripts`** → `MDS_RM_Assets::enqueue_frontend_assets()` — Loads frontend CSS and Font Awesome.
 - **`template_redirect`** → `MDS_RM_Assets::handle_global_redirect()` — Redirects release pages if enabled.
 - **`template_redirect`** → `MDS_RM_Artist_Routing::redirect()` — Redirects an Artist to its valid enabled homepage with HTTP 302, except in admin, previews, feeds, and REST requests. Invalid, missing, or self-referencing URLs leave the Artist page available and show a warning in Artist Settings.

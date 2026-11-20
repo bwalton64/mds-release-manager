@@ -24,7 +24,7 @@ final class MDS_RM_Post_Types {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks() {
-		add_action( 'init', array( self::class, 'mds_rm_register_cpts' ) );
+		add_action( 'init', array( self::class, 'register_cpts' ) );
 		register_activation_hook( MDS_RM_MAIN_FILE, array( self::class, 'activate' ) );
 		register_deactivation_hook( MDS_RM_MAIN_FILE, array( self::class, 'deactivate' ) );
 	}
@@ -35,7 +35,7 @@ final class MDS_RM_Post_Types {
 	 * @param bool $network_wide Whether the plugin is being network-activated.
 	 */
 	public static function activate( $network_wide = false ) {
-		self::mds_rm_register_cpts();
+		self::register_cpts();
 		self::flush_rewrite_rules( $network_wide );
 	}
 
@@ -95,7 +95,7 @@ final class MDS_RM_Post_Types {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_register_cpts() {
+	public static function register_cpts() {
 		register_post_type(
 			'release',
 			array(
