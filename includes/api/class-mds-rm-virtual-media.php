@@ -23,7 +23,7 @@ final class MDS_RM_Virtual_Media {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_filter( 'wp_get_attachment_url', array( self::class, 'virtual_attachment_url' ), 10, 2 );
 		add_filter( 'image_downsize', array( self::class, 'virtual_image_downsize' ), 10, 2 );
 		add_filter( 'get_post_metadata', array( self::class, 'virtual_media_meta_fallback' ), 10, 3 );
@@ -34,11 +34,11 @@ final class MDS_RM_Virtual_Media {
 	 * Returns the hub URL for a virtual attachment.
 	 *
 	 * @since 0.9.0
-	 * @param string $url     The attachment URL.
-	 * @param int    $post_id The attachment ID.
-	 * @return string The hub URL or original attachment URL.
+	 * @param mixed $url     The current attachment URL filter value.
+	 * @param int   $post_id The attachment ID.
+	 * @return mixed The stored hub URL or original filter value.
 	 */
-	public static function virtual_attachment_url( $url, $post_id ) {
+	public static function virtual_attachment_url( mixed $url, $post_id ): mixed {
 		$hub_url = get_post_meta( $post_id, '_mds_is_hub_media', true );
 		if ( ! empty( $hub_url ) ) {
 			return $hub_url;
@@ -54,7 +54,7 @@ final class MDS_RM_Virtual_Media {
 	 * @param int   $attachment_id The attachment ID.
 	 * @return mixed The virtual image dimensions or original result.
 	 */
-	public static function virtual_image_downsize( $downsize, $attachment_id ) {
+	public static function virtual_image_downsize( mixed $downsize, $attachment_id ): mixed {
 		$hub_url = get_post_meta( $attachment_id, '_mds_is_hub_media', true );
 		if ( ! empty( $hub_url ) ) {
 			return array( $hub_url, 800, 800, false );
@@ -71,7 +71,7 @@ final class MDS_RM_Virtual_Media {
 	 * @param string $meta_key The metadata key.
 	 * @return mixed The virtual attachment metadata or original value.
 	 */
-	public static function virtual_media_meta_fallback( $value, $object_id, $meta_key ) {
+	public static function virtual_media_meta_fallback( mixed $value, $object_id, $meta_key ): mixed {
 		if ( ! in_array( $meta_key, array( '_wp_attached_file', '_wp_attachment_metadata' ), true ) ) {
 			return $value;
 		}
