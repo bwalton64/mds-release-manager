@@ -140,7 +140,7 @@ final class MDS_RM_Release_Meta {
 			case 'release_title':
 				return get_the_title( $post );
 			case 'release_format':
-				$value = MDS_RM_Release_Model::mds_rm_format_name( $post->ID );
+				$value = MDS_RM_Release_Model::format_name( $post->ID );
 				if ( is_wp_error( $value ) ) {
 					error_log( '[MDS Release Manager] Release ' . $post->ID . ': ' . $value->get_error_message() );
 					return '';

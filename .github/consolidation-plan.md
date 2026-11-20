@@ -370,7 +370,9 @@ with test doubles because Elementor is not installed on `dev-test`. `CSV_Handler
 migrated; the form actions, nonce fields, and export output matched the baseline.
 `Gutenberg_Blocks` is migrated; all three block names, attribute schemas, and context
 declarations matched the baseline. `Virtual_Media` is migrated; the attachment URL,
-dimensions, metadata, and REST response matched on `dev-test`. `Release_Model` is next.
+dimensions, metadata, and REST response matched on `dev-test`. `Release_Model` is
+migrated, including its internal callers and registered UPC sanitizer. UPC normalization,
+format lookup, and invalid-input results matched the baseline. `Builder_Detection` is next.
 
 **Separate integration follow-up:** WooCommerce checks for a global
 `mds_rm_get_or_create_virtual_attachment()` before using its fallback. The main plugin

@@ -245,7 +245,7 @@ final class MDS_RM_Core_Functions {
 		if ( '' === (string) $uuid ) {
 			return new WP_Error( 'mds_sync_missing_identity', __( 'Cannot synchronize a record without its identifier.', 'mds-release-manager' ) );
 		}
-		if ( 'release' === $post_type && ( is_wp_error( MDS_RM_Release_Model::mds_rm_format_name( $post_id ) ) || MDS_RM_Release_Model::mds_rm_has_legacy_format_conflict( $post_id ) ) ) {
+		if ( 'release' === $post_type && ( is_wp_error( MDS_RM_Release_Model::format_name( $post_id ) ) || MDS_RM_Release_Model::has_legacy_format_conflict( $post_id ) ) ) {
 			return new WP_Error( 'mds_sync_invalid_format', __( 'Cannot synchronize a release with an invalid or conflicting format.', 'mds-release-manager' ) );
 		}
 

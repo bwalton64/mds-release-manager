@@ -94,8 +94,8 @@ final class MDS_RM_CSV_Handler {
 
 		$release_formats = array();
 		foreach ( $releases as $release ) {
-			$format = MDS_RM_Release_Model::mds_rm_format_name( $release->ID );
-			if ( MDS_RM_Release_Model::mds_rm_has_legacy_format_conflict( $release->ID ) ) {
+			$format = MDS_RM_Release_Model::format_name( $release->ID );
+			if ( MDS_RM_Release_Model::has_legacy_format_conflict( $release->ID ) ) {
 				wp_die( esc_html( sprintf( __( 'Cannot export release %d: its format conflicts with legacy data. Resolve the conflict first.', 'mds-release-manager' ), $release->ID ) ) );
 			}
 			if ( is_wp_error( $format ) ) {
@@ -285,7 +285,7 @@ final class MDS_RM_CSV_Handler {
 				continue;
 			}
 
-			$format_id = MDS_RM_Release_Model::mds_rm_format_id( $format );
+			$format_id = MDS_RM_Release_Model::format_id( $format );
 			$release_found = '' === $upc ? array() : get_posts(
 				array(
 					'post_type'   => 'release',
@@ -296,7 +296,7 @@ final class MDS_RM_CSV_Handler {
 				)
 			);
 			$release_post_id = 1 === count( $release_found ) ? $release_found[0]->ID : 0;
-			$validation = MDS_RM_Release_Model::mds_rm_validate( $release_post_id, $upc, $format_id ? array( $format_id ) : array() );
+			$validation = MDS_RM_Release_Model::validate( $release_post_id, $upc, $format_id ? array( $format_id ) : array() );
 			if ( count( $release_found ) > 1 || is_wp_error( $validation ) ) {
 				$message = count( $release_found ) > 1
 					? __( 'More than one release has this UPC/EAN.', 'mds-release-manager' )
@@ -378,7 +378,7 @@ final class MDS_RM_CSV_Handler {
 			}
 			if ( is_wp_error( $release_post_id ) || ! $release_post_id ) {
 				$errors[] = sprintf( __( 'Row %d: could not save the release.', 'mds-release-manager' ), $row_number );
-				MDS_RM_Release_Model::mds_rm_release_upc_lock( $upc );
+				MDS_RM_Release_Model::release_upc_lock( $upc );
 				continue;
 			}
 
@@ -402,7 +402,7 @@ final class MDS_RM_CSV_Handler {
 			$result = wp_set_post_terms( $release_post_id, array( $format_id ), 'release_format', false );
 			if ( is_wp_error( $result ) ) {
 				$errors[] = sprintf( __( 'Row %1$d: %2$s', 'mds-release-manager' ), $row_number, $result->get_error_message() );
-				MDS_RM_Release_Model::mds_rm_release_upc_lock( $upc );
+				MDS_RM_Release_Model::release_upc_lock( $upc );
 				continue;
 			}
 			delete_post_meta( $release_post_id, 'release_format' );
@@ -416,7 +416,7 @@ final class MDS_RM_CSV_Handler {
 			}
 
 			$release_sync = MDS_RM_Core_Functions::mds_rm_broadcast_to_spokes( $release_post_id, 'release' );
-			MDS_RM_Release_Model::mds_rm_release_upc_lock( $upc );
+			MDS_RM_Release_Model::release_upc_lock( $upc );
 			if ( is_wp_error( $release_sync ) ) {
 				$errors[] = sprintf( __( 'Row %1$d: release saved but synchronization failed: %2$s', 'mds-release-manager' ), $row_number, $release_sync->get_error_message() );
 			}

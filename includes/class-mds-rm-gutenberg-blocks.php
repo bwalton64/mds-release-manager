@@ -235,7 +235,7 @@ final class MDS_RM_Gutenberg_Blocks {
 		} elseif ( 'featured_image_url' === $meta_field || 'buy_now_link' === $meta_field ) {
 			$val = get_post_meta( $post_id, $meta_field, true );
 		} elseif ( 'release_format' === $meta_field ) {
-			$val = MDS_RM_Release_Model::mds_rm_format_name( $post_id );
+			$val = MDS_RM_Release_Model::format_name( $post_id );
 			if ( is_wp_error( $val ) ) {
 				error_log( '[MDS Release Manager] Release ' . $post_id . ': ' . $val->get_error_message() );
 				return '';

@@ -390,7 +390,7 @@ final class MDS_RM_Admin_Interface {
 			'audio_preview_url' => $audio_preview_url,
 			'release_formats'   => $release_formats,
 			'all_formats'       => $all_formats,
-			'format_conflict'   => MDS_RM_Release_Model::mds_rm_has_legacy_format_conflict( $post->ID ),
+			'format_conflict'   => MDS_RM_Release_Model::has_legacy_format_conflict( $post->ID ),
 		);
 
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
@@ -501,7 +501,7 @@ final class MDS_RM_Admin_Interface {
 			$previous_upc    = get_post_meta( $post_id, 'upc_ean', true );
 			$upc_clean       = preg_replace( '/[^0-9]/', '', sanitize_text_field( wp_unslash( $_POST['upc_ean'] ) ) );
 			update_post_meta( $post_id, 'upc_ean', $upc_clean );
-			MDS_RM_Release_Model::mds_rm_remember_previous_upc( $post_id, $previous_upc, $upc_clean );
+			MDS_RM_Release_Model::remember_previous_upc( $post_id, $previous_upc, $upc_clean );
 		}
 
 		if ( isset( $_POST['artist_id'] ) && is_string( $_POST['artist_id'] ) ) {
@@ -549,7 +549,7 @@ final class MDS_RM_Admin_Interface {
 		}
 
 		$sync_result = MDS_RM_Core_Functions::mds_rm_broadcast_to_spokes( $post_id, 'release' );
-		MDS_RM_Release_Model::mds_rm_release_upc_lock( get_post_meta( $post_id, 'upc_ean', true ) );
+		MDS_RM_Release_Model::release_upc_lock( get_post_meta( $post_id, 'upc_ean', true ) );
 
 		/**
 		 * Hook: mds_rm_save_custom_meta
