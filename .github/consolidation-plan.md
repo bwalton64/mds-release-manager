@@ -538,9 +538,22 @@ All 48 tracked hooks matched.
 The verified `git archive` release ZIP excludes repository and development files
 and includes all 10 Font Awesome files, including the upstream license.
 Plugin Check 2.2.0 reported 0 errors and 63 warnings on the extracted release
-package. The full PHPCS scan remains at 73 errors and 62 warnings. Triage the
-remaining findings, run the live hub/spoke regression, and rerun both scanners
-on the final candidate before closing this phase.
+package.
+
+The PHP file-header pass moved 20 file docblocks ahead of `declare(strict_types=1)`
+without changing executable code. All affected files passed PHP lint, all 48
+tracked hooks matched, and both Playwright smoke tests passed. The full PHPCS
+scan is now at 33 errors and 62 warnings, down from 73 errors and 62 warnings.
+
+The live `dev-test` multisite regression used the public sync-target filter to
+send only two temporary hub records to a temporary spoke. It verified that
+Artist shadows update by UUID and that Release shadows retain their post ID
+after a UPC change, with the correct label and format. The spoke and hub
+fixtures were removed; no network settings were changed. This tested the core
+sync path, not sibling integration configuration or media synchronization.
+
+Triage the remaining findings and rerun both scanners on the final candidate
+before closing this phase.
 
 1. Run the Plugin Check plugin and PHPCS/WordPress ruleset; fix all errors, triage warnings.
 2. Re-verify `uninstall.php` against the final option inventory from Phase 0.
