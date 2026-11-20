@@ -1,11 +1,11 @@
 <?php
-declare(strict_types=1);
-
 /**
  * Streaming provider defaults for the MDS Release Manager plugin.
  *
  * @package MDS_Release_Manager
  */
+
+declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

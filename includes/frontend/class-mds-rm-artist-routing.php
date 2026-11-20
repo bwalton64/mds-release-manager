@@ -1,11 +1,11 @@
 <?php
-declare(strict_types=1);
-
 /**
  * Per-artist homepage routing.
  *
  * @package MDS_Release_Manager
  */
+
+declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

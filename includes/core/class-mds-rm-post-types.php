@@ -1,11 +1,11 @@
 <?php
-declare(strict_types=1);
-
 /**
  * Registers the plugin's post types and taxonomies.
  *
  * @package MDS_Release_Manager
  */
+
+declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
