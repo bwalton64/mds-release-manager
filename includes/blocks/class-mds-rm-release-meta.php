@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/** Registers and renders release metadata for blocks and integrations. */
 final class MDS_RM_Release_Meta {
 	/**
 	 * Lists the supported metadata fields.
@@ -322,7 +323,8 @@ final class MDS_RM_Release_Meta {
 		$length = '(?:0|-?(?:\d+(?:\.\d+)?|\.\d+)(?:px|em|rem|%|vw|vh))';
 		switch ( $type ) {
 			case 'color':
-				return sanitize_hex_color( $value ) ?: ( 'transparent' === $value || 'inherit' === $value ? $value : '' );
+				$color = sanitize_hex_color( $value );
+				return $color ? $color : ( 'transparent' === $value || 'inherit' === $value ? $value : '' );
 			case 'font':
 				$family = '(?:[a-zA-Z0-9_-]+(?:\s+[a-zA-Z0-9_-]+)*|"[a-zA-Z0-9 _-]+"|\'[a-zA-Z0-9 _-]+\')';
 				return preg_match( '/^' . $family . '(?:\s*,\s*' . $family . ')*$/D', $value ) ? $value : '';
