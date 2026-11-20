@@ -114,6 +114,7 @@ final class MDS_RM_Network_Admin {
 	 * @return bool Whether the settings were just saved.
 	 */
 	private static function is_settings_saved(): bool {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- This query flag only displays a notice; the save handler verifies its own nonce.
 		if ( ! isset( $_GET['updated'] ) || 'true' !== sanitize_text_field( wp_unslash( $_GET['updated'] ) ) ) {
 			return false;
 		}
