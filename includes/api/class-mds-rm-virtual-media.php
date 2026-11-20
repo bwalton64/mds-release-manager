@@ -112,8 +112,8 @@ final class MDS_RM_Virtual_Media {
 		$args  = array(
 			'post_type'   => 'any',
 			'post_status' => 'any',
-			'meta_key'    => '_mds_is_hub_media',
-			'meta_value'  => $hub_image_url,
+			'meta_key'    => '_mds_is_hub_media', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Reuse the virtual attachment identified by its stored hub URL.
+			'meta_value'  => $hub_image_url, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'fields'      => 'ids',
 			'numberposts' => 1,
 		);
