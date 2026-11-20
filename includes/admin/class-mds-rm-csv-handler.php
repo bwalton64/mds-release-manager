@@ -176,14 +176,21 @@ final class MDS_RM_CSV_Handler {
 
 		check_admin_referer( 'mds_csv_action', 'mds_csv_nonce' );
 
-		$tmp_name = isset( $_FILES['mds_csv_file']['tmp_name'] ) && is_string( $_FILES['mds_csv_file']['tmp_name'] )
-			? $_FILES['mds_csv_file']['tmp_name']
-			: '';
+		// PHP supplies this path; preserve it verbatim and verify its upload provenance below.
+		$tmp_name = $_FILES['mds_csv_file']['tmp_name'] ?? ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		if ( empty( $tmp_name ) ) {
 			self::csv_redirect_with_message(
 				'mds_csv_missing_file',
 				__( 'Please select a CSV file to import.', 'mds-release-manager' ),
+				'error'
+			);
+		}
+
+		if ( ! is_string( $tmp_name ) || ! is_uploaded_file( $tmp_name ) ) {
+			self::csv_redirect_with_message(
+				'mds_csv_file_error',
+				__( 'The uploaded CSV file could not be opened.', 'mds-release-manager' ),
 				'error'
 			);
 		}
