@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/** Redirects Artist permalinks to their configured homepages. */
 final class MDS_RM_Artist_Routing {
 	/** Registers the Artist homepage redirect. */
 	public static function register_hooks(): void {
