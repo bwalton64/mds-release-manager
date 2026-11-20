@@ -86,7 +86,7 @@ final class MDS_RM_Release_Model {
 				}
 			}
 			if ( is_wp_error( $term ) ) {
-				error_log( '[MDS Release Manager] Could not register release format: ' . $term->get_error_message() );
+				MDS_RM_Logger::report_failure( 'Could not register release format: ' . $term->get_error_message() );
 				add_action(
 					'admin_notices',
 					static function () use ( $format ) {
