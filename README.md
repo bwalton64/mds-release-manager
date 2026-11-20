@@ -28,7 +28,7 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 - ✅ **Fallback Templates:** Smart `the_content` fallbacks for Release and Artist pages with responsive imagery
 - ✅ **Gutenberg Blocks:** Native Release Meta, Release Links, and Discography blocks with per-field styling
 - ✅ **Elementor Widgets:** Companion Elementor widgets and dynamic tags for builder flexibility
-- ✅ **Shortcodes:** `[release-meta]`, `[release-links]`, `[discography]` with responsive options
+- ✅ **Shortcodes:** `[release-meta]`, `[release-links]`, `[artist-discography]` with responsive options
 - ✅ **Builder Detection:** Automatically suppresses fallback rendering on builder-authored pages
 
 ### Customization & Control
@@ -77,7 +77,7 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 1. **Download the Plugin**
    ```bash
    cd C:\Users\[YourName]\Local Sites\[SiteName]\app\public\wp-content\plugins\
-   git clone https://github.com/[your-org]/mds-release-manager.git
+   git clone https://github.com/bwalton64/mds-release-manager.git
    cd mds-release-manager
    ```
 
@@ -87,10 +87,8 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
    php --ini  # Confirm debugging configuration
    ```
 
-3. **Install Composer Dependencies (if applicable)**
-   ```bash
-   composer install
-   ```
+3. **No Build Step Required**
+   The plugin has no Composer or NPM dependencies — all PHP, CSS, and JavaScript is interpreted directly.
 
 4. **Activate in WordPress**
    - WordPress Admin → Plugins → Find "MDS Release Manager"
@@ -111,7 +109,7 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
    - Right-click your site → Open site shell
    ```bash
    cd app/public/wp-content/plugins
-   git clone https://github.com/[your-org]/mds-release-manager.git
+   git clone https://github.com/bwalton64/mds-release-manager.git
    ```
 
 2. **Activate in WordPress:**
@@ -186,15 +184,15 @@ wp plugin activate mds-release-manager --network
 // - Format, UPC, artist name
 // - Per-field styling options
 
-// Or use the shortcode equivalent:
-echo do_shortcode( '[release-meta id="42" show_format="1" show_upc="1"]' );
+// Or use the shortcode equivalent (UPC/EAN identifies the release):
+echo do_shortcode( '[release-meta upc="012345678901" fields="release_title,release_format,upc_ean"]' );
 ```
 
 #### Display Release Links with Shortcode
 
 ```php
 // Display streaming provider links for a release
-echo do_shortcode( '[release-links id="42" columns="3" show_audio="1"]' );
+echo do_shortcode( '[release-links upc="012345678901" show_audio="1" new_tab="1"]' );
 
 // Output example:
 // [Spotify] [Apple Music] [Bandcamp]
@@ -203,23 +201,20 @@ echo do_shortcode( '[release-links id="42" columns="3" show_audio="1"]' );
 #### Add Discography to an Artist Page
 
 ```php
-// In Gutenberg or as a shortcode:
-echo do_shortcode( '[discography artist_id="5" columns="2" per_page="12"]' );
+// As a shortcode (omit artist_id to use the current Artist):
+echo do_shortcode( '[artist-discography artist_id="5"]' );
 
-// Or use the native Discography block in Gutenberg/Elementor
+// Or use the native Artist Discography block in Gutenberg
 ```
 
 #### Retrieve Releases via REST API
 
 ```bash
-# Get all published releases (paginated)
-curl "https://yoursite.com/wp-json/wp/v2/releases?per_page=10"
+# Get all published releases (ID, title, and UPC/EAN)
+curl "https://yoursite.com/wp-json/mds/v1/releases"
 
-# Get a single release
-curl "https://yoursite.com/wp-json/wp/v2/releases/42"
-
-# Filter by artist
-curl "https://yoursite.com/wp-json/wp/v2/releases?artist=5"
+# The Release post type is also exposed via the WordPress core REST API
+curl "https://yoursite.com/wp-json/wp/v2/release?per_page=10"
 ```
 
 #### Use WordPress Abilities API (MCP Tools)
@@ -239,11 +234,11 @@ Result: Updates plugin configuration
 #### Access via REST API (JavaScript)
 
 ```javascript
-// Fetch releases using the WordPress REST API
+// Fetch releases using the plugin's REST API
 async function getReleases() {
-  const response = await fetch('/wp-json/wp/v2/releases?per_page=10');
+  const response = await fetch('/wp-json/mds/v1/releases');
   const releases = await response.json();
-  
+
   releases.forEach( release => {
     console.log( `${release.title} (${release.upc})` );
   });
@@ -255,11 +250,13 @@ getReleases();
 #### Use Customizer to Style Releases
 
 ```php
-// Customizer → Release Fallback Template → Color Settings
+// Customizer → MDS Release Manager → Release Fallback Template
 
-// Or programmatically:
-$color = get_theme_mod( 'mds_rm_release_title_color', '#000' );
-echo '<h1 style="color: ' . esc_attr( $color ) . '">' . get_the_title() . '</h1>';
+// Or read a fallback style programmatically:
+$color = get_theme_mod( 'mds_rm_release_fallback_meta_color', '' );
+if ( '' !== $color ) {
+	echo '<span style="color: ' . esc_attr( $color ) . '">' . esc_html( get_the_title() ) . '</span>';
+}
 ```
 
 ---
@@ -270,35 +267,34 @@ echo '<h1 style="color: ' . esc_attr( $color ) . '">' . get_the_title() . '</h1>
 mds-release-manager/
 │
 ├── README.md                           # This file
-├── ABILITIES-API.md                    # WordPress Abilities API documentation
-├── IMPLEMENTATION-SUMMARY.md           # Technical implementation details
 ├── changelog.md                        # Version history and release notes
-├── license.txt                         # License information
-│
 ├── mds-release-manager.php             # Main plugin file (entry point)
 ├── uninstall.php                       # Plugin cleanup on uninstall
 │
-├── includes/                           # Core plugin classes
-│   ├── class-mds-rm-abilities.php                     # Abilities API (MCP tools)
-│   ├── class-mds-rm-admin-interface.php              # Settings and admin UI
-│   ├── class-mds-rm-artist-routing.php               # Artist page routing
-│   ├── class-mds-rm-assets.php                       # CSS/JS enqueuing
-│   ├── class-mds-rm-builder-detection.php            # Gutenberg/Elementor detection
-│   ├── class-mds-rm-core-functions.php               # Shared utilities
-│   ├── class-mds-rm-csv-handler.php                  # CSV import/export
-│   ├── class-mds-rm-customizer.php                   # WordPress customizer integration
-│   ├── class-mds-rm-discography.php                  # Artist discography logic
-│   ├── class-mds-rm-elementor-*.php                  # Elementor widgets and tags
-│   ├── class-mds-rm-frontend-templates.php           # Content fallback rendering
-│   ├── class-mds-rm-gutenberg-blocks.php             # Gutenberg block registration
-│   ├── class-mds-rm-network-admin.php                # Multisite network settings
-│   ├── class-mds-rm-post-types.php                   # Release/Artist post type registration
-│   ├── class-mds-rm-release-links.php                # Provider link management
-│   ├── class-mds-rm-release-meta.php                 # Release metadata and taxonomy
-│   ├── class-mds-rm-release-model.php                # Release data model and sync
-│   ├── class-mds-rm-rest-api.php                     # REST API endpoints
-│   ├── class-mds-rm-shortcodes.php                   # Shortcode registration
-│   └── class-mds-rm-virtual-media.php                # Media library integration
+├── includes/                           # Core plugin classes (SPL-autoloaded)
+│   ├── class-mds-rm-abilities.php                  # WordPress Abilities API (MCP tools)
+│   ├── class-mds-rm-admin-interface.php            # Settings and admin UI
+│   ├── class-mds-rm-artist-routing.php             # Artist homepage routing
+│   ├── class-mds-rm-assets.php                     # CSS/JS enqueuing
+│   ├── class-mds-rm-builder-detection.php          # Page-builder detection
+│   ├── class-mds-rm-core-functions.php             # Shared utilities
+│   ├── class-mds-rm-csv-handler.php                # CSV import/export
+│   ├── class-mds-rm-customizer.php                 # WordPress Customizer integration
+│   ├── class-mds-rm-discography.php                # Artist discography logic
+│   ├── class-mds-rm-elementor-links-widget.php     # Elementor Release Links widget
+│   ├── class-mds-rm-elementor-release-meta-tag.php # Elementor Release Meta dynamic tag
+│   ├── class-mds-rm-elementor-tags.php             # Elementor registration
+│   ├── class-mds-rm-elementor-widget.php           # Elementor Release Meta widget
+│   ├── class-mds-rm-frontend-templates.php         # Content fallback rendering
+│   ├── class-mds-rm-gutenberg-blocks.php           # Gutenberg block registration
+│   ├── class-mds-rm-network-admin.php              # Multisite network settings
+│   ├── class-mds-rm-post-types.php                 # Release/Artist post type registration
+│   ├── class-mds-rm-release-links.php              # Provider link management
+│   ├── class-mds-rm-release-meta.php               # Release metadata rendering
+│   ├── class-mds-rm-release-model.php              # Release data model, validation, and sync
+│   ├── class-mds-rm-rest-api.php                   # REST API endpoints
+│   ├── class-mds-rm-shortcodes.php                 # Shortcode registration
+│   └── class-mds-rm-virtual-media.php              # Hub media fallback integration
 │
 ├── templates/                          # PHP template files
 │   ├── artist-fallback.php             # Artist page fallback template
@@ -310,22 +306,27 @@ mds-release-manager/
 │   └── settings-page.php               # Plugin settings page
 │
 ├── css/                                # Stylesheet directory
-│   ├── admin.css                       # Admin interface styles
-│   ├── customizer.css                  # Customizer panel styles
-│   ├── fallback.css                    # Release/Artist fallback template styles
-│   └── blocks.css                      # Gutenberg/Elementor block styles
+│   ├── admin-styles.css                # Admin interface styles
+│   ├── artist-fallback.css             # Artist fallback template styles
+│   ├── frontend.css                    # General frontend styles
+│   ├── release-fallback.css            # Release fallback template styles
+│   ├── release-links.css               # Release Links block/shortcode styles
+│   └── release-meta.css                # Release Meta block/shortcode styles
 │
 ├── js/                                 # JavaScript directory
-│   ├── admin.js                        # Admin interface interactivity
-│   ├── blocks.js                       # Gutenberg block registration
-│   ├── elementor.js                    # Elementor widget registration
-│   └── copy-to-clipboard.js            # Shortcode copy functionality
+│   ├── blocks.js                       # Gutenberg block editor registration
+│   ├── meta-boxes.js                   # Meta box interactivity and shortcode copy-to-clipboard
+│   ├── release-taxonomies.js           # Native tag editor integration for releases
+│   └── settings.js                     # Settings page tab navigation
 │
-├── .github/                            # GitHub configuration
-│   ├── technical-blueprint.md          # Technical architecture documentation
-│   └── ...                             # GitHub workflows/actions
+├── .github/                            # Project documentation and CI configuration
+│   ├── copilot-instructions.md         # Contributor/AI coding guidance
+│   └── technical-blueprint.md          # Technical architecture documentation
 │
-└── .git/                               # Git repository metadata
+└── .local/                             # Internal implementation notes (not end-user docs)
+    ├── ABILITIES-API.md                # WordPress Abilities API reference
+    ├── IMPLEMENTATION-SUMMARY.md       # Abilities API implementation summary
+    └── ...                             # Historical refactoring and audit reports
 ```
 
 ### Key Directory Descriptions
@@ -333,8 +334,9 @@ mds-release-manager/
 - **includes/**: PHP classes using the `class-mds-rm-*.php` naming convention and WordPress PHP coding style
 - **templates/**: Reusable PHP templates for admin screens and frontend rendering
 - **css/**: Responsive stylesheets with mobile-first design
-- **js/**: Vanilla JavaScript (no jQuery dependency) for interactive features
-- **.github/**: Technical documentation and CI/CD configuration
+- **js/**: Block editor scripts (WordPress packages) and admin scripts (jQuery bundled with WordPress)
+- **.github/**: Technical documentation and contributor guidance
+- **.local/**: Historical implementation summaries and audit reports kept for reference
 
 ---
 
@@ -346,7 +348,7 @@ We welcome contributions! Follow these guidelines to maintain code quality and c
 
 1. **Fork the Repository**
    ```bash
-   git clone https://github.com/[your-username]/mds-release-manager.git
+   git clone https://github.com/bwalton64/mds-release-manager.git
    cd mds-release-manager
    ```
 
@@ -488,28 +490,23 @@ git commit -m "docs: Update README with installation steps"
 To extend MDS Release Manager, use the Hook Registry:
 
 ```php
-// Add custom meta box
-add_action( 'mds_rm_register_custom_meta_boxes', function( $post_type ) {
-    if ( 'release' === $post_type ) {
-        add_meta_box( ... );
+// Add a custom meta box (receives the WP_Post being edited)
+add_action( 'mds_rm_register_custom_meta_boxes', function( $post ) {
+    if ( 'release' === $post->post_type ) {
+        add_meta_box( /* ... */ );
     }
 });
 
-// Save custom metadata
-add_action( 'mds_rm_save_custom_meta', function( $post_id, $post_type, $data ) {
-    if ( 'release' === $post_type ) {
-        update_post_meta( $post_id, 'custom_field', $data['custom_field'] );
-    }
-}, 10, 3 );
+// Save custom metadata (receives the post ID and the raw, slashed $_POST array)
+add_action( 'mds_rm_save_custom_meta', function( $post_id, $raw_post ) {
+    $value = sanitize_text_field( wp_unslash( $raw_post['my_custom_field'] ?? '' ) );
+    update_post_meta( $post_id, 'my_custom_field', $value );
+}, 10, 2 );
 
-// Extend settings fields
-add_filter( 'mds_rm_settings_audio_fields', function( $fields ) {
-    $fields['my_custom_field'] = [
-        'label'    => __( 'My Custom Option', 'mds-release-manager' ),
-        'type'     => 'select',
-        'options'  => [ ... ],
-    ];
-    return $fields;
+// Append custom fields to the audio settings section (HTML string filter)
+add_filter( 'mds_rm_settings_audio_fields', function( $html ) {
+    $html .= '<p><label>' . esc_html__( 'My Custom Option', 'mds-release-manager' ) . '</label></p>';
+    return $html;
 });
 ```
 
@@ -525,32 +522,31 @@ When reporting bugs, include:
 
 ### Questions?
 
-- Check [ABILITIES-API.md](/wp-content/plugins/mds-release-manager/ABILITIES-API.md) for API details
-- Review [IMPLEMENTATION-SUMMARY.md](/wp-content/plugins/mds-release-manager/IMPLEMENTATION-SUMMARY.md) for technical specs
-- See [changelog.md](/wp-content/plugins/mds-release-manager/changelog.md) for version history
+- Check [.local/ABILITIES-API.md](./.local/ABILITIES-API.md) for Abilities API details
+- Review [.github/technical-blueprint.md](./.github/technical-blueprint.md) for architecture and technical specs
+- See [changelog.md](./changelog.md) for version history
 
 ---
 
 ## License
 
-MDS Release Manager is licensed under the [INSERT LICENSE HERE - MIT, GPL-2.0+, or custom]. See [license.txt](/wp-content/plugins/mds-release-manager/license.txt) for details.
+MDS Release Manager is proprietary software.
 
-© 2026 Walton International Business Group. All rights reserved.
+© 2026 Walton International Business Group. All rights reserved. No part of this plugin may be reproduced, distributed, or transmitted in any form without the prior written permission of the copyright holder.
 
 ---
 
 ## Support
 
-- **Documentation:** See [ABILITIES-API.md](/wp-content/plugins/mds-release-manager/ABILITIES-API.md) and [IMPLEMENTATION-SUMMARY.md](/wp-content/plugins/mds-release-manager/IMPLEMENTATION-SUMMARY.md)
-- **Issues:** Report via [GitHub Issues](https://github.com/[your-org]/mds-release-manager/issues)
-- **Discussions:** Ask in [GitHub Discussions](https://github.com/[your-org]/mds-release-manager/discussions)
-- **Email:** [INSERT SUPPORT EMAIL HERE]
+- **Documentation:** See [.github/technical-blueprint.md](./.github/technical-blueprint.md) and [.local/ABILITIES-API.md](./.local/ABILITIES-API.md)
+- **Issues:** Report via [GitHub Issues](https://github.com/bwalton64/mds-release-manager/issues)
+- **Discussions:** Ask in [GitHub Discussions](https://github.com/bwalton64/mds-release-manager/discussions)
 
 ---
 
 ## Changelog
 
-For detailed version history, see [changelog.md](/wp-content/plugins/mds-release-manager/changelog.md).
+For detailed version history, see [changelog.md](./changelog.md).
 
 **Current Version:** 1.0.0  
-**Last Updated:** November 19, 2026
+**Last Updated:** November 20, 2026

@@ -19,6 +19,21 @@
 - Follow WordPress PHP documentation conventions for documented functions, classes, hooks, and public extension points. Add or update DocBlocks when they clarify or expose behavior; keep `@since` values historically accurate rather than guessing.
 - A documentation-only restriction applies only when the user explicitly requests documentation-only changes. Otherwise, make necessary executable-code changes for the task.
 
+### Documentation Maintenance Rules
+
+When asked to update project documentation or wrap up a session, review the recent workspace changes (git diff or modified files) and update the following three files accordingly. Only modify sections impacted by the recent work:
+
+1. **`technical-blueprint.md`**:
+   - Update architectural diagrams, data models, API contracts, system dependencies, or core design decisions.
+   - Keep entries technical, structural, and concise. Do not log minor bug fixes here.
+
+2. **`readme.md`**:
+   - Update setup instructions, environment variables, CLI commands, usage examples, or high-level feature lists if user-facing behavior or onboarding changed.
+
+3. **`changelog.md`**:
+   - Append a concise summary of changes under an `[Unreleased]` heading (or today's date) using standard categories (`Added`, `Changed`, `Fixed`, `Removed`).
+   - Focus on what changed and why.
+
 ## Testing
 
 - Prefer the project's existing tests and tools. Run the smallest relevant checks; do not add a test framework or scaffolding unless the task requires it.

@@ -1,4 +1,19 @@
-# Changelog - MDS Release Manager
+# Changelog
+
+All notable changes to MDS Release Manager are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Changed
+- Move internal implementation summaries, refactoring reports, and the Abilities API reference documentation from the plugin root into the `.local/` directory. `README.md`, `changelog.md`, and `.github/technical-blueprint.md` are the canonical, maintained documentation.
+
+### Fixed
+- Fix fatal `strict_types declaration must be the very first statement` errors by placing `declare(strict_types=1);` immediately after the opening `<?php` tag (before the file DocBlock) and removing UTF-8 byte-order marks across fifteen `includes/` class files and the `templates/artist-fallback.php` and `templates/settings-page.php` templates.
+
+### Removed
+- Remove the orphaned, incomplete `includes/class-mds-rm-blocks.php` fragment left over from an abandoned file-consolidation attempt. It duplicated part of `MDS_RM_Release_Meta`, failed PHP linting, and was never loaded at runtime.
 
 ## [1.0.0] - 2026-11-19
 ### The Feature-Complete Release
@@ -31,6 +46,9 @@ This major release introduces a comprehensive feature set for artist release man
 - Recognize the current `html5` audio-player setting when displaying release previews, while retaining support for the legacy `native` value.
 - Allow all Release Formats to be cleared when editing a release. (Superseded by the required single-format model.)
 
+### Security
+- Restructure the core codebase into dedicated `MDS_RM_*` classes and harden the admin interface, network admin, release model, discography, and artist routing classes: nonce and capability verification on form handlers, `wp_unslash()` plus field-appropriate sanitization (`sanitize_text_field()`, `absint()`, `esc_url_raw()`) on request input, consistent output escaping (`esc_html()`, `esc_attr()`, `esc_url()`, `wp_kses_post()`), strict comparisons, `wp_safe_redirect()` for admin redirects, and parameter/return type hints on refactored methods.
+
 ## [0.9.0] - 2026-11-14
 ### The Extensibility Update
 This major release transitions MDS Release Manager from a monolithic plugin to a lightweight, extensible platform. Third-party integrations have been stripped from the core and moved to independent feature plugins.
@@ -56,9 +74,7 @@ This major release transitions MDS Release Manager from a monolithic plugin to a
 - Fixed fatal parse errors caused by orphaned braces and duplicate function declarations during network activation.
 - Fixed a bug where `admin_head` hooks for list table formatting were firing too late in the WordPress lifecycle.
 
----
-
-## [0.8.0] - Previous
+## [0.8.0]
 ### The UI & Stability Update
 
 ### Added

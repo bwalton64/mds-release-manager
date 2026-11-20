@@ -14,8 +14,8 @@
 
 **Build Tools:**
 - None. Direct PHP class autoloading via SPL (not PSR-4 composer).
-- Assets: Vanilla JS in `/js/blocks.js` for Gutenberg block editor.
-- Styles: Vanilla CSS in `/css/frontend.css`, `/css/release-meta.css`, and `/css/release-links.css`.
+- Assets: Vanilla JS. `/js/blocks.js` for the Gutenberg block editor; `/js/meta-boxes.js`, `/js/release-taxonomies.js`, and `/js/settings.js` for admin screens (using the jQuery bundled with WordPress).
+- Styles: Vanilla CSS in `/css/frontend.css`, `/css/release-meta.css`, `/css/release-links.css`, `/css/release-fallback.css`, `/css/artist-fallback.css`, and `/css/admin-styles.css`.
 - No build pipeline; all code is interpreted live.
 
 ---
@@ -26,7 +26,9 @@
 mds-release-manager/
 ├── mds-release-manager.php           # Main plugin file (entry point)
 ├── uninstall.php                     # Uninstall handler
-├── includes/                         # All class definitions (PSR-0 autoloader)
+├── README.md                         # End-user and contributor documentation
+├── changelog.md                      # Version history (Keep a Changelog format)
+├── includes/                         # All class definitions (SPL autoloader)
 │   ├── class-mds-rm-abilities.php           # WordPress Abilities API integration
 │   ├── class-mds-rm-admin-interface.php
 │   ├── class-mds-rm-artist-routing.php
@@ -44,28 +46,39 @@ mds-release-manager/
 │   ├── class-mds-rm-frontend-templates.php
 │   ├── class-mds-rm-release-meta.php
 │   ├── class-mds-rm-release-links.php
+│   ├── class-mds-rm-release-model.php        # Release format/UPC validation and sync model
 │   ├── class-mds-rm-network-admin.php
 │   ├── class-mds-rm-post-types.php
 │   ├── class-mds-rm-rest-api.php
 │   ├── class-mds-rm-shortcodes.php
 │   └── class-mds-rm-virtual-media.php
 ├── templates/                        # Frontend/backend templates
-│   ├── network-settings-page.php
-│   ├── releases-settings-page.php
-│   ├── release-fallback.php
 │   ├── artist-fallback.php
-│   └── ...
-├── js/                               # Gutenberg block editor script
-│   └── blocks.js
-├── css/                              # Frontend styles
+│   ├── artist-meta-box.php
+│   ├── csv-page.php
+│   ├── network-settings-page.php
+│   ├── release-fallback.php
+│   ├── release-meta-box.php
+│   └── settings-page.php
+├── js/                               # Editor and admin scripts
+│   ├── blocks.js                     # Gutenberg block editor registration
+│   ├── meta-boxes.js                 # Meta box interactivity and shortcode copy
+│   ├── release-taxonomies.js         # Native tag editor integration
+│   └── settings.js                   # Settings page tabs
+├── css/                              # Frontend and admin styles
+│   ├── admin-styles.css
+│   ├── artist-fallback.css
 │   ├── frontend.css
-│   ├── release-meta.css
-│   ├── release-links.css
 │   ├── release-fallback.css
-│   └── artist-fallback.css
-├── ABILITIES-API.md                  # WordPress Abilities API documentation
-├── IMPLEMENTATION-SUMMARY.md         # Implementation details and verification
-└── .github/                          # Optional: CI/CD, documentation
+│   ├── release-links.css
+│   └── release-meta.css
+├── .github/                          # Technical documentation and contributor guidance
+│   ├── copilot-instructions.md
+│   └── technical-blueprint.md        # This document
+└── .local/                           # Internal implementation notes and historical reports
+    ├── ABILITIES-API.md              # WordPress Abilities API reference
+    ├── IMPLEMENTATION-SUMMARY.md     # Abilities API implementation summary
+    └── ...                           # Refactoring and security audit reports
 ```
 
 **Architecture Pattern:**
@@ -258,8 +271,8 @@ mds-release-manager/
 
 **GET `/wp-json/mds/v1/releases`**
 - **Permission:** Public (`__return_true`).
-- **Query params:** Optional blog_id, pagination.
-- **Response:** Array of releases with metadata.
+- **Query params:** None. Returns all published releases on the current site.
+- **Response:** Array of releases with `id`, `title`, and `upc`.
 
 **POST `/wp-json/mds/v1/settings`**
 - **Permission:** `manage_options`.
@@ -270,6 +283,13 @@ mds-release-manager/
 - **Permission:** `manage_network_options`.
 - **Body params:** Master hub ID, spoke sites, wipe-on-uninstall flag.
 - **Response:** Success/error JSON.
+
+**POST `/wp-json/mds/v1/sync-network`**
+- **Permission:** `manage_network_options`.
+- **Body params:** None.
+- **Response:** Success/error JSON with sync counts.
+
+The Release and Artist post types are also exposed through the WordPress core REST API (`/wp-json/wp/v2/release`, `/wp-json/wp/v2/artist`) via `show_in_rest`.
 
 ### WordPress Abilities API (WordPress 6.9+)
 
@@ -367,13 +387,21 @@ if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['_wp
 ```
 
 ### Type Declaration & Strict Comparison
-- **All new files must include `declare(strict_types=1);` at the top.**
+- **All new files must include `declare(strict_types=1);` immediately after the opening `<?php` tag**, before the file DocBlock. Placing anything (including comments or a UTF-8 byte-order mark) before the declaration triggers a fatal `strict_types declaration must be the very first statement` error.
+- **Save files without a UTF-8 BOM.**
 - **Use strict comparison:** `===`, `!==`, not `==`, `!=`.
-- **Type hints on function parameters and return types** where applicable.
+- **Type hints on function parameters and return types** where applicable. Coverage is being applied progressively; the admin interface, network admin, release model, discography, and artist routing classes are fully typed — match that standard in new and refactored code.
 
 **Example:**
 ```php
+<?php
 declare(strict_types=1);
+
+/**
+ * File DocBlock.
+ *
+ * @package MDS_Release_Manager
+ */
 
 public static function mds_rm_get_id( int $post_id ): string {
     return (string) $post_id;
@@ -381,7 +409,7 @@ public static function mds_rm_get_id( int $post_id ): string {
 ```
 
 ### Code Style
-- **PSR-12 compliant:** 4-space indentation, single blank lines between methods.
+- **WordPress coding style:** Tab indentation (existing code uses WordPress-style tabs — follow nearby code), single blank lines between methods.
 - **DocBlocks:** Use standard PHPDoc blocks with `@since`, `@param`, `@return` tags.
 - **Comments:** Only for non-obvious logic; avoid reiterating what code does.
 - **Final classes:** All classes in this plugin are `final` to prevent accidental inheritance.
@@ -403,7 +431,8 @@ public static function mds_rm_render_widget( array $attributes, WP_Block $block 
 
 ### Testing & Validation Commands
 - **No automated test suite configured.** Manual testing recommended.
-- **No PHPCS or linting configured.** Adhere to PSR-12 manually.
+- **No PHPCS configured.** Adhere to the conventions above manually.
+- **Lint PHP syntax before committing:** `php -l includes/class-mds-rm-<name>.php` (or loop over all files in `includes/`).
 - **No build commands required.**
 
 ---
