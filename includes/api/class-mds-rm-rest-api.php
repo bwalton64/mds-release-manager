@@ -23,7 +23,7 @@ final class MDS_RM_REST_API {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		add_action( 'rest_api_init', array( self::class, 'register_rest_routes' ) );
 	}
 
@@ -32,7 +32,7 @@ final class MDS_RM_REST_API {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function register_rest_routes() {
+	public static function register_rest_routes(): void {
 		register_rest_route(
 			'mds/v1',
 			'/releases',
@@ -107,7 +107,7 @@ final class MDS_RM_REST_API {
 	 * @since 0.9.0
 	 * @return WP_REST_Response The response containing the releases.
 	 */
-	public static function get_releases_api() {
+	public static function get_releases_api(): WP_REST_Response {
 		$args     = array(
 			'post_type'      => 'release',
 			'post_status'    => 'publish',
@@ -134,7 +134,7 @@ final class MDS_RM_REST_API {
 	 * @param WP_REST_Request $request The request.
 	 * @return WP_REST_Response The response indicating whether settings were saved.
 	 */
-	public static function save_settings_api( $request ) {
+	public static function save_settings_api( $request ): WP_REST_Response {
 		$params = $request->get_body_params();
 
 		$providers = array();
@@ -187,7 +187,7 @@ final class MDS_RM_REST_API {
 	 * @param WP_REST_Request $request The request.
 	 * @return WP_REST_Response The response indicating whether network settings were saved.
 	 */
-	public static function save_network_settings_api( $request ) {
+	public static function save_network_settings_api( $request ): WP_REST_Response {
 		$params = $request->get_body_params();
 
 		if ( isset( $params['mds_rm_master_blog_id'] ) ) {
@@ -209,7 +209,7 @@ final class MDS_RM_REST_API {
 	 * @since 0.9.0
 	 * @return WP_REST_Response|WP_Error The response or error from the network sync.
 	 */
-	public static function sync_network_api() {
+	public static function sync_network_api(): WP_REST_Response|WP_Error {
 		if ( get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
 			return new WP_Error( 'not_master', 'Must run sync from the master hub site.', array( 'status' => 403 ) );
 		}
