@@ -15,22 +15,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
+	/** @return string The registered widget identifier. */
 	public function get_name() {
 		return 'mds_release_meta';
 	}
 
+	/** @return string The translated editor title. */
 	public function get_title() {
 		return __( 'Release Meta Block', 'mds-release-manager' );
 	}
 
+	/** @return string The editor icon classes. */
 	public function get_icon() {
 		return 'dashicons dashicons-album';
 	}
 
+	/** @return string[] The Elementor widget categories. */
 	public function get_categories() {
 		return array( 'general' );
 	}
 
+	/** Registers the Release Meta content and style controls. */
 	protected function register_controls() {
 		$this->start_controls_section( 'release_meta_content', array( 'label' => __( 'Release Meta', 'mds-release-manager' ) ) );
 		$this->add_control(
@@ -112,6 +117,11 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 		$this->end_controls_section();
 	}
 
+	/**
+	 * Adds shared responsive style controls for a release widget.
+	 *
+	 * @param array $fields Style field definitions keyed by field name.
+	 */
 	protected function add_release_style_controls( $fields ) {
 		foreach ( $fields as $key => $field ) {
 			$control = array(
@@ -146,6 +156,7 @@ class MDS_RM_Elementor_Widget extends \Elementor\Widget_Base {
 		}
 	}
 
+	/** Outputs release metadata using the shared renderer. */
 	protected function render() {
 		$settings = $this->get_settings_for_display();
 		$items    = array();
