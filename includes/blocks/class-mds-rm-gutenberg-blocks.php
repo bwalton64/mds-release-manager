@@ -232,7 +232,7 @@ final class MDS_RM_Gutenberg_Blocks {
 		} elseif ( 'release_format' === $meta_field ) {
 			$val = MDS_RM_Release_Model::format_name( $post_id );
 			if ( is_wp_error( $val ) ) {
-				error_log( '[MDS Release Manager] Release ' . $post_id . ': ' . $val->get_error_message() );
+				MDS_RM_Logger::report_failure( 'Release ' . $post_id . ': ' . $val->get_error_message() );
 				return '';
 			}
 		} elseif ( 'release_tags' === $meta_field ) {
