@@ -24,25 +24,25 @@ final class MDS_RM_Frontend_Templates {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks() {
-		add_action( 'wp_enqueue_scripts', array( self::class, 'mds_rm_enqueue_release_fallback_assets' ) );
-		add_action( 'enqueue_block_assets', array( self::class, 'mds_rm_enqueue_artist_assets' ) );
-		add_filter( 'the_content', array( self::class, 'mds_rm_filter_release_content' ), 20 );
-		add_filter( 'the_content', array( self::class, 'mds_rm_filter_artist_content' ), 20 );
-		add_filter( 'post_thumbnail_html', array( self::class, 'mds_rm_filter_release_featured_image' ), 10, 2 );
-		add_filter( 'render_block', array( self::class, 'mds_rm_filter_release_author_group' ), 20, 3 );
+		add_action( 'wp_enqueue_scripts', array( self::class, 'enqueue_release_fallback_assets' ) );
+		add_action( 'enqueue_block_assets', array( self::class, 'enqueue_artist_assets' ) );
+		add_filter( 'the_content', array( self::class, 'filter_release_content' ), 20 );
+		add_filter( 'the_content', array( self::class, 'filter_artist_content' ), 20 );
+		add_filter( 'post_thumbnail_html', array( self::class, 'filter_release_featured_image' ), 10, 2 );
+		add_filter( 'render_block', array( self::class, 'filter_release_author_group' ), 20, 3 );
 	}
 
-	public static function mds_rm_enqueue_artist_assets() {
+	public static function enqueue_artist_assets() {
 		MDS_RM_Core_Functions::mds_rm_enqueue_editable_style( 'mds-discography', 'css/artist-fallback.css' );
 	}
 
-	public static function mds_rm_filter_artist_content( $content ) {
-		$post = self::mds_rm_get_fallback_artist_post();
+	public static function filter_artist_content( $content ) {
+		$post = self::get_fallback_artist_post();
 		if ( ! $post ) {
 			return $content;
 		}
 		$visited_blocks = array();
-		$has_discography = self::mds_rm_content_has_component( $post->post_content, 'mds-rm/artist-discography', 'artist-discography', $visited_blocks );
+		$has_discography = self::content_has_component( $post->post_content, 'mds-rm/artist-discography', 'artist-discography', $visited_blocks );
 		$args = array(
 			'content' => $content,
 			'image' => wp_get_attachment_image( get_post_thumbnail_id( $post->ID ), 'large', false, array( 'class' => 'mds-artist-fallback__image' ) ),
@@ -53,7 +53,7 @@ final class MDS_RM_Frontend_Templates {
 		return MDS_RM_Core_Functions::mds_rm_render_template( 'templates/artist-fallback.php', $args );
 	}
 
-	private static function mds_rm_get_fallback_artist_post() {
+	private static function get_fallback_artist_post() {
 		if ( is_admin() || is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ! is_singular( 'artist' ) || ! in_the_loop() || ! is_main_query() ) {
 			return false;
 		}
@@ -69,7 +69,7 @@ final class MDS_RM_Frontend_Templates {
 	 *
 	 * @since 0.9.0
 	 */
-	public static function mds_rm_enqueue_release_fallback_assets() {
+	public static function enqueue_release_fallback_assets() {
 		$post_id = get_queried_object_id();
 		if (
 			! is_singular( 'release' )
@@ -91,16 +91,16 @@ final class MDS_RM_Frontend_Templates {
 	 * @param string $content The filtered post content.
 	 * @return string The content with fallback components, when applicable.
 	 */
-	public static function mds_rm_filter_release_content( $content ) {
-		$post = self::mds_rm_get_fallback_release_post();
+	public static function filter_release_content( $content ) {
+		$post = self::get_fallback_release_post();
 		if ( ! $post instanceof WP_Post ) {
 			return $content;
 		}
 
 		$visited_blocks = array();
-		$has_meta       = self::mds_rm_content_has_component( $post->post_content, 'mds-rm/release-meta', 'release-meta', $visited_blocks );
+		$has_meta       = self::content_has_component( $post->post_content, 'mds-rm/release-meta', 'release-meta', $visited_blocks );
 		$visited_blocks = array();
-		$has_links      = self::mds_rm_content_has_component( $post->post_content, 'mds-rm/release-links', 'release-links', $visited_blocks );
+		$has_links      = self::content_has_component( $post->post_content, 'mds-rm/release-links', 'release-links', $visited_blocks );
 		$layout = get_theme_mod( 'mds_rm_layout_style', 'split' );
 		if ( ! in_array( $layout, array( 'split', 'stacked' ), true ) ) {
 			$layout = 'split';
@@ -108,7 +108,7 @@ final class MDS_RM_Frontend_Templates {
 
 		$args = array(
 			'content'    => $content,
-			'image'      => self::mds_rm_get_release_image( $post ),
+			'image'      => self::get_release_image( $post ),
 			'layout'     => $layout,
 			'style'      => MDS_RM_Customizer::get_release_fallback_style_attribute(),
 			'meta_html' => $has_meta ? '' : MDS_RM_Release_Meta::render( array(), $post->ID ),
@@ -127,7 +127,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param WP_Block $instance The rendered block instance.
 	 * @return string The block HTML, or an empty string for the byline.
 	 */
-	public static function mds_rm_filter_release_author_group( $block_content, $block, $instance ) {
+	public static function filter_release_author_group( $block_content, $block, $instance ) {
 		if (
 			is_admin()
 			|| is_feed()
@@ -137,7 +137,7 @@ final class MDS_RM_Frontend_Templates {
 			|| ! is_array( $block )
 			|| (
 				! in_array( $block['blockName'], array( 'core/post-author-name', 'core/post-author' ), true )
-				&& ! self::mds_rm_is_theme_byline( $block )
+				&& ! self::is_theme_byline( $block )
 			)
 		) {
 			return $block_content;
@@ -164,7 +164,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param array $block The parsed block.
 	 * @return bool Whether this is the Twenty Twenty-Five byline pattern.
 	 */
-	private static function mds_rm_is_theme_byline( $block ) {
+	private static function is_theme_byline( $block ) {
 		if ( 'twentytwentyfive' !== get_template() || 'core/group' !== $block['blockName'] || ! isset( $block['innerBlocks'] ) || 4 !== count( $block['innerBlocks'] ) ) {
 			return false;
 		}
@@ -192,13 +192,13 @@ final class MDS_RM_Frontend_Templates {
 	 * @param int    $post_id The post ID.
 	 * @return string The thumbnail markup, or an empty string when duplicated.
 	 */
-	public static function mds_rm_filter_release_featured_image( $html, $post_id ) {
-		$artist = self::mds_rm_get_fallback_artist_post();
+	public static function filter_release_featured_image( $html, $post_id ) {
+		$artist = self::get_fallback_artist_post();
 		if ( $artist && $artist->ID === absint( $post_id ) && wp_get_attachment_image( get_post_thumbnail_id( $post_id ), 'large' ) ) {
 			return '';
 		}
-		$post = self::mds_rm_get_fallback_release_post( $post_id );
-		if ( ! $post instanceof WP_Post || '' === $html || '' === self::mds_rm_get_release_image( $post ) ) {
+		$post = self::get_fallback_release_post( $post_id );
+		if ( ! $post instanceof WP_Post || '' === $html || '' === self::get_release_image( $post ) ) {
 			return $html;
 		}
 
@@ -211,7 +211,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param int $post_id Optional post ID being filtered.
 	 * @return WP_Post|false The eligible Release, or false.
 	 */
-	private static function mds_rm_get_fallback_release_post( $post_id = 0 ) {
+	private static function get_fallback_release_post( $post_id = 0 ) {
 		if (
 			is_admin()
 			|| is_feed()
@@ -246,7 +246,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param array  $visited_blocks Referenced synced patterns already inspected.
 	 * @return bool Whether the component is already present.
 	 */
-	private static function mds_rm_content_has_component( $content, $block_name, $shortcode_name, &$visited_blocks ) {
+	private static function content_has_component( $content, $block_name, $shortcode_name, &$visited_blocks ) {
 		if ( has_block( $block_name, $content ) || has_shortcode( $content, $shortcode_name ) ) {
 			return true;
 		}
@@ -254,7 +254,7 @@ final class MDS_RM_Frontend_Templates {
 			return false;
 		}
 
-		return self::mds_rm_block_tree_has_component(
+		return self::block_tree_has_component(
 			parse_blocks( $content ),
 			$block_name,
 			$shortcode_name,
@@ -271,12 +271,12 @@ final class MDS_RM_Frontend_Templates {
 	 * @param array  $visited_blocks Referenced synced patterns already inspected.
 	 * @return bool Whether the component is already present.
 	 */
-	private static function mds_rm_block_tree_has_component( $blocks, $block_name, $shortcode_name, &$visited_blocks ) {
+	private static function block_tree_has_component( $blocks, $block_name, $shortcode_name, &$visited_blocks ) {
 		foreach ( $blocks as $block ) {
 			if ( 'core/block' !== $block['blockName'] || empty( $block['attrs']['ref'] ) ) {
 				if (
 					! empty( $block['innerBlocks'] )
-					&& self::mds_rm_block_tree_has_component( $block['innerBlocks'], $block_name, $shortcode_name, $visited_blocks )
+					&& self::block_tree_has_component( $block['innerBlocks'], $block_name, $shortcode_name, $visited_blocks )
 				) {
 					return true;
 				}
@@ -290,14 +290,14 @@ final class MDS_RM_Frontend_Templates {
 				if (
 					$reusable_block instanceof WP_Post
 					&& 'wp_block' === $reusable_block->post_type
-					&& self::mds_rm_content_has_component( $reusable_block->post_content, $block_name, $shortcode_name, $visited_blocks )
+					&& self::content_has_component( $reusable_block->post_content, $block_name, $shortcode_name, $visited_blocks )
 				) {
 					return true;
 				}
 			}
 			if (
 				! empty( $block['innerBlocks'] )
-				&& self::mds_rm_block_tree_has_component( $block['innerBlocks'], $block_name, $shortcode_name, $visited_blocks )
+				&& self::block_tree_has_component( $block['innerBlocks'], $block_name, $shortcode_name, $visited_blocks )
 			) {
 				return true;
 			}
@@ -313,7 +313,7 @@ final class MDS_RM_Frontend_Templates {
 	 * @param WP_Post $post The Release post.
 	 * @return string The image markup, or an empty string.
 	 */
-	private static function mds_rm_get_release_image( WP_Post $post ) {
+	private static function get_release_image( WP_Post $post ) {
 		$image_url = get_post_meta( $post->ID, 'featured_image_url', true );
 		if ( ! is_string( $image_url ) || '' === esc_url( $image_url ) ) {
 			$image_url = '';
