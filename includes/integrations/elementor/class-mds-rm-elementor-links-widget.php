@@ -14,13 +14,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/** Displays release listening and purchase links in Elementor. */
 class MDS_RM_Elementor_Links_Widget extends MDS_RM_Elementor_Widget {
-	/** @return string The registered widget identifier. */
+	/**
+	 * Gets the registered widget identifier.
+	 *
+	 * @return string Widget identifier.
+	 */
 	public function get_name() {
 		return 'mds_release_links';
 	}
 
-	/** @return string The translated editor title. */
+	/**
+	 * Gets the widget title shown in the editor.
+	 *
+	 * @return string Translated title.
+	 */
 	public function get_title() {
 		return __( 'Release Links Block', 'mds-release-manager' );
 	}
