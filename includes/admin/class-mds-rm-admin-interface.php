@@ -64,7 +64,7 @@ final class MDS_RM_Admin_Interface {
 		);
 		foreach ( $artists as $artist_id ) {
 			if ( ! delete_post_meta( $artist_id, 'artist_featured_image' ) ) {
-				error_log( '[MDS Release Manager] Could not remove deprecated image URL from artist ' . $artist_id );
+				MDS_RM_Logger::report_failure( 'Could not remove deprecated image URL from artist ' . $artist_id );
 				return;
 			}
 		}
