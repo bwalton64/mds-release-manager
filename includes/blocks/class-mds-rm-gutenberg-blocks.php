@@ -204,8 +204,8 @@ final class MDS_RM_Gutenberg_Blocks {
 		if ( ! empty( $upc_override ) ) {
 			$args  = array(
 				'post_type'   => 'release',
-				'meta_key'    => 'upc_ean',
-				'meta_value'  => preg_replace( '/[^0-9]/', '', $upc_override ),
+				'meta_key'    => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- An explicit block binding resolves by the stored UPC, not the current post.
+				'meta_value'  => preg_replace( '/[^0-9]/', '', $upc_override ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status' => 'any',
 				'numberposts' => 1,
 			);
