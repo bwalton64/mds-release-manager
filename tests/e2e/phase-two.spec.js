@@ -89,7 +89,7 @@ test('manual network sync resumes bounded batches using the returned job ID', as
 		});
 
 		await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings');
-		await page.getByRole('link', { name: 'Integrations', exact: true }).click();
+		await page.getByRole('link', { name: 'General Settings', exact: true }).click();
 		await page.getByRole('button', { name: 'Run Manual Sync', exact: true }).click();
 		await expect(page.locator('#mds-manual-sync-status')).toContainText('Sync completed', { timeout: 90_000 });
 		expect(batchJobIds.length).toBeGreaterThan(1);

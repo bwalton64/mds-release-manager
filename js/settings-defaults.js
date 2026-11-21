@@ -1,7 +1,7 @@
 (function (wp) {
 	const { createElement: el, useState } = wp.element;
 	const { BlockEditorProvider, useSettings } = wp.blockEditor;
-	const { BoxControl, Button, ColorPalette, PanelBody, RangeControl, SelectControl, TextControl, ToggleControl } = wp.components;
+	const { BoxControl, Button, PanelBody, RangeControl, SelectControl, TextControl, ToggleControl } = wp.components;
 	const { __, sprintf } = wp.i18n;
 	const config = window.mdsRmDefaultsSettings;
 	const input = document.getElementById('mds-rm-block-defaults');
@@ -53,9 +53,8 @@
 			return el(wp.element.Fragment, null,
 				// translators: %s: Name of the color setting.
 				select(path, sprintf(__('%s preset', 'mds-release-manager'), label), presetChoices(palette, 'color')),
-				customColor !== false && el(ColorPalette, {
-					colors: [], clearable: true, 'aria-label': wrapperLabel(label),
-					value: typeof current === 'string' && !current.startsWith('var(') ? current : undefined,
+				customColor !== false && el(window.mdsRmColorControl, {
+					label: wrapperLabel(label), value: current,
 					onChange: (setting) => set(path, setting),
 				})
 			);
@@ -113,7 +112,7 @@
 		);
 	}
 
-	function Items({ slug, value, onChange }) {
+	function Items({ slug, value, onChange, panelProps }) {
 		const isMeta = slug === 'release-meta';
 		const key = isMeta ? 'field' : 'name';
 		const fallback = isMeta ? config.metaItems : config.providers.map((provider) => ({ name: provider.name, enabled: true })).concat([{ name: '__buy_now', enabled: true }]);
@@ -128,7 +127,7 @@
 			[next[index], next[target]] = [next[target], next[index]];
 			onChange({ items: next });
 		}
-		return el(PanelBody, { title: isMeta ? __('Metadata fields: visibility, order, and icons', 'mds-release-manager') : __('Link buttons: visibility, order, and icons', 'mds-release-manager'), initialOpen: false },
+		return el(PanelBody, { title: isMeta ? __('Metadata fields: visibility, order, and icons', 'mds-release-manager') : __('Link buttons: visibility, order, and icons', 'mds-release-manager'), ...panelProps },
 			el('p', { className: 'description' }, isMeta
 				? __('Choose which metadata fields can appear and in what order. Each shown field still needs a value on the release. Use the field’s icon and tooltip controls to customize that entry only.', 'mds-release-manager')
 				: __('Choose which streaming services and Buy Now buttons can appear, in what order, and with which icons. Buttons still need URLs on the release. This panel does not style the audio player or the button backgrounds.', 'mds-release-manager')),
@@ -157,11 +156,11 @@
 
 	function Defaults({ slug }) {
 		const [value, setValue] = useState(all[slug] || {});
-		const [openStylePanel, setOpenStylePanel] = useState(null);
+		const [openPanel, setOpenPanel] = useState(null);
 		function stylePanelProps(id) {
 			return {
-				opened: openStylePanel === id,
-				onToggle: () => setOpenStylePanel((current) => current === id ? null : id),
+				opened: openPanel === id,
+				onToggle: () => setOpenPanel((current) => current === id ? null : id),
 			};
 		}
 		function change(patch) {
@@ -175,8 +174,8 @@
 		const isMeta = slug === 'release-meta';
 		const isLinks = slug === 'release-links';
 		return el(BlockEditorProvider, { settings: config.editorSettings, value: emptyBlocks, onInput: () => {}, onChange: () => {} },
-			isMeta || isLinks ? el(Items, { slug, value, onChange: change }) : null,
-			isLinks && el(PanelBody, { title: __('Link and audio behavior', 'mds-release-manager'), initialOpen: false },
+			isMeta || isLinks ? el(Items, { slug, value, onChange: change, panelProps: stylePanelProps('items') }) : null,
+			isLinks && el(PanelBody, { title: __('Link and audio behavior', 'mds-release-manager'), ...stylePanelProps('behavior') },
 				el('p', { className: 'description' }, __('Controls what happens when visitors follow a streaming or Buy Now link and whether an available audio preview appears. To resize the player, use Audio preview player.', 'mds-release-manager')),
 				el(ToggleControl, { label: __('Open links in a new tab', 'mds-release-manager'), checked: value.newTab !== false, onChange: (newTab) => change({ newTab }) }),
 				el(ToggleControl, { label: __('Show audio player', 'mds-release-manager'), checked: value.showAudio !== false, onChange: (showAudio) => change({ showAudio }) })

@@ -1,5 +1,6 @@
 const { expect, test: base } = require('@playwright/test');
 const { join } = require('node:path');
+const { readFileSync } = require('node:fs');
 const { readWpJson, runWpCli } = require('./wp-cli');
 
 const script = join(__dirname, 'smoke-fixtures.php');
@@ -36,6 +37,32 @@ async function openBlockEditor(page, postId) {
 	}
 }
 
+async function setCustomColor(page, label, hex) {
+	const button = page.getByRole('button', { name: `Choose custom color for ${label}`, exact: true });
+	await button.click();
+	const picker = page.getByLabel(label, { exact: true }).filter({ has: page.getByLabel('Hex color') });
+	await expect(picker.getByLabel('Alpha', { exact: true })).toBeVisible();
+	await picker.getByLabel('Hex color').fill(hex);
+	await expect(button).toContainText(`#${hex.toLowerCase()}`);
+	await button.click();
+}
+
+test('network extension tab names are not treated as site tab aliases', async ({ page, fixture }) => {
+	await page.goto('/wp-login.php');
+	await page.getByLabel('Username or Email Address').fill(fixture.username);
+	await page.getByLabel('Password', { exact: true }).fill(fixture.password);
+	await page.getByRole('button', { name: 'Log In' }).click();
+	await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings');
+	await page.evaluate(() => {
+		document.body.innerHTML = '<div class="mds-settings-wrap"><div id="mds-settings-tabs"><a href="#tab-network">Network</a><a href="#tab-integrations">Extension</a></div><div id="tab-network" class="mds-tab-pane"></div><div id="tab-integrations" class="mds-tab-pane"></div></div>';
+	});
+	await page.addScriptTag({ content: readFileSync(join(__dirname, '..', '..', 'js', 'settings-tabs.js'), 'utf8') });
+	await expect(page.getByRole('link', { name: 'Network', exact: true })).toHaveClass(/nav-tab-active/);
+	await page.getByRole('link', { name: 'Extension', exact: true }).click();
+	await expect(page.getByRole('link', { name: 'Extension', exact: true })).toHaveClass(/nav-tab-active/);
+	await expect(page.locator('#tab-integrations')).toHaveClass(/active/);
+});
+
 test('fallback blocks reflect site-wide settings saved in the admin', async ({ page, fixture }) => {
 	const origin = new URL(process.env.MDS_RM_TEST_URL).origin;
 	await page.route('**/*', (route) => new URL(route.request().url()).origin === origin
@@ -46,7 +73,31 @@ test('fallback blocks reflect site-wide settings saved in the admin', async ({ p
 	await page.getByLabel('Password', { exact: true }).fill(fixture.password);
 	await page.getByRole('button', { name: 'Log In' }).click();
 	await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings');
-	const metaTab = page.locator('#tab-release-meta');
+	expect((await page.locator('#mds-settings-tabs > a').allTextContents()).slice(0, 4)).toEqual([
+		'General Settings', 'Release Meta Block', 'Release Links Block', 'Artist Discography Block',
+	]);
+	const extensionOrder = readWpJson(['eval', `
+		add_filter('mds_rm_site_settings_tabs', function($tabs) {
+			$tab = array('label' => 'Extension', 'render' => function() {});
+			return array('aa-extension' => $tab, 'general-settings' => $tab, 'release-meta-block' => $tab, 'integrations' => $tab) + $tabs;
+		});
+		ob_start();
+		MDS_RM_Admin_Interface::settings_page();
+		$html = ob_get_clean();
+		preg_match_all('/href="#tab-([^"]+)"/', $html, $matches);
+		echo 'MDS_RM_TEST_JSON:' . wp_json_encode($matches[1]);
+	`]);
+	expect(extensionOrder).toEqual(['general-settings', 'release-meta-block', 'release-links-block', 'artist-discography-block', 'aa-extension']);
+	await expect(page.getByRole('link', { name: 'General Settings', exact: true })).toHaveClass(/nav-tab-active/);
+	for (const [old, label] of [
+		['integrations', 'General Settings'], ['release-links', 'Release Links Block'],
+		['shortcode', 'Release Links Block'], ['artist-discography', 'Artist Discography Block'],
+		['release-meta', 'Release Meta Block'],
+	]) {
+		await page.goto(`/wp-admin/edit.php?post_type=release&page=mds-release-settings#tab-${old}`);
+		await expect(page.getByRole('link', { name: label, exact: true })).toHaveClass(/nav-tab-active/);
+	}
+	const metaTab = page.locator('#tab-release-meta-block');
 	const metaContainer = metaTab.getByRole('button', { name: 'Metadata container', exact: true });
 	const metaTypography = metaTab.getByRole('button', { name: 'Release Meta typography', exact: true });
 	const metaItems = metaTab.getByRole('button', { name: 'Metadata fields: visibility, order, and icons', exact: true });
@@ -54,29 +105,51 @@ test('fallback blocks reflect site-wide settings saved in the admin', async ({ p
 	await expect(metaTypography).toHaveAttribute('aria-expanded', 'false');
 	await expect(metaTab.getByRole('button', { name: 'Release Meta icons', exact: true })).toHaveAttribute('aria-expanded', 'false');
 	await metaItems.click();
+	await expect(metaItems).toHaveAttribute('aria-expanded', 'true');
 	await metaContainer.press('Enter');
+	await expect(metaItems).toHaveAttribute('aria-expanded', 'false');
 	await expect(metaTab.getByText(/This is the box around all metadata fields/)).toBeVisible();
-	await expect(metaTab.getByLabel('Metadata container background preset', { exact: true })).toBeVisible();
+	const preset = metaTab.getByLabel('Metadata container background preset', { exact: true });
+	await expect(preset).toBeVisible();
+	const presetValue = await preset.locator('option').nth(1).getAttribute('value');
+	await preset.selectOption(presetValue);
+	expect(JSON.parse(await page.locator('#mds-rm-block-defaults').inputValue())['release-meta'].metaStyles.background).toBe(presetValue);
+	await setCustomColor(page, 'Metadata container background', '17304A00');
+	await metaTab.getByRole('button', { name: 'Choose custom color for Metadata container background', exact: true }).click();
+	await page.getByRole('button', { name: 'Clear / use default', exact: true }).click();
+	await expect(metaTab.getByRole('button', { name: 'Choose custom color for Metadata container background', exact: true })).toHaveText('Choose custom color');
+	await metaTab.getByRole('button', { name: 'Choose custom color for Metadata container background', exact: true }).click();
+	await setCustomColor(page, 'Metadata container background', '17304A80');
 	await metaTypography.click();
 	await expect(metaTypography).toHaveAttribute('aria-expanded', 'true');
 	await expect(metaContainer).toHaveAttribute('aria-expanded', 'false');
-	await expect(metaItems).toHaveAttribute('aria-expanded', 'true');
+	await expect(metaItems).toHaveAttribute('aria-expanded', 'false');
 	await metaTypography.press('Space');
 	await expect(metaTypography).toHaveAttribute('aria-expanded', 'false');
+	await metaItems.click();
+	await expect(metaItems).toHaveAttribute('aria-expanded', 'true');
+	await metaContainer.click();
+	await expect(metaItems).toHaveAttribute('aria-expanded', 'false');
+	await expect(metaContainer).toHaveAttribute('aria-expanded', 'true');
 
-	await page.getByRole('link', { name: 'Release Links', exact: true }).click();
-	const linksTab = page.locator('#tab-release-links');
+	await page.getByRole('link', { name: 'Release Links Block', exact: true }).click();
+	const linksTab = page.locator('#tab-release-links-block');
 	const linksContainer = linksTab.getByRole('button', { name: 'Links and audio container', exact: true });
 	const linkButtons = linksTab.getByRole('button', { name: 'Streaming and Buy Now buttons', exact: true });
 	const audioPlayer = linksTab.getByRole('button', { name: 'Audio preview player', exact: true });
 	const behavior = linksTab.getByRole('button', { name: 'Link and audio behavior', exact: true });
+	const linkItems = linksTab.getByRole('button', { name: 'Link buttons: visibility, order, and icons', exact: true });
 	for (const panel of [linksContainer, linkButtons, audioPlayer]) {
 		await expect(panel).toHaveAttribute('aria-expanded', 'false');
 	}
+	await linkItems.click();
 	await behavior.click();
+	await expect(linkItems).toHaveAttribute('aria-expanded', 'false');
 	await linksContainer.click();
+	await expect(behavior).toHaveAttribute('aria-expanded', 'false');
 	const containerBorder = linksTab.getByLabel('Links and audio container: Border style', { exact: true });
 	await expect(containerBorder).toBeVisible();
+	await setCustomColor(page, 'Links and audio container background', '25403880');
 	await linkButtons.click();
 	await expect(containerBorder).toBeHidden();
 	await expect(linksTab.getByLabel('Link button: Border style', { exact: true })).toBeVisible();
@@ -84,10 +157,10 @@ test('fallback blocks reflect site-wide settings saved in the admin', async ({ p
 	await audioPlayer.click();
 	await expect(linkButtons).toHaveAttribute('aria-expanded', 'false');
 	await expect(audioPlayer).toHaveAttribute('aria-expanded', 'true');
-	await expect(behavior).toHaveAttribute('aria-expanded', 'true');
+	await expect(behavior).toHaveAttribute('aria-expanded', 'false');
 
-	await page.getByRole('link', { name: 'Artist Discography', exact: true }).click();
-	const discographyTab = page.locator('#tab-artist-discography');
+	await page.getByRole('link', { name: 'Artist Discography Block', exact: true }).click();
+	const discographyTab = page.locator('#tab-artist-discography-block');
 	const discographyPanels = [
 		['Outer discography block', 'Outer block'],
 		['Table frame and base styles', 'Table'],
@@ -104,42 +177,77 @@ test('fallback blocks reflect site-wide settings saved in the admin', async ({ p
 			await expect(other).toHaveAttribute('aria-expanded', other === panel ? 'true' : 'false');
 		}
 		if (target) await expect(discographyTab.getByLabel(`${target}: Background color preset`, { exact: true })).toBeVisible();
+		if (target === 'Outer block') await setCustomColor(page, 'Outer block: Background color', 'DCE6F080');
+		if (target === 'Table') await setCustomColor(page, 'Table: Background color', 'E9D8C280');
 		if (target === 'Table') await expect(discographyTab.getByText(/Frame padding adds space around the table/)).toBeVisible();
 	}
-	await page.getByRole('link', { name: 'Release Meta', exact: true }).click();
+	await page.getByRole('link', { name: 'Release Meta Block', exact: true }).click();
 
-	const colors = {
-		'release-meta': { metaStyles: { background: '#17304a' } },
-		'release-links': { linkStyles: { background: '#254038' }, newTab: false },
+	await page.getByRole('link', { name: 'Release Links Block', exact: true }).click();
+	await behavior.click();
+	await expect(audioPlayer).toHaveAttribute('aria-expanded', 'false');
+	await linksTab.getByLabel('Open links in a new tab', { exact: true }).uncheck();
+	expect(JSON.parse(await page.locator('#mds-rm-block-defaults').inputValue())).toMatchObject({
+		'release-meta': { metaStyles: { background: '#17304a80' } },
+		'release-links': { linkStyles: { background: '#25403880' } },
 		'artist-discography': {
-			tableStyles: { 'table-background': '#e9d8c2' },
-			style: { color: { background: '#dce6f0' } },
+			style: { color: { background: '#dce6f080' } },
+			tableStyles: { 'table-background': '#e9d8c280' },
 		},
-	};
-	// Submit the same serialized payload the settings controls produce.
-	await page.locator('#mds-rm-block-defaults').evaluate((input, defaults) => {
-		input.value = JSON.stringify(defaults);
-	}, colors);
+	});
 	const [response] = await Promise.all([
 		page.waitForResponse((res) => res.request().method() === 'POST' && res.url().includes('/mds/v1/settings')),
-		page.locator('#tab-release-meta').getByRole('button', { name: 'Save Settings' }).click(),
+		linksTab.getByRole('button', { name: 'Save Settings' }).click(),
 	]);
 	expect(response.status()).toBe(200);
 	expect(await response.json()).toMatchObject({ success: true });
+	expect(readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_block_defaults'));"]))
+		.toMatchObject({ 'release-meta': { metaStyles: { background: '#17304a80' } } });
 
 	await page.goto(fixture.releaseUrl);
 	const release = page.locator('.mds-release-fallback');
-	await expect(release.locator('.mds-release-meta')).toHaveCSS('background-color', 'rgb(23, 48, 74)');
-	await expect(release.locator('.mds-release-links')).toHaveCSS('background-color', 'rgb(37, 64, 56)');
+	await expect(release.locator('.mds-release-meta')).toHaveCSS('background-color', 'rgba(23, 48, 74, 0.5)');
+	await expect(release.locator('.mds-release-links')).toHaveCSS('background-color', 'rgba(37, 64, 56, 0.5)');
 	const spotify = release.getByRole('link', { name: /spotify/i });
 	await expect(spotify).toHaveAttribute('href', fixture.spotify);
 	await expect(spotify).not.toHaveAttribute('target');
 
 	await page.goto(fixture.artistUrl);
 	const discography = page.locator('.mds-artist-fallback .wp-block-mds-rm-artist-discography');
-	await expect(discography).toHaveCSS('background-color', 'rgb(220, 230, 240)');
-	await expect(discography.locator('table')).toHaveCSS('background-color', 'rgb(233, 216, 194)');
+	await expect(discography).toHaveCSS('background-color', 'rgba(220, 230, 240, 0.5)');
+	await expect(discography.locator('table')).toHaveCSS('background-color', 'rgba(233, 216, 194, 0.5)');
 	await expect(discography.getByRole('link', { name: fixture.title })).toHaveAttribute('href', fixture.releaseUrl);
+});
+
+test('block editor custom color pickers save transparent per-block styles', async ({ page, fixture }) => {
+	test.setTimeout(120_000);
+	const origin = new URL(process.env.MDS_RM_TEST_URL).origin;
+	await page.route('**/*', (route) => new URL(route.request().url()).origin === origin
+		? route.continue()
+		: route.abort());
+	await page.goto('/wp-login.php');
+	await page.getByLabel('Username or Email Address').fill(fixture.username);
+	await page.getByLabel('Password', { exact: true }).fill(fixture.password);
+	await page.getByRole('button', { name: 'Log In' }).click();
+	const cases = [
+		{ name: 'mds-rm/release-meta', attrs: { releaseId: fixture.state.release }, panel: 'Metadata container', label: 'Metadata container background', key: 'metaStyles', field: 'background', selector: '.wp-block-mds-rm-release-meta .mds-release-meta' },
+		{ name: 'mds-rm/release-links', attrs: { releaseId: fixture.state.release }, panel: 'Links and audio container', label: 'Links and audio container background', key: 'linkStyles', field: 'background', selector: '.wp-block-mds-rm-release-links .mds-release-links' },
+		{ name: 'mds-rm/artist-discography', attrs: { artistId: fixture.state.artist }, panel: 'Table frame and base styles', label: 'Table: Background color', key: 'tableStyles', field: 'table-background', selector: '.wp-block-mds-rm-artist-discography table' },
+	];
+	for (const item of cases) {
+		saveMarkup(fixture.state.host, `<!-- wp:${item.name} ${JSON.stringify(item.attrs)} /-->`);
+		await openBlockEditor(page, fixture.state.host);
+		await expect.poll(() => page.evaluate(() => wp.data.select('core/block-editor').getBlocks()[0]?.clientId)).toBeTruthy();
+		await page.evaluate(() => wp.data.dispatch('core/block-editor').selectBlock(wp.data.select('core/block-editor').getBlocks()[0].clientId));
+		await page.getByRole('tab', { name: 'Styles', exact: true }).click();
+		await page.getByRole('button', { name: item.panel, exact: true }).click();
+		await setCustomColor(page, item.label, '12345680');
+		await page.getByRole('button', { name: 'Save', exact: true }).click();
+		await expect.poll(() => readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(parse_blocks(get_post_field('post_content', ${fixture.state.host}, 'raw'))[0]['attrs']);`]))
+			.toMatchObject({ [item.key]: { [item.field]: '#12345680' } });
+		await page.goto(fixture.hostUrl);
+		await expect(page.locator(item.selector)).toHaveCSS('background-color', 'rgba(18, 52, 86, 0.5)');
+	}
 });
 
 test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', async ({ page, fixture }) => {
@@ -225,15 +333,15 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 
 		await test.step('Settings form saves through REST and persists the provider', async () => {
 			await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings');
-			await expect(page.getByRole('link', { name: 'Release Meta', exact: true })).toHaveClass(/nav-tab-active/);
-			await page.getByRole('link', { name: 'Artist Discography', exact: true }).click();
-			const discographySettings = page.locator('#tab-artist-discography');
+			await expect(page.getByRole('link', { name: 'General Settings', exact: true })).toHaveClass(/nav-tab-active/);
+			await page.getByRole('link', { name: 'Artist Discography Block', exact: true }).click();
+			const discographySettings = page.locator('#tab-artist-discography-block');
 			await expect(discographySettings.getByRole('button', { name: 'Outer discography block', exact: true })).toBeVisible();
 			await expect(discographySettings.getByRole('button', { name: 'Table frame and base styles', exact: true })).toBeVisible();
 			await expect(discographySettings.getByRole('button', { name: 'Save Settings' })).toBeVisible();
 			await discographySettings.getByRole('button', { name: 'Release rows and striping', exact: true }).click();
 			await discographySettings.getByLabel('Striped rows').check();
-			await page.getByRole('link', { name: 'Release Links', exact: true }).click();
+			await page.getByRole('link', { name: 'Release Links Block', exact: true }).click();
 			await expect(page.locator('#mds-settings-form')).toHaveCSS('margin-top', '20px');
 			await page.getByRole('button', { name: 'Link and audio behavior' }).click();
 			await page.getByLabel('Open links in a new tab', { exact: true }).uncheck();
@@ -248,7 +356,7 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			const [response] = await Promise.all([
 				page.waitForResponse((response) =>
 					response.request().method() === 'POST' && response.url().includes('/mds/v1/settings'), { timeout: 15_000 }),
-				page.locator('#tab-release-links').getByRole('button', { name: 'Save Settings' }).click(),
+				page.locator('#tab-release-links-block').getByRole('button', { name: 'Save Settings' }).click(),
 			]);
 			expect(response.status()).toBe(200);
 			expect(await response.json()).toMatchObject({ success: true });

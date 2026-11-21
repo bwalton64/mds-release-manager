@@ -1,7 +1,7 @@
 (function (wp) {
 	const { createElement: el, Fragment } = wp.element;
 	const { InspectorControls, useSettings } = wp.blockEditor;
-	const { BoxControl, Button, ColorPalette, PanelBody, RangeControl, SelectControl, ToggleControl } = wp.components;
+	const { BoxControl, Button, PanelBody, RangeControl, SelectControl, ToggleControl } = wp.components;
 	const { __, sprintf } = wp.i18n;
 	const sides = ['top', 'right', 'bottom', 'left'];
 
@@ -62,10 +62,8 @@
 			return el(Fragment, null,
 				// translators: %s: Name of the color setting.
 				select(key, sprintf(__('%s preset', 'mds-release-manager'), label), presetChoices(palette, 'color')),
-				customColor !== false && el(ColorPalette, {
-					// Presets are selected separately so a theme color remains a reference.
-					colors: [], clearable: true, 'aria-label': label,
-					value: typeof value[key] === 'string' && !value[key].startsWith('var(') ? value[key] : undefined,
+				customColor !== false && el(window.mdsRmColorControl, {
+					label, value: value[key],
 					onChange: (setting) => update({ [key]: setting }),
 				})
 			);

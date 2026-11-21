@@ -113,12 +113,21 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @since 0.9.0
 	 */
 	public static function register_gutenberg_widget_blocks(): void {
+		$color_control = 'blocks/color-control.js';
+		wp_register_script(
+			'mds-rm-color-control',
+			MDS_RM_URL . $color_control,
+			array( 'wp-element', 'wp-components', 'wp-i18n' ),
+			filemtime( MDS_RM_PATH . $color_control ),
+			true
+		);
+		wp_set_script_translations( 'mds-rm-color-control', 'mds-release-manager', MDS_RM_PATH . 'languages' );
 		$edit_script    = 'blocks/artist-discography/edit.js';
 		$table_controls = 'blocks/artist-discography/table-controls.js';
 		wp_register_script(
 			'mds-rm-discography-table-controls',
 			MDS_RM_URL . $table_controls,
-			array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n' ),
+			array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-color-control' ),
 			filemtime( MDS_RM_PATH . $table_controls ),
 			true
 		);
@@ -144,7 +153,7 @@ final class MDS_RM_Gutenberg_Blocks {
 			array(
 				'release-picker'        => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-url', 'wp-html-entities', 'wp-i18n' ),
 				'release-items'         => array(),
-				'native-release-styles' => array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n' ),
+				'native-release-styles' => array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-color-control' ),
 			) as $script => $dependencies
 		) {
 			$file = "blocks/{$script}.js";

@@ -686,7 +686,7 @@ final class MDS_RM_Admin_Interface {
 			'fa_sources'                 => $fa_sources,
 			'active_fa_source'           => get_option( 'mds_rm_fa_support', 'cdn' ),
 			'audio_player_custom_fields' => apply_filters( 'mds_rm_settings_audio_fields', '' ),
-			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'release-meta', 'release-links', 'artist-discography', 'integrations' ) ),
+			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'release-meta-block', 'release-links-block', 'artist-discography-block', 'release-meta', 'release-links', 'artist-discography', 'integrations', 'shortcode' ) ),
 			'block_defaults'             => get_option( 'mds_rm_block_defaults', array() ),
 			'settings'                   => array(
 				'bandcamp_template' => get_option( 'mds_rm_bandcamp_template', '[bandcamp width=100% height=42 album={release_number} size=small bgcol=ffffff linkcol=0687f5 artwork=none]' ),

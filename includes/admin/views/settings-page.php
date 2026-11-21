@@ -15,10 +15,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<h1><?php esc_html_e( 'Release Manager Settings', 'mds-release-manager' ); ?></h1>
 
 	<h2 class="nav-tab-wrapper" id="mds-settings-tabs">
-		<a href="#tab-release-meta" class="nav-tab nav-tab-active" aria-current="page"><?php esc_html_e( 'Release Meta', 'mds-release-manager' ); ?></a>
-		<a href="#tab-release-links" class="nav-tab"><?php esc_html_e( 'Release Links', 'mds-release-manager' ); ?></a>
-		<a href="#tab-artist-discography" class="nav-tab"><?php esc_html_e( 'Artist Discography', 'mds-release-manager' ); ?></a>
-		<a href="#tab-integrations" class="nav-tab"><?php esc_html_e( 'Integrations', 'mds-release-manager' ); ?></a>
+		<a href="#tab-general-settings" class="nav-tab nav-tab-active" aria-current="page"><?php esc_html_e( 'General Settings', 'mds-release-manager' ); ?></a>
+		<a href="#tab-release-meta-block" class="nav-tab"><?php esc_html_e( 'Release Meta Block', 'mds-release-manager' ); ?></a>
+		<a href="#tab-release-links-block" class="nav-tab"><?php esc_html_e( 'Release Links Block', 'mds-release-manager' ); ?></a>
+		<a href="#tab-artist-discography-block" class="nav-tab"><?php esc_html_e( 'Artist Discography Block', 'mds-release-manager' ); ?></a>
 		<?php foreach ( $args['extension_tabs'] as $slug => $tab ) : ?>
 			<a href="#tab-<?php echo esc_attr( $slug ); ?>" class="nav-tab"><?php echo esc_html( $tab['label'] ); ?></a>
 		<?php endforeach; ?>
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<form id="mds-settings-form">
 		<input type="hidden" name="mds_rm_block_defaults" id="mds-rm-block-defaults" value="<?php echo esc_attr( wp_json_encode( $args['block_defaults'] ) ); ?>" />
-		<div id="tab-release-meta" class="mds-tab-pane active">
+		<div id="tab-release-meta-block" class="mds-tab-pane">
 			<div class="mds-panel">
 				<h2><?php esc_html_e( 'Release Meta defaults', 'mds-release-manager' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'These defaults apply to automatic fallback blocks and to inserted blocks that do not override them.', 'mds-release-manager' ); ?></p>
@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<span class="mds-save-status" role="status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
 			</div>
 		</div>
-		<div id="tab-release-links" class="mds-tab-pane">
+		<div id="tab-release-links-block" class="mds-tab-pane">
 			<div class="mds-panel">
 				<h2><?php esc_html_e( 'Release Links defaults', 'mds-release-manager' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'These defaults apply to automatic fallback blocks and to inserted blocks that do not override them.', 'mds-release-manager' ); ?></p>
@@ -95,7 +95,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 		</div>
 
-		<div id="tab-artist-discography" class="mds-tab-pane">
+		<div id="tab-artist-discography-block" class="mds-tab-pane">
 			<div class="mds-panel">
 				<h2><?php esc_html_e( 'Artist Discography defaults', 'mds-release-manager' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'These defaults apply to automatic fallback blocks and to inserted blocks that do not override them.', 'mds-release-manager' ); ?></p>
@@ -107,7 +107,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 		</div>
 
-		<div id="tab-integrations" class="mds-tab-pane">
+		<div id="tab-general-settings" class="mds-tab-pane active">
 			<div class="mds-panel">
 				<h2><?php esc_html_e( 'Routing', 'mds-release-manager' ); ?></h2>
 				<table class="form-table mds-admin-spaced-table">

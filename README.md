@@ -65,21 +65,25 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 - **LiteSpeed Cache:** Automatic cache purge on release updates
 
 Font Awesome Free is bundled and loaded locally by default. Under Releases > Settings, you can select a theme or plugin that already provides the icons, or disable the bundled stylesheet.
-Streaming provider and audio preview settings are available under the Release Links tab.
+Streaming provider and audio preview settings are available under the Release Links Block tab.
 
-The Release Meta, Release Links, and Artist Discography tabs also manage site-wide
+The Release Meta Block, Release Links Block, and Artist Discography Block tabs manage site-wide
 block presentation defaults. Existing and new blocks inherit changes unless a
 block has an explicit override; older saved field and link lists remain complete
 overrides. The automatic components in the fallback templates use these same defaults.
 The block controls can restore inherited values. These defaults do not change shortcodes
 or Elementor widgets.
 
-Styling panels start collapsed. Opening one closes the previous styling panel in that
-tab; click the open heading again to collapse it. Visibility, order, and behavior
-panels open independently. Release Meta separates
+Panels start collapsed. Opening one closes the previous top-level panel in that
+tab; click the open heading again to collapse it. Individual field and link panels
+within the visibility and order section open independently. Release Meta separates
 the container, field values, and icons. Release Links separates the container, individual
 buttons, and audio player. Artist Discography separates the outer block, table frame,
 column headings, release rows, and cell grid.
+Custom block colors use a compact WordPress picker with an opacity control; theme
+color presets remain available separately. General Settings and the three block tabs
+always appear first, followed by tabs registered by extensions. Existing bookmarks
+using the former tab names continue to open the corresponding core tab.
 
 ### Multisite Support
 - Fully compatible with WordPress Multisite networks
@@ -664,7 +668,11 @@ add_filter( 'mds_rm_site_settings_tabs', function( array $tabs ): array {
 For network settings, use `mds_rm_network_settings_tabs` with the same
 slug/label/render structure. Tab callbacks are rendered outside the core
 settings forms and must handle their own capability checks, nonces, validation,
-and saving. Existing `mds_rm_settings_audio_fields` and
+and saving. Site extension tabs appear after the four pinned core tabs. The core
+slugs `general-settings`, `release-meta-block`, `release-links-block`, and
+`artist-discography-block`, plus their legacy aliases `integrations`,
+`release-meta`, `release-links`, `artist-discography`, and `shortcode`, are reserved.
+Existing `mds_rm_settings_audio_fields` and
 `mds_rm_network_settings_fields` filters remain available.
 
 #### Adding blocks to the "MDS Release Manager" inserter section

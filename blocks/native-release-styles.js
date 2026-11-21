@@ -1,7 +1,7 @@
 (function (wp) {
 	const { createElement: el, Fragment } = wp.element;
 	const { useSettings } = wp.blockEditor;
-	const { BoxControl, Button, ColorPalette, Notice, PanelBody, RangeControl, SelectControl } = wp.components;
+	const { BoxControl, Button, Notice, PanelBody, RangeControl, SelectControl } = wp.components;
 	const { __, sprintf } = wp.i18n;
 	const sides = ['top', 'right', 'bottom', 'left'];
 
@@ -96,9 +96,8 @@
 				// translators: %s: Name of the color setting.
 				!!options.length && select(key, sprintf(__('%s preset', 'mds-release-manager'), label), options, false),
 				!options.length && customColor !== false && el('p', null, label),
-				customColor !== false && el(ColorPalette, {
-					colors: [], clearable: true, 'aria-label': label,
-					value: typeof value[key] === 'string' && !value[key].startsWith('var(') ? value[key] : undefined,
+				customColor !== false && el(window.mdsRmColorControl, {
+					label, value: value[key],
 					onChange: (setting) => update(key, setting),
 				}),
 				siteDefault(key)

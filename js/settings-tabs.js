@@ -1,7 +1,15 @@
 jQuery(function ($) {
     var $links = $('#mds-settings-tabs a');
     function activate(hash, updateHistory) {
-        var target = hash === '#tab-shortcode' ? '#tab-release-links' : hash;
+        var aliases = {
+            '#tab-integrations': '#tab-general-settings',
+            '#tab-release-meta': '#tab-release-meta-block',
+            '#tab-release-links': '#tab-release-links-block',
+            '#tab-shortcode': '#tab-release-links-block',
+            '#tab-artist-discography': '#tab-artist-discography-block'
+        };
+        var target = aliases[hash] && $links.filter(function () { return this.getAttribute('href') === aliases[hash]; }).length
+            ? aliases[hash] : hash;
         var $link = $links.filter(function () { return $(this).attr('href') === target; });
         if (!$link.length) return;
         $links.removeClass('nav-tab-active').removeAttr('aria-current');
