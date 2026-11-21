@@ -11,6 +11,8 @@
 		"upcOverride": { "type": "string", "default": "" },
 		"releaseId": { "type": "integer", "default": 0 },
 		"metaStyles": { "type": "object" },
+		"itemOverrides": { "type": "object", "additionalProperties": true },
+		"itemOrder": { "type": "array", "items": { "type": "string" } },
 		"items": {
 			"type": "array",
 			"items": {

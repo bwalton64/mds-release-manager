@@ -182,6 +182,29 @@ final class MDS_RM_Release_Meta {
 		);
 	}
 
+	/**
+	 * Adds native Release Meta typography controls supported by the shortcode.
+	 *
+	 * @return array<string, array{label: string, type: string}> Shortcode style fields.
+	 */
+	private static function shortcode_style_fields(): array {
+		$fields                       = self::style_fields();
+		$fields['font_size']['type'] = 'font_size';
+		$fields['font_style']        = array(
+			'label' => 'Font Style',
+			'type'  => 'font_style',
+		);
+		$fields['text_align']        = array(
+			'label' => 'Text Alignment',
+			'type'  => 'text_align',
+		);
+		$fields['letter_spacing'] = array(
+			'label' => 'Letter Spacing',
+			'type'  => 'length',
+		);
+		return $fields;
+	}
+
 	/** Registers the frontend Release Meta stylesheet. */
 	public static function register_assets(): void {
 		wp_register_style( 'mds-release-meta', MDS_RM_URL . 'css/release-meta.css', array( 'dashicons' ), filemtime( MDS_RM_PATH . 'css/release-meta.css' ) );
@@ -243,6 +266,35 @@ final class MDS_RM_Release_Meta {
 			return null;
 		}
 		return isset( $posts[0] ) && self::can_display( $posts[0] ) ? $posts[0] : null;
+	}
+
+	/**
+	 * Resolves a shortcode's explicit Release ID, UPC, or current context.
+	 *
+	 * @param mixed      $release_id Explicit Release post ID.
+	 * @param mixed      $upc        Explicit UPC/EAN.
+	 * @param int|string $context_id Current post context.
+	 * @return WP_Post|null The readable Release, if found.
+	 */
+	public static function resolve_shortcode_source( $release_id, $upc, $context_id = 0 ): ?WP_Post {
+		if ( is_scalar( $release_id ) && '' !== (string) $release_id && '0' !== (string) $release_id ) {
+			$id   = (string) $release_id;
+			$post = preg_match( '/\A[1-9][0-9]*\z/D', $id ) ? get_post( (int) $id ) : null;
+			if ( self::can_display( $post ) ) {
+				return $post;
+			}
+			MDS_RM_Logger::diagnostic( 'Invalid Release shortcode release_id.' );
+		} elseif ( ! is_scalar( $release_id ) ) {
+			MDS_RM_Logger::diagnostic( 'Invalid Release shortcode release_id.' );
+		}
+
+		if ( is_scalar( $upc ) && '' !== (string) $upc ) {
+			return self::resolve_post( $upc );
+		}
+		if ( ! is_scalar( $upc ) ) {
+			return self::resolve_post( $upc );
+		}
+		return self::resolve_post( '', $context_id );
 	}
 
 	/**
@@ -321,14 +373,33 @@ final class MDS_RM_Release_Meta {
 			return '';
 		}
 		$length = '(?:0|-?(?:\d+(?:\.\d+)?|\.\d+)(?:px|em|rem|%|vw|vh))';
+		$presets = array(
+			'color'   => 'color',
+			'font'    => 'font-family',
+			'length'  => 'spacing',
+			'width'   => 'spacing',
+			'spacing' => 'spacing',
+		);
+		if ( isset( $presets[ $type ] ) && preg_match( '/\Avar\(--wp--preset--' . preg_quote( $presets[ $type ], '/' ) . '--[a-z0-9_-]+\)\z/i', $value ) ) {
+			return $value;
+		}
+		if ( 'font_size' === $type && preg_match( '/\Avar\(--wp--preset--font-size--[a-z0-9_-]+\)\z/i', $value ) ) {
+			return $value;
+		}
 		switch ( $type ) {
 			case 'color':
 				$color = sanitize_hex_color( $value );
-				return $color ? $color : ( 'transparent' === $value || 'inherit' === $value ? $value : '' );
+				return $color ? $color : ( 'transparent' === $value || 'inherit' === $value || preg_match( '/\A(?:rgba?\([0-9.,% \/]+\))\z/i', $value ) ? $value : '' );
 			case 'font':
 				$family = '(?:[a-zA-Z0-9_-]+(?:\s+[a-zA-Z0-9_-]+)*|"[a-zA-Z0-9 _-]+"|\'[a-zA-Z0-9 _-]+\')';
 				return preg_match( '/^' . $family . '(?:\s*,\s*' . $family . ')*$/D', $value ) ? $value : '';
+			case 'font_style':
+				return in_array( $value, array( 'normal', 'italic' ), true ) ? $value : '';
+			case 'text_align':
+				return in_array( $value, array( 'start', 'center', 'end' ), true ) ? $value : '';
 			case 'length':
+				return preg_match( '/^' . $length . '$/D', $value ) ? $value : '';
+			case 'font_size':
 				return preg_match( '/^' . $length . '$/D', $value ) ? $value : '';
 			case 'width':
 				return 'auto' === $value || preg_match( '/^' . $length . '$/D', $value ) ? $value : '';
@@ -395,8 +466,9 @@ final class MDS_RM_Release_Meta {
 	 * @return string The release metadata markup, or an empty string.
 	 */
 	public static function render( $attributes = array(), $context_post_id = 0 ) {
-		$upc  = isset( $attributes['upc'] ) ? $attributes['upc'] : '';
-		$post = self::resolve_post( $upc, $context_post_id );
+		$upc        = isset( $attributes['upc'] ) ? $attributes['upc'] : '';
+		$release_id = isset( $attributes['release_id'] ) ? $attributes['release_id'] : ( isset( $attributes['releaseId'] ) ? $attributes['releaseId'] : 0 );
+		$post       = self::resolve_shortcode_source( $release_id, $upc, $context_post_id );
 		return $post ? self::render_post( $post, $attributes ) : '';
 	}
 
@@ -405,9 +477,10 @@ final class MDS_RM_Release_Meta {
 	 *
 	 * @param WP_Post $post       Resolved Release.
 	 * @param array   $attributes Field and style overrides.
+	 * @param array   $style_fields Optional style definitions.
 	 * @return string Rendered metadata.
 	 */
-	public static function render_post( WP_Post $post, array $attributes ): string {
+	public static function render_post( WP_Post $post, array $attributes, $style_fields = null ): string {
 		self::enqueue_assets();
 		$fields = self::fields();
 		$items  = isset( $attributes['items'] ) && is_array( $attributes['items'] ) ? $attributes['items'] : self::default_items();
@@ -440,7 +513,7 @@ final class MDS_RM_Release_Meta {
 		if ( '' === $output ) {
 			return '';
 		}
-		$style = self::style_attribute( isset( $attributes['styles'] ) ? $attributes['styles'] : array() );
+		$style        = self::style_attribute( isset( $attributes['styles'] ) ? $attributes['styles'] : array(), $style_fields );
 		return '<div class="mds-release-meta"' . ( $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>' . $output . '</div>';
 	}
 
@@ -452,14 +525,16 @@ final class MDS_RM_Release_Meta {
 	 */
 	public static function shortcode( $atts ): string {
 		$defaults = array(
-			'upc'    => '',
-			'fields' => '',
+			'upc'        => '',
+			'release_id' => '',
+			'fields'     => '',
 		);
 		foreach ( self::fields() as $key => $field ) {
 			$defaults[ 'icon_' . $key ]  = $field['icon'];
 			$defaults[ 'title_' . $key ] = $field['label'];
 		}
-		foreach ( self::style_fields() as $key => $_definition ) {
+		$style_fields = self::shortcode_style_fields();
+		foreach ( $style_fields as $key => $_definition ) {
 			foreach ( array( '', '_tablet', '_mobile' ) as $suffix ) {
 				$defaults[ $key . $suffix ] = '';
 			}
@@ -488,7 +563,7 @@ final class MDS_RM_Release_Meta {
 		}
 		unset( $item );
 		$styles = array();
-		foreach ( self::style_fields() as $key => $_definition ) {
+		foreach ( $style_fields as $key => $_definition ) {
 			foreach ( array(
 				'desktop' => '',
 				'tablet'  => '_tablet',
@@ -497,13 +572,13 @@ final class MDS_RM_Release_Meta {
 				$styles[ $device ][ $key ] = $atts[ $key . $suffix ];
 			}
 		}
-		return self::render(
-			array(
-				'upc'    => $atts['upc'],
-				'items'  => $items,
-				'styles' => $styles,
-			),
-			get_the_ID()
-		);
+		$post   = self::resolve_shortcode_source( $atts['release_id'], $atts['upc'], get_the_ID() );
+		$output = $post ? self::render_post( $post, array( 'items' => $items, 'styles' => $styles ), $style_fields ) : '';
+		foreach ( array( 'font_style', 'text_align', 'letter_spacing' ) as $wrapper_style ) {
+			if ( ! empty( $atts[ $wrapper_style ] ) || ! empty( $atts[ $wrapper_style . '_tablet' ] ) || ! empty( $atts[ $wrapper_style . '_mobile' ] ) ) {
+				return $output ? '<div class="wp-block-mds-rm-release-meta">' . $output . '</div>' : '';
+			}
+		}
+		return $output;
 	}
 }

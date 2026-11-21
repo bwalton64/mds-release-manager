@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- Add site-wide presentation defaults for the Release Meta, Release Links, and Artist Discography blocks, with per-block overrides and preservation of legacy saved lists.
+- Add extension-provided site and network settings tabs while retaining existing section hooks. Bandcamp adds a site tab and WooCommerce adds a network tab.
 - Add native block Styles and per-table controls to Artist Discography, covering spacing, typography, colors, borders, links, and striped rows.
 - Add excerpt support to Releases and Artists, shown by default on their edit screens and synchronized to spoke sites with the rest of the record.
 - Make spoke sites read-only for Releases and Artists: creating, editing, and deleting catalog posts is denied outside the hub (admin UI, Quick Edit, bulk actions, and REST alike), spoke list screens link to the hub editor, and hub broadcasts are unaffected. This also stops spoke-local edits from drifting until the next broadcast.
@@ -15,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Add an isolated Playwright smoke suite covering Release and Artist fallbacks, Gutenberg metadata persistence, REST settings saves, and rewrite setup and cleanup.
 
 ### Changed
+- Expand the Release Meta, Release Links, and Artist Discography shortcodes to expose their corresponding block options and styling controls, including Release ID selection and Discography table styles.
+- Move streaming provider and audio preview settings from Release Data to the Release Links settings tab; existing tab links continue to work.
 - Edit Releases and Artists on the native classic screen instead of the block editor. The former monolithic Release Settings box is split into Release Identity, Release Details, Streaming & Audio, and Commerce boxes, with Cover Art/Artist Photo featured-image labels and the redundant Slug box removed. Extension meta boxes (`mds_rm_register_custom_meta_boxes` / `mds_rm_save_custom_meta`), SEO plugin meta boxes, saved field names, and hub-to-spoke broadcasting are unchanged.
 - Remove Custom Fields support from Releases and Artists so the Custom Fields panel no longer appears; stored post meta is unaffected.
 - Give Release Meta a native Release picker with Artist-context fallback and native styling controls for layout, typography, and icons; retain saved responsive overrides until explicitly removed.
@@ -30,6 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Move internal implementation summaries, refactoring reports, and the Abilities API reference documentation from the plugin root into the `.local/` directory. `README.md`, `changelog.md`, and `.github/technical-blueprint.md` are the canonical, maintained documentation.
 
 ### Fixed
+- Persist changes to the Bandcamp shortcode template when the field is submitted.
 - Validate that the CSV importer reads only temporary files received through an HTTP upload.
 - When the full uninstall wipe is enabled, clear the stored spoke selection and Release Manager site options across the current network, and remove Release and Artist posts including those in Trash. The default uninstall behavior is unchanged.
 - Flush custom post type rewrite rules on activation and deactivation, across all sites for network-wide changes, to prevent stale or missing Release and Artist routes.

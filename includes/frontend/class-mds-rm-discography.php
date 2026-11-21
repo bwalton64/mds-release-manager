@@ -20,9 +20,120 @@ final class MDS_RM_Discography {
 	 * @return string The rendered HTML.
 	 */
 	public static function shortcode( array $attributes ): string {
-		$attributes = shortcode_atts( array( 'artist_id' => 0 ), $attributes, 'artist-discography' );
+		$style_fields = array(
+			'link-color',
+			'link-decoration',
+			'table-radius',
+			'table-background',
+			'table-color',
+			'table-font-family',
+			'table-font-size',
+			'table-font-style',
+			'table-font-weight',
+			'table-line-height',
+			'header-background',
+			'header-color',
+			'header-font-family',
+			'header-font-size',
+			'header-font-style',
+			'header-font-weight',
+			'header-line-height',
+			'header-text-align',
+			'body-background',
+			'body-color',
+			'body-font-family',
+			'body-font-size',
+			'body-font-style',
+			'body-font-weight',
+			'body-line-height',
+			'body-text-align',
+			'table-margin-top',
+			'table-margin-right',
+			'table-margin-bottom',
+			'table-margin-left',
+			'table-padding-top',
+			'table-padding-right',
+			'table-padding-bottom',
+			'table-padding-left',
+			'cell-padding-top',
+			'cell-padding-right',
+			'cell-padding-bottom',
+			'cell-padding-left',
+			'table-border-width',
+			'table-border-color',
+			'table-border-style',
+			'cell-border-width',
+			'cell-border-color',
+			'cell-border-style',
+			'stripe-background',
+		);
+		$wrapper_fields = array(
+			'wrapper_background',
+			'wrapper_text_color',
+			'wrapper_link_color',
+			'wrapper_font_size',
+			'wrapper_font_family',
+			'wrapper_font_weight',
+			'wrapper_font_style',
+			'wrapper_line_height',
+			'wrapper_letter_spacing',
+			'wrapper_margin',
+			'wrapper_padding',
+			'wrapper_border_color',
+			'wrapper_border_radius',
+			'wrapper_border_style',
+			'wrapper_border_width',
+		);
+		$defaults = array(
+			'artist_id' => 0,
+			'striped'   => '',
+		);
+		foreach ( $style_fields as $field ) {
+			$defaults[ str_replace( '-', '_', $field ) ] = '';
+		}
+		foreach ( $wrapper_fields as $field ) {
+			$defaults[ $field ] = '';
+		}
+		$attributes = shortcode_atts( $defaults, $attributes, 'artist-discography' );
 		$artist_id  = absint( $attributes['artist_id'] );
-		return self::render( $artist_id ? $artist_id : get_the_ID() );
+		$table_style = array();
+		foreach ( $style_fields as $field ) {
+			$attribute = str_replace( '-', '_', $field );
+			if ( isset( $attributes[ $attribute ] ) ) {
+				$table_style[ $field ] = $attributes[ $attribute ];
+			}
+		}
+		if ( '1' === $attributes['striped'] ) {
+			$table_style['striped'] = true;
+		} elseif ( '0' === $attributes['striped'] || '' === $attributes['striped'] ) {
+			$table_style['striped'] = false;
+		} else {
+			MDS_RM_Logger::diagnostic( 'Invalid Artist Discography shortcode option: striped' );
+		}
+
+		$content = self::render( $artist_id ? $artist_id : get_the_ID() );
+		if ( '' === $content ) {
+			return '';
+		}
+		$style = self::shortcode_wrapper_style( $attributes ) . self::table_style_variables( $table_style );
+		if ( '' === $style ) {
+			return $content;
+		}
+
+		if ( ! wp_style_is( 'mds-rm-discography-block', 'registered' ) ) {
+			$style_file = 'blocks/artist-discography/style.css';
+			wp_register_style( 'mds-rm-discography-block', MDS_RM_URL . $style_file, array(), filemtime( MDS_RM_PATH . $style_file ) );
+		}
+		wp_enqueue_style( 'mds-rm-discography-block' );
+
+		$classes = array( 'wp-block-mds-rm-artist-discography' );
+		if ( '' !== MDS_RM_Release_Meta::valid_style( $attributes['wrapper_text_color'] ?? '', 'color' ) ) {
+			$classes[] = 'has-text-color';
+		}
+		if ( '' !== MDS_RM_Release_Meta::valid_style( $attributes['wrapper_font_size'] ?? '', 'font_size' ) ) {
+			$classes[] = 'has-custom-font-size';
+		}
+		return '<div class="' . esc_attr( implode( ' ', $classes ) ) . '" style="' . esc_attr( rtrim( $style, ';' ) ) . '">' . $content . '</div>';
 	}
 
 	/**
@@ -46,7 +157,7 @@ final class MDS_RM_Discography {
 	 * @param mixed $settings Saved table settings.
 	 * @return string Validated CSS declarations.
 	 */
-	private static function table_style_variables( $settings ): string {
+	public static function table_style_variables( $settings ): string {
 		if ( ! is_array( $settings ) ) {
 			return '';
 		}
@@ -87,7 +198,9 @@ final class MDS_RM_Discography {
 		}
 		if ( true === ( $settings['striped'] ?? false ) ) {
 			$fields['stripe-background']     = 'color';
-			$settings['stripe-background'] ??= 'rgba(0,0,0,0.06)';
+			if ( ! isset( $settings['stripe-background'] ) || '' === $settings['stripe-background'] ) {
+				$settings['stripe-background'] = 'rgba(0,0,0,0.06)';
+			}
 		}
 
 		$css = '';
@@ -95,9 +208,50 @@ final class MDS_RM_Discography {
 			$value = $settings[ $field ] ?? null;
 			if ( is_string( $value ) && preg_match( $presets[ $type ], $value ) ) {
 				$css .= "--mds-discography-$field:$value;";
+			} elseif ( null !== $value && '' !== $value && false !== $value ) {
+				MDS_RM_Logger::diagnostic( 'Invalid Artist Discography style: ' . $field );
 			}
 		}
 		return $css;
+	}
+
+	/**
+	 * Builds validated inline styles for the shortcode wrapper.
+	 *
+	 * @param array $attributes Shortcode attributes.
+	 * @return string CSS declarations.
+	 */
+	private static function shortcode_wrapper_style( array $attributes ): string {
+		$fields = array(
+			'wrapper_background'      => array( 'background-color', 'color' ),
+			'wrapper_text_color'      => array( 'color', 'color' ),
+			'wrapper_link_color'      => array( '--wp--style--color--link', 'color' ),
+			'wrapper_font_size'       => array( 'font-size', 'font_size' ),
+			'wrapper_font_family'     => array( 'font-family', 'font' ),
+			'wrapper_font_weight'     => array( 'font-weight', 'weight' ),
+			'wrapper_font_style'      => array( 'font-style', 'font_style' ),
+			'wrapper_line_height'     => array( 'line-height', 'line_height' ),
+			'wrapper_letter_spacing'  => array( 'letter-spacing', 'length' ),
+			'wrapper_margin'          => array( 'margin', 'spacing' ),
+			'wrapper_padding'         => array( 'padding', 'spacing' ),
+			'wrapper_border_color'    => array( 'border-color', 'color' ),
+			'wrapper_border_radius'   => array( 'border-radius', 'spacing' ),
+			'wrapper_border_style'    => array( 'border-style', 'border_style' ),
+			'wrapper_border_width'    => array( 'border-width', 'spacing' ),
+		);
+		$declarations = array();
+		foreach ( $fields as $attribute => $field ) {
+			if ( ! isset( $attributes[ $attribute ] ) ) {
+				continue;
+			}
+			$value = MDS_RM_Release_Meta::valid_style( $attributes[ $attribute ], $field[1] );
+			if ( '' !== $value ) {
+				$declarations[] = $field[0] . ':' . $value;
+			} elseif ( ! is_scalar( $attributes[ $attribute ] ) || '' !== (string) $attributes[ $attribute ] ) {
+				MDS_RM_Logger::diagnostic( 'Invalid Artist Discography shortcode style: ' . $attribute );
+			}
+		}
+		return $declarations ? implode( ';', $declarations ) . ';' : '';
 	}
 
 	/**

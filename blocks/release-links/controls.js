@@ -1,12 +1,12 @@
 (function (wp) {
-	const { createElement: el } = wp.element;
+	const { createElement: el, Fragment } = wp.element;
 	const { InspectorControls } = wp.blockEditor;
 	const { PanelBody, RangeControl } = wp.components;
 	const { __ } = wp.i18n;
 
 	window.mdsRmReleaseLinksControls = function (props) {
-		const { value, update, select, range, size, box, color, border, widthChoices, axis, responsive } = window.mdsRmUseNativeReleaseStyles({ ...props, styleKey: 'linkStyles' });
-		return el(InspectorControls, { group: 'styles' },
+		const { value, update, select, range, size, box, color, border, widthChoices, axis, responsive, siteDefault } = window.mdsRmUseNativeReleaseStyles({ ...props, styleKey: 'linkStyles' });
+		return el(props.standalone ? Fragment : InspectorControls, props.standalone ? null : { group: 'styles' },
 			el(PanelBody, { title: __('Release Links layout', 'mds-release-manager'), initialOpen: false },
 				color('background', __('Background color', 'mds-release-manager')),
 				box('margin', __('Margin', 'mds-release-manager')),
@@ -32,9 +32,10 @@
 				size('link_gap', __('Gap between buttons', 'mds-release-manager'), 100),
 				el(RangeControl, {
 					label: __('Button size (px)', 'mds-release-manager'), min: 44, max: 120, allowReset: true,
-					value: value.button_size === undefined ? undefined : parseFloat(value.button_size),
+					value: value.button_size == null ? undefined : parseFloat(value.button_size),
 					onChange: (setting) => update('button_size', setting === undefined ? undefined : `${setting}px`),
 				}),
+				siteDefault('button_size'),
 				range('icon_size', __('Icon size (px)', 'mds-release-manager'), 80),
 				color('button_color', __('Icon color', 'mds-release-manager')),
 				color('button_background', __('Button background', 'mds-release-manager')),

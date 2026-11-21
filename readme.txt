@@ -32,7 +32,15 @@ No. The core release and artist tools work without either plugin. The block edit
 
 = Which shortcodes are available? =
 
-Use `[release-meta]` for release metadata, `[release-links]` for listening and purchase links, and `[artist-discography]` for the artist's published releases.
+Use `[release-meta]` for release metadata, `[release-links]` for listening and purchase links, and `[artist-discography]` for an Artist's published releases. The release shortcodes accept `release_id` or `upc`; a valid Release ID takes precedence. For example:
+
+<code>[release-meta release_id="123" fields="release_title,upc_ean" gap="12px"]</code>
+
+<code>[release-links release_id="123" order="Spotify,Apple Music" show_audio="0" new_tab="0"]</code>
+
+<code>[artist-discography artist_id="5" striped="1" header_background="#222222" cell_padding_top="10px"]</code>
+
+Each shortcode accepts flat attributes for block options and styling. Release Meta and Release Links also accept `_tablet` and `_mobile` style suffixes. See the bundled <code>README.md</code> for the full attribute lists, accepted values, and examples.
 
 = Can I use this on Multisite? =
 

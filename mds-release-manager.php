@@ -59,6 +59,7 @@ spl_autoload_register(
 			'MDS_RM_DISCOGRAPHY'                => 'frontend/class-mds-rm-discography.php',
 			'MDS_RM_SHORTCODES'                 => 'frontend/class-mds-rm-shortcodes.php',
 			'MDS_RM_GUTENBERG_BLOCKS'           => 'blocks/class-mds-rm-gutenberg-blocks.php',
+			'MDS_RM_BLOCK_DEFAULTS'             => 'blocks/class-mds-rm-block-defaults.php',
 			'MDS_RM_RELEASE_META'               => 'blocks/class-mds-rm-release-meta.php',
 			'MDS_RM_RELEASE_LINKS'              => 'blocks/class-mds-rm-release-links.php',
 			'MDS_RM_RELEASE_LINKS_BLOCK'        => 'blocks/class-mds-rm-release-links-block.php',

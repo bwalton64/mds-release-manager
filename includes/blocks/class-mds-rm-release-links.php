@@ -174,7 +174,9 @@ final class MDS_RM_Release_Links {
 	 * @return string The release links and audio markup, or an empty string.
 	 */
 	public static function render( $attributes = array(), $context_post_id = 0 ): string {
-		$post = MDS_RM_Release_Meta::resolve_post( isset( $attributes['upc'] ) ? $attributes['upc'] : '', $context_post_id );
+		$release_id = isset( $attributes['release_id'] ) ? $attributes['release_id'] : ( isset( $attributes['releaseId'] ) ? $attributes['releaseId'] : 0 );
+		$upc        = isset( $attributes['upc'] ) ? $attributes['upc'] : '';
+		$post       = MDS_RM_Release_Meta::resolve_shortcode_source( $release_id, $upc, $context_post_id );
 		return $post ? self::render_post( $post, $attributes ) : '';
 	}
 
@@ -347,7 +349,8 @@ final class MDS_RM_Release_Links {
 		}
 		return self::render(
 			array(
-				'upc'       => isset( $atts['upc'] ) ? $atts['upc'] : '',
+				'upc'        => isset( $atts['upc'] ) ? $atts['upc'] : '',
+				'release_id' => isset( $atts['release_id'] ) ? $atts['release_id'] : '',
 				'items'     => $items,
 				'newTab'    => self::shortcode_toggle( $atts, 'new_tab' ),
 				'showAudio' => self::shortcode_toggle( $atts, 'show_audio' ),

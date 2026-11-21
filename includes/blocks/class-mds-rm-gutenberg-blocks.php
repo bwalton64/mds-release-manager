@@ -81,6 +81,7 @@ final class MDS_RM_Gutenberg_Blocks {
 			array(
 				'items'  => MDS_RM_Release_Meta::default_items(),
 				'fields' => MDS_RM_Release_Meta::fields(),
+				'defaults' => MDS_RM_Block_Defaults::get( 'release-meta' ),
 			)
 		);
 		wp_localize_script(
@@ -88,8 +89,10 @@ final class MDS_RM_Gutenberg_Blocks {
 			'mdsReleaseLinks',
 			array(
 				'providers' => MDS_RM_Release_Links::providers(),
+				'defaults'  => MDS_RM_Block_Defaults::get( 'release-links' ),
 			)
 		);
+		wp_localize_script( 'mds-rm-artist-discography-editor', 'mdsDiscography', MDS_RM_Block_Defaults::get( 'artist-discography' ) );
 
 		wp_add_inline_style(
 			'wp-block-editor',
@@ -140,6 +143,7 @@ final class MDS_RM_Gutenberg_Blocks {
 		foreach (
 			array(
 				'release-picker'        => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-url', 'wp-html-entities', 'wp-i18n' ),
+				'release-items'         => array(),
 				'native-release-styles' => array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n' ),
 			) as $script => $dependencies
 		) {
@@ -147,7 +151,7 @@ final class MDS_RM_Gutenberg_Blocks {
 			wp_register_script( "mds-rm-{$script}", MDS_RM_URL . $file, $dependencies, filemtime( MDS_RM_PATH . $file ), true );
 			wp_set_script_translations( "mds-rm-{$script}", 'mds-release-manager', MDS_RM_PATH . 'languages' );
 		}
-		self::register_release_block( 'release-meta', 'render_gutenberg_release_meta', array( 'items' => MDS_RM_Release_Meta::default_items() ) );
+		self::register_release_block( 'release-meta', 'render_gutenberg_release_meta' );
 		self::register_release_block( 'release-links', 'render_gutenberg_release_links' );
 	}
 
@@ -167,7 +171,7 @@ final class MDS_RM_Gutenberg_Blocks {
 		wp_register_script(
 			"mds-rm-{$slug}-editor",
 			MDS_RM_URL . $edit_script,
-			array( 'wp-blocks', 'wp-server-side-render', 'mds-rm-release-picker', "mds-rm-{$slug}-controls" ),
+			array( 'wp-blocks', 'wp-server-side-render', 'mds-rm-release-picker', 'mds-rm-release-items', "mds-rm-{$slug}-controls" ),
 			filemtime( MDS_RM_PATH . $edit_script ),
 			true
 		);

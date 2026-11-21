@@ -12,59 +12,89 @@
 		}])).values());
 	}
 
-	window.mdsRmUseNativeReleaseStyles = function ({ attributes, setAttributes, styleKey }) {
+	window.mdsRmUseNativeReleaseStyles = function ({ attributes, setAttributes, styleKey, defaults = {} }) {
 		const [palette, customColor, spacing, customSpacing] = useSettings('color.palette', 'color.custom', 'spacing.spacingSizes', 'spacing.customSpacingSize');
-		const value = attributes[styleKey] || {};
+		const own = attributes[styleKey] || {};
 		const legacy = attributes.styles || {};
+		const inheritedDefaults = { ...defaults };
+		Object.keys(legacy.desktop || {}).forEach((key) => {
+			if (!Object.prototype.hasOwnProperty.call(own, key)) delete inheritedDefaults[key];
+		});
+		const value = { ...inheritedDefaults, ...own };
+		Object.keys(own).forEach((key) => {
+			if (own[key] && typeof own[key] === 'object' && inheritedDefaults[key]) {
+				const inherited = typeof inheritedDefaults[key] === 'object' ? inheritedDefaults[key] : Object.fromEntries(sides.map((side) => [side, inheritedDefaults[key]]));
+				value[key] = { ...inherited, ...own[key] };
+			}
+		});
 		const inherited = __('Default / legacy', 'mds-release-manager');
 		const spacePresets = presets(spacing, 'spacing');
 		function update(key, setting) {
-			const next = { ...value };
+			const next = { ...own };
 			if (setting === '' || setting === undefined) delete next[key];
 			else next[key] = setting;
 			setAttributes({ [styleKey]: Object.keys(next).length ? next : undefined });
 		}
-		function select(key, label, options) {
-			return el(SelectControl, {
+		function siteDefault(key) {
+			if (!Object.prototype.hasOwnProperty.call(inheritedDefaults, key)) return null;
+			return el(Button, {
+				variant: 'link',
+				onClick: () => update(key, own[key] === null ? undefined : null),
+			}, own[key] === null ? __('Use site default', 'mds-release-manager') : __('Ignore site default', 'mds-release-manager'));
+		}
+		function select(key, label, options, showSiteDefault = true) {
+			return el(Fragment, null, el(SelectControl, {
 				label, options: [{ label: inherited, value: '' }, ...options],
 				value: options.some((option) => option.value === value[key]) ? value[key] : '',
 				onChange: (setting) => update(key, setting),
-			});
+			}), showSiteDefault && siteDefault(key));
 		}
-		function range(key, label, max, unit = 'px', step = 1, min = 0) {
+		function range(key, label, max, unit = 'px', step = 1, min = 0, showSiteDefault = true) {
 			const current = value[key];
 			const matches = current !== undefined && String(current).endsWith(unit) && Number.isFinite(parseFloat(current));
-			return el(RangeControl, {
+			return el(Fragment, null, el(RangeControl, {
 				label, min, max, step, allowReset: true,
 				value: matches ? parseFloat(current) : undefined,
 				onChange: (setting) => update(key, setting === undefined ? undefined : `${setting}${unit}`),
-			});
+			}), showSiteDefault && siteDefault(key));
 		}
 		function size(key, label, max, extra = []) {
 			return el(Fragment, null,
-				!!(spacePresets.length || extra.length) && select(key, label, [...extra, ...spacePresets]),
-				customSpacing !== false && range(key, label, max)
+				!!(spacePresets.length || extra.length) && select(key, label, [...extra, ...spacePresets], false),
+				customSpacing !== false && range(key, label, max, 'px', 1, 0, false),
+				siteDefault(key)
 			);
 		}
 		function box(key, label) {
 			const current = value[key];
 			const values = current && typeof current === 'object' ? current : Object.fromEntries(sides.map((side) => [side, current || '']));
 			return el(Fragment, null,
-				!!spacePresets.length && select(key, label, spacePresets),
+				!!spacePresets.length && select(key, label, spacePresets, false),
 				customSpacing !== false && el(BoxControl, {
-					label, values, onChange: (next) => update(key, next && sides.some((side) => next[side]) ? next : undefined),
-				})
+					label, values, onChange: (next) => {
+						const overrides = own[key] && typeof own[key] === 'object' ? { ...own[key] }
+							: own[key] ? Object.fromEntries(sides.map((side) => [side, own[key]])) : {};
+						sides.forEach((side) => {
+							if ((next?.[side] || '') === (values[side] || '')) return;
+							if (next?.[side]) overrides[side] = next[side];
+							else delete overrides[side];
+						});
+						update(key, Object.keys(overrides).length ? overrides : undefined);
+					},
+				}),
+				siteDefault(key)
 			);
 		}
 		function color(key, label) {
 			const options = presets(palette, 'color');
 			return el(Fragment, null,
-				!!options.length && select(key, label, options),
+				!!options.length && select(key, label, options, false),
 				customColor !== false && el(ColorPalette, {
 					colors: [], clearable: true, 'aria-label': label,
 					value: typeof value[key] === 'string' && !value[key].startsWith('var(') ? value[key] : undefined,
 					onChange: (setting) => update(key, setting),
-				})
+				}),
+				siteDefault(key)
 			);
 		}
 		function border(prefix) {
@@ -98,6 +128,6 @@
 					setAttributes({ styles: rest });
 				} }, __('Remove legacy tablet/mobile overrides', 'mds-release-manager'))
 			);
-		return { value, update, select, range, size, box, color, border, widthChoices, axis, responsive, presets };
+		return { value, update, select, range, size, box, color, border, widthChoices, axis, responsive, presets, siteDefault };
 	};
 })(window.wp);

@@ -2,6 +2,9 @@
 #mds-settings-form,
 #mds-network-settings-form,
 .mds-csv-wrap > .mds-panel { margin-top: 20px; }
+.mds-settings-wrap .mds-tab-pane { display: none; }
+.mds-settings-wrap .mds-tab-pane.active { display: block; }
+.mds-settings-wrap > .mds-tab-pane > form { margin-top: 20px; }
 .mds-csv-import { margin-top: 15px; }
 .mds-admin-spaced-table { margin-bottom: 20px; }
 .mds-admin-option { display: block; margin-bottom: 5px; }

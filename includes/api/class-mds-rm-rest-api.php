@@ -132,10 +132,26 @@ final class MDS_RM_REST_API {
 	 *
 	 * @since 0.9.0
 	 * @param WP_REST_Request $request The request.
-	 * @return WP_REST_Response The response indicating whether settings were saved.
+	 * @return WP_REST_Response|WP_Error The response indicating whether settings were saved.
 	 */
-	public static function save_settings_api( $request ): WP_REST_Response {
+	public static function save_settings_api( $request ): WP_REST_Response|WP_Error {
 		$params = $request->get_body_params();
+
+		if ( isset( $params['mds_rm_bandcamp_template'] ) && ! is_string( $params['mds_rm_bandcamp_template'] ) ) {
+			return new WP_Error( 'mds_rm_invalid_bandcamp_template', __( 'The Bandcamp shortcode template must be text.', 'mds-release-manager' ), array( 'status' => 400 ) );
+		}
+
+		$block_defaults = null;
+		if ( isset( $params['mds_rm_block_defaults'] ) ) {
+			if ( ! is_string( $params['mds_rm_block_defaults'] ) || strlen( $params['mds_rm_block_defaults'] ) > 65536 ) {
+				return new WP_Error( 'mds_rm_invalid_block_defaults', __( 'The block defaults are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
+			}
+			$block_defaults = json_decode( $params['mds_rm_block_defaults'], true );
+			$valid          = MDS_RM_Block_Defaults::validate( $block_defaults );
+			if ( is_wp_error( $valid ) ) {
+				return $valid;
+			}
+		}
 
 		$providers = array();
 		if ( isset( $params['mds_rm_providers'] ) && is_array( $params['mds_rm_providers'] ) ) {
@@ -173,6 +189,14 @@ final class MDS_RM_REST_API {
 
 		if ( isset( $params['mds_rm_fa_support'] ) ) {
 			update_option( 'mds_rm_fa_support', sanitize_text_field( wp_unslash( $params['mds_rm_fa_support'] ) ) );
+		}
+
+		if ( isset( $params['mds_rm_bandcamp_template'] ) ) {
+			update_option( 'mds_rm_bandcamp_template', sanitize_text_field( wp_unslash( $params['mds_rm_bandcamp_template'] ) ) );
+		}
+
+		if ( null !== $block_defaults ) {
+			update_option( 'mds_rm_block_defaults', $block_defaults );
 		}
 
 		MDS_RM_Sync::purge_cache();

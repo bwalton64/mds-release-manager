@@ -15,12 +15,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<h1><?php esc_html_e( 'Release Manager Settings', 'mds-release-manager' ); ?></h1>
 
 	<h2 class="nav-tab-wrapper" id="mds-settings-tabs">
-		<a href="#tab-shortcode" class="nav-tab nav-tab-active"><?php esc_html_e( 'Release Data', 'mds-release-manager' ); ?></a>
+		<a href="#tab-release-meta" class="nav-tab nav-tab-active" aria-current="page"><?php esc_html_e( 'Release Meta', 'mds-release-manager' ); ?></a>
+		<a href="#tab-release-links" class="nav-tab"><?php esc_html_e( 'Release Links', 'mds-release-manager' ); ?></a>
+		<a href="#tab-artist-discography" class="nav-tab"><?php esc_html_e( 'Artist Discography', 'mds-release-manager' ); ?></a>
 		<a href="#tab-integrations" class="nav-tab"><?php esc_html_e( 'Integrations', 'mds-release-manager' ); ?></a>
+		<?php foreach ( $args['extension_tabs'] as $slug => $tab ) : ?>
+			<a href="#tab-<?php echo esc_attr( $slug ); ?>" class="nav-tab"><?php echo esc_html( $tab['label'] ); ?></a>
+		<?php endforeach; ?>
 	</h2>
 
 	<form id="mds-settings-form">
-		<div id="tab-shortcode" class="mds-tab-pane active">
+		<input type="hidden" name="mds_rm_block_defaults" id="mds-rm-block-defaults" value="<?php echo esc_attr( wp_json_encode( $args['block_defaults'] ) ); ?>" />
+		<div id="tab-release-meta" class="mds-tab-pane active">
+			<div class="mds-panel">
+				<h2><?php esc_html_e( 'Release Meta defaults', 'mds-release-manager' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Blocks inherit these defaults unless an individual block overrides them.', 'mds-release-manager' ); ?></p>
+				<div id="mds-defaults-release-meta"></div>
+			</div>
+			<div class="mds-admin-save-actions">
+				<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
+				<span class="mds-save-status" role="status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
+			</div>
+		</div>
+		<div id="tab-release-links" class="mds-tab-pane">
+			<div class="mds-panel">
+				<h2><?php esc_html_e( 'Release Links defaults', 'mds-release-manager' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Blocks inherit these defaults unless an individual block overrides them.', 'mds-release-manager' ); ?></p>
+				<div id="mds-defaults-release-links"></div>
+			</div>
 			<div class="mds-panel">
 				<h3><?php esc_html_e( 'Streaming Provider Defaults', 'mds-release-manager' ); ?></h3>
 				<p class="description"><?php esc_html_e( 'Configure streaming providers used in the release editor.', 'mds-release-manager' ); ?></p>
@@ -65,6 +87,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<?php echo $args['audio_player_custom_fields']; ?>
 					<?php endif; ?>
 				</table>
+			</div>
+
+			<div id="tab-artist-discography" class="mds-tab-pane">
+				<div class="mds-panel">
+					<h2><?php esc_html_e( 'Artist Discography defaults', 'mds-release-manager' ); ?></h2>
+					<p class="description"><?php esc_html_e( 'Blocks inherit these defaults unless an individual block overrides them.', 'mds-release-manager' ); ?></p>
+					<div id="mds-defaults-artist-discography"></div>
+				</div>
+				<div class="mds-admin-save-actions">
+					<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
+					<span class="mds-save-status" role="status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
+				</div>
 			</div>
 
 			<div class="mds-admin-save-actions">
@@ -115,4 +149,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 		</div>
 	</form>
+	<?php foreach ( $args['extension_tabs'] as $slug => $tab ) : ?>
+		<div id="tab-<?php echo esc_attr( $slug ); ?>" class="mds-tab-pane">
+			<?php call_user_func( $tab['render'] ); ?>
+		</div>
+	<?php endforeach; ?>
 </div>

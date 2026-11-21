@@ -1,29 +1,20 @@
 jQuery(document).ready(function($) {
-    $('#mds-settings-tabs a').on('click', function(e) {
-        e.preventDefault();
-        $('#mds-settings-tabs a').removeClass('nav-tab-active');
-        $(this).addClass('nav-tab-active');
-        var target = $(this).attr('href');
-        $('.mds-tab-pane').removeClass('active');
-        $(target).addClass('active');
-        if (history.pushState) {
-            history.pushState(null, null, target);
-        } else {
-            location.hash = target;
+    var changes = 0;
+    var savedChanges = 0;
+    $('#mds-settings-form').on('input change', ':input', function() { changes++; });
+    $(window).on('beforeunload', function(event) {
+        if (changes !== savedChanges) {
+            event.preventDefault();
+            event.originalEvent.returnValue = '';
         }
-
-        
     });
-
-    if (window.location.hash && $(window.location.hash).length) {
-        $('#mds-settings-tabs a[href="' + window.location.hash + '"]').click();
-    }
 
     // Save Settings Form
     $('#mds-settings-form').on('submit', function(e) {
         e.preventDefault();
         var $btn = $(this).find('.mds-save-settings-btn');
-        $btn.prop('disabled', true).text('Saving...');
+        var submittedChanges = changes;
+        $btn.prop('disabled', true).text(mds_rm_data.saving);
         $.ajax({
             url: mds_rm_data.rest_url,
             method: 'POST',
@@ -32,14 +23,18 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(res) {
-                $btn.prop('disabled', false).text('Save Settings');
+                $btn.prop('disabled', false).text(mds_rm_data.save_settings);
                 if (res.success) {
+                    savedChanges = submittedChanges;
                     $('.mds-tab-pane.active .mds-save-status').fadeIn().delay(3000).fadeOut();
+                    if (changes !== savedChanges) alert(mds_rm_data.unsaved_after_save);
+                } else {
+                    alert(mds_rm_data.save_error);
                 }
             },
-            error: function() {
-                $btn.prop('disabled', false).text('Save Settings');
-                alert('Error saving settings.');
+            error: function(xhr) {
+                $btn.prop('disabled', false).text(mds_rm_data.save_settings);
+                alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : mds_rm_data.save_error);
             }
         });
     });
@@ -100,7 +95,8 @@ jQuery(document).ready(function($) {
         $('#mds_providers_repeater').sortable({
             handle: '.dashicons-menu',
             axis: 'y',
-            opacity: 0.85
+            opacity: 0.85,
+            update: function() { $('#mds-rm-block-defaults').trigger('change'); }
         });
     }
 
@@ -117,6 +113,7 @@ jQuery(document).ready(function($) {
         $row.find('.mds-color-picker-dynamic').attr('placeholder', mds_rm_data.hex_color);
         $row.find('.mds-remove-provider').text(mds_rm_data.remove);
         $('#mds_providers_repeater').append($row);
+        $('#mds-rm-block-defaults').trigger('change');
         $row.find('.mds-color-picker-dynamic').wpColorPicker();
         if ($.fn.iconpicker) {
             $row.find('.mds-icon-input').iconpicker({ placement: 'bottomRight', hideOnSelect: true, animation: false });
@@ -126,5 +123,6 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.mds-remove-provider', function(e) {
         e.preventDefault();
         $(this).closest('.mds-provider-row').remove();
+        $('#mds-rm-block-defaults').trigger('change');
     });
 });

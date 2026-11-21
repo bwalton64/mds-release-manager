@@ -296,7 +296,7 @@ final class MDS_RM_Release_Links_Block {
 	 * @param string $type  Style field type.
 	 * @return string Valid CSS value.
 	 */
-	private static function style_value( $value, string $type ): string {
+	public static function style_value( $value, string $type ): string {
 		if ( is_string( $value ) ) {
 			$presets = array(
 				'font'      => 'font-family',

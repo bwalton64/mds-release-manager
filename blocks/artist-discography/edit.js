@@ -77,7 +77,7 @@
 				results.error && el(Notice, { status: 'warning', isDismissible: false },
 					results.error.code === 'rest_post_invalid_page_number' ? __('No more Artists match this search.', 'mds-release-manager') : __('Artist search failed. Change the search to try again.', 'mds-release-manager'))
 			)),
-			el(window.mdsRmDiscographyTableControls, { value: attributes.tableStyles || {}, onChange: (tableStyles) => setAttributes({ tableStyles }) }),
+			el(window.mdsRmDiscographyTableControls, { value: attributes.tableStyles || {}, defaults: mdsDiscography.tableStyles || {}, onChange: (tableStyles) => setAttributes({ tableStyles }) }),
 			missing ? el(Notice, { status: 'warning', isDismissible: false }, __('The selected Artist is unavailable. Choose another Artist or clear the selection.', 'mds-release-manager'))
 				: selected.error ? el(Notice, { status: 'warning', isDismissible: false }, __('The selected Artist could not be checked. The saved selection has not changed.', 'mds-release-manager'))
 					: artistId || contextId ? el(ServerSideRender, {

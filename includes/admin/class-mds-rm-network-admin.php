@@ -104,7 +104,17 @@ final class MDS_RM_Network_Admin {
 			'spoke_site_ids'    => $spoke_site_ids,
 			'wipe_on_uninstall' => '1' === (string) get_site_option( 'mds_rm_wipe_on_uninstall', '0' ),
 			'hooks_html'        => apply_filters( 'mds_rm_network_settings_fields', '' ),
+			'extension_tabs'    => self::extension_tabs(),
 		);
+	}
+
+	/**
+	 * Returns extension-provided network settings tabs.
+	 *
+	 * @return array Valid tab definitions.
+	 */
+	public static function extension_tabs(): array {
+		return MDS_RM_Admin_Interface::extension_tabs( 'mds_rm_network_settings_tabs', array( 'network' ) );
 	}
 
 	/**

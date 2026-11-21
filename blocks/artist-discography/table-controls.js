@@ -5,25 +5,33 @@
 	const { __, sprintf } = wp.i18n;
 	const sides = ['top', 'right', 'bottom', 'left'];
 
-	window.mdsRmDiscographyTableControls = function TableControls({ value, onChange }) {
+	window.mdsRmDiscographyTableControls = function TableControls({ value: own, defaults = {}, onChange, standalone = false }) {
+		const value = { ...defaults, ...own };
 		const [palette, customColor, sizes, customSize, families, spacing, customSpacing, lineHeight] = useSettings(
 			'color.palette', 'color.custom', 'typography.fontSizes', 'typography.customFontSize',
 			'typography.fontFamilies', 'spacing.spacingSizes', 'spacing.customSpacingSize', 'typography.lineHeight'
 		);
 		function update(changes) {
-			const next = { ...value };
+			const next = { ...own };
 			Object.entries(changes).forEach(([key, setting]) => {
-				if (setting === undefined || setting === '' || setting === false) delete next[key];
+				if (setting === undefined || setting === '') delete next[key];
 				else next[key] = setting;
 			});
 			onChange(Object.keys(next).length ? next : undefined);
 		}
+		function siteDefault(key) {
+			if (!Object.prototype.hasOwnProperty.call(defaults, key)) return null;
+			return el(Button, {
+				variant: 'link',
+				onClick: () => update({ [key]: own[key] === null ? undefined : null }),
+			}, own[key] === null ? __('Use site default', 'mds-release-manager') : __('Ignore site default', 'mds-release-manager'));
+		}
 		function select(key, label, options) {
-			return el(SelectControl, {
+			return el(Fragment, null, el(SelectControl, {
 				label, value: value[key] || '',
 				options: [{ label: __('Default / inherit', 'mds-release-manager'), value: '' }, ...options],
 				onChange: (setting) => update({ [key]: setting }),
-			});
+			}), siteDefault(key));
 		}
 		function presetChoices(list, prefix) {
 			const presets = Array.isArray(list) ? list : ['default', 'theme', 'custom'].flatMap(
@@ -34,11 +42,11 @@
 			])).values());
 		}
 		function range(key, label, min, max, step = 1, unit = '') {
-			return el(RangeControl, {
+			return el(Fragment, null, el(RangeControl, {
 				label, min, max, step, allowReset: true,
-				value: value[key] !== undefined && !String(value[key]).startsWith('var(') ? parseFloat(value[key]) : undefined,
+				value: value[key] !== undefined && value[key] !== null && !String(value[key]).startsWith('var(') ? parseFloat(value[key]) : undefined,
 				onChange: (setting) => update({ [key]: setting === undefined ? undefined : `${setting}${unit}` }),
-			});
+			}), siteDefault(key));
 		}
 		function color(key, label) {
 			return el(Fragment, null,
@@ -82,7 +90,9 @@
 				customSpacing !== false && BoxControl && el(BoxControl, {
 					label, values: Object.fromEntries(sides.map((side) => [side, value[`${prefix}-${side}`] || ''])),
 					inputProps: { min: 0 },
-					onChange: (settings) => update(Object.fromEntries(sides.map((side) => [`${prefix}-${side}`, settings?.[side]]))),
+					onChange: (settings) => update(Object.fromEntries(sides.filter((side) =>
+						(settings?.[side] || '') !== (value[`${prefix}-${side}`] || '')
+					).map((side) => [`${prefix}-${side}`, settings?.[side]]))),
 				}),
 				sides.map((side) => el(Fragment, { key: side },
 					!!presets.length && select(`${prefix}-${side}`, sprintf(presetLabel, label, sideLabels[side]), presets),
@@ -112,7 +122,7 @@
 				])
 			);
 		}
-		return el(InspectorControls, { group: 'styles' },
+		return el(standalone ? Fragment : InspectorControls, standalone ? null : { group: 'styles' },
 			el(PanelBody, { title: __('Discography table', 'mds-release-manager'), initialOpen: false },
 				spacingControl('table-margin', __('Table margin', 'mds-release-manager')),
 				spacingControl('table-padding', __('Table padding', 'mds-release-manager')),
@@ -132,7 +142,7 @@
 					{ label: __('Underline', 'mds-release-manager'), value: 'underline' }, { label: __('No underline', 'mds-release-manager'), value: 'none' },
 				])
 			),
-			!!Object.keys(value).length && el(Button, { variant: 'tertiary', onClick: () => onChange(undefined) }, __('Reset discography table styles', 'mds-release-manager'))
+			!!Object.keys(own).length && el(Button, { variant: 'tertiary', onClick: () => onChange(undefined) }, __('Reset discography table styles', 'mds-release-manager'))
 		);
 	};
 })(window.wp);

@@ -13,40 +13,57 @@
         edit: function(props) {
             var attributes = props.attributes;
             var setAttributes = props.setAttributes;
+            const defaults = mdsReleaseLinks.defaults || {};
             var customState = wp.element.useState('');
             var customName = customState[0];
             const contextId = props.context?.postId || 0;
             const { source, resolved, picker } = window.mdsRmUseReleasePicker({ attributes, setAttributes, contextId });
-            var items = (attributes.items || []).slice();
+            var inheritedItems = (defaults.items || []).slice();
             mdsReleaseLinks.providers.map(function(provider) { return provider.name; }).concat(['__buy_now']).forEach(function(name) {
-                if (name && !items.some(function(item) { return item.name.toLowerCase() === name.toLowerCase(); })) {
-                    items.push({ name: name, enabled: true });
+                if (name && !inheritedItems.some(function(item) { return item.name.toLowerCase() === name.toLowerCase(); })) {
+                    inheritedItems.push({ name: name, enabled: true });
                 }
             });
+            var items = window.mdsRmReleaseItems.resolve(inheritedItems, attributes, 'name');
+            if (attributes.items) inheritedItems.forEach(function(item) {
+                if (!items.some(function(saved) { return saved.name.toLowerCase() === item.name.toLowerCase(); })) items.push(item);
+            });
             function updateItem(index, change) {
-                setAttributes({ items: items.map(function(item, i) { return i === index ? Object.assign({}, item, change) : item; }) });
+                window.mdsRmReleaseItems.update(attributes, setAttributes, items, 'name', index, change);
             }
             function moveItem(index, direction) {
-                var target = index + direction;
-                if (target < 0 || target >= items.length) return;
-                var next = items.slice();
-                var item = next[index];
-                next[index] = next[target];
-                next[target] = item;
-                setAttributes({ items: next });
+                window.mdsRmReleaseItems.move(attributes, setAttributes, items, 'name', index, direction);
+            }
+            function resetProperty(item, key, label) {
+                if (attributes.items || !Object.prototype.hasOwnProperty.call(attributes.itemOverrides?.[item.name] || {}, key)) return null;
+                return el(wp.components.Button, {
+                    variant: 'link',
+                    onClick: function() { window.mdsRmReleaseItems.resetProperty(attributes, setAttributes, item.name, key); }
+                }, label);
             }
             return el('div', wp.blockEditor.useBlockProps(),
                 el(InspectorControls, null,
                     el(PanelBody, { title: 'Release Links', initialOpen: true },
                         picker,
-                        el(wp.components.ToggleControl, {
-                            label: 'Open links in a new tab', checked: attributes.newTab,
-                            onChange: function(value) { setAttributes({ newTab: value }); }
+                        el(wp.components.SelectControl, {
+                            label: __('Open links in a new tab', 'mds-release-manager'),
+                            value: attributes.newTab === undefined ? '' : String(attributes.newTab),
+                            options: [{ label: defaults.newTab === false ? __('Use site default (No)', 'mds-release-manager') : __('Use site default (Yes)', 'mds-release-manager'), value: '' }, { label: __('Yes', 'mds-release-manager'), value: 'true' }, { label: __('No', 'mds-release-manager'), value: 'false' }],
+                            onChange: function(value) { setAttributes({ newTab: value === '' ? undefined : value === 'true' }); }
                         }),
-                        el(wp.components.ToggleControl, {
-                            label: 'Show audio player', checked: attributes.showAudio,
-                            onChange: function(value) { setAttributes({ showAudio: value }); }
+                        el(wp.components.SelectControl, {
+                            label: __('Show audio player', 'mds-release-manager'),
+                            value: attributes.showAudio === undefined ? '' : String(attributes.showAudio),
+                            options: [{ label: defaults.showAudio === false ? __('Use site default (No)', 'mds-release-manager') : __('Use site default (Yes)', 'mds-release-manager'), value: '' }, { label: __('Yes', 'mds-release-manager'), value: 'true' }, { label: __('No', 'mds-release-manager'), value: 'false' }],
+                            onChange: function(value) { setAttributes({ showAudio: value === '' ? undefined : value === 'true' }); }
                         }),
+                        (attributes.items || attributes.itemOrder || attributes.itemOverrides) && el(wp.components.Button, {
+                            variant: 'tertiary',
+                            onClick: function() { setAttributes({ items: undefined, itemOrder: undefined, itemOverrides: undefined }); }
+                        }, __('Use site link defaults', 'mds-release-manager')),
+                        !attributes.items && attributes.itemOrder && el(wp.components.Button, {
+                            variant: 'link', onClick: function() { setAttributes({ itemOrder: undefined }); }
+                        }, __('Use site link order', 'mds-release-manager')),
                         el('p', null, 'URLs come from the release. Providers without overrides remain visible.'),
                         el(TextControl, {
                             label: 'Additional provider name',
@@ -56,7 +73,11 @@
                         el(wp.components.Button, {
                             variant: 'secondary',
                             disabled: !customName.trim() || items.some(function(item) { return item.name.toLowerCase() === customName.trim().toLowerCase(); }),
-                            onClick: function() { setAttributes({ items: items.concat([{ name: customName.trim(), enabled: true }]) }); customState[1](''); }
+                            onClick: function() {
+                                if (attributes.items) setAttributes({ items: items.concat([{ name: customName.trim(), enabled: true }]) });
+                                else setAttributes({ itemOverrides: { ...attributes.itemOverrides, [customName.trim()]: { enabled: true } } });
+                                customState[1]('');
+                            }
                         }, 'Add provider override')
                     ),
                     items.map(function(item, index) {
@@ -66,14 +87,21 @@
                                 label: 'Show link', checked: item.enabled !== false,
                                 onChange: function(value) { updateItem(index, { enabled: value }); }
                             }),
+                            resetProperty(item, 'enabled', __('Use site visibility', 'mds-release-manager')),
                             el(TextControl, {
                                 label: 'Icon classes', help: 'Leave blank to use the provider default. Dashicons and Font Awesome are supported.',
                                 value: item.icon || '', onChange: function(value) { updateItem(index, { icon: value }); }
                             }),
+                            resetProperty(item, 'icon', __('Use site icon', 'mds-release-manager')),
                             el(TextControl, {
                                 label: 'Tooltip title', help: 'Leave blank to use the provider name.',
                                 value: item.title || '', onChange: function(value) { updateItem(index, { title: value }); }
                             }),
+                            resetProperty(item, 'title', __('Use site tooltip', 'mds-release-manager')),
+                            !attributes.items && attributes.itemOverrides?.[item.name] && el(wp.components.Button, {
+                                variant: 'tertiary',
+                                onClick: function() { window.mdsRmReleaseItems.resetItem(attributes, setAttributes, item.name); }
+                            }, __('Use site defaults for this link', 'mds-release-manager')),
                             el(wp.components.Button, {
                                 variant: 'secondary', disabled: index === 0,
                                 onClick: function() { moveItem(index, -1); }, 'aria-label': 'Move ' + label + ' up'
@@ -86,7 +114,7 @@
                         );
                     })
                 ),
-                el(window.mdsRmReleaseLinksControls, { attributes, setAttributes }),
+                el(window.mdsRmReleaseLinksControls, { attributes, setAttributes, defaults: defaults.linkStyles || {} }),
                 el(ServerSideRender, {
                     block: name, attributes, httpMethod: 'POST',
                     urlQueryArgs: contextId ? { post_id: contextId } : undefined,

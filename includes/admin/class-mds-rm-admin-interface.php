@@ -688,6 +688,8 @@ final class MDS_RM_Admin_Interface {
 			'fa_sources'                 => $fa_sources,
 			'active_fa_source'           => get_option( 'mds_rm_fa_support', 'cdn' ),
 			'audio_player_custom_fields' => apply_filters( 'mds_rm_settings_audio_fields', '' ),
+			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'release-meta', 'release-links', 'artist-discography', 'integrations' ) ),
+			'block_defaults'             => get_option( 'mds_rm_block_defaults', array() ),
 			'settings'                   => array(
 				'bandcamp_template' => get_option( 'mds_rm_bandcamp_template', '[bandcamp width=100% height=42 album={release_number} size=small bgcol=ffffff linkcol=0687f5 artwork=none]' ),
 				'global_redirect'   => '1' === (string) get_option( 'mds_rm_global_redirect', '0' ),
@@ -696,5 +698,34 @@ final class MDS_RM_Admin_Interface {
 
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and renders trusted extension markup.
 		echo MDS_RM_Template_Loader::render_admin_view( 'settings-page.php', $args );
+	}
+
+	/**
+	 * Returns valid extension tabs for an administration settings screen.
+	 *
+	 * Each tab is keyed by a unique slug and has a label and a callable render
+	 * function. The callback owns its forms, permissions, and save handlers.
+	 *
+	 * @param string   $hook     Filter providing the tabs.
+	 * @param string[] $reserved Core tab slugs.
+	 * @return array Valid tab definitions.
+	 */
+	public static function extension_tabs( string $hook, array $reserved ): array {
+		$tabs = apply_filters( $hook, array() );
+		if ( ! is_array( $tabs ) ) {
+			MDS_RM_Logger::report_failure( 'Invalid Release Manager settings tabs supplied to ' . $hook );
+			return array();
+		}
+		$valid = array();
+		foreach ( $tabs as $slug => $tab ) {
+			if ( ! is_string( $slug ) || sanitize_key( $slug ) !== $slug || '' === $slug || in_array( $slug, $reserved, true )
+				|| ! is_array( $tab ) || ! isset( $tab['label'], $tab['render'] )
+				|| ! is_string( $tab['label'] ) || '' === trim( $tab['label'] ) || ! is_callable( $tab['render'] ) ) {
+				MDS_RM_Logger::report_failure( 'Invalid Release Manager settings tab supplied to ' . $hook );
+				continue;
+			}
+			$valid[ $slug ] = $tab;
+		}
+		return $valid;
 	}
 }

@@ -119,19 +119,27 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 
 		await test.step('Settings form saves through REST and persists the provider', async () => {
 			await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings');
+			await expect(page.getByRole('link', { name: 'Release Meta', exact: true })).toHaveClass(/nav-tab-active/);
+			await page.getByRole('link', { name: 'Release Links', exact: true }).click();
 			await expect(page.locator('#mds-settings-form')).toHaveCSS('margin-top', '20px');
 			await page.getByRole('button', { name: 'Add Provider' }).click();
 			await expect(page.locator('.mds-provider-row-new').last()).toHaveCSS('display', 'flex');
 			await page.getByPlaceholder('Provider Name').last().fill(fixture.label);
+			const template = '[bandcamp album={release_number} size=small]';
+			if (await page.locator('#mds_cb_bandcamp').count()) {
+				await page.locator('#mds_cb_bandcamp').check();
+			}
+			await page.getByLabel('Bandcamp Shortcode Template').fill(template);
 			const [response] = await Promise.all([
 				page.waitForResponse((response) =>
 					response.request().method() === 'POST' && response.url().includes('/mds/v1/settings'), { timeout: 15_000 }),
-				page.locator('#tab-shortcode').getByRole('button', { name: 'Save Settings' }).click(),
+				page.locator('#tab-release-links').getByRole('button', { name: 'Save Settings' }).click(),
 			]);
 			expect(response.status()).toBe(200);
 			expect(await response.json()).toMatchObject({ success: true });
 			const providers = readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_providers'));"]);
 			expect(providers).toEqual(expect.arrayContaining([expect.objectContaining({ name: fixture.label })]));
+			expect(readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_bandcamp_template'));"])).toBe(template);
 		});
 
 		await test.step('CSV, network settings, and Artist admin views remain usable', async () => {

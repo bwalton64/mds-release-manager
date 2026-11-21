@@ -1,5 +1,5 @@
 (function (wp) {
-	const { createElement: el } = wp.element;
+	const { createElement: el, Fragment } = wp.element;
 	const { InspectorControls, useSettings } = wp.blockEditor;
 	const { PanelBody } = wp.components;
 	const { __ } = wp.i18n;
@@ -12,7 +12,7 @@
 			'typography.fontFamilies', 'typography.fontSizes', 'typography.customFontSize',
 			'typography.lineHeight', 'typography.fontStyle', 'typography.letterSpacing'
 		);
-		return el(InspectorControls, { group: 'styles' },
+		return el(props.standalone ? Fragment : InspectorControls, props.standalone ? null : { group: 'styles' },
 			el(PanelBody, { title: __('Release Meta layout', 'mds-release-manager'), initialOpen: false },
 				color('background', __('Background color', 'mds-release-manager')),
 				box('margin', __('Margin', 'mds-release-manager')),

@@ -70,6 +70,11 @@
 		border-color: var(--mds-meta-border-color-tablet, var(--mds-meta-border-color-desktop, transparent));
 		border-radius: var(--mds-meta-radius-tablet, var(--mds-meta-radius-desktop, 0));
 	}
+	.wp-block-mds-rm-release-meta .mds-release-meta__item > span:not(.screen-reader-text) {
+		font-style: var(--mds-meta-font-style-tablet, var(--mds-meta-font-style-desktop, inherit));
+		letter-spacing: var(--mds-meta-letter-spacing-tablet, var(--mds-meta-letter-spacing-desktop, inherit));
+		text-align: var(--mds-meta-text-align-tablet, var(--mds-meta-text-align-desktop, inherit));
+	}
 	.mds-release-meta__item { gap: var(--mds-meta-icon-gap-tablet, var(--mds-meta-icon-gap-desktop, 6px)); }
 	.mds-release-meta__icon {
 		color: var(--mds-meta-icon-color-tablet, var(--mds-meta-icon-color-desktop, inherit));
@@ -97,6 +102,11 @@
 		border-style: var(--mds-meta-border-style-mobile, var(--mds-meta-border-style-tablet, var(--mds-meta-border-style-desktop, none)));
 		border-color: var(--mds-meta-border-color-mobile, var(--mds-meta-border-color-tablet, var(--mds-meta-border-color-desktop, transparent)));
 		border-radius: var(--mds-meta-radius-mobile, var(--mds-meta-radius-tablet, var(--mds-meta-radius-desktop, 0)));
+	}
+	.wp-block-mds-rm-release-meta .mds-release-meta__item > span:not(.screen-reader-text) {
+		font-style: var(--mds-meta-font-style-mobile, var(--mds-meta-font-style-tablet, var(--mds-meta-font-style-desktop, inherit)));
+		letter-spacing: var(--mds-meta-letter-spacing-mobile, var(--mds-meta-letter-spacing-tablet, var(--mds-meta-letter-spacing-desktop, inherit)));
+		text-align: var(--mds-meta-text-align-mobile, var(--mds-meta-text-align-tablet, var(--mds-meta-text-align-desktop, inherit)));
 	}
 	.mds-release-meta__item { gap: var(--mds-meta-icon-gap-mobile, var(--mds-meta-icon-gap-tablet, var(--mds-meta-icon-gap-desktop, 6px))); }
 	.mds-release-meta__icon {

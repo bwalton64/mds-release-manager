@@ -163,8 +163,36 @@ final class MDS_RM_Assets {
 			}
 		}
 
+		if ( $is_settings_screen || $is_network_screen ) {
+			$tabs_script = 'js/settings-tabs.js';
+			wp_enqueue_script( 'mds-settings-tabs', MDS_RM_URL . $tabs_script, array( 'jquery' ), filemtime( MDS_RM_PATH . $tabs_script ), true );
+		}
+
 		if ( $is_settings_screen ) {
 			wp_enqueue_style( 'wp-color-picker' );
+			wp_enqueue_style( 'wp-components' );
+			wp_enqueue_style( 'wp-block-editor' );
+			$defaults_script = 'js/settings-defaults.js';
+			wp_enqueue_script(
+				'mds-settings-defaults',
+				MDS_RM_URL . $defaults_script,
+				array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-release-meta-controls', 'mds-rm-release-links-controls', 'mds-rm-discography-table-controls' ),
+				filemtime( MDS_RM_PATH . $defaults_script ),
+				true
+			);
+			$context = new WP_Block_Editor_Context( array( 'name' => 'mds-rm/settings' ) );
+			wp_localize_script(
+				'mds-settings-defaults',
+				'mdsRmDefaultsSettings',
+				array(
+					'editorSettings' => get_block_editor_settings( array(), $context ),
+					'defaults'       => get_option( 'mds_rm_block_defaults', array() ),
+					'metaItems'      => MDS_RM_Release_Meta::default_items(),
+					'metaFields'     => MDS_RM_Release_Meta::fields(),
+					'providers'      => MDS_RM_Release_Links::providers(),
+				)
+			);
+			wp_set_script_translations( 'mds-settings-defaults', 'mds-release-manager', MDS_RM_PATH . 'languages' );
 			MDS_RM_Template_Loader::enqueue_editable_script(
 				'mds-settings-js',
 				'js/settings.js',
@@ -180,6 +208,10 @@ final class MDS_RM_Assets {
 					'provider_name' => __( 'Provider Name', 'mds-release-manager' ),
 					'hex_color'     => __( 'Hex Color', 'mds-release-manager' ),
 					'remove'        => __( 'Remove', 'mds-release-manager' ),
+					'saving'        => __( 'Saving...', 'mds-release-manager' ),
+					'save_settings' => __( 'Save Settings', 'mds-release-manager' ),
+					'save_error'    => __( 'Error saving settings.', 'mds-release-manager' ),
+					'unsaved_after_save' => __( 'Settings were saved, but newer changes have not been saved.', 'mds-release-manager' ),
 				)
 			);
 		}

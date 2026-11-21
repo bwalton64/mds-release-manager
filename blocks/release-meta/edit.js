@@ -29,28 +29,35 @@
         edit: function(props) {
             var attributes = props.attributes;
             var setAttributes = props.setAttributes;
-            var items = attributes.items || mdsReleaseMeta.items;
+            const defaults = mdsReleaseMeta.defaults || {};
+            const inheritedItems = defaults.items || mdsReleaseMeta.items;
+            var items = window.mdsRmReleaseItems.resolve(inheritedItems, attributes, 'field');
             const contextId = props.context?.postId || 0;
             const { picker, source, resolved } = window.mdsRmUseReleasePicker({ attributes, setAttributes, contextId });
 
             function updateItem(index, change) {
-                var next = items.map(function(item, i) {
-                    return i === index ? Object.assign({}, item, change) : item;
-                });
-                setAttributes({ items: next });
+                window.mdsRmReleaseItems.update(attributes, setAttributes, items, 'field', index, change);
             }
             function moveItem(index, direction) {
-                var target = index + direction;
-                if (target < 0 || target >= items.length) return;
-                var next = items.slice();
-                var item = next[index];
-                next[index] = next[target];
-                next[target] = item;
-                setAttributes({ items: next });
+                window.mdsRmReleaseItems.move(attributes, setAttributes, items, 'field', index, direction);
+            }
+            function resetProperty(item, key, label) {
+                if (attributes.items || !Object.prototype.hasOwnProperty.call(attributes.itemOverrides?.[item.field] || {}, key)) return null;
+                return el(wp.components.Button, {
+                    variant: 'link',
+                    onClick: function() { window.mdsRmReleaseItems.resetProperty(attributes, setAttributes, item.field, key); }
+                }, label);
             }
             return el('div', wp.blockEditor.useBlockProps(),
                 el(InspectorControls, null,
                     el(PanelBody, { title: __('Release Meta', 'mds-release-manager'), initialOpen: true }, picker),
+                    (attributes.items || attributes.itemOrder) && el(wp.components.Button, {
+                        variant: 'tertiary',
+                        onClick: function() { setAttributes({ items: undefined, itemOrder: undefined, itemOverrides: undefined }); }
+                    }, __('Use site field defaults', 'mds-release-manager')),
+                    !attributes.items && attributes.itemOrder && el(wp.components.Button, {
+                        variant: 'link', onClick: function() { setAttributes({ itemOrder: undefined }); }
+                    }, __('Use site field order', 'mds-release-manager')),
                     items.map(function(item, index) {
                         var definition = mdsReleaseMeta.fields[item.field];
                         if (!definition) return null;
@@ -60,6 +67,7 @@
                                 checked: !!item.enabled,
                                 onChange: function(value) { updateItem(index, { enabled: value }); }
                             }),
+                            resetProperty(item, 'enabled', __('Use site visibility', 'mds-release-manager')),
                             el(SelectControl, {
                                 label: 'Choose icon',
                                 value: '',
@@ -74,11 +82,17 @@
                                 value: item.icon,
                                 onChange: function(value) { updateItem(index, { icon: value }); }
                             }),
+                            resetProperty(item, 'icon', __('Use site icon', 'mds-release-manager')),
                             el(TextControl, {
                                 label: 'Tooltip title',
                                 value: item.title,
                                 onChange: function(value) { updateItem(index, { title: value }); }
                             }),
+                            resetProperty(item, 'title', __('Use site tooltip', 'mds-release-manager')),
+                            !attributes.items && attributes.itemOverrides?.[item.field] && el(wp.components.Button, {
+                                variant: 'tertiary',
+                                onClick: function() { window.mdsRmReleaseItems.resetItem(attributes, setAttributes, item.field); }
+                            }, __('Use site defaults for this field', 'mds-release-manager')),
                             el(wp.components.Button, {
                                 variant: 'secondary',
                                 disabled: index === 0,
@@ -95,7 +109,7 @@
                         );
                     })
                 ),
-                el(window.mdsRmReleaseMetaControls, { attributes, setAttributes }),
+                el(window.mdsRmReleaseMetaControls, { attributes, setAttributes, defaults: defaults.metaStyles || {} }),
                 el(ServerSideRender, {
                     block: name, attributes, httpMethod: 'POST',
                     urlQueryArgs: contextId ? { post_id: contextId } : undefined,

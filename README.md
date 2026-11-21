@@ -65,6 +65,13 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 - **LiteSpeed Cache:** Automatic cache purge on release updates
 
 Font Awesome Free is bundled and loaded locally by default. Under Releases > Settings, you can select a theme or plugin that already provides the icons, or disable the bundled stylesheet.
+Streaming provider and audio preview settings are available under the Release Links tab.
+
+The Release Meta, Release Links, and Artist Discography tabs also manage site-wide
+block presentation defaults. Existing and new blocks inherit changes unless a
+block has an explicit override; older saved field and link lists remain complete
+overrides. The block controls can restore inherited values. These defaults do
+not change shortcodes, Elementor widgets, or fallback templates.
 
 ### Multisite Support
 - Fully compatible with WordPress Multisite networks
@@ -195,13 +202,42 @@ sites show a read-only, automatically synchronized copy.
 // - Format, UPC, artist name
 // - Per-field styling options
 
-// Or use the shortcode equivalent (UPC/EAN identifies the release):
-echo do_shortcode( '[release-meta upc="012345678901" fields="release_title,release_format,upc_ean"]' );
+// Select by stable Release post ID, UPC/EAN, or the current Release context:
+echo do_shortcode( '[release-meta release_id="123" fields="release_title,release_format,upc_ean"]' );
 ```
 
 In the **Release Meta** block, search published Releases by title or full UPC/EAN. Leave the picker blank to use the current Release, supported WooCommerce context, or the Artist’s latest published Release. An unavailable saved selection falls back to context without being cleared.
 
 Use **Styles** to adjust layout, typography, and icons. Saved tablet and mobile overrides still apply when previewing those widths. To remove them without clearing desktop or new settings, use **Legacy responsive styles → Remove legacy tablet/mobile overrides**.
+
+##### `[release-meta]` shortcode reference
+
+The shortcode accepts a stable Release post ID, a UPC/EAN string, or the current post context. A readable `release_id` takes precedence over `upc`; if the ID does not resolve, a supplied UPC is tried next. Without either attribute, the shortcode uses the current Release or the existing extension-provided context. UPC/EAN values are strings, so keep leading zeroes.
+
+| Attribute | Purpose |
+| --- | --- |
+| `release_id` | Release post ID, matching the block's Release picker. |
+| `upc` | UPC/EAN string. |
+| `fields` | Optional comma-separated field names in display order. Omitting it uses the default fields. Available fields: `release_year`, `record_label`, `distributor`, `upc_ean`, `release_format`, `release_date`, `release_title`, `artist`, `release_tags`. |
+| `icon_FIELD` | Override the icon class for a field, using a supported Dashicon or Font Awesome class. Use an empty value to omit that icon. |
+| `title_FIELD` | Override a field's tooltip title. |
+
+For example:
+
+```text
+[release-meta release_id="123" fields="release_title,release_format,upc_ean" icon_release_title="dashicons dashicons-album" title_upc_ean="Barcode"]
+```
+
+Style attributes set the same component controls as the block. The values apply to desktop unless a device suffix is added:
+
+| Attribute | Style control | Attribute | Style control |
+| --- | --- | --- | --- |
+| `background`, `color`, `icon_color` | Background, text, and icon colors | `font_family`, `font_size`, `font_weight`, `font_style`, `line_height`, `letter_spacing`, `text_align` | Typography |
+| `icon_size`, `icon_opacity`, `icon_gap` | Icon size, opacity, and icon-to-text gap | `gap` | Gap between fields |
+| `align`, `vertical_align`, `direction`, `wrap`, `width` | Layout and container width | `padding`, `margin` | Container spacing |
+| `border_width`, `border_style`, `border_color`, `radius` | Container border and corner radius |  |  |
+
+Append `_tablet` or `_mobile` to a style attribute for a device-specific override, such as `gap_mobile="8px"` or `text_align_tablet="center"`. Tablet styles apply up to 1024px; mobile styles apply up to 767px and inherit tablet, then desktop values when omitted. Colors accept hex, `rgb()`/`rgba()`, `transparent`, `inherit`, or a WordPress color preset such as `var(--wp--preset--color--primary)`. Font-family and font-size accept their corresponding WordPress preset variables. Lengths accept `0` or CSS lengths (`px`, `em`, `rem`, `%`, `vw`, `vh`); spacing accepts one to four lengths. Alignment, direction, wrapping, border style, font style, and text alignment use the values offered by the block controls. Opacity is from `0` to `1`; invalid style values are omitted.
 
 #### Display Release Links
 
@@ -211,22 +247,59 @@ Use the block's **Styles** tab for layout, button and icon styling, and audio-pl
 
 ```php
 // Display streaming provider links for a release
-echo do_shortcode( '[release-links upc="012345678901" show_audio="1" new_tab="1"]' );
+echo do_shortcode( '[release-links release_id="123" show_audio="1" new_tab="1"]' );
 
 // Output example:
 // [Spotify] [Apple Music] [Bandcamp]
 ```
 
+##### `[release-links]` shortcode reference
+
+Release selection follows the same `release_id` → `upc` → current-context precedence as `[release-meta]`. The block's provider URLs and defaults still come from the selected Release and **Releases → Settings**.
+
+| Attribute | Purpose |
+| --- | --- |
+| `release_id`, `upc` | Select a Release by post ID or UPC/EAN. |
+| `order` | Comma-separated provider names in display order. Include `__buy_now` to position Buy Now. |
+| `hide` | Comma-separated provider names to hide. |
+| `icon_PROVIDER`, `title_PROVIDER` | Override a provider's icon or tooltip. Use a lowercase provider name with spaces replaced by underscores, such as `icon_apple_music`; use `icon_buy_now` and `title_buy_now` for Buy Now. Names in `order` can also identify saved providers that are not configured in the default provider list. |
+| `new_tab` | `1` (default) opens links in a new tab; `0` opens them in the current tab. |
+| `show_audio` | `1` (default) displays the configured audio preview; `0` hides it. |
+
+Both toggles accept only `0` or `1`; an invalid value is logged and uses the enabled default.
+
+For example:
+
+```text
+[release-links release_id="123" order="Apple Music,Spotify,__buy_now" hide="Spotify" icon_apple_music="dashicons dashicons-album" title_apple_music="Listen on Apple Music" show_audio="0" new_tab="0"]
+```
+
+Style attributes match the Release Links block: `background`, `gap`, `align`, `vertical_align`, `direction`, `wrap`, `width`, `padding`, `margin`, `border_width`, `border_style`, `border_color`, `radius`, `link_gap`, `button_size`, `button_radius`, `button_color`, `button_background`, `button_border_width`, `button_border_style`, `button_border_color`, `icon_size`, `hover_opacity`, and `audio_width`. Append `_tablet` or `_mobile` to override a style at that breakpoint; inheritance, value types, and WordPress preset references match `[release-meta]`. A `button_background` override takes precedence over configured provider colors.
+
 #### Add Discography to an Artist Page
 
 Insert **Artist Discography** in the block editor. Search for a published Artist on this site under **Settings → Artist Discography**, or leave the field blank to use the current Artist. On a regular page without an Artist context, select an Artist. If a saved Artist becomes unavailable, the editor warns you and retains the selection until you clear or replace it.
 
-Use the block's **Styles** tab for outer spacing, colors, typography, and borders. The **Discography table**, **header**, **body**, and **cells and links** panels let you style the table separately, including cell padding, grid borders, link decoration, and alternating rows. Available presets and custom options depend on the active theme. Use **Reset discography table styles** to remove the table overrides without resetting the block's outer styles. These controls don't change shortcode output or the automatic Artist-page fallback.
+Use the block's **Styles** tab for outer spacing, colors, typography, and borders. The **Discography table**, **header**, **body**, and **cells and links** panels let you style the table separately, including cell padding, grid borders, link decoration, and alternating rows. Available presets and custom options depend on the active theme. Use **Reset discography table styles** to remove the table overrides without resetting the block's outer styles. The shortcode accepts the same table and outer-wrapper settings.
 
 ```php
 // As a shortcode (omit artist_id to use the current Artist):
-echo do_shortcode( '[artist-discography artist_id="5"]' );
+echo do_shortcode( '[artist-discography artist_id="5" striped="1" header_background="#222222" cell_padding_top="10px" wrapper_text_color="#ffffff"]' );
 ```
+
+##### `[artist-discography]` shortcode reference
+
+Omit `artist_id` to use the current Artist; otherwise pass the local Artist post ID. The shortcode renders the same paginated table as the block and automatic Artist-page fallback.
+
+Table controls are flat shortcode attributes corresponding to the block's `tableStyles` keys: replace each hyphen with an underscore. Supported attributes are `link_color`, `link_decoration`, `table_radius`; `table_background`, `table_color`, `table_font_family`, `table_font_size`, `table_font_style`, `table_font_weight`, `table_line_height`; the same `background`, `color`, `font_family`, `font_size`, `font_style`, `font_weight`, and `line_height` suffixes prefixed with `header_` or `body_` (plus `header_text_align` and `body_text_align`); `table_margin_top/right/bottom/left`, `table_padding_top/right/bottom/left`, `cell_padding_top/right/bottom/left`; `table_border_width/color/style`; and `cell_border_width/color/style`.
+
+Use `striped="1"` to enable alternating row backgrounds and optionally set `stripe_background`; `striped="0"` (the default) disables striping. For example:
+
+```text
+[artist-discography artist_id="5" table_background="#ffffff" header_background="#222222" header_text_align="center" cell_padding_top="10px" cell_border_style="solid" link_color="#0055aa" striped="1" stripe_background="#f4f4f4"]
+```
+
+The block's native outer styles are also available with `wrapper_`-prefixed attributes: `wrapper_background`, `wrapper_text_color`, `wrapper_link_color`, `wrapper_font_size`, `wrapper_font_family`, `wrapper_font_weight`, `wrapper_font_style`, `wrapper_line_height`, `wrapper_letter_spacing`, `wrapper_margin`, `wrapper_padding`, `wrapper_border_color`, `wrapper_border_radius`, `wrapper_border_style`, and `wrapper_border_width`. Outer colors, font sizes, font families, and spacing accept validated CSS values or their matching WordPress preset variables (for example `var(--wp--preset--spacing--30)`). Table font-family values use a WordPress font-family preset; table font sizes accept pixel values or a font-size preset. Table font weights are hundreds from 100 to 900; styles are `normal` or `italic`; header/body text alignment is `start`, `center`, or `end`; link decoration is `underline` or `none`; and table/cell border styles accept `none`, `solid`, `dashed`, `dotted`, `double`, `groove`, `ridge`, `inset`, `outset`, or `hidden`. Table-style settings apply at all viewport sizes; the Release Meta and Release Links shortcodes additionally support responsive style suffixes.
 
 #### Retrieve Releases via REST API
 
@@ -536,7 +609,22 @@ add_filter( 'mds_rm_settings_audio_fields', function( $html ) {
     $html .= '<p><label>' . esc_html__( 'My Custom Option', 'mds-release-manager' ) . '</label></p>';
     return $html;
 });
+
+// Add a site settings tab; the callback renders its own secure form.
+add_filter( 'mds_rm_site_settings_tabs', function( array $tabs ): array {
+    $tabs['my-extension'] = array(
+        'label'  => __( 'My Extension', 'my-extension' ),
+        'render' => 'my_extension_render_settings',
+    );
+    return $tabs;
+});
 ```
+
+For network settings, use `mds_rm_network_settings_tabs` with the same
+slug/label/render structure. Tab callbacks are rendered outside the core
+settings forms and must handle their own capability checks, nonces, validation,
+and saving. Existing `mds_rm_settings_audio_fields` and
+`mds_rm_network_settings_fields` filters remain available.
 
 #### Adding blocks to the "MDS Release Manager" inserter section
 

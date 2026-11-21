@@ -165,6 +165,7 @@ read-only outside the hub.
 - **`do_action( 'mds_rm_save_custom_meta', $post_id, $_POST )`** — Fire after core meta is saved. Third-party plugins can save their custom meta here.
 - **`apply_filters( 'mds_rm_settings_audio_fields', $html )`** — Filter audio preview section HTML on the Settings page.
 - **`apply_filters( 'mds_rm_network_settings_fields', $html )`** — Filter network admin settings page HTML.
+- **`apply_filters( 'mds_rm_site_settings_tabs', $tabs )`** and **`apply_filters( 'mds_rm_network_settings_tabs', $tabs )`** — Register keyed extension tabs with `label` and callable `render`. The owning extension renders and saves its own form; site and network capabilities remain separate. Existing section filters remain supported.
 - **`apply_filters( 'mds_rm_sync_target_sites', $site_ids, $post_id, $post_type )`** — Supplies sites to the generic hub/spoke synchronizer. The WooCommerce extension supplies the existing `mds_rm_woo_sites` list.
 - **`do_action( 'mds_rm_after_shadow_meta_sync', $shadow_id, $site_id, $source_id, $source_meta )`** — Lets extensions map their own metadata after a shadow record is copied.
 - **`apply_filters( 'mds_rm_release_meta_context_upc', $upc, $context_post_id )`** — Resolves non-release contexts. The WooCommerce extension resolves product SKUs here.
@@ -174,16 +175,16 @@ read-only outside the hub.
 - The Bandcamp extension registers `mds_rm_after_release_meta`; the Release fallback partial does not invoke that hook.
 
 ### Shortcodes
-- **`[release-meta upc="012345678901"]`** — Renders metadata for a release; UPC/EAN is a string and leading zeroes are significant. Without `upc`, the current Release or supported extension context is used.
-- **`[release-links upc="012345678901"]`** — Renders streaming links, Buy Now, and the configured audio preview for a release using the same UPC/context rules.
-- **`[artist-discography artist_id="123"]`** — Renders an Artist's Discography. Omit `artist_id` to use the current Artist.
+- **`[release-meta release_id="123" upc="012345678901"]`** — Renders metadata for a Release. A readable Release ID takes precedence over UPC/EAN; an unresolved ID falls through to UPC, then current Release or supported extension context. UPC/EAN is a string and leading zeroes are significant.
+- **`[release-links release_id="123" upc="012345678901"]`** — Renders streaming links, Buy Now, and the configured audio preview using the same Release ID/UPC/context precedence.
+- **`[artist-discography artist_id="123"]`** — Renders an Artist's Discography. Omit `artist_id` to use the current Artist. Flat shortcode attributes expose table and outer-wrapper styles; see the shortcode reference in `README.md`.
 - `[release_links]` and the old links block/widget are not registered, and their legacy renderer and template have been removed. Stored streaming, purchase, audio and legacy styling data remain, but existing embeds must be replaced with the current shortcode or block.
 
 ### Artist Discography
 - **`mds-rm/artist-discography`** uses the current Artist or an optional Artist post ID. Only published Releases associated through `artist_id` and the Artist's `_mds_artist_uuid` are listed, ordered by Release post date and ID descending, 25 per page. Release year is derived from the post date; UPC/EAN is displayed as text.
-- Pagination uses `mds_discography_page_{artist_id}`. The table scrolls horizontally when necessary. Artist fallback Customizer table styles apply to the automatic table; independently placed blocks and shortcodes use their surrounding theme styles.
+- Pagination uses `mds_discography_page_{artist_id}`. The table scrolls horizontally when necessary. Artist fallback Customizer table styles apply to the automatic table; independently placed blocks and shortcodes use their surrounding theme styles unless per-instance styles are supplied.
 - The editor queries the site's existing `/wp/v2/artist` endpoint for published Artists and resolves a saved selection independently of search results. The stored integer `artistId` remains unchanged; zero or absent resolves block context. The editor sends the context ID to the block renderer for preview only.
-- Core block supports own wrapper styles. An optional `tableStyles` attribute stores per-region overrides (including references to theme presets). The block renderer validates them and emits scoped CSS variables; the shared table renderer, shortcode, fallback, pagination, and column/cell hooks remain unchanged.
+- Core block supports own wrapper styles. An optional `tableStyles` attribute stores per-region overrides (including references to theme presets). Both block and shortcode renderers validate table settings and emit scoped CSS variables; shortcode `table_*`, `header_*`, `body_*`, `cell_*`, and `link_*` attributes map underscores to the corresponding `tableStyles` keys. `striped="1"` enables alternate rows. `wrapper_*` attributes mirror the core wrapper's color, typography, spacing, and border controls. Table styles are not responsive; outer styles are inline on the shortcode wrapper.
 
 ### Gutenberg Block
 - Release Meta, Release Links, and Artist Discography register from `blocks/{name}/block.json` with their existing PHP renderers. The editor filters for metadata bindings on core blocks live separately in `blocks/core-block-extensions.js`.
@@ -195,13 +196,13 @@ read-only outside the hub.
 
   `[release-meta upc="012345678901" fields="release_title,release_format,upc_ean" icon_release_title="dashicons dashicons-album" title_upc_ean="Barcode" color="#ffffff" gap="15px" gap_mobile="8px"]`
 
-- Styles are per instance, not read from legacy widget options. Shortcode style attributes are `background`, `color`, `icon_color`, `font_family`, `font_size`, `font_weight`, `line_height`, `icon_size`, `icon_opacity`, `icon_gap`, `gap`, `align`, `vertical_align`, `direction`, `wrap`, `width`, `padding`, `margin`, `border_width`, `border_style`, `border_color`, and `radius`. Add `_tablet` or `_mobile` for responsive overrides; mobile is at most 767px and tablet at most 1024px, with inheritance from the next larger device. Elementor retains its existing device controls.
-- Colors accept hex, `transparent`, or `inherit`; lengths accept zero or `px`, `em`, `rem`, `%`, `vw`, and `vh`; width also accepts `auto`; spacing accepts up to four lengths. Main-axis alignment accepts `flex-start`, `center`, `flex-end`, or `space-between`; cross-axis alignment accepts `flex-start`, `center`, `flex-end`, or `stretch`. Direction accepts `row`, `row-reverse`, `column`, or `column-reverse`; wrapping accepts `wrap`, `nowrap`, or `wrap-reverse`. Border style accepts `none`, `solid`, `dashed`, `dotted`, or `double`; opacity is 0–1. Invalid style/icon values are omitted and logged.
+- Styles are per instance, not read from legacy widget options. Shortcode style attributes also include `font_style`, `text_align`, and `letter_spacing`; all component-style values can use `_tablet` and `_mobile` suffixes. Mobile is at most 767px and tablet at most 1024px, with inheritance from the next larger device. Elementor retains its existing device controls.
+- Colors accept hex, `rgb()`/`rgba()`, `transparent`, `inherit`, or `var(--wp--preset--color--{slug})`; font-family and font-size accept their corresponding WordPress preset variables. Lengths accept zero or `px`, `em`, `rem`, `%`, `vw`, and `vh`; width also accepts `auto`; spacing accepts up to four lengths. Main-axis alignment accepts `flex-start`, `center`, `flex-end`, or `space-between`; cross-axis alignment accepts `flex-start`, `center`, `flex-end`, or `stretch`. Direction accepts `row`, `row-reverse`, `column`, or `column-reverse`; wrapping accepts `wrap`, `nowrap`, or `wrap-reverse`. Border style accepts `none`, `solid`, `dashed`, `dotted`, or `double`; font style is `normal` or `italic`, text alignment is `start`, `center`, or `end`, and opacity is 0–1. Invalid style/icon values are omitted and logged.
 - The WooCommerce integration must be active on the hub to provide existing sync targets and on each store for product-context lookup and automatic product-page metadata. It honors the previously saved `mds_rm_woo_injection` placement/disabled value; an empty or nonnumeric SKU does not resolve a release. Product metadata and Release Links are not combined.
 
 ### Release Links Block
 - **`mds-rm/release-links`** and the Elementor widget `mds_release_links` render independently of Release Meta, use the album Dashicon, and are placed manually, including in fallback release templates and product pages. Explicit UPC, current Release/Query Loop and extension-provided product SKU contexts use `MDS_RM_Release_Meta::resolve_post`.
-- The block stores a local `releaseId` for new choices and still reads legacy `upcOverride` strings. A missing explicit source falls back without rewriting the attributes. Artist context resolves the latest published Release by Artist UUID, post date, then post ID. The editor uses authenticated lookups for published title/UPC choices and contextual source status; shortcode and Elementor resolution are unchanged.
+- The block stores a local `releaseId` for new choices and still reads legacy `upcOverride` strings. A missing explicit source falls back without rewriting the attributes. Artist context resolves the latest published Release by Artist UUID, post date, then post ID. The editor uses authenticated lookups for published title/UPC choices and contextual source status. The shortcode accepts `release_id` as well as `upc` and current context.
 - Native editor controls store optional `linkStyles`. These values replace matching legacy desktop styles at render time without modifying stored data. Saved tablet and mobile styles keep their existing precedence until explicitly removed. Plugin controls target the same inner layout and button elements as before, rather than applying a second layer of spacing or borders to the block wrapper.
 - Provider URLs come from each release; configured provider names, icons and colors remain defaults in Releases → Settings. Available saved links and Buy Now appear as icons, and missing URLs are omitted. Per-instance overrides control visibility, order, icon classes and tooltip; providers not in the override list remain visible. Add a provider override by its exact saved name, or use `__buy_now` for Buy Now. Dashicons and Font Awesome classes are supported. Link titles also supply accessible names.
 - Links open in a new tab by default; `new_tab="0"` uses the same tab. `show_audio="0"` hides audio. When enabled in settings, a Bandcamp shortcode takes priority over HTML5 audio; if its shortcode is unavailable, the error is logged and HTML5 is used if enabled. Legacy `native` and current `html5` player identifiers are supported.
@@ -281,6 +282,7 @@ read-only outside the hub.
 - `mds_rm_audio_players` (array) — Active audio player types: 'html5', 'bandcamp', etc.
 - `mds_rm_bandcamp_template` — Bandcamp embed shortcode template.
 - `mds_rm_providers` (array) — Global provider configuration (name, icon, color).
+- `mds_rm_block_defaults` (array) — Site-local block presentation defaults keyed by block slug. Native style values, table styles, field/link lists, and link/audio switches are validated before storage. Block rendering resolves these against saved attributes; legacy lists remain complete overrides and explicit field/style overrides take precedence. Shortcodes, Elementor and fallback renderers do not consume these defaults.
 - `mds_rm_global_redirect` — Site-Wide Routing toggle ('0' or '1'). Releases with a Buy Now URL redirect; when enabled, automatic Release fallback composition is suppressed for every Release.
 - `mds_rm_artist_image_cleanup_complete` — Per-site marker for the deprecated Artist image URL cleanup.
 - `mds_rm_db_templates` (array) — Database-backed template overrides: `{"css/frontend.css": "...", ...}`.
@@ -307,7 +309,7 @@ read-only outside the hub.
 
 **POST `/wp-json/mds/v1/settings`**
 - **Permission:** `manage_options`.
-- **Body params:** Provider config, audio players, feature toggles.
+- **Body params:** Provider config, audio players, feature toggles, optional JSON-encoded `mds_rm_block_defaults`, and Bandcamp shortcode template.
 - **Response:** Success/error JSON.
 
 **POST `/wp-json/mds/v1/network-settings`**

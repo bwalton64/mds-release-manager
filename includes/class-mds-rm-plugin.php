@@ -40,6 +40,7 @@ final class MDS_RM_Plugin {
 		MDS_RM_Elementor_Tags::register_hooks();
 		MDS_RM_CSV_Handler::register_hooks();
 		MDS_RM_Gutenberg_Blocks::register_hooks();
+		MDS_RM_Block_Defaults::register_hooks();
 		MDS_RM_Virtual_Media::register_hooks();
 		MDS_RM_Abilities::register_hooks();
 	}
