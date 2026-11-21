@@ -34,6 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Move internal implementation summaries, refactoring reports, and the Abilities API reference documentation from the plugin root into the `.local/` directory. `README.md`, `changelog.md`, and `.github/technical-blueprint.md` are the canonical, maintained documentation.
 
 ### Fixed
+- Show the Artist Discography settings controls when its tab is selected.
 - Persist changes to the Bandcamp shortcode template when the field is submitted.
 - Validate that the CSV importer reads only temporary files received through an HTTP upload.
 - When the full uninstall wipe is enabled, clear the stored spoke selection and Release Manager site options across the current network, and remove Release and Artist posts including those in Trash. The default uninstall behavior is unchanged.

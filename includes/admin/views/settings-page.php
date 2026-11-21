@@ -89,21 +89,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 				</table>
 			</div>
 
-			<div id="tab-artist-discography" class="mds-tab-pane">
-				<div class="mds-panel">
-					<h2><?php esc_html_e( 'Artist Discography defaults', 'mds-release-manager' ); ?></h2>
-					<p class="description"><?php esc_html_e( 'Blocks inherit these defaults unless an individual block overrides them.', 'mds-release-manager' ); ?></p>
-					<div id="mds-defaults-artist-discography"></div>
-				</div>
-				<div class="mds-admin-save-actions">
-					<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
-					<span class="mds-save-status" role="status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
-				</div>
-			</div>
-
 			<div class="mds-admin-save-actions">
 				<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
 				<span class="mds-save-status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
+			</div>
+		</div>
+
+		<div id="tab-artist-discography" class="mds-tab-pane">
+			<div class="mds-panel">
+				<h2><?php esc_html_e( 'Artist Discography defaults', 'mds-release-manager' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Blocks inherit these defaults unless an individual block overrides them.', 'mds-release-manager' ); ?></p>
+				<div id="mds-defaults-artist-discography"></div>
+			</div>
+			<div class="mds-admin-save-actions">
+				<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
+				<span class="mds-save-status" role="status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
 			</div>
 		</div>
 

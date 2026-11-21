@@ -120,8 +120,17 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 		await test.step('Settings form saves through REST and persists the provider', async () => {
 			await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings');
 			await expect(page.getByRole('link', { name: 'Release Meta', exact: true })).toHaveClass(/nav-tab-active/);
+			await page.getByRole('link', { name: 'Artist Discography', exact: true }).click();
+			const discographySettings = page.locator('#tab-artist-discography');
+			await expect(discographySettings.getByRole('button', { name: 'Discography wrapper' })).toBeVisible();
+			await expect(discographySettings.getByRole('button', { name: 'Discography table', exact: true })).toBeVisible();
+			await expect(discographySettings.getByRole('button', { name: 'Save Settings' })).toBeVisible();
+			await discographySettings.getByRole('button', { name: 'Discography body' }).click();
+			await discographySettings.getByLabel('Striped rows').check();
 			await page.getByRole('link', { name: 'Release Links', exact: true }).click();
 			await expect(page.locator('#mds-settings-form')).toHaveCSS('margin-top', '20px');
+			await page.getByRole('button', { name: 'Link and audio behavior' }).click();
+			await page.getByLabel('Open links in a new tab', { exact: true }).uncheck();
 			await page.getByRole('button', { name: 'Add Provider' }).click();
 			await expect(page.locator('.mds-provider-row-new').last()).toHaveCSS('display', 'flex');
 			await page.getByPlaceholder('Provider Name').last().fill(fixture.label);
@@ -140,6 +149,21 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			const providers = readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_providers'));"]);
 			expect(providers).toEqual(expect.arrayContaining([expect.objectContaining({ name: fixture.label })]));
 			expect(readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_bandcamp_template'));"])).toBe(template);
+			expect(readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_block_defaults'));"]))
+				.toMatchObject({ 'release-links': { newTab: false }, 'artist-discography': { tableStyles: { striped: true } } });
+		});
+
+		await test.step('Existing blocks inherit defaults while explicit overrides win', async () => {
+			const name = 'mds-rm/release-links';
+			const inherited = { releaseId: fixture.state.release };
+			const explicit = { ...inherited, newTab: true };
+			saveMarkup(fixture.state.host, `<!-- wp:${name} ${JSON.stringify(inherited)} /--><!-- wp:${name} ${JSON.stringify(explicit)} /-->`);
+			await page.goto(fixture.hostUrl);
+			const links = page.locator('.wp-block-mds-rm-release-links .mds-release-links__link[aria-label="Spotify"]');
+			await expect(links).toHaveCount(2);
+			await expect(links.nth(0)).not.toHaveAttribute('target');
+			await expect(links.nth(1)).toHaveAttribute('target', '_blank');
+			runWpCli(['eval', "update_option('mds_rm_block_defaults', array());"]);
 		});
 
 		await test.step('CSV, network settings, and Artist admin views remain usable', async () => {
