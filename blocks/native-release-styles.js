@@ -2,7 +2,7 @@
 	const { createElement: el, Fragment } = wp.element;
 	const { useSettings } = wp.blockEditor;
 	const { BoxControl, Button, ColorPalette, Notice, PanelBody, RangeControl, SelectControl } = wp.components;
-	const { __ } = wp.i18n;
+	const { __, sprintf } = wp.i18n;
 	const sides = ['top', 'right', 'bottom', 'left'];
 
 	function presets(list, type) {
@@ -12,7 +12,7 @@
 		}])).values());
 	}
 
-	window.mdsRmUseNativeReleaseStyles = function ({ attributes, setAttributes, styleKey, defaults = {} }) {
+	window.mdsRmUseNativeReleaseStyles = function ({ attributes, setAttributes, styleKey, defaults = {}, stylePanelProps }) {
 		const [palette, customColor, spacing, customSpacing] = useSettings('color.palette', 'color.custom', 'spacing.spacingSizes', 'spacing.customSpacingSize');
 		const own = attributes[styleKey] || {};
 		const legacy = attributes.styles || {};
@@ -59,9 +59,13 @@
 			}), showSiteDefault && siteDefault(key));
 		}
 		function size(key, label, max, extra = []) {
+			// translators: %s: Name of the spacing or width setting.
+			const presetLabel = sprintf(__('%s preset', 'mds-release-manager'), label);
+			// translators: %s: Name of the spacing or width setting.
+			const customLabel = sprintf(__('%s (px)', 'mds-release-manager'), label);
 			return el(Fragment, null,
-				!!(spacePresets.length || extra.length) && select(key, label, [...extra, ...spacePresets], false),
-				customSpacing !== false && range(key, label, max, 'px', 1, 0, false),
+				!!(spacePresets.length || extra.length) && select(key, presetLabel, [...extra, ...spacePresets], false),
+				customSpacing !== false && range(key, customLabel, max, 'px', 1, 0, false),
 				siteDefault(key)
 			);
 		}
@@ -69,7 +73,8 @@
 			const current = value[key];
 			const values = current && typeof current === 'object' ? current : Object.fromEntries(sides.map((side) => [side, current || '']));
 			return el(Fragment, null,
-				!!spacePresets.length && select(key, label, spacePresets, false),
+				// translators: %s: Name of the spacing setting.
+				!!spacePresets.length && select(key, sprintf(__('%s preset', 'mds-release-manager'), label), spacePresets, false),
 				customSpacing !== false && el(BoxControl, {
 					label, values, onChange: (next) => {
 						const overrides = own[key] && typeof own[key] === 'object' ? { ...own[key] }
@@ -88,7 +93,9 @@
 		function color(key, label) {
 			const options = presets(palette, 'color');
 			return el(Fragment, null,
-				!!options.length && select(key, label, options, false),
+				// translators: %s: Name of the color setting.
+				!!options.length && select(key, sprintf(__('%s preset', 'mds-release-manager'), label), options, false),
+				!options.length && customColor !== false && el('p', null, label),
 				customColor !== false && el(ColorPalette, {
 					colors: [], clearable: true, 'aria-label': label,
 					value: typeof value[key] === 'string' && !value[key].startsWith('var(') ? value[key] : undefined,
@@ -98,17 +105,21 @@
 			);
 		}
 		function border(prefix) {
+			const target = prefix ? __('Link button', 'mds-release-manager')
+				: styleKey === 'metaStyles' ? __('Metadata container', 'mds-release-manager') : __('Links and audio container', 'mds-release-manager');
+			// translators: %1$s: Part of the block. %2$s: Name of the border setting.
+			const label = (name) => sprintf(__('%1$s: %2$s', 'mds-release-manager'), target, name);
 			return el(Fragment, null,
-				box(`${prefix}border_width`, __('Border width', 'mds-release-manager')),
-				select(`${prefix}border_style`, __('Border style', 'mds-release-manager'), [
+				box(`${prefix}border_width`, label(__('Border width', 'mds-release-manager'))),
+				select(`${prefix}border_style`, label(__('Border style', 'mds-release-manager')), [
 					{ value: 'none', label: __('None', 'mds-release-manager') },
 					{ value: 'solid', label: __('Solid', 'mds-release-manager') },
 					{ value: 'dashed', label: __('Dashed', 'mds-release-manager') },
 					{ value: 'dotted', label: __('Dotted', 'mds-release-manager') },
 					{ value: 'double', label: __('Double', 'mds-release-manager') },
 				]),
-				color(`${prefix}border_color`, __('Border color', 'mds-release-manager')),
-				box(prefix ? 'button_radius' : 'radius', __('Corner radius', 'mds-release-manager'))
+				color(`${prefix}border_color`, label(__('Border color', 'mds-release-manager'))),
+				box(prefix ? 'button_radius' : 'radius', label(__('Corner radius', 'mds-release-manager')))
 			);
 		}
 		const widthChoices = [
@@ -121,7 +132,7 @@
 			{ value: 'flex-end', label: __('End', 'mds-release-manager') },
 		];
 		const hasResponsive = ['tablet', 'mobile'].some((device) => Object.keys(legacy[device] || {}).length);
-		const responsive = hasResponsive && el(PanelBody, { title: __('Legacy responsive styles', 'mds-release-manager'), initialOpen: false },
+		const responsive = hasResponsive && el(PanelBody, { title: __('Legacy responsive styles', 'mds-release-manager'), initialOpen: false, ...stylePanelProps?.('legacy-responsive') },
 				el(Notice, { status: 'info', isDismissible: false }, __('Saved tablet and mobile overrides still apply at their original widths. Use Gutenberg’s device preview to check them.', 'mds-release-manager')),
 				el(Button, { variant: 'secondary', onClick: () => {
 					const { tablet, mobile, ...rest } = legacy;

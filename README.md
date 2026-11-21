@@ -70,8 +70,16 @@ Streaming provider and audio preview settings are available under the Release Li
 The Release Meta, Release Links, and Artist Discography tabs also manage site-wide
 block presentation defaults. Existing and new blocks inherit changes unless a
 block has an explicit override; older saved field and link lists remain complete
-overrides. The block controls can restore inherited values. These defaults do
-not change shortcodes, Elementor widgets, or fallback templates.
+overrides. The automatic components in the fallback templates use these same defaults.
+The block controls can restore inherited values. These defaults do not change shortcodes
+or Elementor widgets.
+
+Styling panels start collapsed. Opening one closes the previous styling panel in that
+tab; click the open heading again to collapse it. Visibility, order, and behavior
+panels open independently. Release Meta separates
+the container, field values, and icons. Release Links separates the container, individual
+buttons, and audio player. Artist Discography separates the outer block, table frame,
+column headings, release rows, and cell grid.
 
 ### Multisite Support
 - Fully compatible with WordPress Multisite networks
@@ -280,7 +288,7 @@ Style attributes match the Release Links block: `background`, `gap`, `align`, `v
 
 Insert **Artist Discography** in the block editor. Search for a published Artist on this site under **Settings → Artist Discography**, or leave the field blank to use the current Artist. On a regular page without an Artist context, select an Artist. If a saved Artist becomes unavailable, the editor warns you and retains the selection until you clear or replace it.
 
-Use the block's **Styles** tab for outer spacing, colors, typography, and borders. The **Discography table**, **header**, **body**, and **cells and links** panels let you style the table separately, including cell padding, grid borders, link decoration, and alternating rows. Available presets and custom options depend on the active theme. Use **Reset discography table styles** to remove the table overrides without resetting the block's outer styles. The shortcode accepts the same table and outer-wrapper settings.
+Use the block's **Styles** tab for outer spacing, colors, typography, and borders. **Outer discography block** explains which native WordPress controls style the whole block. **Table frame and base styles**, **Column headings**, **Release rows and striping**, and **Cell grid and release links** explain which parts of the table their controls affect. Available presets and custom options depend on the active theme. Use **Reset discography table styles** to remove the table overrides without resetting the block's outer styles. The shortcode accepts the same table and outer-wrapper settings.
 
 ```php
 // As a shortcode (omit artist_id to use the current Artist):
@@ -304,12 +312,18 @@ The block's native outer styles are also available with `wrapper_`-prefixed attr
 #### Retrieve Releases via REST API
 
 ```bash
-# Get all published releases (ID, title, and UPC/EAN)
-curl "https://yoursite.com/wp-json/mds/v1/releases"
+# Get the first page of published releases (ID, title, and UPC/EAN)
+curl -i "https://yoursite.com/wp-json/mds/v1/releases?per_page=100&page=1"
 
 # The Release post type is also exposed via the WordPress core REST API
 curl "https://yoursite.com/wp-json/wp/v2/release?per_page=10"
 ```
+
+The plugin endpoint keeps its array response and supports `page` (default `1`) and `per_page` (default and maximum `100`). Use the `X-WP-Total` and `X-WP-TotalPages` response headers to retrieve subsequent pages.
+
+The Release editor's Artist picker uses the authenticated `GET /wp-json/mds/v1/artists?search=<term>&page=<page>` endpoint, which returns at most 20 matching Artists per page to users who can edit posts.
+
+Manual network sync uses `POST /wp-json/mds/v1/sync-network`. Each request processes a bounded batch and returns `job_id`, cumulative counts, and `done`; pass the returned `job_id` on subsequent requests until `done` is `true`. If a request is interrupted, call the endpoint again with that job ID to resume.
 
 #### Use WordPress Abilities API (MCP Tools)
 
@@ -323,35 +337,53 @@ Result: Returns paginated releases with metadata
 User: "Update the audio player setting to HTML5"
 Claude: Calls mds_rm_save_settings ability
 Result: Updates plugin configuration
+
+User: "Synchronize the network catalog"
+Claude: Calls mds_rm_sync_network and continues with the returned job_id until done is true
 ```
 
 #### Access via REST API (JavaScript)
 
 ```javascript
-// Fetch releases using the plugin's REST API
+// Fetch every page using the plugin's REST API
 async function getReleases() {
-  const response = await fetch('/wp-json/mds/v1/releases');
-  const releases = await response.json();
+  const releases = [];
+  let page = 1;
 
-  releases.forEach( release => {
-    console.log( `${release.title} (${release.upc})` );
-  });
+  while (true) {
+    const response = await fetch(`/wp-json/mds/v1/releases?per_page=100&page=${page}`);
+    if (!response.ok) throw new Error(`Release lookup failed: ${response.status}`);
+    releases.push(...await response.json());
+
+    const pages = Number(response.headers.get('X-WP-TotalPages'));
+    if (!pages || page >= pages) return releases;
+    page += 1;
+  }
 }
 
-getReleases();
+getReleases().then(releases => {
+  releases.forEach(release => console.log(`${release.title} (${release.upc})`));
+});
 ```
 
-#### Use Customizer to Style Releases
+#### Style fallback templates without a builder
 
-```php
-// Customizer → MDS Release Manager → Release Fallback Template
+The plugin automatically composes Release and Artist pages inside the active theme when no
+builder such as Elementor is used. In **Appearance → Customize → MDS Release Manager**,
+open **Release Fallback Template** for Layout (including split or stacked), Featured Image,
+and Content Typography. Open **Artist Fallback Template** for Layout, Portrait, Biography,
+and Contact Information. Style the automatic Release Meta, Release Links, and Artist Discography
+blocks in their respective tabs under **Releases → Settings**. Older Customizer values for
+these blocks are no longer applied.
+The WordPress color picker supports opacity; clear a color to use the stylesheet or inherited
+appearance. Reset a range or select the default shadow to restore its default.
+Publish the Customizer changes to apply them to eligible pages using the active theme.
 
-// Or read a fallback style programmatically:
-$color = get_theme_mod( 'mds_rm_release_fallback_meta_color', '' );
-if ( '' !== $color ) {
-	echo '<span style="color: ' . esc_attr( $color ) . '">' . esc_html( get_the_title() ) . '</span>';
-}
-```
+Builder-authored pages do not receive these fallback layouts. A Release with site-wide
+routing enabled also bypasses its fallback. Existing Release Meta, Release Links, or Artist
+Discography blocks and shortcodes in the page content suppress the corresponding automatic
+component so it is not duplicated. A theme can also override the frontend templates
+in its `mds-release-manager/templates/` directory.
 
 ---
 

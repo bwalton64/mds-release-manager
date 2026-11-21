@@ -12,9 +12,11 @@
 			'typography.fontFamilies', 'typography.fontSizes', 'typography.customFontSize',
 			'typography.lineHeight', 'typography.fontStyle', 'typography.letterSpacing'
 		);
+		const help = (text) => el('p', { className: 'description' }, text);
 		return el(props.standalone ? Fragment : InspectorControls, props.standalone ? null : { group: 'styles' },
-			el(PanelBody, { title: __('Release Meta layout', 'mds-release-manager'), initialOpen: false },
-				color('background', __('Background color', 'mds-release-manager')),
+			el(PanelBody, { title: __('Metadata container', 'mds-release-manager'), initialOpen: false, ...props.stylePanelProps?.('container') },
+				help(__('This is the box around all metadata fields, such as the release year, label, and UPC/EAN. Padding adds room inside the box; margin adds room outside it; field gap separates the entries inside. Alignment follows the selected row or column direction.', 'mds-release-manager')),
+				color('background', __('Metadata container background', 'mds-release-manager')),
 				box('margin', __('Margin', 'mds-release-manager')),
 				box('padding', __('Padding', 'mds-release-manager')),
 				size('width', __('Container width', 'mds-release-manager'), 1200, widthChoices),
@@ -31,8 +33,9 @@
 				])),
 				border('')
 			),
-			el(PanelBody, { title: __('Release Meta typography', 'mds-release-manager'), initialOpen: false },
-				color('color', __('Text color', 'mds-release-manager')),
+			el(PanelBody, { title: __('Release Meta typography', 'mds-release-manager'), initialOpen: false, ...props.stylePanelProps?.('typography') },
+				help(__('Styles the displayed metadata values, such as the record label name. Icons inherit the text color unless you set an icon color separately. This panel does not style the page title or body added by the theme.', 'mds-release-manager')),
+				color('color', __('Metadata value text color', 'mds-release-manager')),
 				select('font_family', __('Font family', 'mds-release-manager'), presets(families, 'font-family')),
 				select('font_size', __('Font size preset', 'mds-release-manager'), presets(sizes, 'font-size')),
 				customSize !== false && range('font_size', __('Custom font size (px)', 'mds-release-manager'), 96, 'px', 1, 8),
@@ -50,8 +53,12 @@
 					['end', __('End', 'mds-release-manager')],
 				]))
 			),
-			el(PanelBody, { title: __('Release Meta icons', 'mds-release-manager'), initialOpen: false },
-				color('icon_color', __('Icon color', 'mds-release-manager')),
+			el(PanelBody, { title: __('Release Meta icons', 'mds-release-manager'), initialOpen: false, ...props.stylePanelProps?.('icons') },
+				help(__('Styles the small icon beside each metadata value. The icon-to-text gap is inside a single field, not the space between fields.', 'mds-release-manager')),
+				help(props.standalone
+					? __('Choose which icon appears for each field in Metadata fields: visibility, order, and icons.', 'mds-release-manager')
+					: __('To choose a different icon for a field, open that field’s panel in the block’s Settings tab.', 'mds-release-manager')),
+				color('icon_color', __('Metadata field icon color', 'mds-release-manager')),
 				range('icon_size', __('Icon size (px)', 'mds-release-manager'), 80, 'px', 1, 8),
 				range('icon_opacity', __('Icon opacity', 'mds-release-manager'), 1, '', 0.05),
 				size('icon_gap', __('Gap between icon and text', 'mds-release-manager'), 100)

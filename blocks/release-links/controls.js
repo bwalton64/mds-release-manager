@@ -6,9 +6,11 @@
 
 	window.mdsRmReleaseLinksControls = function (props) {
 		const { value, update, select, range, size, box, color, border, widthChoices, axis, responsive, siteDefault } = window.mdsRmUseNativeReleaseStyles({ ...props, styleKey: 'linkStyles' });
+		const help = (text) => el('p', { className: 'description' }, text);
 		return el(props.standalone ? Fragment : InspectorControls, props.standalone ? null : { group: 'styles' },
-			el(PanelBody, { title: __('Release Links layout', 'mds-release-manager'), initialOpen: false },
-				color('background', __('Background color', 'mds-release-manager')),
+			el(PanelBody, { title: __('Links and audio container', 'mds-release-manager'), initialOpen: false, ...props.stylePanelProps?.('container') },
+				help(__('This is the box around both the button group and the audio preview. Its background, spacing, alignment, and border apply to the whole box. To change the space between individual buttons, use Streaming and Buy Now buttons.', 'mds-release-manager')),
+				color('background', __('Links and audio container background', 'mds-release-manager')),
 				box('margin', __('Margin', 'mds-release-manager')),
 				box('padding', __('Padding', 'mds-release-manager')),
 				size('width', __('Container width', 'mds-release-manager'), 1200, widthChoices),
@@ -28,7 +30,11 @@
 				]),
 				border('')
 			),
-			el(PanelBody, { title: __('Release Links buttons', 'mds-release-manager'), initialOpen: false },
+			el(PanelBody, { title: __('Streaming and Buy Now buttons', 'mds-release-manager'), initialOpen: false, ...props.stylePanelProps?.('buttons') },
+				help(__('Styles each individual streaming or Buy Now button, including its icon, fill, border, and hover opacity. A button background set here overrides provider colors.', 'mds-release-manager')),
+				help(!props.standalone && Object.prototype.hasOwnProperty.call(props.defaults || {}, 'button_background')
+					? __('Choose Ignore site default for the button background to use provider colors instead of the site-wide button background.', 'mds-release-manager')
+					: __('Leave the button background unset to keep provider colors.', 'mds-release-manager')),
 				size('link_gap', __('Gap between buttons', 'mds-release-manager'), 100),
 				el(RangeControl, {
 					label: __('Button size (px)', 'mds-release-manager'), min: 44, max: 120, allowReset: true,
@@ -37,12 +43,13 @@
 				}),
 				siteDefault('button_size'),
 				range('icon_size', __('Icon size (px)', 'mds-release-manager'), 80),
-				color('button_color', __('Icon color', 'mds-release-manager')),
+				color('button_color', __('Button icon color', 'mds-release-manager')),
 				color('button_background', __('Button background', 'mds-release-manager')),
 				border('button_'),
 				range('hover_opacity', __('Hover opacity', 'mds-release-manager'), 1, '', 0.05)
 			),
-			el(PanelBody, { title: __('Release Links audio', 'mds-release-manager'), initialOpen: false },
+			el(PanelBody, { title: __('Audio preview player', 'mds-release-manager'), initialOpen: false, ...props.stylePanelProps?.('audio') },
+				help(__('Sets the width of the audio player within the links and audio container. It does not change button sizes. The player appears only when enabled and a preview is available.', 'mds-release-manager')),
 				size('audio_width', __('Audio player width', 'mds-release-manager'), 1200, widthChoices)
 			),
 			responsive

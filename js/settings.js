@@ -49,24 +49,40 @@ jQuery(document).ready(function($) {
         $btn.prop('disabled', true).text('Syncing...');
         $status.hide();
 
-        var sync_url = mds_rm_data.rest_url.replace('/settings', '/manual-sync');
+        var sync_url = mds_rm_data.rest_url.replace('/settings', '/sync-network');
+        var job_id = '';
 
-        $.ajax({
-            url: sync_url,
-            method: 'POST',
-            beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', mds_rm_data.nonce); },
-            success: function(res) {
-                $btn.prop('disabled', false).text('Run Manual Sync');
-                if (res.success) {
-                    $status.text(res.message).fadeIn();
+        function runSyncBatch() {
+            $.ajax({
+                url: sync_url,
+                method: 'POST',
+                data: { job_id: job_id },
+                beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', mds_rm_data.nonce); },
+                success: function(res) {
+                    if (res.done === false && res.job_id) {
+                        job_id = res.job_id;
+                        $status.text(res.message).show();
+                        window.setTimeout(runSyncBatch, 50);
+                        return;
+                    }
+
+                    $btn.prop('disabled', false).text('Run Manual Sync');
+                    var message = res.message || 'Synchronization finished.';
+                    if (res.errors && res.errors.length) {
+                        message += ' ' + res.errors.slice(0, 3).join(' ');
+                    }
+                    $status.text(message).fadeIn();
+                },
+                error: function(xhr) {
+                    $btn.prop('disabled', false).text('Run Manual Sync');
+                    var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Sync encountered an error. Check if you are on the Hub site.';
+                    $status.text('Sync stopped. Run it again to resume.').show();
+                    alert(msg);
                 }
-            },
-            error: function(xhr) {
-                $btn.prop('disabled', false).text('Run Manual Sync');
-                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Sync encountered an error. Check if you are on the Hub site.';
-                alert(msg);
-            }
-        });
+            });
+        }
+
+        runSyncBatch();
     });
 
     

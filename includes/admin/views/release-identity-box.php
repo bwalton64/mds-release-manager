@@ -46,20 +46,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="artist_id"><?php esc_html_e( 'Artist Profile', 'mds-release-manager' ); ?></label></th>
+			<th><label for="mds-artist-search"><?php esc_html_e( 'Artist Profile', 'mds-release-manager' ); ?></label></th>
 			<td>
-				<select id="artist_id" name="artist_id">
-					<?php if ( ! $args['artists_found'] ) : ?>
-						<option value=""><?php esc_html_e( 'No Artists Found. Please Create One.', 'mds-release-manager' ); ?></option>
-					<?php else : ?>
-						<option value=""><?php esc_html_e( '-- Select Artist --', 'mds-release-manager' ); ?></option>
-						<?php foreach ( $args['artists'] as $artist ) : ?>
-							<?php if ( $artist['uuid'] ) : ?>
-								<option value="<?php echo esc_attr( $artist['uuid'] ); ?>" <?php selected( $args['artist_id'], $artist['uuid'] ); ?>><?php echo esc_html( $artist['title'] ); ?></option>
-							<?php endif; ?>
-						<?php endforeach; ?>
-					<?php endif; ?>
-				</select>
+				<input type="search" id="mds-artist-search" class="regular-text" autocomplete="off" aria-describedby="mds-artist-picker-status" />
+				<input type="hidden" id="artist_id" name="artist_id" value="<?php echo esc_attr( $args['artist_id'] ); ?>" />
+				<p id="mds-artist-selected" class="description" <?php echo '' === $args['selected_artist_title'] ? 'hidden' : ''; ?>>
+					<?php
+					if ( '' !== $args['selected_artist_title'] ) {
+						printf(
+							/* translators: %s: Selected Artist name. */
+							esc_html__( 'Selected: %s', 'mds-release-manager' ),
+							esc_html( $args['selected_artist_title'] )
+						);
+					}
+					?>
+				</p>
+				<button type="button" class="button button-small" id="mds-clear-artist-selection"><?php esc_html_e( 'Clear Artist', 'mds-release-manager' ); ?></button>
+				<div id="mds-artist-results" role="listbox" aria-label="<?php esc_attr_e( 'Artist search results', 'mds-release-manager' ); ?>"></div>
+				<div id="mds-artist-pagination"></div>
+				<p id="mds-artist-picker-status" class="description" aria-live="polite"><?php esc_html_e( 'Type an Artist name to search.', 'mds-release-manager' ); ?></p>
 			</td>
 		</tr>
 	</table>

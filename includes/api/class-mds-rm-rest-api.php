@@ -40,6 +40,58 @@ final class MDS_RM_REST_API {
 				'methods'             => 'GET',
 				'callback'            => array( self::class, 'get_releases_api' ),
 				'permission_callback' => '__return_true',
+				'args'                => array(
+					'page'     => array(
+						'default'           => 1,
+						'sanitize_callback' => static function ( $value ) {
+							return is_scalar( $value ) ? absint( $value ) : 0;
+						},
+						'validate_callback' => static function ( $value ) {
+							return is_numeric( $value ) && (int) $value >= 1;
+						},
+					),
+					'per_page' => array(
+						'default'           => 100,
+						'sanitize_callback' => static function ( $value ) {
+							return is_scalar( $value ) ? absint( $value ) : 0;
+						},
+						'validate_callback' => static function ( $value ) {
+							return is_numeric( $value ) && (int) $value >= 1 && (int) $value <= 100;
+						},
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			'mds/v1',
+			'/artists',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( self::class, 'search_artists_api' ),
+				'permission_callback' => static function () {
+					return current_user_can( 'edit_posts' );
+				},
+				'args'                => array(
+					'search' => array(
+						'required'          => true,
+						'sanitize_callback' => static function ( $value ) {
+							return is_scalar( $value ) ? sanitize_text_field( (string) $value ) : '';
+						},
+						'validate_callback' => static function ( $value ) {
+							return is_string( $value ) && '' !== trim( $value );
+						},
+					),
+					'page'   => array(
+						'default'           => 1,
+						'sanitize_callback' => static function ( $value ) {
+							return is_scalar( $value ) ? absint( $value ) : 0;
+						},
+						'validate_callback' => static function ( $value ) {
+							return is_numeric( $value ) && (int) $value >= 1;
+						},
+					),
+				),
 			)
 		);
 
@@ -87,6 +139,19 @@ final class MDS_RM_REST_API {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( self::class, 'sync_network_api' ),
+				'args'                => array(
+					'job_id' => array(
+						'sanitize_callback' => static function ( $value ) {
+							if ( ! is_string( $value ) ) {
+								return new WP_Error( 'mds_invalid_sync_job_id', __( 'The synchronization job ID must be text.', 'mds-release-manager' ), array( 'status' => 400 ) );
+							}
+							return sanitize_text_field( $value );
+						},
+						'validate_callback' => static function ( $value ) {
+							return is_string( $value );
+						},
+					),
+				),
 				'permission_callback' =>
 					/**
 					 * Checks whether the current user can manage network settings.
@@ -107,16 +172,20 @@ final class MDS_RM_REST_API {
 	 * @since 0.9.0
 	 * @return WP_REST_Response The response containing the releases.
 	 */
-	public static function get_releases_api(): WP_REST_Response {
-		$args     = array(
-			'post_type'      => 'release',
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
+	public static function get_releases_api( WP_REST_Request $request ): WP_REST_Response {
+		$page     = $request->get_param( 'page' );
+		$per_page = $request->get_param( 'per_page' );
+		$query = new WP_Query(
+			array(
+				'post_type'      => 'release',
+				'post_status'    => 'publish',
+				'posts_per_page' => min( 100, max( 1, null === $per_page ? 100 : absint( $per_page ) ) ),
+				'paged'          => max( 1, null === $page ? 1 : absint( $page ) ),
+			)
 		);
-		$releases = get_posts( $args );
-		$data     = array();
+		$data  = array();
 
-		foreach ( $releases as $rel ) {
+		foreach ( $query->posts as $rel ) {
 			$data[] = array(
 				'id'    => $rel->ID,
 				'title' => $rel->post_title,
@@ -124,7 +193,57 @@ final class MDS_RM_REST_API {
 			);
 		}
 
-		return rest_ensure_response( $data );
+		$response = rest_ensure_response( $data );
+		$response->header( 'X-WP-Total', (string) $query->found_posts );
+		$response->header( 'X-WP-TotalPages', (string) $query->max_num_pages );
+
+		return $response;
+	}
+
+	/**
+	 * Searches Artists for the Release editor picker.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response Paginated Artist matches.
+	 */
+	public static function search_artists_api( WP_REST_Request $request ): WP_REST_Response {
+		$query = new WP_Query(
+			array(
+				'post_type'      => 'artist',
+				'post_status'    => 'any',
+				'posts_per_page' => 20,
+				'paged'          => max( 1, absint( $request->get_param( 'page' ) ) ),
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				's'              => trim( sanitize_text_field( $request->get_param( 'search' ) ) ),
+				'search_columns' => array( 'post_title' ),
+				'meta_query'     => array(
+					array(
+						'key'     => '_mds_artist_uuid',
+						'compare' => 'EXISTS',
+					),
+				),
+			)
+		);
+		$items = array();
+
+		foreach ( $query->posts as $artist ) {
+			$uuid = get_post_meta( $artist->ID, '_mds_artist_uuid', true );
+			if ( ! is_string( $uuid ) || '' === $uuid ) {
+				continue;
+			}
+			$items[] = array(
+				'uuid'  => $uuid,
+				'title' => $artist->post_title,
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'items' => $items,
+				'pages' => (int) $query->max_num_pages,
+			)
+		);
 	}
 
 	/**
@@ -233,56 +352,13 @@ final class MDS_RM_REST_API {
 	 * @since 0.9.0
 	 * @return WP_REST_Response|WP_Error The response or error from the network sync.
 	 */
-	public static function sync_network_api(): WP_REST_Response|WP_Error {
-		if ( get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
-			return new WP_Error( 'not_master', 'Must run sync from the master hub site.', array( 'status' => 403 ) );
+	public static function sync_network_api( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$job_id = $request->get_param( 'job_id' );
+		$result = MDS_RM_Sync::run_network_sync_batch( is_string( $job_id ) ? sanitize_text_field( $job_id ) : '' );
+		if ( is_wp_error( $result ) ) {
+			return $result;
 		}
 
-		$artists      = get_posts(
-			array(
-				'post_type'   => 'artist',
-				'numberposts' => -1,
-				'post_status' => 'any',
-			)
-		);
-		$artist_count = 0;
-		$errors       = array();
-		foreach ( $artists as $a ) {
-			$result = MDS_RM_Sync::broadcast_to_spokes( $a->ID, 'artist' );
-			if ( is_wp_error( $result ) ) {
-				$errors[] = sprintf( 'Artist %1$d: %2$s', $a->ID, $result->get_error_message() );
-				continue;
-			}
-			++$artist_count;
-		}
-
-		$releases      = get_posts(
-			array(
-				'post_type'   => 'release',
-				'numberposts' => -1,
-				'post_status' => 'any',
-			)
-		);
-		$release_count = 0;
-		foreach ( $releases as $r ) {
-			$result = MDS_RM_Sync::broadcast_to_spokes( $r->ID, 'release' );
-			if ( is_wp_error( $result ) ) {
-				$errors[] = sprintf( 'Release %1$d: %2$s', $r->ID, $result->get_error_message() );
-				continue;
-			}
-			++$release_count;
-		}
-
-		MDS_RM_Sync::purge_cache();
-		if ( $errors ) {
-			return new WP_Error( 'mds_sync_failed', implode( ' ', $errors ), array( 'status' => 500 ) );
-		}
-
-		return rest_ensure_response(
-			array(
-				'success' => true,
-				'message' => sprintf( 'Successfully synced %d releases and %d artists to spoke sites.', $release_count, $artist_count ),
-			)
-		);
+		return rest_ensure_response( $result );
 	}
 }

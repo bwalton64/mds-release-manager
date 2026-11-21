@@ -13,7 +13,9 @@
 		return Array.from(new Map(entries.map(({ slug, name }) => [slug, { label: name, value: `var(--wp--preset--${prefix}--${slug})` }])).values());
 	}
 
-	function WrapperStyles({ value, onChange }) {
+	function WrapperStyles({ value, onChange, panelProps }) {
+		// translators: %s: Name of a style setting for the outer discography block.
+		const wrapperLabel = (label) => sprintf(__('Outer block: %s', 'mds-release-manager'), label);
 		const [palette, customColor, spacing, customSpacing, sizes, customSize, families, lineHeight] = useSettings(
 			'color.palette', 'color.custom', 'spacing.spacingSizes', 'spacing.customSpacingSize',
 			'typography.fontSizes', 'typography.customFontSize', 'typography.fontFamilies', 'typography.lineHeight'
@@ -41,7 +43,7 @@
 		function select(path, label, options) {
 			const current = get(path);
 			return el(SelectControl, {
-				label, value: options.some((option) => option.value === current) ? current : '',
+				label: wrapperLabel(label), value: options.some((option) => option.value === current) ? current : '',
 				options: [{ label: __('Default / inherit', 'mds-release-manager'), value: '' }, ...options],
 				onChange: (setting) => set(path, setting),
 			});
@@ -49,9 +51,10 @@
 		function color(path, label) {
 			const current = get(path);
 			return el(wp.element.Fragment, null,
-				select(path, label, presetChoices(palette, 'color')),
+				// translators: %s: Name of the color setting.
+				select(path, sprintf(__('%s preset', 'mds-release-manager'), label), presetChoices(palette, 'color')),
 				customColor !== false && el(ColorPalette, {
-					colors: [], clearable: true, 'aria-label': label,
+					colors: [], clearable: true, 'aria-label': wrapperLabel(label),
 					value: typeof current === 'string' && !current.startsWith('var(') ? current : undefined,
 					onChange: (setting) => set(path, setting),
 				})
@@ -60,7 +63,7 @@
 		function range(path, label, min, max, step = 1, unit = 'px') {
 			const current = get(path);
 			return el(RangeControl, {
-				label, min, max, step, allowReset: true,
+				label: wrapperLabel(label), min, max, step, allowReset: true,
 				value: typeof current === 'string' && !current.startsWith('var(') ? parseFloat(current) : undefined,
 				onChange: (setting) => set(path, setting === undefined ? undefined : `${setting}${unit}`),
 			});
@@ -71,14 +74,16 @@
 			const sides = ['top', 'right', 'bottom', 'left'];
 			const values = current && typeof current === 'object' ? current : Object.fromEntries(sides.map((side) => [side, current || '']));
 			return el(wp.element.Fragment, null,
-				select(path, label, presetChoices(spacing, 'spacing')),
+				// translators: %s: Name of the spacing setting.
+				select(path, sprintf(__('%s preset', 'mds-release-manager'), label), presetChoices(spacing, 'spacing')),
 				customSpacing !== false && el(BoxControl, {
-					label, values,
+					label: wrapperLabel(label), values,
 					onChange: (next) => set(path, Object.fromEntries(sides.filter((side) => next?.[side]).map((side) => [side, next[side]]))),
 				})
 			);
 		}
-		return el(PanelBody, { title: __('Discography wrapper', 'mds-release-manager'), initialOpen: false },
+		return el(PanelBody, { title: __('Outer discography block', 'mds-release-manager'), ...panelProps },
+			el('p', { className: 'description' }, __('Styles the outer box that contains the table and any pagination links. Use its padding to add space between the box edge and its contents. The table, column headings, and release rows can set their own colors and typography; table link settings can override the outer link color.', 'mds-release-manager')),
 			box('margin', __('Margin', 'mds-release-manager')),
 			box('padding', __('Padding', 'mds-release-manager')),
 			color(['color', 'background'], __('Background color', 'mds-release-manager')),
@@ -123,15 +128,24 @@
 			[next[index], next[target]] = [next[target], next[index]];
 			onChange({ items: next });
 		}
-		return el(PanelBody, { title: isMeta ? __('Default metadata fields', 'mds-release-manager') : __('Default link presentation', 'mds-release-manager'), initialOpen: false },
+		return el(PanelBody, { title: isMeta ? __('Metadata fields: visibility, order, and icons', 'mds-release-manager') : __('Link buttons: visibility, order, and icons', 'mds-release-manager'), initialOpen: false },
+			el('p', { className: 'description' }, isMeta
+				? __('Choose which metadata fields can appear and in what order. Each shown field still needs a value on the release. Use the field’s icon and tooltip controls to customize that entry only.', 'mds-release-manager')
+				: __('Choose which streaming services and Buy Now buttons can appear, in what order, and with which icons. Buttons still need URLs on the release. This panel does not style the audio player or the button backgrounds.', 'mds-release-manager')),
 			items.map((item, index) => {
 				const name = item[key];
 				const label = isMeta ? config.metaFields[name]?.label : name === '__buy_now' ? __('Buy Now', 'mds-release-manager') : name;
 				if (!label) return null;
 				return el(PanelBody, { key: name, title: label, initialOpen: false },
 					el(ToggleControl, { label: isMeta ? __('Show field', 'mds-release-manager') : __('Show link', 'mds-release-manager'), checked: item.enabled !== false, onChange: (enabled) => update(index, { enabled }) }),
-					el(TextControl, { label: __('Icon classes', 'mds-release-manager'), value: item.icon || '', onChange: (icon) => update(index, { icon }) }),
-					el(TextControl, { label: __('Tooltip title', 'mds-release-manager'), value: item.title || '', onChange: (title) => update(index, { title }) }),
+					el(TextControl, { label: __('Icon CSS classes', 'mds-release-manager'), help: __('Enter icon classes such as fas fa-link.', 'mds-release-manager'), value: item.icon || '', onChange: (icon) => update(index, { icon }) }),
+					el(TextControl, {
+						label: isMeta ? __('Field tooltip', 'mds-release-manager') : __('Link name and tooltip', 'mds-release-manager'),
+						help: isMeta ? __('Changes the hover text, not the displayed field value.', 'mds-release-manager')
+							: __('Changes the hover text and the name read by screen readers, not the destination URL.', 'mds-release-manager'),
+						value: item.title || '',
+						onChange: (title) => update(index, { title }),
+					}),
 					el(Button, { variant: 'secondary', disabled: index === 0, onClick: () => move(index, -1), 'aria-label': sprintf(__('Move %s up', 'mds-release-manager'), label) }, __('Move up', 'mds-release-manager')),
 					' ',
 					el(Button, { variant: 'secondary', disabled: index === items.length - 1, onClick: () => move(index, 1), 'aria-label': sprintf(__('Move %s down', 'mds-release-manager'), label) }, __('Move down', 'mds-release-manager'))
@@ -143,6 +157,13 @@
 
 	function Defaults({ slug }) {
 		const [value, setValue] = useState(all[slug] || {});
+		const [openStylePanel, setOpenStylePanel] = useState(null);
+		function stylePanelProps(id) {
+			return {
+				opened: openStylePanel === id,
+				onToggle: () => setOpenStylePanel((current) => current === id ? null : id),
+			};
+		}
 		function change(patch) {
 			const next = { ...value, ...patch };
 			Object.keys(next).forEach((key) => { if (next[key] === undefined) delete next[key]; });
@@ -156,15 +177,16 @@
 		return el(BlockEditorProvider, { settings: config.editorSettings, value: emptyBlocks, onInput: () => {}, onChange: () => {} },
 			isMeta || isLinks ? el(Items, { slug, value, onChange: change }) : null,
 			isLinks && el(PanelBody, { title: __('Link and audio behavior', 'mds-release-manager'), initialOpen: false },
+				el('p', { className: 'description' }, __('Controls what happens when visitors follow a streaming or Buy Now link and whether an available audio preview appears. To resize the player, use Audio preview player.', 'mds-release-manager')),
 				el(ToggleControl, { label: __('Open links in a new tab', 'mds-release-manager'), checked: value.newTab !== false, onChange: (newTab) => change({ newTab }) }),
 				el(ToggleControl, { label: __('Show audio player', 'mds-release-manager'), checked: value.showAudio !== false, onChange: (showAudio) => change({ showAudio }) })
 			),
-			isMeta && el(window.mdsRmReleaseMetaControls, { standalone: true, attributes: value, setAttributes: change }),
-			isLinks && el(window.mdsRmReleaseLinksControls, { standalone: true, attributes: value, setAttributes: change }),
+			isMeta && el(window.mdsRmReleaseMetaControls, { standalone: true, stylePanelProps, attributes: value, setAttributes: change }),
+			isLinks && el(window.mdsRmReleaseLinksControls, { standalone: true, stylePanelProps, attributes: value, setAttributes: change }),
 			isMeta && value.metaStyles && el(Button, { variant: 'tertiary', onClick: () => change({ metaStyles: undefined }) }, __('Reset Release Meta styles', 'mds-release-manager')),
 			isLinks && value.linkStyles && el(Button, { variant: 'tertiary', onClick: () => change({ linkStyles: undefined }) }, __('Reset Release Links styles', 'mds-release-manager')),
-			!isMeta && !isLinks && el(WrapperStyles, { value: value.style || {}, onChange: (style) => change({ style }) }),
-			!isMeta && !isLinks && el(window.mdsRmDiscographyTableControls, { standalone: true, value: value.tableStyles || {}, onChange: (tableStyles) => change({ tableStyles }) })
+			!isMeta && !isLinks && el(WrapperStyles, { panelProps: stylePanelProps('outer'), value: value.style || {}, onChange: (style) => change({ style }) }),
+			!isMeta && !isLinks && el(window.mdsRmDiscographyTableControls, { standalone: true, stylePanelProps, value: value.tableStyles || {}, onChange: (tableStyles) => change({ tableStyles }) })
 		);
 	}
 

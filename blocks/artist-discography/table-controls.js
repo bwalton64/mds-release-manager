@@ -5,12 +5,22 @@
 	const { __, sprintf } = wp.i18n;
 	const sides = ['top', 'right', 'bottom', 'left'];
 
-	window.mdsRmDiscographyTableControls = function TableControls({ value: own, defaults = {}, onChange, standalone = false }) {
+	window.mdsRmDiscographyTableControls = function TableControls({ value: own, defaults = {}, onChange, standalone = false, stylePanelProps }) {
 		const value = { ...defaults, ...own };
 		const [palette, customColor, sizes, customSize, families, spacing, customSpacing, lineHeight] = useSettings(
 			'color.palette', 'color.custom', 'typography.fontSizes', 'typography.customFontSize',
 			'typography.fontFamilies', 'spacing.spacingSizes', 'spacing.customSpacingSize', 'typography.lineHeight'
 		);
+		const targets = {
+			table: __('Table', 'mds-release-manager'),
+			header: __('Column headings', 'mds-release-manager'),
+			body: __('Release rows', 'mds-release-manager'),
+			'table-border': __('Table frame', 'mds-release-manager'),
+			'cell-border': __('Cell grid', 'mds-release-manager'),
+		};
+		// translators: %1$s: Part of the discography. %2$s: Style setting.
+		const scope = (target, label) => sprintf(__('%1$s: %2$s', 'mds-release-manager'), targets[target], label);
+		const help = (text) => el('p', { className: 'description' }, text);
 		function update(changes) {
 			const next = { ...own };
 			Object.entries(changes).forEach(([key, setting]) => {
@@ -50,7 +60,8 @@
 		}
 		function color(key, label) {
 			return el(Fragment, null,
-				select(key, label, presetChoices(palette, 'color')),
+				// translators: %s: Name of the color setting.
+				select(key, sprintf(__('%s preset', 'mds-release-manager'), label), presetChoices(palette, 'color')),
 				customColor !== false && el(ColorPalette, {
 					// Presets are selected separately so a theme color remains a reference.
 					colors: [], clearable: true, 'aria-label': label,
@@ -61,17 +72,17 @@
 		}
 		function typography(prefix) {
 			return el(Fragment, null,
-				select(`${prefix}-font-family`, __('Font family', 'mds-release-manager'), presetChoices(families, 'font-family')),
-				select(`${prefix}-font-size`, __('Font size preset', 'mds-release-manager'), presetChoices(sizes, 'font-size')),
-				customSize !== false && range(`${prefix}-font-size`, __('Custom font size (px)', 'mds-release-manager'), 8, 96, 1, 'px'),
-				select(`${prefix}-font-weight`, __('Font weight', 'mds-release-manager'), [
+				select(`${prefix}-font-family`, scope(prefix, __('Font family', 'mds-release-manager')), presetChoices(families, 'font-family')),
+				select(`${prefix}-font-size`, scope(prefix, __('Font size preset', 'mds-release-manager')), presetChoices(sizes, 'font-size')),
+				customSize !== false && range(`${prefix}-font-size`, scope(prefix, __('Custom font size (px)', 'mds-release-manager')), 8, 96, 1, 'px'),
+				select(`${prefix}-font-weight`, scope(prefix, __('Font weight', 'mds-release-manager')), [
 					{ label: __('Normal', 'mds-release-manager'), value: '400' }, { label: __('Medium', 'mds-release-manager'), value: '500' },
 					{ label: __('Semibold', 'mds-release-manager'), value: '600' }, { label: __('Bold', 'mds-release-manager'), value: '700' },
 				]),
-				select(`${prefix}-font-style`, __('Font style', 'mds-release-manager'), [
+				select(`${prefix}-font-style`, scope(prefix, __('Font style', 'mds-release-manager')), [
 					{ label: __('Normal', 'mds-release-manager'), value: 'normal' }, { label: __('Italic', 'mds-release-manager'), value: 'italic' },
 				]),
-				lineHeight !== false && range(`${prefix}-line-height`, __('Line height', 'mds-release-manager'), 0.8, 3, 0.1)
+				lineHeight !== false && range(`${prefix}-line-height`, scope(prefix, __('Line height', 'mds-release-manager')), 0.8, 3, 0.1)
 			);
 		}
 		function spacingControl(prefix, label) {
@@ -102,40 +113,49 @@
 		}
 		function border(prefix) {
 			return el(Fragment, null,
-				select(`${prefix}-style`, __('Border style', 'mds-release-manager'), [
+				select(`${prefix}-style`, scope(prefix, __('Border style', 'mds-release-manager')), [
 					{ label: __('None', 'mds-release-manager'), value: 'none' }, { label: __('Solid', 'mds-release-manager'), value: 'solid' },
 					{ label: __('Dashed', 'mds-release-manager'), value: 'dashed' }, { label: __('Dotted', 'mds-release-manager'), value: 'dotted' },
 					{ label: __('Double', 'mds-release-manager'), value: 'double' },
 				]),
-				range(`${prefix}-width`, __('Border width (px)', 'mds-release-manager'), 0, 16, 1, 'px'),
-				color(`${prefix}-color`, __('Border color', 'mds-release-manager'))
+				range(`${prefix}-width`, scope(prefix, __('Border width (px)', 'mds-release-manager')), 0, 16, 1, 'px'),
+				color(`${prefix}-color`, scope(prefix, __('Border color', 'mds-release-manager')))
 			);
 		}
 		function region(prefix) {
 			return el(Fragment, null,
-				color(`${prefix}-background`, __('Background color', 'mds-release-manager')),
-				color(`${prefix}-color`, __('Text color', 'mds-release-manager')),
+				color(`${prefix}-background`, scope(prefix, __('Background color', 'mds-release-manager'))),
+				color(`${prefix}-color`, scope(prefix, __('Text color', 'mds-release-manager'))),
 				typography(prefix),
-				prefix !== 'table' && select(`${prefix}-text-align`, __('Text alignment', 'mds-release-manager'), [
+				prefix !== 'table' && select(`${prefix}-text-align`, scope(prefix, __('Text alignment', 'mds-release-manager')), [
 					{ label: __('Start', 'mds-release-manager'), value: 'start' }, { label: __('Center', 'mds-release-manager'), value: 'center' },
 					{ label: __('End', 'mds-release-manager'), value: 'end' },
 				])
 			);
 		}
 		return el(standalone ? Fragment : InspectorControls, standalone ? null : { group: 'styles' },
-			el(PanelBody, { title: __('Discography table', 'mds-release-manager'), initialOpen: false },
-				spacingControl('table-margin', __('Table margin', 'mds-release-manager')),
-				spacingControl('table-padding', __('Table padding', 'mds-release-manager')),
+			!standalone && el(PanelBody, { title: __('Outer discography block', 'mds-release-manager'), initialOpen: false },
+				help(__('Use WordPress’s built-in Color, Typography, Dimensions, and Border controls in this Styles tab to style the whole discography, including the area around the table and pagination. The panels below style parts of the table separately. Available controls depend on the active theme.', 'mds-release-manager'))
+			),
+			el(PanelBody, { title: __('Table frame and base styles', 'mds-release-manager'), initialOpen: false, ...stylePanelProps?.('table') },
+				help(__('Styles the table and the scrolling frame around it, not the outer block or pagination. The table sets the base text and background; column headings and release rows can override them. Frame padding adds space around the table, not inside each cell.', 'mds-release-manager')),
+				spacingControl('table-margin', __('Table frame margin', 'mds-release-manager')),
+				spacingControl('table-padding', __('Table frame padding', 'mds-release-manager')),
 				region('table'), border('table-border'),
 				range('table-radius', __('Table corner radius (px)', 'mds-release-manager'), 0, 48, 1, 'px')
 			),
-			el(PanelBody, { title: __('Discography header', 'mds-release-manager'), initialOpen: false }, region('header')),
-			el(PanelBody, { title: __('Discography body', 'mds-release-manager'), initialOpen: false },
+			el(PanelBody, { title: __('Column headings', 'mds-release-manager'), initialOpen: false, ...stylePanelProps?.('header') },
+				help(__('Styles only the top row with labels such as Title, UPC/EAN, and Release Year. It does not style the page heading or the rows below.', 'mds-release-manager')),
+				region('header')
+			),
+			el(PanelBody, { title: __('Release rows and striping', 'mds-release-manager'), initialOpen: false, ...stylePanelProps?.('rows') },
+				help(__('Styles the rows that list releases, below the column headings. Enable striped rows to give every second release row a separate background color.', 'mds-release-manager')),
 				region('body'),
 				el(ToggleControl, { label: __('Striped rows', 'mds-release-manager'), checked: value.striped === true, onChange: (striped) => update({ striped }) }),
 				value.striped === true && color('stripe-background', __('Alternate row color', 'mds-release-manager'))
 			),
-			el(PanelBody, { title: __('Discography cells and links', 'mds-release-manager'), initialOpen: false },
+			el(PanelBody, { title: __('Cell grid and release links', 'mds-release-manager'), initialOpen: false, ...stylePanelProps?.('cells') },
+				help(__('Cell padding and grid borders apply to each heading and data cell, not the table frame. Link color and underline apply to links inside the table, not the pagination links.', 'mds-release-manager')),
 				spacingControl('cell-padding', __('Cell padding', 'mds-release-manager')), border('cell-border'),
 				color('link-color', __('Table link color', 'mds-release-manager')),
 				select('link-decoration', __('Table link decoration', 'mds-release-manager'), [

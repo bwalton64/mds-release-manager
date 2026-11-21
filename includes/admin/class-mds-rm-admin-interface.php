@@ -364,23 +364,22 @@ final class MDS_RM_Admin_Interface {
 			$artist_id = '';
 		}
 
-		$artist_posts = get_posts(
-			array(
-				'post_type'   => 'artist',
-				'numberposts' => -1,
-				'post_status' => 'any',
-				'orderby'     => 'title',
-				'order'       => 'ASC',
-			)
-		);
-
-		$artists = array();
-		foreach ( $artist_posts as $artist ) {
-			$a_uuid    = get_post_meta( $artist->ID, '_mds_artist_uuid', true );
-			$artists[] = array(
-				'uuid'  => $a_uuid,
-				'title' => $artist->post_title,
+		$selected_artist_title = '';
+		if ( $artist_id ) {
+			$selected_artists = get_posts(
+				array(
+					'post_type'      => 'artist',
+					'post_status'    => 'any',
+					'posts_per_page' => 1,
+					'fields'         => 'ids',
+					'meta_key'       => '_mds_artist_uuid', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Resolve only the currently selected Artist.
+					'meta_value'     => $artist_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'no_found_rows'  => true,
+				)
 			);
+			if ( $selected_artists ) {
+				$selected_artist_title = get_the_title( $selected_artists[0] );
+			}
 		}
 
 		$global_providers = get_option( 'mds_rm_providers', array() );
@@ -436,9 +435,8 @@ final class MDS_RM_Admin_Interface {
 		$args = array(
 			'nonce_field'       => wp_nonce_field( 'mds_save_release_data', 'mds_release_meta_nonce', true, false ),
 			'post'              => $post,
-			'artists'           => $artists,
-			'artists_found'     => ! empty( $artist_posts ),
 			'artist_id'         => $artist_id,
+			'selected_artist_title' => $selected_artist_title,
 			'providers'         => $provider_names,
 			'streaming_links'   => $streaming_links,
 			'upc_ean'           => $upc_ean,

@@ -70,54 +70,6 @@ final class MDS_RM_CSV_Handler {
 	public static function export_csv(): void {
 		self::verify_csv_request();
 
-		$releases             = get_posts(
-			array(
-				'post_type'   => 'release',
-				'numberposts' => -1,
-				'post_status' => 'any',
-			)
-		);
-		$artists              = get_posts(
-			array(
-				'post_type'   => 'artist',
-				'numberposts' => -1,
-				'post_status' => 'any',
-			)
-		);
-		$artist_names_by_uuid = array();
-		foreach ( $artists as $artist ) {
-			$artist_uuid = get_post_meta( $artist->ID, '_mds_artist_uuid', true );
-			if ( $artist_uuid && ! isset( $artist_names_by_uuid[ $artist_uuid ] ) ) {
-				$artist_names_by_uuid[ $artist_uuid ] = $artist->post_title;
-			}
-		}
-
-		$release_formats = array();
-		foreach ( $releases as $release ) {
-			$format = MDS_RM_Release_Model::format_name( $release->ID );
-			if ( MDS_RM_Release_Model::has_legacy_format_conflict( $release->ID ) ) {
-				/* translators: %d: Release post ID. */
-				wp_die( esc_html( sprintf( __( 'Cannot export release %d: its format conflicts with legacy data. Resolve the conflict first.', 'mds-release-manager' ), $release->ID ) ) );
-			}
-			if ( is_wp_error( $format ) ) {
-				/* translators: %1$d: Release post ID. %2$s: Error message. */
-				wp_die( esc_html( sprintf( __( 'Cannot export release %1$d: %2$s', 'mds-release-manager' ), $release->ID, $format->get_error_message() ) ) );
-			}
-			$release_formats[ $release->ID ] = $format;
-		}
-
-		header( 'Content-Type: text/csv; charset=utf-8' );
-		header( 'Content-Disposition: attachment; filename="mds-releases-export.csv"' );
-		$out = fopen( 'php://output', 'w' );
-		if ( ! $out ) {
-			wp_die( esc_html__( 'Could not create the CSV export.', 'mds-release-manager' ) );
-		}
-
-		if ( empty( $releases ) ) {
-			fputcsv( $out, array( 'No data found in WordPress posts.' ) );
-			exit;
-		}
-
 		$headers = array(
 			'UPC/EAN',
 			'Release Title',
@@ -134,27 +86,128 @@ final class MDS_RM_CSV_Handler {
 			'About',
 			'Streaming Links',
 		);
-		fputcsv( $out, $headers );
 
-		foreach ( $releases as $release ) {
-			$artist_id = get_post_meta( $release->ID, 'artist_id', true );
-			$row       = array(
-				get_post_meta( $release->ID, 'upc_ean', true ),
-				$release->post_title,
-				$artist_names_by_uuid[ $artist_id ] ?? 'Unknown Artist',
-				$release->post_date,
-				$release_formats[ $release->ID ],
-				get_post_meta( $release->ID, 'record_label', true ),
-				get_post_meta( $release->ID, 'distributor', true ),
-				get_post_meta( $release->ID, 'buy_now_link', true ),
-				get_post_meta( $release->ID, 'bandcamp_shortcode', true ),
-				get_post_meta( $release->ID, 'release_tags', true ),
-				get_post_meta( $release->ID, 'featured_image_url', true ),
-				get_post_meta( $release->ID, 'audio_preview_url', true ),
-				$release->post_content,
-				get_post_meta( $release->ID, 'streaming_links', true ),
+		$stream     = new SplTempFileObject();
+		$batch_size = 100;
+		$page       = 1;
+		$has_data   = false;
+
+		do {
+			$releases = get_posts(
+				array(
+					'post_type'      => 'release',
+					'post_status'    => 'any',
+					'posts_per_page' => $batch_size,
+					'paged'          => $page,
+					'orderby'        => array(
+						'date' => 'DESC',
+						'ID'   => 'DESC',
+					),
+					'no_found_rows'  => true,
+				)
 			);
-			fputcsv( $out, $row );
+
+			if ( ! $releases ) {
+				break;
+			}
+			if ( ! $has_data ) {
+				if ( false === $stream->fputcsv( $headers ) ) {
+					wp_die( esc_html__( 'Could not create the CSV export.', 'mds-release-manager' ) );
+				}
+				$has_data = true;
+			}
+
+			$artist_uuids = array();
+			foreach ( $releases as $release ) {
+				$artist_uuid = get_post_meta( $release->ID, 'artist_id', true );
+				if ( is_string( $artist_uuid ) && '' !== $artist_uuid ) {
+					$artist_uuids[] = $artist_uuid;
+				}
+			}
+			$artist_uuids         = array_values( array_unique( $artist_uuids ) );
+			$artist_names_by_uuid = array();
+			if ( $artist_uuids ) {
+				$artist_page = 1;
+				do {
+					$artists = get_posts(
+						array(
+							'post_type'      => 'artist',
+							'post_status'    => 'any',
+							'posts_per_page' => 100,
+							'paged'          => $artist_page,
+							'orderby'        => array(
+								'date' => 'DESC',
+								'ID'   => 'DESC',
+							),
+							'no_found_rows'  => true,
+							'meta_query'     => array(
+								array(
+									'key'     => '_mds_artist_uuid',
+									'value'   => $artist_uuids,
+									'compare' => 'IN',
+								),
+							),
+						)
+					);
+					foreach ( $artists as $artist ) {
+						$artist_uuid = get_post_meta( $artist->ID, '_mds_artist_uuid', true );
+						if ( $artist_uuid && ! isset( $artist_names_by_uuid[ $artist_uuid ] ) ) {
+							$artist_names_by_uuid[ $artist_uuid ] = $artist->post_title;
+						}
+					}
+					++$artist_page;
+				} while ( count( $artists ) === 100 && count( $artist_names_by_uuid ) < count( $artist_uuids ) );
+			}
+
+			foreach ( $releases as $release ) {
+				$format = MDS_RM_Release_Model::format_name( $release->ID );
+				if ( MDS_RM_Release_Model::has_legacy_format_conflict( $release->ID ) ) {
+					/* translators: %d: Release post ID. */
+					wp_die( esc_html( sprintf( __( 'Cannot export release %d: its format conflicts with legacy data. Resolve the conflict first.', 'mds-release-manager' ), $release->ID ) ) );
+				}
+				if ( is_wp_error( $format ) ) {
+					/* translators: %1$d: Release post ID. %2$s: Error message. */
+					wp_die( esc_html( sprintf( __( 'Cannot export release %1$d: %2$s', 'mds-release-manager' ), $release->ID, $format->get_error_message() ) ) );
+				}
+
+				$artist_id = get_post_meta( $release->ID, 'artist_id', true );
+				$row       = array(
+					get_post_meta( $release->ID, 'upc_ean', true ),
+					$release->post_title,
+					$artist_names_by_uuid[ $artist_id ] ?? 'Unknown Artist',
+					$release->post_date,
+					$format,
+					get_post_meta( $release->ID, 'record_label', true ),
+					get_post_meta( $release->ID, 'distributor', true ),
+					get_post_meta( $release->ID, 'buy_now_link', true ),
+					get_post_meta( $release->ID, 'bandcamp_shortcode', true ),
+					get_post_meta( $release->ID, 'release_tags', true ),
+					get_post_meta( $release->ID, 'featured_image_url', true ),
+					get_post_meta( $release->ID, 'audio_preview_url', true ),
+					$release->post_content,
+					get_post_meta( $release->ID, 'streaming_links', true ),
+				);
+				if ( false === $stream->fputcsv( $row ) ) {
+					wp_die( esc_html__( 'Could not create the CSV export.', 'mds-release-manager' ) );
+				}
+			}
+
+			++$page;
+		} while ( count( $releases ) === $batch_size );
+
+		if ( ! $has_data && false === $stream->fputcsv( array( 'No data found in WordPress posts.' ) ) ) {
+			wp_die( esc_html__( 'Could not create the CSV export.', 'mds-release-manager' ) );
+		}
+
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="mds-releases-export.csv"' );
+		$stream->rewind();
+		while ( ! $stream->eof() ) {
+			$line = $stream->fgets();
+			if ( false === $line ) {
+				break;
+			}
+			echo $line; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV data is emitted as a download.
 		}
 
 		exit;

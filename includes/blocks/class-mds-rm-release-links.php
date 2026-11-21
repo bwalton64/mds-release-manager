@@ -139,10 +139,28 @@ final class MDS_RM_Release_Links {
 	/**
 	 * Renders the enabled audio preview for a release.
 	 *
-	 * @param int|string $post_id Release post ID.
+	 * @param int|string $post_id    Release post ID.
+	 * @param array      $attributes Release Links block attributes.
 	 * @return string Audio markup, or an empty string when unavailable.
 	 */
-	private static function audio( int|string $post_id ): string {
+	private static function audio( int|string $post_id, array $attributes = array() ): string {
+		/**
+		 * Filters the audio player markup for the Release Links block.
+		 *
+		 * The first extension returning non-empty markup supplies the audio
+		 * player and skips the built-in Bandcamp shortcode and HTML5 players.
+		 * The result is sanitized with the plugin's iframe-aware allowlist.
+		 *
+		 * @since 1.1.0
+		 *
+		 * @param string $html       Audio player markup. Default empty string.
+		 * @param int    $post_id    Release post ID.
+		 * @param array  $attributes Release Links block attributes.
+		 */
+		$extension_html = apply_filters( 'mds_rm_release_links_audio_html', '', (int) $post_id, $attributes );
+		if ( is_string( $extension_html ) && '' !== trim( $extension_html ) ) {
+			return MDS_RM_Template_Loader::kses_shortcode_html( $extension_html );
+		}
 		$players  = (array) get_option( 'mds_rm_audio_players', array( 'html5' ) );
 		$bandcamp = get_post_meta( $post_id, 'bandcamp_shortcode', true );
 		if ( in_array( 'blocks_for_bandcamp', $players, true ) && is_string( $bandcamp ) && '' !== trim( $bandcamp ) ) {
@@ -279,7 +297,7 @@ final class MDS_RM_Release_Links {
 				( $color ? ' style="--mds-links-provider-background:' . esc_attr( $color ) . '"' : '' ) .
 				'><i class="' . esc_attr( $icon ) . '" aria-hidden="true"></i></a>';
 		}
-		$audio = ! isset( $attributes['showAudio'] ) || $attributes['showAudio'] ? self::audio( $post->ID ) : '';
+		$audio = ! isset( $attributes['showAudio'] ) || $attributes['showAudio'] ? self::audio( $post->ID, $attributes ) : '';
 		if ( '' === $output && '' === $audio ) {
 			return '';
 		}

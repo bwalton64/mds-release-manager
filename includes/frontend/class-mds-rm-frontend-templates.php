@@ -53,7 +53,7 @@ final class MDS_RM_Frontend_Templates {
 		$args            = array(
 			'content'     => $content,
 			'image'       => wp_get_attachment_image( get_post_thumbnail_id( $post->ID ), 'large', false, array( 'class' => 'mds-artist-fallback__image' ) ),
-			'discography' => $has_discography ? '' : MDS_RM_Discography::render( $post->ID ),
+			'discography' => $has_discography ? '' : self::render_fallback_block( 'mds-rm/artist-discography', array( 'artistId' => $post->ID ) ),
 			'contact'     => get_post_meta( $post->ID, 'artist_contact', true ),
 			'style'       => MDS_RM_Customizer::get_artist_fallback_style_attribute(),
 		);
@@ -123,11 +123,24 @@ final class MDS_RM_Frontend_Templates {
 			'image'      => self::get_release_image( $post ),
 			'layout'     => $layout,
 			'style'      => MDS_RM_Customizer::get_release_fallback_style_attribute(),
-			'meta_html'  => $has_meta ? '' : MDS_RM_Release_Meta::render( array(), $post->ID ),
-			'links_html' => $has_links ? '' : MDS_RM_Release_Links::render( array(), $post->ID ),
+			'meta_html'  => $has_meta ? '' : self::render_fallback_block( 'mds-rm/release-meta', array( 'releaseId' => $post->ID ) ),
+			'links_html' => $has_links ? '' : self::render_fallback_block( 'mds-rm/release-links', array( 'releaseId' => $post->ID ) ),
 		);
 
 		return MDS_RM_Template_Loader::render( 'templates/release-fallback.php', $args );
+	}
+
+	/** Renders an automatic component with the same defaults and block supports as an inserted block. */
+	private static function render_fallback_block( string $name, array $attributes ): string {
+		return render_block(
+			array(
+				'blockName'    => $name,
+				'attrs'        => $attributes,
+				'innerBlocks'  => array(),
+				'innerHTML'    => '',
+				'innerContent' => array(),
+			)
+		);
 	}
 
 	/**

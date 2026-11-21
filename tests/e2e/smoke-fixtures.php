@@ -27,6 +27,9 @@ $cleanup = static function ( array $state ) use ( $check ): void {
 		}
 	}
 	if ( isset( $state['user'] ) ) {
+		if ( is_super_admin( $state['user'] ) ) {
+			revoke_super_admin( $state['user'] );
+		}
 		$check( wpmu_delete_user( $state['user'] ) );
 	}
 	foreach ( $state['options'] as $name => $snapshot ) {
@@ -48,7 +51,7 @@ if ( 'seed' !== ( $args[0] ?? '' ) ) {
 
 $state = array( 'options' => array() );
 $missing = new stdClass();
-foreach ( array( 'mds_rm_providers', 'mds_rm_audio_players', 'mds_rm_bandcamp_template', 'mds_rm_global_redirect', 'mds_rm_fa_support', 'mds_rm_block_defaults', 'mds_rm_artist_image_cleanup_complete' ) as $name ) {
+foreach ( array( 'mds_rm_providers', 'mds_rm_audio_players', 'mds_rm_bandcamp_template', 'mds_rm_global_redirect', 'mds_rm_fa_support', 'mds_rm_block_defaults', 'mds_rm_artist_image_cleanup_complete', 'mds_rm_normalized_upc_migration_complete', 'mds_rm_network_sync_job' ) as $name ) {
 	$value = get_option( $name, $missing );
 	$state['options'][ $name ] = array( 'exists' => $missing !== $value, 'value' => $missing !== $value ? $value : null );
 }
@@ -59,12 +62,13 @@ try {
 	$password = wp_generate_password( 32, false );
 	$label    = 'Smoke Label ' . substr( $token, 0, 8 );
 	$title    = 'Smoke Release ' . substr( $token, 0, 8 );
+	$artist_title = 'Smoke Artist ' . $token;
 	$spotify  = 'https://open.spotify.com/album/0123456789ABCDEFGHIJKL';
 	$term     = get_term_by( 'name', 'Album', 'release_format' );
 	$check( $term );
 	$state['user'] = $check( wp_insert_user( array( 'user_login' => $username, 'user_pass' => $password, 'role' => 'administrator' ) ) );
 	$state['artist'] = $check(
-		wp_insert_post( array( 'post_type' => 'artist', 'post_status' => 'publish', 'post_title' => 'Smoke Artist ' . $token, 'post_content' => 'Temporary artist biography.' ), true )
+		wp_insert_post( array( 'post_type' => 'artist', 'post_status' => 'publish', 'post_title' => $artist_title, 'post_content' => 'Temporary artist biography.' ), true )
 	);
 	update_post_meta( $state['artist'], '_mds_artist_uuid', $token );
 	$state['release'] = $check(
@@ -89,6 +93,8 @@ try {
 		'password' => $password,
 		'label' => $label,
 		'title' => $title,
+		'artistTitle' => $artist_title,
+		'artistUuid' => get_post_meta( $state['artist'], '_mds_artist_uuid', true ),
 		'spotify' => $spotify,
 		'artistUrl' => get_permalink( $state['artist'] ),
 		'releaseUrl' => get_permalink( $state['release'] ),

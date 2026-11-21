@@ -5,6 +5,7 @@
 	const { __, sprintf } = wp.i18n;
 	const ServerSideRender = wp.serverSideRender.ServerSideRender || wp.serverSideRender;
 	const name = 'mds-rm/artist-discography';
+	const requestTimeout = 15000;
 
 	function useArtists(path, delay, collection = false) {
 		const [result, setResult] = useState({});
@@ -13,15 +14,23 @@
 				return;
 			}
 			let active = true;
+			const controller = new AbortController();
+			let timeout;
 			const request = setTimeout(() => {
-				wp.apiFetch({ path, parse: !collection }).then(async (response) => {
+				timeout = setTimeout(() => controller.abort(), requestTimeout);
+				wp.apiFetch({ path, parse: !collection, signal: controller.signal }).then(async (response) => {
 					const data = collection ? await response.json() : response;
 					if (active) setResult({ path, data, pages: collection ? Number(response.headers.get('X-WP-TotalPages')) : 0 });
 				}).catch(
 					(error) => { if (active) setResult({ path, error }); }
-				);
+				).finally(() => clearTimeout(timeout));
 			}, delay);
-			return () => { active = false; clearTimeout(request); };
+			return () => {
+				active = false;
+				clearTimeout(request);
+				clearTimeout(timeout);
+				controller.abort();
+			};
 		}, [path, delay, collection]);
 		return path && result.path === path ? result : { loading: !!path };
 	}

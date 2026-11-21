@@ -9,10 +9,10 @@
 }
 
 .wp-block-mds-rm-artist-discography:is([style*="--mds-discography-table-"], .has-text-color, [class*="-font-size"], [style*="font-size:"], [style*="font-family:"], [style*="font-weight:"], [style*="font-style:"], [style*="line-height:"]) .mds-discography table {
-	background: var(--mds-discography-table-background, var(--mds-artist-table-background, transparent));
-	color: var(--mds-discography-table-color, var(--mds-discography-default-color, var(--mds-artist-table-color, inherit)));
+	background: var(--mds-discography-table-background, transparent);
+	color: var(--mds-discography-table-color, var(--mds-discography-default-color, inherit));
 	font-family: var(--mds-discography-table-font-family, inherit);
-	font-size: var(--mds-discography-table-font-size, var(--mds-discography-default-font-size, var(--mds-artist-table-font-size, inherit)));
+	font-size: var(--mds-discography-table-font-size, var(--mds-discography-default-font-size, inherit));
 	font-weight: var(--mds-discography-table-font-weight, inherit);
 	font-style: var(--mds-discography-table-font-style, inherit);
 	line-height: var(--mds-discography-table-line-height, inherit);
@@ -28,7 +28,7 @@
 
 .wp-block-mds-rm-artist-discography[style*="--mds-discography-cell-"] .mds-discography :is(th, td) {
 	padding: var(--mds-discography-cell-padding-top, .6em) var(--mds-discography-cell-padding-right, .6em) var(--mds-discography-cell-padding-bottom, .6em) var(--mds-discography-cell-padding-left, .6em);
-	border: var(--mds-discography-cell-border-width, 1px) var(--mds-discography-cell-border-style, solid) var(--mds-discography-cell-border-color, var(--mds-artist-table-border, #ddd));
+	border: var(--mds-discography-cell-border-width, 1px) var(--mds-discography-cell-border-style, solid) var(--mds-discography-cell-border-color, #ddd);
 }
 
 .wp-block-mds-rm-artist-discography[style*="--mds-discography-header-"] .mds-discography thead {

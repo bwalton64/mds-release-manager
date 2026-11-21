@@ -182,7 +182,7 @@ read-only outside the hub.
 
 ### Artist Discography
 - **`mds-rm/artist-discography`** uses the current Artist or an optional Artist post ID. Only published Releases associated through `artist_id` and the Artist's `_mds_artist_uuid` are listed, ordered by Release post date and ID descending, 25 per page. Release year is derived from the post date; UPC/EAN is displayed as text.
-- Pagination uses `mds_discography_page_{artist_id}`. The table scrolls horizontally when necessary. Artist fallback Customizer table styles apply to the automatic table; independently placed blocks and shortcodes use their surrounding theme styles unless per-instance styles are supplied.
+- Pagination uses `mds_discography_page_{artist_id}`. The table scrolls horizontally when necessary. The automatic table and inserted blocks inherit the site-wide block defaults; shortcodes use their own attributes.
 - The editor queries the site's existing `/wp/v2/artist` endpoint for published Artists and resolves a saved selection independently of search results. The stored integer `artistId` remains unchanged; zero or absent resolves block context. The editor sends the context ID to the block renderer for preview only.
 - Core block supports own wrapper styles. An optional `tableStyles` attribute stores per-region overrides (including references to theme presets). Both block and shortcode renderers validate table settings and emit scoped CSS variables; shortcode `table_*`, `header_*`, `body_*`, `cell_*`, and `link_*` attributes map underscores to the corresponding `tableStyles` keys. `striped="1"` enables alternate rows. `wrapper_*` attributes mirror the core wrapper's color, typography, spacing, and border controls. Table styles are not responsive; outer styles are inline on the shortcode wrapper.
 
@@ -222,13 +222,16 @@ read-only outside the hub.
 - The four root terms are created automatically and cannot be renamed or deleted through the WordPress editor or REST API; unsupported or nested new format terms are rejected.
 - Group the required Release Format and UPC/EAN fields together. Require both for saved drafts and published releases; WordPress's initial empty auto-draft is exempt.
 - Store UPC/EAN as a string, preserving leading zeroes, and reject duplicate UPCs. Allow corrections to existing UPCs without creating duplicate spoke releases.
+- Maintain `_mds_normalized_upc` as a dedicated exact-match lookup key; existing releases are backfilled in administrator-request batches of 100. During migration, validation retains a bounded legacy fallback for unnormalized values.
 - The classic editor, CSV import, and REST release writes validate these fields. Releases and Artists use the classic edit screen on the hub; quick and bulk editing cannot assign formats, and spoke sites cannot edit catalog posts at all.
 - Use a per-site MySQL advisory lock while checking and saving a UPC through these paths. Direct programmatic WordPress writes must perform equivalent validation and locking.
-- Format displays and CSV exports read the taxonomy. The release list reports missing or duplicate UPCs and missing, multiple, unsupported, or conflicting legacy formats for review; conflicting values require an explicit choice.
-- Spoke synchronization uses a stable hub-site/post key and can adopt legacy shadows by current or previous UPC. Synchronization errors are reported rather than silently overwriting conflicting records.
+- Format displays and CSV exports read the taxonomy. The release-list audit caches findings and invalidates them when relevant release metadata or terms change.
+- CSV export validates and writes 100-release pages to temporary storage before streaming the download, keeping release and Artist lookups bounded while preserving the CSV schema.
+- Spoke synchronization uses a stable hub-site/post key and can adopt legacy shadows by current or previous UPC in one combined lookup. Synchronization errors are reported rather than silently overwriting conflicting records.
 
 ### Post Meta Keys (Release Posts)
 - `upc_ean` (string) — Universal Product Code or EAN for the release.
+- `_mds_normalized_upc` (string) — Digit-only exact-match lookup key maintained from `upc_ean`.
 - `artist_id` (string) — Artist post ID or UUID.
 - `streaming_links` (JSON string) — Encoded array of streaming platform URLs: `{"Spotify": "url", "Apple Music": "url", ...}`.
 - `buy_now_link` (string) — URL for purchase/buy now button.
@@ -282,9 +285,12 @@ read-only outside the hub.
 - `mds_rm_audio_players` (array) — Active audio player types: 'html5', 'bandcamp', etc.
 - `mds_rm_bandcamp_template` — Bandcamp embed shortcode template.
 - `mds_rm_providers` (array) — Global provider configuration (name, icon, color).
-- `mds_rm_block_defaults` (array) — Site-local block presentation defaults keyed by block slug. Native style values, table styles, field/link lists, and link/audio switches are validated before storage. Block rendering resolves these against saved attributes; legacy lists remain complete overrides and explicit field/style overrides take precedence. Shortcodes, Elementor and fallback renderers do not consume these defaults.
+- `mds_rm_block_defaults` (array) — Site-local block presentation defaults keyed by block slug. Native style values, table styles, field/link lists, and link/audio switches are validated before storage. Block rendering, including automatic fallback blocks, resolves these against saved attributes; legacy lists remain complete overrides and explicit field/style overrides take precedence. Shortcodes and Elementor do not consume these defaults.
 - `mds_rm_global_redirect` — Site-Wide Routing toggle ('0' or '1'). Releases with a Buy Now URL redirect; when enabled, automatic Release fallback composition is suppressed for every Release.
 - `mds_rm_artist_image_cleanup_complete` — Per-site marker for the deprecated Artist image URL cleanup.
+- `mds_rm_normalized_upc_migration_complete` — Per-site marker set after all existing Release UPC lookup keys have been backfilled in bounded batches.
+- `mds_rm_release_audit` (transient) — Cached IDs flagged by the Release list audit; invalidated when audited metadata or format terms change.
+- `mds_rm_network_sync_job` — Per-hub resumable manual-sync cursor, cumulative counts, and capped error details.
 - `mds_rm_db_templates` (array) — Database-backed template overrides: `{"css/frontend.css": "...", ...}`.
 
 ### wp_site_options Keys (Multisite Network-Level)
@@ -296,16 +302,21 @@ read-only outside the hub.
 ### Customizer Settings
 - `mds_rm_primary_color` — Primary accent color (default: #2271b1).
 - `mds_rm_layout_style` — Release Fallback Template layout: 'split' or 'stacked' (retained for compatibility).
-- `mds_rm_release_fallback_*` — Release fallback width, layout gaps, image radius, content typography, Meta padding/gap/colors, and Links gaps/button/icon sizing and colors.
-- `mds_rm_artist_fallback_*` — Artist fallback width, image size, spacing, contact styling, and Discography table typography and colors.
+- `mds_rm_release_fallback_*` — Release fallback width, layout gaps, featured image and content typography.
+- `mds_rm_artist_fallback_*` — Artist fallback width, spacing, portrait, biography and contact styling.
 - Legacy widget Customizer values remain stored but are no longer exposed. The WooCommerce extension continues to honor the stored `mds_rm_woo_injection` placement.
 
 ### REST API Endpoints
 
 **GET `/wp-json/mds/v1/releases`**
 - **Permission:** Public (`__return_true`).
-- **Query params:** None. Returns all published releases on the current site.
-- **Response:** Array of releases with `id`, `title`, and `upc`.
+- **Query params:** `page` (default `1`) and `per_page` (default/max `100`).
+- **Response:** Paginated array of releases with `id`, `title`, and `upc`; totals are provided in `X-WP-Total` and `X-WP-TotalPages` headers.
+
+**GET `/wp-json/mds/v1/artists`**
+- **Permission:** `edit_posts`.
+- **Query params:** Required `search` term and optional `page`.
+- **Response:** Up to 20 Artist UUID/title choices and a page count for the Release editor picker.
 
 **POST `/wp-json/mds/v1/settings`**
 - **Permission:** `manage_options`.
@@ -319,8 +330,8 @@ read-only outside the hub.
 
 **POST `/wp-json/mds/v1/sync-network`**
 - **Permission:** `manage_network_options`.
-- **Body params:** None.
-- **Response:** Success/error JSON with sync counts.
+- **Body params:** Optional `job_id` returned by a previous batch.
+- **Response:** One bounded batch of up to 10 catalog posts with `job_id`, cumulative counts, phase, errors, and `done`. Repeating the request with the returned ID resumes an interrupted job.
 
 The Release and Artist post types are also exposed through the WordPress core REST API (`/wp-json/wp/v2/release`, `/wp-json/wp/v2/artist`) via `show_in_rest`.
 
@@ -359,8 +370,8 @@ The plugin exposes core features as native MCP tools using the WordPress Abiliti
 4. **`mds_rm_sync_network`**
    - **Label:** "Sync Network Data"
    - **Permission:** `manage_network_options` capability
-   - **Input:** No parameters required
-   - **Output:** Success/error, sync counts (artists_synced, releases_synced), and any error details
+   - **Input:** Optional `job_id` to resume a prior batch
+   - **Output:** Batch progress (`done`, `job_id`, phase, cumulative counts), and any error details
    - **MCP Public:** ✓
 
 **Implementation:**

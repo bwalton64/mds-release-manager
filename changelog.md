@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- Add a searchable, paginated Artist lookup to the Release editor and resumable batch progress to manual network synchronization.
 - Add site-wide presentation defaults for the Release Meta, Release Links, and Artist Discography blocks, with per-block overrides and preservation of legacy saved lists.
 - Add extension-provided site and network settings tabs while retaining existing section hooks. Bandcamp adds a site tab and WooCommerce adds a network tab.
 - Add native block Styles and per-table controls to Artist Discography, covering spacing, typography, colors, borders, links, and striped rows.
@@ -17,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Add an isolated Playwright smoke suite covering Release and Artist fallbacks, Gutenberg metadata persistence, REST settings saves, and rewrite setup and cleanup.
 
 ### Changed
+- Paginate the public releases REST endpoint with standard total headers while retaining its array response; stream validated CSV exports in bounded pages without changing the CSV columns.
+- Automatic Release Meta, Release Links, and Artist Discography blocks use the site-wide defaults under Releases → Settings instead of separate Customizer styles.
+- Group Release and Artist fallback Customizer controls by the part of the page they style.
+- Use native WordPress Customizer controls for Release and Artist fallback styling, including colors with transparency.
 - Expand the Release Meta, Release Links, and Artist Discography shortcodes to expose their corresponding block options and styling controls, including Release ID selection and Discography table styles.
 - Move streaming provider and audio preview settings from Release Data to the Release Links settings tab; existing tab links continue to work.
 - Edit Releases and Artists on the native classic screen instead of the block editor. The former monolithic Release Settings box is split into Release Identity, Release Details, Streaming & Audio, and Commerce boxes, with Cover Art/Artist Photo featured-image labels and the redundant Slug box removed. Extension meta boxes (`mds_rm_register_custom_meta_boxes` / `mds_rm_save_custom_meta`), SEO plugin meta boxes, saved field names, and hub-to-spoke broadcasting are unchanged.
@@ -34,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Move internal implementation summaries, refactoring reports, and the Abilities API reference documentation from the plugin root into the `.local/` directory. `README.md`, `changelog.md`, and `.github/technical-blueprint.md` are the canonical, maintained documentation.
 
 ### Fixed
+- Replace recurring UPC regular-expression scans with a normalized lookup key and bounded migration, cache and page the Release-list audit, and consolidate legacy UPC adoption lookups during spoke sync.
 - Show the Artist Discography settings controls when its tab is selected.
 - Persist changes to the Bandcamp shortcode template when the field is submitted.
 - Validate that the CSV importer reads only temporary files received through an HTTP upload.

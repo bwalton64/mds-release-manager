@@ -2,19 +2,28 @@
     const { createElement: el, Fragment } = wp.element;
     const { Button, ComboboxControl, Notice } = wp.components;
     const { __, sprintf } = wp.i18n;
+    const requestTimeout = 15000;
 
     function useLookup(route, params, delay = 0) {
         const path = wp.url.addQueryArgs('/mds/v1/' + route, params);
         const [result, setResult] = wp.element.useState({});
         wp.element.useEffect(() => {
             let active = true;
+            const controller = new AbortController();
+            let timeout;
             const timer = setTimeout(() => {
-                wp.apiFetch({ path }).then(
+                timeout = setTimeout(() => controller.abort(), requestTimeout);
+                wp.apiFetch({ path, signal: controller.signal }).then(
                     (data) => { if (active) setResult({ path, data }); },
                     (error) => { if (active) setResult({ path, error }); }
-                );
+                ).finally(() => clearTimeout(timeout));
             }, delay);
-            return () => { active = false; clearTimeout(timer); };
+            return () => {
+                active = false;
+                clearTimeout(timer);
+                clearTimeout(timeout);
+                controller.abort();
+            };
         }, [path, delay]);
         return result.path === path ? result : { loading: true };
     }

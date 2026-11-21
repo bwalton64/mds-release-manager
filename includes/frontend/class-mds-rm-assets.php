@@ -160,6 +160,30 @@ final class MDS_RM_Assets {
 					'var mdsReleaseBlockEditor = ' . wp_json_encode( $is_block_editor ) . ';',
 					'before'
 				);
+				MDS_RM_Template_Loader::enqueue_editable_script(
+					'mds-release-artist-picker',
+					'js/release-artist-picker.js',
+					array(),
+					true
+				);
+				wp_localize_script(
+					'mds-release-artist-picker',
+					'mdsReleaseArtistPickerData',
+					array(
+						'rest_url'     => esc_url_raw( rest_url( 'mds/v1/artists' ) ),
+						'nonce'        => wp_create_nonce( 'wp_rest' ),
+						'loading'      => __( 'Searching Artists...', 'mds-release-manager' ),
+						'search_failed' => __( 'Could not load Artists. Please try again.', 'mds-release-manager' ),
+						'no_results'   => __( 'No matching Artists found.', 'mds-release-manager' ),
+						'previous'     => __( 'Previous', 'mds-release-manager' ),
+						'next'         => __( 'Next', 'mds-release-manager' ),
+						'selected'     => __( 'Selected: %s', 'mds-release-manager' ),
+						'cleared'      => __( 'No Artist selected.', 'mds-release-manager' ),
+						'type_to_search' => __( 'Type an Artist name to search.', 'mds-release-manager' ),
+						'minimum_length' => __( 'Enter at least two characters to search.', 'mds-release-manager' ),
+					)
+				);
+				wp_set_script_translations( 'mds-release-artist-picker', 'mds-release-manager', MDS_RM_PATH . 'languages' );
 			}
 		}
 

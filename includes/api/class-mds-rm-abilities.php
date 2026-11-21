@@ -258,24 +258,41 @@ final class MDS_RM_Abilities {
 			'mds_rm_sync_network',
 			array(
 				'label'               => __( 'Sync Network Data', 'mds-release-manager' ),
-				'description'         => __( 'Synchronize releases and artists across all network sites', 'mds-release-manager' ),
+				'description'         => __( 'Synchronize releases and artists across all network sites in resumable batches', 'mds-release-manager' ),
 				'category'            => 'mds_release_manager',
 				'capability'          => 'manage_network_options',
 				'permission_callback' => array( self::class, 'check_manage_network_options_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
-					'properties' => array(),
+					'properties' => array(
+						'job_id' => array(
+							'type'        => 'string',
+							'description' => __( 'Job ID returned by a previous batch; omit to start or resume the active job.', 'mds-release-manager' ),
+						),
+					),
 				),
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
 						'success'         => array(
 							'type'        => 'boolean',
-							'description' => __( 'Whether sync completed successfully', 'mds-release-manager' ),
+							'description' => __( 'Whether the sync has encountered synchronization errors so far', 'mds-release-manager' ),
+						),
+						'done'            => array(
+							'type'        => 'boolean',
+							'description' => __( 'Whether all records have been synchronized', 'mds-release-manager' ),
+						),
+						'job_id'          => array(
+							'type'        => 'string',
+							'description' => __( 'Job ID to pass to the next batch request', 'mds-release-manager' ),
+						),
+						'phase'           => array(
+							'type'        => 'string',
+							'description' => __( 'Current phase: artists, releases, or complete', 'mds-release-manager' ),
 						),
 						'message'         => array(
 							'type'        => 'string',
-							'description' => __( 'Sync result message with counts', 'mds-release-manager' ),
+							'description' => __( 'Batch progress message with cumulative counts', 'mds-release-manager' ),
 						),
 						'artists_synced'  => array(
 							'type'        => 'integer',
@@ -289,6 +306,10 @@ final class MDS_RM_Abilities {
 							'type'        => 'array',
 							'items'       => array( 'type' => 'string' ),
 							'description' => __( 'Any errors that occurred during sync', 'mds-release-manager' ),
+						),
+						'error_count'     => array(
+							'type'        => 'integer',
+							'description' => __( 'Total synchronization errors, including errors beyond the retained detail limit', 'mds-release-manager' ),
 						),
 					),
 				),
@@ -469,75 +490,29 @@ final class MDS_RM_Abilities {
 	}
 
 	/**
-	 * Ability callback: Sync network data.
+	 * Ability callback: Sync one batch of network data.
 	 *
 	 * @since 0.9.0
-	 * @param array $input Input supplied by the Abilities API; this ability takes no options.
-	 * @return array The ability response.
+	 * @param array $input Input supplied by the Abilities API.
+	 * @return array The batch progress or an error response.
 	 */
-	public static function ability_sync_network( $input ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Preserve the callable's input parameter.
-		if ( get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
+	public static function ability_sync_network( $input ): array {
+		$job_id = isset( $input['job_id'] ) && is_string( $input['job_id'] ) ? sanitize_text_field( $input['job_id'] ) : '';
+		$result = MDS_RM_Sync::run_network_sync_batch( $job_id );
+		if ( is_wp_error( $result ) ) {
 			return array(
 				'success'         => false,
-				'message'         => __( 'Sync must be run from the master hub site', 'mds-release-manager' ),
+				'done'            => false,
+				'job_id'          => $job_id,
+				'phase'           => '',
+				'message'         => $result->get_error_message(),
 				'artists_synced'  => 0,
 				'releases_synced' => 0,
-				'errors'          => array(),
+				'error_count'     => 1,
+				'errors'          => array( $result->get_error_message() ),
 			);
 		}
 
-		$artists      = get_posts(
-			array(
-				'post_type'   => 'artist',
-				'numberposts' => -1,
-				'post_status' => 'any',
-			)
-		);
-		$artist_count = 0;
-		$errors       = array();
-
-		foreach ( $artists as $a ) {
-			$result = MDS_RM_Sync::broadcast_to_spokes( $a->ID, 'artist' );
-			if ( is_wp_error( $result ) ) {
-				$errors[] = sprintf( 'Artist %1$d: %2$s', $a->ID, $result->get_error_message() );
-				continue;
-			}
-			++$artist_count;
-		}
-
-		$releases      = get_posts(
-			array(
-				'post_type'   => 'release',
-				'numberposts' => -1,
-				'post_status' => 'any',
-			)
-		);
-		$release_count = 0;
-
-		foreach ( $releases as $r ) {
-			$result = MDS_RM_Sync::broadcast_to_spokes( $r->ID, 'release' );
-			if ( is_wp_error( $result ) ) {
-				$errors[] = sprintf( 'Release %1$d: %2$s', $r->ID, $result->get_error_message() );
-				continue;
-			}
-			++$release_count;
-		}
-
-		MDS_RM_Sync::purge_cache();
-
-		$success = empty( $errors );
-
-		return array(
-			'success'         => $success,
-			'message'         => sprintf(
-				/* translators: %1$d: Release count. %2$d: Artist count. */
-				__( 'Successfully synced %1$d releases and %2$d artists to spoke sites.', 'mds-release-manager' ),
-				$release_count,
-				$artist_count
-			),
-			'artists_synced'  => $artist_count,
-			'releases_synced' => $release_count,
-			'errors'          => $errors,
-		);
+		return $result;
 	}
 }

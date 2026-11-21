@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div id="tab-release-meta" class="mds-tab-pane active">
 			<div class="mds-panel">
 				<h2><?php esc_html_e( 'Release Meta defaults', 'mds-release-manager' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Blocks inherit these defaults unless an individual block overrides them.', 'mds-release-manager' ); ?></p>
+				<p class="description"><?php esc_html_e( 'These defaults apply to automatic fallback blocks and to inserted blocks that do not override them.', 'mds-release-manager' ); ?></p>
 				<div id="mds-defaults-release-meta"></div>
 			</div>
 			<div class="mds-admin-save-actions">
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div id="tab-release-links" class="mds-tab-pane">
 			<div class="mds-panel">
 				<h2><?php esc_html_e( 'Release Links defaults', 'mds-release-manager' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Blocks inherit these defaults unless an individual block overrides them.', 'mds-release-manager' ); ?></p>
+				<p class="description"><?php esc_html_e( 'These defaults apply to automatic fallback blocks and to inserted blocks that do not override them.', 'mds-release-manager' ); ?></p>
 				<div id="mds-defaults-release-links"></div>
 			</div>
 			<div class="mds-panel">
@@ -98,7 +98,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div id="tab-artist-discography" class="mds-tab-pane">
 			<div class="mds-panel">
 				<h2><?php esc_html_e( 'Artist Discography defaults', 'mds-release-manager' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Blocks inherit these defaults unless an individual block overrides them.', 'mds-release-manager' ); ?></p>
+				<p class="description"><?php esc_html_e( 'These defaults apply to automatic fallback blocks and to inserted blocks that do not override them.', 'mds-release-manager' ); ?></p>
 				<div id="mds-defaults-artist-discography"></div>
 			</div>
 			<div class="mds-admin-save-actions">

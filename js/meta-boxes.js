@@ -3,10 +3,24 @@ jQuery(document).ready(function($){
         e.preventDefault();
         var $el = $(this);
         var shortcode = $el.text();
-        navigator.clipboard.writeText(shortcode).then(function() {
-            $el.text('Copied!');
+
+        function showCopyError(error) {
+            console.error('Could not copy shortcode:', error);
+            $el.text('Copy failed');
             setTimeout(function() { $el.text(shortcode); }, 2000);
-        });
+        }
+
+        try {
+            if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+                throw new Error('Clipboard API is unavailable.');
+            }
+            navigator.clipboard.writeText(shortcode).then(function() {
+                $el.text('Copied!');
+                setTimeout(function() { $el.text(shortcode); }, 2000);
+            }).catch(showCopyError);
+        } catch (error) {
+            showCopyError(error);
+        }
     });
 
     var audioUploader;

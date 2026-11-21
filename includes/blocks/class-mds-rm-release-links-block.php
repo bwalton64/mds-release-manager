@@ -280,7 +280,7 @@ final class MDS_RM_Release_Links_Block {
 				$value = self::style_value( $value, $type );
 			}
 			if ( '' !== $value ) {
-				if ( is_array( $attributes['styles']['desktop'] ?? null ) ) {
+				if ( is_array( $attributes['styles'] ?? null ) && is_array( $attributes['styles']['desktop'] ?? null ) ) {
 					unset( $attributes['styles']['desktop'][ $key ] );
 				}
 				$style[] = '--mds-' . $prefix . '-' . str_replace( '_', '-', $key ) . '-desktop:' . $value;

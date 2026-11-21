@@ -16,6 +16,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class MDS_RM_Release_Model {
 	public const MDS_RM_FORMATS = array( 'Single', 'EP', 'Album', 'Digital' );
+	private const AUDIT_CACHE_KEY = 'mds_rm_release_audit';
+	private const NORMALIZED_UPC_META_KEY = '_mds_normalized_upc';
+	private const NORMALIZED_UPC_MIGRATION_OPTION = 'mds_rm_normalized_upc_migration_complete';
 
 	/**
 	 * UPC values captured before REST updates, keyed by release ID.
@@ -48,12 +51,23 @@ final class MDS_RM_Release_Model {
 	/** Registers the release validation hooks. */
 	public static function register_hooks(): void {
 		add_action( 'init', array( self::class, 'register_fields_and_formats' ), 20 );
+		add_action( 'admin_init', array( self::class, 'migrate_normalized_upcs' ) );
 		add_filter( 'wp_insert_post_empty_content', array( self::class, 'validate_classic_save' ), 10, 2 );
 		add_filter( 'rest_pre_insert_release', array( self::class, 'validate_rest_save' ), 10, 2 );
 		add_action( 'rest_after_insert_release', array( self::class, 'after_rest_save' ), 10, 3 );
 		add_filter( 'rest_request_before_callbacks', array( self::class, 'before_rest_request' ), 10, 3 );
 		add_filter( 'rest_request_after_callbacks', array( self::class, 'report_rest_sync_error' ), 10, 3 );
 		add_action( 'admin_notices', array( self::class, 'show_audit_notice' ) );
+		add_action( 'save_post_release', array( self::class, 'invalidate_release_audit_cache' ) );
+		add_action( 'before_delete_post', array( self::class, 'invalidate_release_audit_cache' ) );
+		add_action( 'added_post_meta', array( self::class, 'sync_normalized_upc_meta' ), 10, 4 );
+		add_action( 'updated_post_meta', array( self::class, 'sync_normalized_upc_meta' ), 10, 4 );
+		add_action( 'deleted_post_meta', array( self::class, 'sync_normalized_upc_meta' ), 10, 4 );
+		add_action( 'added_post_meta', array( self::class, 'invalidate_audit_on_meta_change' ), 10, 4 );
+		add_action( 'updated_post_meta', array( self::class, 'invalidate_audit_on_meta_change' ), 10, 4 );
+		add_action( 'deleted_post_meta', array( self::class, 'invalidate_audit_on_meta_change' ), 10, 4 );
+		add_action( 'set_object_terms', array( self::class, 'invalidate_audit_on_term_change' ), 10, 4 );
+		add_action( 'edited_term', array( self::class, 'invalidate_audit_on_format_edit' ), 10, 3 );
 		add_filter( 'pre_insert_term', array( self::class, 'validate_format_term' ), 10, 3 );
 		add_filter( 'map_meta_cap', array( self::class, 'protect_format_terms' ), 10, 4 );
 	}
@@ -106,6 +120,69 @@ final class MDS_RM_Release_Model {
 	 */
 	public static function normalize_upc( mixed $value ): string {
 		return is_scalar( $value ) ? preg_replace( '/[^0-9]/', '', (string) $value ) : '';
+	}
+
+	/**
+	 * Synchronizes the normalized UPC lookup key when the stored value changes.
+	 *
+	 * @param mixed  $meta_id Meta ID or IDs.
+	 * @param int    $post_id Post ID.
+	 * @param string $meta_key Meta key.
+	 * @param mixed  $meta_value New or deleted meta value.
+	 * @return void
+	 */
+	public static function sync_normalized_upc_meta( $meta_id, int $post_id, string $meta_key, $meta_value ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Preserve the metadata hook signature.
+		if ( 'upc_ean' !== $meta_key || 'release' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		$upc = self::normalize_upc( get_post_meta( $post_id, 'upc_ean', true ) );
+		if ( '' === $upc ) {
+			delete_post_meta( $post_id, self::NORMALIZED_UPC_META_KEY );
+			return;
+		}
+
+		update_post_meta( $post_id, self::NORMALIZED_UPC_META_KEY, $upc );
+	}
+
+	/**
+	 * Backfills normalized UPC keys in small batches until the legacy catalog is migrated.
+	 *
+	 * @return void
+	 */
+	public static function migrate_normalized_upcs(): void {
+		if ( ! current_user_can( 'manage_options' ) || '1' === get_option( self::NORMALIZED_UPC_MIGRATION_OPTION, '0' ) ) {
+			return;
+		}
+
+		$release_ids = get_posts(
+			array(
+				'post_type'              => 'release',
+				'post_status'            => array_diff( array_keys( get_post_stati() ), array( 'auto-draft', 'inherit' ) ),
+				'posts_per_page'         => 100,
+				'fields'                 => 'ids',
+				'orderby'                => 'ID',
+				'order'                  => 'ASC',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'meta_query'             => array(
+					array(
+						'key'     => self::NORMALIZED_UPC_META_KEY,
+						'compare' => 'NOT EXISTS',
+					),
+				),
+			)
+		);
+
+		foreach ( $release_ids as $release_id ) {
+			$upc = self::normalize_upc( get_post_meta( $release_id, 'upc_ean', true ) );
+			update_post_meta( $release_id, self::NORMALIZED_UPC_META_KEY, $upc );
+		}
+
+		if ( count( $release_ids ) < 100 ) {
+			update_option( self::NORMALIZED_UPC_MIGRATION_OPTION, '1', false );
+		}
 	}
 
 	/**
@@ -204,26 +281,62 @@ final class MDS_RM_Release_Model {
 		if ( ! $screen || 'edit' !== $screen->base || 'release' !== $screen->post_type || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		$posts  = get_posts(
-			array(
-				'post_type'      => 'release',
-				'post_status'    => array_diff( array_keys( get_post_stati() ), array( 'auto-draft', 'inherit' ) ),
-				'posts_per_page' => -1,
-				'fields'         => 'ids',
-			)
-		);
+
+		$issues = get_transient( self::AUDIT_CACHE_KEY );
+		if ( false === $issues ) {
+			$issues = self::collect_release_audit_issues();
+			set_transient( self::AUDIT_CACHE_KEY, $issues, DAY_IN_SECONDS );
+		}
+		if ( ! $issues ) {
+			return;
+		}
+
+		echo '<div class="notice notice-warning"><p>' . esc_html__( 'These releases need review for missing, malformed, or duplicate UPCs, invalid formats, or conflicting legacy format data:', 'mds-release-manager' ) . ' ';
+		$links = array();
+		foreach ( $issues as $id ) {
+			$url     = get_edit_post_link( $id, 'raw' );
+			$label   = esc_html( get_the_title( $id ) . ' (#' . $id . ')' );
+			$links[] = $url ? '<a href="' . esc_url( $url ) . '">' . $label . '</a>' : $label;
+		}
+		echo implode( ', ', $links ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Each link is escaped above.
+	}
+
+	/**
+	 * Collects release IDs needing administrative review.
+	 *
+	 * @return int[] Release IDs.
+	 */
+	private static function collect_release_audit_issues(): array {
 		$issues = array();
 		$upcs   = array();
-		foreach ( $posts as $id ) {
-			$upc        = get_post_meta( $id, 'upc_ean', true );
-			$normalized = self::normalize_upc( $upc );
-			if ( '' === $normalized || ! is_string( $upc ) || $upc !== $normalized || is_wp_error( self::format_name( $id ) ) || self::has_legacy_format_conflict( $id ) ) {
-				$issues[ $id ] = true;
+		$page   = 1;
+		do {
+			$posts = get_posts(
+				array(
+					'post_type'              => 'release',
+					'post_status'            => array_diff( array_keys( get_post_stati() ), array( 'auto-draft', 'inherit' ) ),
+					'posts_per_page'         => 100,
+					'paged'                  => $page,
+					'fields'                 => 'ids',
+					'orderby'                => 'ID',
+					'order'                  => 'ASC',
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => true,
+					'update_post_term_cache' => true,
+				)
+			);
+			foreach ( $posts as $id ) {
+				$upc        = get_post_meta( $id, 'upc_ean', true );
+				$normalized = self::normalize_upc( $upc );
+				if ( '' === $normalized || ! is_string( $upc ) || $upc !== $normalized || is_wp_error( self::format_name( $id ) ) || self::has_legacy_format_conflict( $id ) ) {
+					$issues[ $id ] = true;
+				}
+				if ( '' !== $normalized ) {
+					$upcs[ $normalized ][] = $id;
+				}
 			}
-			if ( '' !== $normalized ) {
-				$upcs[ $normalized ][] = $id;
-			}
-		}
+			++$page;
+		} while ( count( $posts ) === 100 );
 		foreach ( $upcs as $ids ) {
 			if ( count( $ids ) > 1 ) {
 				foreach ( $ids as $id ) {
@@ -231,17 +344,64 @@ final class MDS_RM_Release_Model {
 				}
 			}
 		}
-		if ( ! $issues ) {
-			return;
+
+		return array_map( 'intval', array_keys( $issues ) );
+	}
+
+	/**
+	 * Invalidates the cached release audit after a release is saved or deleted.
+	 *
+	 * @param int $post_id Affected post ID.
+	 * @return void
+	 */
+	public static function invalidate_release_audit_cache( int $post_id ): void {
+		if ( 'release' === get_post_type( $post_id ) ) {
+			delete_transient( self::AUDIT_CACHE_KEY );
 		}
-		echo '<div class="notice notice-warning"><p>' . esc_html__( 'These releases need review for missing, malformed, or duplicate UPCs, invalid formats, or conflicting legacy format data:', 'mds-release-manager' ) . ' ';
-		$links = array();
-		foreach ( array_keys( $issues ) as $id ) {
-			$url     = get_edit_post_link( $id, 'raw' );
-			$label   = esc_html( get_the_title( $id ) . ' (#' . $id . ')' );
-			$links[] = $url ? '<a href="' . esc_url( $url ) . '">' . $label . '</a>' : $label;
+	}
+
+	/**
+	 * Invalidates the audit when release metadata changes.
+	 *
+	 * @param mixed  $meta_id Meta ID or IDs.
+	 * @param int    $post_id Post ID.
+	 * @param string $meta_key Changed key.
+	 * @param mixed  $meta_value Changed value.
+	 * @return void
+	 */
+	public static function invalidate_audit_on_meta_change( $meta_id, int $post_id, string $meta_key, $meta_value ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Preserve the metadata hook signature.
+		if ( 'release' === get_post_type( $post_id ) && in_array( $meta_key, array( 'upc_ean', 'release_format' ), true ) ) {
+			delete_transient( self::AUDIT_CACHE_KEY );
 		}
-		echo implode( ', ', $links ) . '</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Each link is escaped above.
+	}
+
+	/**
+	 * Invalidates the audit when a release's format terms change.
+	 *
+	 * @param int    $object_id Object ID.
+	 * @param array  $terms Terms assigned.
+	 * @param array  $term_taxonomy_ids Term-taxonomy IDs.
+	 * @param string $taxonomy Taxonomy.
+	 * @return void
+	 */
+	public static function invalidate_audit_on_term_change( int $object_id, array $terms, array $term_taxonomy_ids, string $taxonomy ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Preserve the term hook signature.
+		if ( 'release_format' === $taxonomy && 'release' === get_post_type( $object_id ) ) {
+			delete_transient( self::AUDIT_CACHE_KEY );
+		}
+	}
+
+	/**
+	 * Invalidates the audit after a canonical Release Format is renamed.
+	 *
+	 * @param int    $term_id Term ID.
+	 * @param int    $term_taxonomy_id Term-taxonomy ID.
+	 * @param string $taxonomy Taxonomy name.
+	 * @return void
+	 */
+	public static function invalidate_audit_on_format_edit( int $term_id, int $term_taxonomy_id, string $taxonomy ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Preserve the term hook signature.
+		if ( 'release_format' === $taxonomy ) {
+			delete_transient( self::AUDIT_CACHE_KEY );
+		}
 	}
 
 	/**
@@ -293,41 +453,61 @@ final class MDS_RM_Release_Model {
 				'posts_per_page'         => 1,
 				'fields'                 => 'ids',
 				'post__not_in'           => $post_id ? array( (int) $post_id ) : array(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- Exclude the record being edited before selecting the first conflict.
-				'meta_key'               => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Check for duplicate stored UPCs under the advisory lock.
+				'meta_key'               => self::NORMALIZED_UPC_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Match the dedicated normalized lookup key under the advisory lock.
 				'meta_value'             => $upc, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'no_found_rows'          => true,
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,
 			)
 		);
-		if ( ! $matches ) {
-			$legacy_ids = get_posts(
-				array(
-					'post_type'              => 'release',
-					'post_status'            => array_keys( get_post_stati() ),
-					'posts_per_page'         => -1,
-					'fields'                 => 'ids',
-					'post__not_in'           => $post_id ? array( (int) $post_id ) : array(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- The edited record cannot be a conflicting legacy record.
-					'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Include unnormalized legacy UPCs that an exact match cannot find.
-						array(
-							'key'     => 'upc_ean',
-							'value'   => '[^0-9]',
-							'compare' => 'REGEXP',
+		if ( ! $matches && '1' !== get_option( self::NORMALIZED_UPC_MIGRATION_OPTION, '0' ) ) {
+			$page      = 1;
+			$batch_size = 100;
+			do {
+				$legacy_ids = get_posts(
+					array(
+						'post_type'              => 'release',
+						'post_status'            => array_keys( get_post_stati() ),
+						'posts_per_page'         => $batch_size,
+						'paged'                  => $page,
+						'fields'                 => 'ids',
+						'post__not_in'           => $post_id ? array( (int) $post_id ) : array(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- The edited record cannot be a conflicting legacy record.
+						'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Transitional lookup only while the bounded normalized-key migration is incomplete.
+							'relation' => 'AND',
+							array(
+								'key'     => self::NORMALIZED_UPC_META_KEY,
+								'compare' => 'NOT EXISTS',
+							),
+							array(
+								'relation' => 'OR',
+								array(
+									'key'     => 'upc_ean',
+									'value'   => $upc,
+									'compare' => '=',
+								),
+								array(
+									'key'     => 'upc_ean',
+									'value'   => '[^0-9]',
+									'compare' => 'REGEXP',
+								),
+							),
 						),
-					),
-					'no_found_rows'          => true,
-					'update_post_meta_cache' => true,
-					'update_post_term_cache' => false,
-				)
-			);
-			foreach ( $legacy_ids as $legacy_id ) {
-				foreach ( get_post_meta( $legacy_id, 'upc_ean', false ) as $legacy_upc ) {
-					if ( self::normalize_upc( $legacy_upc ) === $upc ) {
-						$matches = array( $legacy_id );
-						break 2;
+						'no_found_rows'          => true,
+						'update_post_meta_cache' => true,
+						'update_post_term_cache' => false,
+					)
+				);
+
+				foreach ( $legacy_ids as $legacy_id ) {
+					foreach ( get_post_meta( $legacy_id, 'upc_ean', false ) as $legacy_upc ) {
+						if ( self::normalize_upc( $legacy_upc ) === $upc ) {
+							$matches = array( $legacy_id );
+							break 2;
+						}
 					}
 				}
-			}
+				++$page;
+			} while ( ! $matches && count( $legacy_ids ) === $batch_size );
 		}
 		if ( $matches ) {
 			self::release_upc_lock( $upc );
