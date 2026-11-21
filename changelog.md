@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 - Add a searchable, paginated Artist lookup to the Release editor and resumable batch progress to manual network synchronization.
+- Add the `mds_rm_release_links_audio_html` filter so extensions supply the Release Links block audio player. The first non-empty result wins over the built-in Bandcamp shortcode and HTML5 players and is sanitized with the iframe-aware allowlist.
 - Add site-wide presentation defaults for the Release Meta, Release Links, and Artist Discography blocks, with per-block overrides and preservation of legacy saved lists.
 - Add extension-provided site and network settings tabs while retaining existing section hooks. Bandcamp adds a site tab and WooCommerce adds a network tab.
 - Add native block Styles and per-table controls to Artist Discography, covering spacing, typography, colors, borders, links, and striped rows.

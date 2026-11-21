@@ -642,6 +642,15 @@ add_filter( 'mds_rm_settings_audio_fields', function( $html ) {
     return $html;
 });
 
+// Supply the Release Links block audio player. The first extension returning
+// non-empty markup wins; the result is sanitized with an iframe-aware allowlist.
+add_filter( 'mds_rm_release_links_audio_html', function( $html, $post_id, $attributes ) {
+    if ( '' !== trim( $html ) ) {
+        return $html; // Another extension already supplied a player.
+    }
+    return my_extension_player_markup( $post_id );
+}, 10, 3 );
+
 // Add a site settings tab; the callback renders its own secure form.
 add_filter( 'mds_rm_site_settings_tabs', function( array $tabs ): array {
     $tabs['my-extension'] = array(
