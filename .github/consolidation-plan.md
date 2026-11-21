@@ -165,13 +165,16 @@ Verified by grep across `mds-bandcamp-integration` and `mds-woocommerce-integrat
 **Hooks consumed by extension plugins — preserve where currently emitted:**
 - `mds_rm_register_custom_meta_boxes` (Bandcamp, Woo)
 - `mds_rm_save_custom_meta` (Bandcamp, Woo)
-- `mds_rm_after_release_meta` (Bandcamp listens for this, but no emission was found in the
-  current plugin PHP source; investigate the existing integration gap before deciding on a fix)
+- `mds_rm_release_links_audio_html` (Bandcamp supplies the Release Links audio player through
+  this filter; the first non-empty extension result takes precedence over built-in players)
 - `mds_rm_network_settings_fields` (Woo)
 - `mds_rm_sync_target_sites` (Woo)
 - `mds_rm_after_shadow_meta_sync` (Woo)
 - `mds_rm_release_meta_context_upc` (Woo)
 - `mds_rm_after_buy_now_field` (Woo)
+
+The former Bandcamp listener for `mds_rm_after_release_meta` was removed because the Release
+Manager does not emit that hook. Bandcamp now integrates through the audio filter above.
 
 **Also frozen:** every other documented `mds_rm_*` action/filter, all shortcode tags, block names
 (`mds-rm/release-meta`, `mds-rm/release-links`, `mds-rm/artist-discography`), REST routes and
