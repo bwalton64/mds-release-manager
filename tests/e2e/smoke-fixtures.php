@@ -21,7 +21,7 @@ $check = static function ( $result ) {
 
 $cleanup = static function ( array $state ) use ( $check ): void {
 	require_once ABSPATH . 'wp-admin/includes/ms.php';
-	foreach ( array( 'release', 'artist' ) as $type ) {
+	foreach ( array( 'release', 'artist', 'host' ) as $type ) {
 		if ( isset( $state[ $type ] ) ) {
 			$check( wp_delete_post( $state[ $type ], true ) );
 		}
@@ -72,9 +72,12 @@ try {
 	);
 	update_post_meta( $state['release'], 'artist_id', $token );
 	update_post_meta( $state['release'], 'record_label', $label );
-	update_post_meta( $state['release'], 'upc_ean', (string) random_int( 990000000000, 999999999999 ) );
+	update_post_meta( $state['release'], 'upc_ean', '0' . random_int( 99000000000, 99999999999 ) );
 	update_post_meta( $state['release'], 'streaming_links', wp_slash( wp_json_encode( array( 'Spotify' => $spotify ) ) ) );
 	$check( wp_set_post_terms( $state['release'], array( (int) $term->term_id ), 'release_format' ) );
+	$state['host'] = $check(
+		wp_insert_post( array( 'post_type' => 'post', 'post_status' => 'publish', 'post_title' => 'Smoke Host ' . $token, 'post_content' => '' ), true )
+	);
 	update_option( 'mds_rm_global_redirect', '0' );
 	update_option( 'mds_rm_fa_support', 'cdn' );
 	update_option( 'mds_rm_artist_image_cleanup_complete', '1' );
@@ -88,6 +91,7 @@ try {
 		'spotify' => $spotify,
 		'artistUrl' => get_permalink( $state['artist'] ),
 		'releaseUrl' => get_permalink( $state['release'] ),
+		'hostUrl' => get_permalink( $state['host'] ),
 	) );
 } catch ( Throwable $error ) {
 	$cleanup( $state );

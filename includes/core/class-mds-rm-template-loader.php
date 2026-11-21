@@ -66,7 +66,7 @@ final class MDS_RM_Template_Loader {
 	 * @return string Rendered view.
 	 */
 	public static function render_admin_view( string $view, array $args = array() ): string {
-		if ( ! in_array( $view, array( 'artist-meta-box.php', 'release-meta-box.php', 'csv-page.php', 'settings-page.php', 'network-settings-page.php' ), true ) ) {
+		if ( ! in_array( $view, array( 'artist-meta-box.php', 'release-identity-box.php', 'release-details-box.php', 'release-streaming-box.php', 'release-commerce-box.php', 'csv-page.php', 'settings-page.php', 'network-settings-page.php' ), true ) ) {
 			wp_die( esc_html__( 'The requested Release Manager template is invalid.', 'mds-release-manager' ) );
 			return '';
 		}

@@ -33,6 +33,7 @@ mds-release-manager/
 │   ├── admin/
 │   │   ├── class-mds-rm-admin-interface.php
 │   │   ├── class-mds-rm-csv-handler.php
+│   │   ├── class-mds-rm-editor.php   # Classic edit-screen setup and spoke read-only rules
 │   │   ├── class-mds-rm-network-admin.php
 │   │   └── views/                    # Bundled admin views, never resolved through the theme
 │   ├── core/
@@ -110,7 +111,7 @@ mds-release-manager/
   - Singular: "Release"
   - Archive: Enabled (`has_archive: true`)
   - REST: Enabled (`show_in_rest: true`)
-  - Supports: title, editor, thumbnail, custom-fields
+  - Supports: title, editor, thumbnail, excerpt
   - Slug: `release`
   - Menu icon: `dashicons-album`
 
@@ -118,10 +119,17 @@ mds-release-manager/
   - Singular: "Artist"
   - Archive: Enabled
   - REST: Enabled
-  - Supports: title, editor, thumbnail, custom-fields
+  - Supports: title, editor, thumbnail, excerpt
   - Slug: `artist`
   - Menu icon: `dashicons-groups`
   - Menu placement: Under Releases
+
+Both CPTs use the classic edit screen: `MDS_RM_Editor` opts them out of the
+block editor so the reorganized meta boxes, extension meta boxes, and SEO
+plugin meta boxes host natively on `post.php`. On spoke sites the CPTs register
+with `create_posts => do_not_allow`, and `MDS_RM_Editor` denies the
+`edit_post`/`delete_post`/`publish_post` meta capabilities, making the catalog
+read-only outside the hub.
 
 ### Core Actions & Filters
 - **`init`** → `MDS_RM_Post_Types::register_cpts()` — Registers release and artist CPTs.
@@ -132,7 +140,10 @@ mds-release-manager/
 - **`customize_register`** → `MDS_RM_Customizer::customize_register()` — Adds Customizer settings.
 - **`enqueue_block_assets`** → `MDS_RM_Release_Meta::enqueue_assets()` — Loads metadata CSS and icon assets in the frontend and editor.
 - **`rest_api_init`** → `MDS_RM_REST_API::register_rest_routes()` — Registers REST endpoints.
-- **`add_meta_boxes`** → `MDS_RM_Admin_Interface::add_meta_boxes()` — Adds release/artist meta boxes.
+- **`add_meta_boxes`** → `MDS_RM_Admin_Interface::add_meta_boxes()` — Adds the Release Identity, Release Details, Streaming & Audio, and Commerce boxes for releases and the Artist Profile box for artists.
+- **`use_block_editor_for_post_type`** → `MDS_RM_Editor::disable_block_editor()` — Keeps Releases and Artists on the classic edit screen.
+- **`map_meta_cap`** → `MDS_RM_Editor::deny_editing_on_spokes()` — Denies catalog editing capabilities on spoke sites.
+- **`admin_notices`** → `MDS_RM_Editor::render_spoke_notice()` — Explains the read-only catalog on spoke list screens with a link to the hub.
 - **`save_post_release`** → `MDS_RM_Admin_Interface::save_release_meta_data()` — Saves release meta.
 - **`save_post_artist`** → `MDS_RM_Admin_Interface::save_artist_meta_data()` — Saves artist meta.
 - **`admin_menu`** → `MDS_RM_Admin_Interface::register_settings_page()` — Registers Releases Settings page.
@@ -171,21 +182,27 @@ mds-release-manager/
 ### Artist Discography
 - **`mds-rm/artist-discography`** uses the current Artist or an optional Artist post ID. Only published Releases associated through `artist_id` and the Artist's `_mds_artist_uuid` are listed, ordered by Release post date and ID descending, 25 per page. Release year is derived from the post date; UPC/EAN is displayed as text.
 - Pagination uses `mds_discography_page_{artist_id}`. The table scrolls horizontally when necessary. Artist fallback Customizer table styles apply to the automatic table; independently placed blocks and shortcodes use their surrounding theme styles.
+- The editor queries the site's existing `/wp/v2/artist` endpoint for published Artists and resolves a saved selection independently of search results. The stored integer `artistId` remains unchanged; zero or absent resolves block context. The editor sends the context ID to the block renderer for preview only.
+- Core block supports own wrapper styles. An optional `tableStyles` attribute stores per-region overrides (including references to theme presets). The block renderer validates them and emits scoped CSS variables; the shared table renderer, shortcode, fallback, pagination, and column/cell hooks remain unchanged.
 
 ### Gutenberg Block
 - Release Meta, Release Links, and Artist Discography register from `blocks/{name}/block.json` with their existing PHP renderers. The editor filters for metadata bindings on core blocks live separately in `blocks/core-block-extensions.js`.
 - **`mds-rm/release-meta`** — Dynamic API v3 block with `postId` context, `upcOverride`, ordered `items`, and per-device `styles`. The Elementor widget `mds_release_meta` uses the same renderer. The block icon is `dashicons-album`.
+- Release Meta and Release Links share published Release lookups and block context resolution. New selections store `releaseId`; legacy `upcOverride` remains readable. Artist context selects the latest published Release by Artist UUID, date, and ID. Context fallback does not rewrite a missing explicit selection.
+- Release Meta's native controls write `metaStyles` for layout, typography, and icons. New values replace corresponding legacy desktop values for the block only; legacy tablet/mobile rules still apply until reset. Core viewport previews do not edit those stored overrides.
 - Available fields: `release_year`, `record_label`, `distributor`, `upc_ean`, `release_format`, `release_date`, `release_title`, `artist`, `release_tags`. Only the first four are enabled by default; empty values are omitted. Full date uses the site's date format; artist resolves the stored artist UUID.
 - Each field can be reordered, hidden, and assigned a tooltip and Dashicons or Font Awesome classes. Shortcode `fields` is a comma-separated ordered selection; `icon_FIELD` and `title_FIELD` override each field's icon and tooltip, for example:
 
   `[release-meta upc="012345678901" fields="release_title,release_format,upc_ean" icon_release_title="dashicons dashicons-album" title_upc_ean="Barcode" color="#ffffff" gap="15px" gap_mobile="8px"]`
 
-- Styles are per instance, not read from legacy widget options. Shortcode style attributes are `background`, `color`, `icon_color`, `font_family`, `font_size`, `font_weight`, `line_height`, `icon_size`, `icon_opacity`, `icon_gap`, `gap`, `align`, `vertical_align`, `direction`, `wrap`, `width`, `padding`, `margin`, `border_width`, `border_style`, `border_color`, and `radius`. Add `_tablet` or `_mobile` for responsive overrides; mobile is at most 767px and tablet at most 1024px, with inheritance from the next larger device. Gutenberg's Styles tab and Elementor's Style tab expose the same controls.
+- Styles are per instance, not read from legacy widget options. Shortcode style attributes are `background`, `color`, `icon_color`, `font_family`, `font_size`, `font_weight`, `line_height`, `icon_size`, `icon_opacity`, `icon_gap`, `gap`, `align`, `vertical_align`, `direction`, `wrap`, `width`, `padding`, `margin`, `border_width`, `border_style`, `border_color`, and `radius`. Add `_tablet` or `_mobile` for responsive overrides; mobile is at most 767px and tablet at most 1024px, with inheritance from the next larger device. Elementor retains its existing device controls.
 - Colors accept hex, `transparent`, or `inherit`; lengths accept zero or `px`, `em`, `rem`, `%`, `vw`, and `vh`; width also accepts `auto`; spacing accepts up to four lengths. Main-axis alignment accepts `flex-start`, `center`, `flex-end`, or `space-between`; cross-axis alignment accepts `flex-start`, `center`, `flex-end`, or `stretch`. Direction accepts `row`, `row-reverse`, `column`, or `column-reverse`; wrapping accepts `wrap`, `nowrap`, or `wrap-reverse`. Border style accepts `none`, `solid`, `dashed`, `dotted`, or `double`; opacity is 0–1. Invalid style/icon values are omitted and logged.
 - The WooCommerce integration must be active on the hub to provide existing sync targets and on each store for product-context lookup and automatic product-page metadata. It honors the previously saved `mds_rm_woo_injection` placement/disabled value; an empty or nonnumeric SKU does not resolve a release. Product metadata and Release Links are not combined.
 
 ### Release Links Block
 - **`mds-rm/release-links`** and the Elementor widget `mds_release_links` render independently of Release Meta, use the album Dashicon, and are placed manually, including in fallback release templates and product pages. Explicit UPC, current Release/Query Loop and extension-provided product SKU contexts use `MDS_RM_Release_Meta::resolve_post`.
+- The block stores a local `releaseId` for new choices and still reads legacy `upcOverride` strings. A missing explicit source falls back without rewriting the attributes. Artist context resolves the latest published Release by Artist UUID, post date, then post ID. The editor uses authenticated lookups for published title/UPC choices and contextual source status; shortcode and Elementor resolution are unchanged.
+- Native editor controls store optional `linkStyles`. These values replace matching legacy desktop styles at render time without modifying stored data. Saved tablet and mobile styles keep their existing precedence until explicitly removed. Plugin controls target the same inner layout and button elements as before, rather than applying a second layer of spacing or borders to the block wrapper.
 - Provider URLs come from each release; configured provider names, icons and colors remain defaults in Releases → Settings. Available saved links and Buy Now appear as icons, and missing URLs are omitted. Per-instance overrides control visibility, order, icon classes and tooltip; providers not in the override list remain visible. Add a provider override by its exact saved name, or use `__buy_now` for Buy Now. Dashicons and Font Awesome classes are supported. Link titles also supply accessible names.
 - Links open in a new tab by default; `new_tab="0"` uses the same tab. `show_audio="0"` hides audio. When enabled in settings, a Bandcamp shortcode takes priority over HTML5 audio; if its shortcode is unavailable, the error is logged and HTML5 is used if enabled. Legacy `native` and current `html5` player identifiers are supported.
 - Shortcode `order` and `hide` are comma-separated provider names; `icon_PROVIDER` and `title_PROVIDER` override individual values, with lowercase provider names and spaces replaced by underscores (for example `icon_apple_music`). Use `icon_buy_now` and `title_buy_now` for Buy Now:
@@ -204,7 +221,7 @@ mds-release-manager/
 - The four root terms are created automatically and cannot be renamed or deleted through the WordPress editor or REST API; unsupported or nested new format terms are rejected.
 - Group the required Release Format and UPC/EAN fields together. Require both for saved drafts and published releases; WordPress's initial empty auto-draft is exempt.
 - Store UPC/EAN as a string, preserving leading zeroes, and reject duplicate UPCs. Allow corrections to existing UPCs without creating duplicate spoke releases.
-- The classic editor, block editor, CSV import, and REST release writes validate these fields. The block editor forwards the required meta-box fields in the REST save; quick and bulk editing cannot assign formats.
+- The classic editor, CSV import, and REST release writes validate these fields. Releases and Artists use the classic edit screen on the hub; quick and bulk editing cannot assign formats, and spoke sites cannot edit catalog posts at all.
 - Use a per-site MySQL advisory lock while checking and saving a UPC through these paths. Direct programmatic WordPress writes must perform equivalent validation and locking.
 - Format displays and CSV exports read the taxonomy. The release list reports missing or duplicate UPCs and missing, multiple, unsupported, or conflicting legacy formats for review; conflicting values require an explicit choice.
 - Spoke synchronization uses a stable hub-site/post key and can adopt legacy shadows by current or previous UPC. Synchronization errors are reported rather than silently overwriting conflicting records.
@@ -523,7 +540,7 @@ if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_
 MDS Release Manager transitioned from a monolithic plugin to an **extensible ecosystem**. Third-party integrations are no longer hardcoded; instead, they hook into documented `do_action()` and `apply_filters()` points with the `mds_rm_` prefix. Feature plugins must verify MDS Release Manager is active before hooking.
 
 **Multisite Strategy:**  
-One designated **Hub site** stores authoritative release data. **Spoke sites** may reference or display data via virtual media attachments or cross-site REST API calls. The network admin configures the hub and spoke topology via the network settings page.
+One designated **Hub site** stores authoritative release data; catalog editing is only possible there. **Spoke sites** hold read-only shadow records that the hub overwrites on each broadcast (including title, content, and excerpt), and may reference or display data via virtual media attachments or cross-site REST API calls. The network admin configures the hub and spoke topology via the network settings page.
 
 ---
 

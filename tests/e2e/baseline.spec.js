@@ -26,8 +26,18 @@ async function expectUnchangedMarkup(page, markup) {
 	})).toBe(markup);
 }
 
+async function openBlockEditor(page, postId) {
+	await page.goto(`/wp-admin/post.php?post=${postId}&action=edit`);
+	const welcome = page.getByRole('dialog', { name: 'Welcome to the editor' });
+	const canvas = page.locator('iframe[name="editor-canvas"], .block-editor-block-list__layout').first();
+	await expect(welcome.or(canvas).filter({ visible: true }).first()).toBeVisible();
+	if (await welcome.isVisible()) {
+		await welcome.getByRole('button', { name: 'Close', exact: true }).click();
+	}
+}
+
 test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', async ({ page, fixture }) => {
-		test.setTimeout(90_000);
+		test.setTimeout(160_000);
 		const origin = new URL(process.env.MDS_RM_TEST_URL).origin;
 		const savedMarkup = [];
 		await page.route('**/*', (route) => new URL(route.request().url()).origin === origin
@@ -80,28 +90,31 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 		await page.getByRole('button', { name: 'Log In' }).click();
 		await expect(page).toHaveURL(/\/wp-admin\//);
 
-		await test.step('Gutenberg saves the release metabox to the database', async () => {
+		await test.step('Classic editor saves the release metabox and excerpt to the database', async () => {
 			await page.goto(`/wp-admin/post.php?post=${fixture.state.release}&action=edit`);
-			const welcome = page.getByRole('dialog', { name: 'Welcome to the editor' });
+			// The catalog types use the classic editor; the block editor must not load.
+			await expect(page.locator('body.block-editor-page')).toHaveCount(0);
+			await expect(page.locator('form#post')).toBeVisible();
+			// Custom Fields support is removed.
+			await expect(page.locator('#postcustom')).toHaveCount(0);
 			const labelField = page.getByLabel('Record Label', { exact: true });
-			const metaBoxes = page.getByRole('button', { name: 'Meta Boxes', exact: true });
-			await expect(welcome.or(labelField).or(metaBoxes).filter({ visible: true }).first()).toBeVisible();
-			if (await welcome.isVisible()) {
-				await welcome.getByRole('button', { name: 'Close', exact: true }).click();
-			}
-			if (!(await labelField.isVisible())) {
-				await metaBoxes.press('Enter', { timeout: 10_000 });
-			}
+			await expect(labelField).toBeVisible();
 			await expect(page.locator('#mds_add_streaming_row')).toHaveCSS('margin-bottom', '20px');
 			await expect(page.locator('.mds-buy-now-field')).toHaveCSS('display', 'flex');
 			const label = `${fixture.label} edited`;
+			const excerpt = `Smoke excerpt ${fixture.label}`;
 			await labelField.fill(label, { timeout: 10_000 });
-			await page.evaluate((title) => window.wp.data.dispatch('core/editor').editPost({ title }), `${fixture.title} edited`);
-			await page.getByRole('button', { name: 'Save', exact: true }).click({ timeout: 10_000 });
+			await page.locator('#title').fill(`${fixture.title} edited`);
+			await page.locator('#excerpt').fill(excerpt);
+			await page.getByRole('button', { name: 'Update', exact: true }).click({ timeout: 10_000 });
 			await expect.poll(() => readWpJson([
 				'eval',
 				`echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_post_meta(${fixture.state.release}, 'record_label', true));`,
 			])).toBe(label);
+			expect(readWpJson([
+				'eval',
+				`echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_post_field('post_excerpt', ${fixture.state.release}, 'raw'));`,
+			])).toBe(excerpt);
 		});
 
 		await test.step('Settings form saves through REST and persists the provider', async () => {
@@ -137,11 +150,6 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 
 			await page.goto(`/wp-admin/post.php?post=${fixture.state.artist}&action=edit`);
 			const homepage = page.getByLabel('Official Homepage URL');
-			const metaBoxes = page.getByRole('button', { name: 'Meta Boxes', exact: true });
-			await expect(homepage.or(metaBoxes).filter({ visible: true }).first()).toBeVisible();
-			if (!(await homepage.isVisible())) {
-				await metaBoxes.press('Enter');
-			}
 			await expect(homepage).toBeVisible();
 			await expect(page.getByLabel('Redirect visitors to this homepage')).toBeVisible();
 		});
@@ -160,7 +168,11 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			await expect(page.locator('.wp-block-mds-rm-release-meta .mds-release-meta'))
 				.toContainText(`${fixture.label} edited`);
 
-			await page.goto(`/wp-admin/post.php?post=${fixture.state.release}&action=edit`);
+			// The catalog types use the classic editor, so block editing happens on regular posts.
+			const hostAttributes = { releaseId: fixture.state.release, ...attributes };
+			const hostMarkup = `<!-- wp:${name} ${JSON.stringify(hostAttributes)} /-->`;
+			saveMarkup(fixture.state.host, hostMarkup);
+			await openBlockEditor(page, fixture.state.host);
 			await expect.poll(() => page.evaluate((blockName) => {
 				const block = window.wp?.data?.select('core/block-editor')?.getBlocks()
 					.find(({ name }) => name === blockName);
@@ -170,7 +182,59 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
 				return canvas.querySelector('.editor-styles-wrapper .mds-release-meta, .block-editor-block-list__layout .mds-release-meta')?.textContent;
 			})).toContain(`${fixture.label} edited`);
-			await expectUnchangedMarkup(page, markup);
+			await expectUnchangedMarkup(page, hostMarkup);
+		});
+
+		await test.step('Release Meta uses Artist context and saves native typography without dropping mobile styles', async () => {
+			const { artist, release, host } = fixture.state;
+			const upc = readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_post_meta(${release}, 'upc_ean', true));`]);
+			const styles = { desktop: { font_size: '19px' }, mobile: { font_size: '16px' } };
+			// An invalid releaseId on an Artist page falls back to the artist's latest release.
+			saveMarkup(artist, `<!-- wp:mds-rm/release-meta ${JSON.stringify({ releaseId: artist, styles })} /-->`);
+			await page.goto(fixture.artistUrl);
+			await expect(page.locator('.wp-block-mds-rm-release-meta .mds-release-meta')).toContainText(`${fixture.label} edited`);
+
+			saveMarkup(host, `<!-- wp:mds-rm/release-meta ${JSON.stringify({ releaseId: artist, styles })} /-->`);
+			await openBlockEditor(page, host);
+			const selectFirst = async () => {
+				await expect.poll(() => page.evaluate(() => window.wp?.data?.select('core/block-editor')?.getBlocks()[0]?.clientId)).toBeTruthy();
+				await page.evaluate(() => wp.data.dispatch('core/block-editor').selectBlock(wp.data.select('core/block-editor').getBlocks()[0].clientId));
+			};
+			await selectFirst();
+			await expect(page.getByRole('tabpanel', { name: 'Settings' }).getByText('The selected Release is unavailable.', { exact: false })).toBeVisible();
+			const picker = page.getByRole('combobox', { name: 'Release', exact: true });
+			await picker.fill(upc);
+			await expect(page.getByRole('option').filter({ hasText: upc })).toHaveCount(1);
+			await picker.press('ArrowDown');
+			await picker.press('Enter');
+			await expect.poll(() => page.evaluate(() => wp.data.select('core/block-editor').getBlocks()[0].attributes.releaseId)).toBe(release);
+			await page.getByRole('tab', { name: 'Styles', exact: true }).click();
+			await expect(page.getByLabel('Device', { exact: true })).toHaveCount(0);
+			await page.getByRole('button', { name: 'Release Meta typography', exact: true }).click();
+			await page.getByLabel('Text alignment', { exact: true }).selectOption('center');
+			await expect.poll(() => page.evaluate(() => wp.data.select('core/block-editor').getBlocks()[0].attributes.metaStyles)).toEqual({ text_align: 'center' });
+			await page.getByRole('button', { name: 'Save', exact: true }).click();
+			const saved = () => readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(parse_blocks(get_post_field('post_content', ${host}, 'raw'))[0]['attrs']);`]);
+			await expect.poll(saved, { timeout: 15_000 })
+				.toMatchObject({ releaseId: release, styles, metaStyles: { text_align: 'center' } });
+			await page.goto(fixture.hostUrl);
+			const meta = page.locator('.wp-block-mds-rm-release-meta .mds-release-meta');
+			await expect(meta).toContainText(`${fixture.label} edited`);
+			await expect(meta.locator('.mds-release-meta__item > span:not(.screen-reader-text)').first()).toHaveCSS('text-align', 'center');
+			await expect(meta).toHaveCSS('font-size', '19px');
+			const viewport = page.viewportSize();
+			await page.setViewportSize({ width: 767, height: 800 });
+			await expect(meta).toHaveCSS('font-size', '16px');
+			await page.setViewportSize(viewport);
+			await openBlockEditor(page, host);
+			await selectFirst();
+			await page.getByRole('tab', { name: 'Styles', exact: true }).click();
+			await page.getByRole('button', { name: 'Legacy responsive styles' }).click();
+			await page.getByRole('button', { name: 'Remove legacy tablet/mobile overrides' }).click();
+			await expect.poll(() => page.evaluate(() => wp.data.select('core/editor').isEditedPostDirty())).toBe(true);
+			await page.getByRole('button', { name: 'Save', exact: true }).click();
+			await expect.poll(() => saved().styles, { timeout: 15_000 }).toEqual({ desktop: styles.desktop });
+			expect(saved().metaStyles).toEqual({ text_align: 'center' });
 		});
 
 		await test.step('Previously saved Release Links block opens and renders', async () => {
@@ -182,7 +246,10 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			await page.goto(fixture.releaseUrl);
 			await expect(page.locator('.wp-block-mds-rm-release-links').getByRole('link', { name: /spotify/i }))
 				.toHaveAttribute('href', fixture.spotify);
-			await page.goto(`/wp-admin/post.php?post=${fixture.state.release}&action=edit`);
+			const hostAttributes = { releaseId: fixture.state.release, ...attributes };
+			const hostMarkup = `<!-- wp:${name} ${JSON.stringify(hostAttributes)} /-->`;
+			saveMarkup(fixture.state.host, hostMarkup);
+			await openBlockEditor(page, fixture.state.host);
 			await expect.poll(() => page.evaluate((blockName) => {
 				const block = window.wp?.data?.select('core/block-editor')?.getBlocks()
 					.find(({ name }) => name === blockName);
@@ -190,9 +257,73 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			}, name)).toEqual({ isValid: true, ...attributes });
 			await expect.poll(() => page.evaluate(() => {
 				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
-				return canvas.querySelector('[data-type="mds-rm/release-links"] a[href*="open.spotify.com"]')?.href;
-			})).toBe(fixture.spotify);
-			await expectUnchangedMarkup(page, markup);
+				const block = canvas.querySelector('[data-type="mds-rm/release-links"]');
+				return block?.querySelector('a[href*="open.spotify.com"]')?.href || block?.textContent;
+			}), { timeout: 15_000 }).toBe(fixture.spotify);
+			await expectUnchangedMarkup(page, hostMarkup);
+		});
+
+		await test.step('Release Links searches by UPC, falls back on Artist pages, and preserves responsive styles', async () => {
+			const name = 'mds-rm/release-links';
+			const { artist, release, host } = fixture.state;
+			const [title, artistTitle, upc] = readWpJson([
+				'eval',
+				`echo 'MDS_RM_TEST_JSON:' . wp_json_encode(array(get_the_title(${release}), get_the_title(${artist}), get_post_meta(${release}, 'upc_ean', true)));`,
+			]);
+			const styles = { desktop: { align: 'space-between' }, mobile: { align: 'center' } };
+			const markup = `<!-- wp:${name} ${JSON.stringify({ releaseId: artist, styles })} /-->`;
+			// An invalid releaseId on an Artist page falls back to the artist's latest release.
+			saveMarkup(artist, markup);
+			await page.goto(fixture.artistUrl);
+			const wrapper = page.locator('.wp-block-mds-rm-release-links');
+			await expect(wrapper.getByRole('link', { name: /spotify/i })).toHaveAttribute('href', fixture.spotify);
+			await expect(wrapper.locator('.mds-release-links')).toHaveCSS('justify-content', 'space-between');
+
+			saveMarkup(host, markup);
+			await openBlockEditor(page, host);
+			await expect.poll(() => page.evaluate(() => window.wp?.data?.select('core/block-editor')?.getBlocks()[0]?.clientId)).toBeTruthy();
+			await page.evaluate(() => {
+				const editor = wp.data.select('core/block-editor');
+				wp.data.dispatch('core/block-editor').selectBlock(editor.getBlocks()[0].clientId);
+			});
+			await expect(page.getByRole('tabpanel', { name: 'Settings' }).getByText('The selected Release is unavailable.', { exact: false })).toBeVisible();
+			const picker = page.getByRole('combobox', { name: 'Release', exact: true });
+			await picker.fill(upc);
+			await expect(page.getByRole('option', { name: `${title} — ${artistTitle} — ${upc}` })).toBeVisible();
+			await picker.press('ArrowDown');
+			await picker.press('Enter');
+			const blockAttributes = () => page.evaluate(() => wp.data.select('core/block-editor').getBlocks()[0].attributes);
+			await expect.poll(async () => (await blockAttributes()).releaseId).toBe(release);
+			await page.getByRole('tab', { name: 'Styles', exact: true }).click();
+			await expect(page.getByLabel('Device', { exact: true })).toHaveCount(0);
+			await page.getByRole('button', { name: 'Release Links layout', exact: true }).click();
+			await page.getByLabel('Main-axis alignment', { exact: true }).selectOption('flex-end');
+			await page.getByRole('button', { name: 'Save', exact: true }).click();
+			const stored = () => readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(parse_blocks(get_post_field('post_content', ${host}, 'raw'))[0]['attrs']);`]);
+			await expect.poll(stored).toMatchObject({ releaseId: release, styles, linkStyles: { align: 'flex-end' } });
+
+			await page.goto(fixture.hostUrl);
+			const links = page.locator('.wp-block-mds-rm-release-links .mds-release-links');
+			await expect(links).toHaveCSS('justify-content', /^(?:flex|flow)-end$/);
+			const spotifyLink = links.getByRole('link', { name: /spotify/i });
+			await spotifyLink.focus();
+			await expect(spotifyLink).toHaveCSS('outline-width', '2px');
+			const viewport = page.viewportSize();
+			await page.setViewportSize({ width: 767, height: 800 });
+			await expect(links).toHaveCSS('justify-content', 'center');
+			await page.setViewportSize({ width: 768, height: 800 });
+			await expect(links).toHaveCSS('justify-content', /^(?:flex|flow)-end$/);
+			await page.setViewportSize(viewport);
+
+			await openBlockEditor(page, host);
+			await expect.poll(() => page.evaluate(() => window.wp?.data?.select('core/block-editor')?.getBlocks()[0]?.clientId)).toBeTruthy();
+			await page.evaluate(() => wp.data.dispatch('core/block-editor').selectBlock(wp.data.select('core/block-editor').getBlocks()[0].clientId));
+			await page.getByRole('tab', { name: 'Styles', exact: true }).click();
+			await page.getByRole('button', { name: 'Legacy responsive styles' }).click();
+			await page.getByRole('button', { name: 'Remove legacy tablet/mobile overrides' }).click();
+			await page.getByRole('button', { name: 'Save', exact: true }).click();
+			await expect.poll(() => stored().styles).toEqual({ desktop: styles.desktop });
+			expect(stored().linkStyles).toEqual({ align: 'flex-end' });
 		});
 
 		await test.step('Previously saved Artist Discography and dynamic Paragraph open and render', async () => {
@@ -212,7 +343,8 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 				.toBeVisible();
 			await expect(page.getByText('Static fallback text.', { exact: true })).toHaveCount(0);
 
-			await page.goto(`/wp-admin/post.php?post=${fixture.state.release}&action=edit`);
+			saveMarkup(fixture.state.host, markup);
+			await openBlockEditor(page, fixture.state.host);
 			await expect.poll(() => page.evaluate((blockName) => {
 				const blocks = window.wp?.data?.select('core/block-editor')?.getBlocks();
 				const discography = blocks?.find(({ name }) => name === blockName);
@@ -227,7 +359,7 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			await expect.poll(() => page.evaluate(() => {
 				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
 				return canvas.querySelector('[data-type="mds-rm/artist-discography"] .mds-discography a')?.href;
-			})).toBe(fixture.releaseUrl);
+			}), { timeout: 15_000 }).toBe(fixture.releaseUrl);
 			await expect.poll(() => page.evaluate(() => {
 				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
 				return !!canvas.querySelector('[data-type="core/paragraph"].mds-dynamic-block-active');
@@ -235,13 +367,124 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			await expectUnchangedMarkup(page, markup);
 		});
 
+		await test.step('Discography selects artists and applies table styles only to the styled block', async () => {
+			const name = 'mds-rm/artist-discography';
+			const artistId = fixture.state.artist;
+			const postId = fixture.state.release;
+			const hostId = fixture.state.host;
+			const artistTitle = readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_the_title(${artistId}));`]);
+			const invalidId = postId; // Exists as a Release, not an Artist.
+			saveMarkup(hostId, `<!-- wp:${name} {"artistId":${invalidId}} /-->`);
+			await openBlockEditor(page, hostId);
+			await expect.poll(() => page.evaluate(() => window.wp?.data?.select('core/block-editor')?.getBlocks()[0]?.clientId)).toBeTruthy();
+			await page.evaluate(() => {
+				const block = wp.data.select('core/block-editor').getBlocks()[0];
+				wp.data.dispatch('core/block-editor').selectBlock(block.clientId);
+			});
+			await expect(page.getByText('The selected Artist is unavailable.', { exact: false })).toBeVisible();
+			const picker = page.getByRole('combobox', { name: 'Artist', exact: true });
+			await picker.fill(artistTitle);
+			await expect(page.getByRole('option', { name: `${artistTitle} (ID ${artistId})` })).toBeVisible();
+			await picker.press('ArrowDown');
+			await picker.press('Enter');
+			await expect.poll(() => page.evaluate(() => wp.data.select('core/block-editor').getBlocks()[0].attributes.artistId)).toBe(artistId);
+			await page.getByRole('button', { name: 'Use current Artist' }).click();
+			await expect.poll(() => page.evaluate(() => {
+				const canvas = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
+				return canvas.querySelector('[data-type="mds-rm/artist-discography"]')?.textContent;
+			})).toContain('Select an Artist to preview the discography.');
+
+			const tableStyles = { 'header-background': '#123456', 'cell-padding-top': '20px', 'table-margin-bottom': '12px' };
+			const style = { typography: { fontSize: '22px' } };
+			const styled = `<!-- wp:${name} ${JSON.stringify({ artistId, style, tableStyles })} /-->`;
+			const unstyled = `<!-- wp:${name} {"artistId":${artistId}} /-->`;
+			const shortcode = `<!-- wp:shortcode -->\n[artist-discography artist_id="${artistId}"]\n<!-- /wp:shortcode -->`;
+			saveMarkup(postId, `${styled}\n\n${unstyled}\n\n${shortcode}`);
+			saveMarkup(hostId, `${styled}\n\n${unstyled}\n\n${shortcode}`);
+			await openBlockEditor(page, hostId);
+			const computed = () => {
+				// This function runs in Playwright's page context.
+				const doc = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
+				return Array.from(doc.querySelectorAll('.mds-discography thead')).map((header) => [
+					doc.defaultView.getComputedStyle(header).backgroundColor,
+					doc.defaultView.getComputedStyle(header.querySelector('th')).paddingTop,
+				]);
+			};
+			const nativeTypography = () => {
+				const doc = document.querySelector('iframe[name="editor-canvas"]')?.contentDocument || document;
+				const table = doc.querySelector('.mds-discography table');
+				const wrapper = table.closest('[data-type="mds-rm/artist-discography"]')
+					|| table.closest('.wp-block-mds-rm-artist-discography');
+				return {
+					wrapperStyle: wrapper.style.fontSize,
+					inherits: doc.defaultView.getComputedStyle(table).fontSize === doc.defaultView.getComputedStyle(wrapper).fontSize,
+				};
+			};
+			await expect.poll(() => page.evaluate(computed), { timeout: 10000 }).toHaveLength(2);
+			const preview = await page.evaluate(computed);
+			expect(preview[0]).toEqual(['rgb(18, 52, 86)', '20px']);
+			expect(preview[1]).not.toEqual(preview[0]);
+			// Core may make a custom font size fluid; the table must follow the wrapper.
+			expect(await page.evaluate(nativeTypography)).toEqual({ wrapperStyle: expect.stringContaining('22px'), inherits: true });
+			await page.goto(fixture.releaseUrl);
+			const published = await page.evaluate(computed);
+			expect(published).toHaveLength(3);
+			expect(published[0]).toEqual(preview[0]);
+			expect(published[1]).not.toEqual(published[0]);
+			expect(published[2]).toEqual(published[1]);
+			expect(await page.evaluate(nativeTypography)).toEqual({ wrapperStyle: expect.stringContaining('22px'), inherits: true });
+			const viewport = page.viewportSize();
+			await page.setViewportSize({ width: 320, height: 800 });
+			const scrollSurface = page.locator('.wp-block-mds-rm-artist-discography .mds-discography__scroll').first();
+			await expect(scrollSurface).toHaveAttribute('tabindex', '0');
+			await expect(scrollSurface).toHaveCSS('overflow-x', 'auto');
+			expect(await scrollSurface.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+			await page.setViewportSize(viewport);
+
+			await openBlockEditor(page, hostId);
+			const selectFirstBlock = async () => {
+				await expect.poll(() => page.evaluate(() => window.wp?.data?.select('core/block-editor')?.getBlocks()[0]?.clientId)).toBeTruthy();
+				await page.evaluate(() => {
+					const block = wp.data.select('core/block-editor').getBlocks()[0];
+					wp.data.dispatch('core/block-editor').selectBlock(block.clientId);
+				});
+			};
+			await selectFirstBlock();
+			await page.getByRole('tab', { name: 'Styles', exact: true }).click();
+			await page.getByRole('button', { name: 'Discography header', exact: true }).click();
+			await page.getByLabel('Text alignment', { exact: true }).selectOption('center');
+			const storedStyles = () => readWpJson([
+				'eval',
+				`echo 'MDS_RM_TEST_JSON:' . wp_json_encode(parse_blocks(get_post_field('post_content', ${hostId}, 'raw'))[0]['attrs']['tableStyles'] ?? null);`,
+			]);
+			await page.getByRole('button', { name: 'Save', exact: true }).click();
+			await expect.poll(storedStyles).toEqual({ ...tableStyles, 'header-text-align': 'center' });
+			await page.reload();
+			await selectFirstBlock();
+			await page.getByRole('tab', { name: 'Styles', exact: true }).click();
+			await page.getByRole('button', { name: 'Reset discography table styles' }).click();
+			await expectUnchangedMarkup(page, [
+				`<!-- wp:${name} ${JSON.stringify({ artistId, style })} /-->`, unstyled, shortcode,
+			].join('\n\n'));
+			await expect.poll(() => page.evaluate(() => wp.data.select('core/editor').isEditedPostDirty())).toBe(true);
+			await page.getByRole('button', { name: 'Save', exact: true }).click();
+			await expect.poll(storedStyles, { timeout: 15_000 }).toBeNull();
+
+			// The classic editor hosts Artists now, so the current-Artist context
+			// fallback is verified on the artist's frontend instead.
+			saveMarkup(artistId, `<!-- wp:${name} /-->`);
+			await page.goto(fixture.artistUrl);
+			await expect(page.locator('.wp-block-mds-rm-artist-discography').getByRole('link', { name: `${fixture.title} edited` }))
+				.toHaveAttribute('href', fixture.releaseUrl);
+		});
+
 		await test.step('Re-saving the blocks leaves stored markup byte-identical', async () => {
 			const markup = savedMarkup.join('\n\n');
-			const postId = fixture.state.release;
+			const postId = fixture.state.host;
 			saveMarkup(postId, markup);
-			await page.goto(`/wp-admin/post.php?post=${postId}&action=edit`);
+			await openBlockEditor(page, postId);
 			await expectUnchangedMarkup(page, markup);
-			const title = `${fixture.title} re-saved`;
+			const title = `${fixture.title} host re-saved`;
 			await page.evaluate((newTitle) => window.wp.data.dispatch('core/editor').editPost({ title: newTitle }), title);
 			await page.getByRole('button', { name: 'Save', exact: true }).click();
 			await expect.poll(() => readWpJson([

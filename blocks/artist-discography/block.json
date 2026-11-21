@@ -3,12 +3,27 @@
 	"apiVersion": 3,
 	"name": "mds-rm/artist-discography",
 	"title": "Artist Discography",
-	"category": "widgets",
+	"category": "mds-release-manager",
 	"icon": "album",
 	"textdomain": "mds-release-manager",
 	"usesContext": ["postId", "postType"],
 	"attributes": {
-		"artistId": { "type": "integer", "default": 0 }
+		"artistId": { "type": "integer", "default": 0 },
+		"tableStyles": { "type": "object" }
 	},
-	"editorScript": "mds-rm-artist-discography-editor"
+	"supports": {
+		"spacing": { "margin": true, "padding": true },
+		"color": { "background": true, "text": true, "link": true },
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontStyle": true,
+			"__experimentalFontWeight": true,
+			"__experimentalLetterSpacing": true
+		},
+		"__experimentalBorder": { "color": true, "radius": true, "style": true, "width": true }
+	},
+	"editorScript": "mds-rm-artist-discography-editor",
+	"style": "mds-rm-discography-block"
 }

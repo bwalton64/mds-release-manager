@@ -40,6 +40,7 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 ### Multisite & Network
 - ✅ **Network Sync:** Synchronize releases across WordPress Multisite installations
 - ✅ **Network Settings:** Centralized hub site and wipe-on-uninstall configuration
+- ✅ **Read-Only Spokes:** Catalog editing happens on the hub; spoke sites browse synchronized copies
   - The optional full wipe permanently removes Release and Artist posts, including Trash, from the current network. By default, uninstall keeps posts and network settings.
 - ✅ **Per-Site Control:** Individual site customization with network defaults
 
@@ -143,6 +144,11 @@ wp plugin activate mds-release-manager --network
 
 ### Creating a Release (via WordPress Admin)
 
+Releases and Artists use the classic edit screen with the plugin's organized
+meta boxes; the block editor is reserved for pages and posts. On a multisite
+network, catalog items can only be created and edited on the hub site — spoke
+sites show a read-only, automatically synchronized copy.
+
 1. **Navigate:** Dashboard → Releases → Add New
 2. **Fill Release Information:**
    - **Title:** Release name (e.g., "Midnight Echo")
@@ -150,7 +156,8 @@ wp plugin activate mds-release-manager --network
    - **Format:** Single, EP, Album, or Digital (required, one only)
    - **Artists:** Associate artists (via post relationship)
    - **Release Date:** Publish date
-   - **Cover Image:** Featured image (used in fallback and blocks)
+   - **Excerpt:** Optional summary used by themes and SEO tools
+   - **Cover Art:** Featured image (used in fallback and blocks)
 
 3. **Add Release Links:**
    - Use the Release Links meta box to add streaming provider links
@@ -192,7 +199,15 @@ wp plugin activate mds-release-manager --network
 echo do_shortcode( '[release-meta upc="012345678901" fields="release_title,release_format,upc_ean"]' );
 ```
 
-#### Display Release Links with Shortcode
+In the **Release Meta** block, search published Releases by title or full UPC/EAN. Leave the picker blank to use the current Release, supported WooCommerce context, or the Artist’s latest published Release. An unavailable saved selection falls back to context without being cleared.
+
+Use **Styles** to adjust layout, typography, and icons. Saved tablet and mobile overrides still apply when previewing those widths. To remove them without clearing desktop or new settings, use **Legacy responsive styles → Remove legacy tablet/mobile overrides**.
+
+#### Display Release Links
+
+In the **Release Links** block, search published Releases by title or full UPC/EAN. Results include the Artist where available. Leave the picker blank to use the current Release, supported WooCommerce product context, or the current Artist's latest published Release. If a saved choice becomes unavailable, the editor warns you and uses the current context without deleting the choice. If that Release has no links or audio, nothing is shown to visitors.
+
+Use the block's **Styles** tab for layout, button and icon styling, and audio-player width. New settings apply at all widths unless a previously saved tablet or mobile override takes precedence. Check those widths in Gutenberg's viewport preview. To remove the old breakpoint styles, use **Legacy responsive styles → Remove legacy tablet/mobile overrides**.
 
 ```php
 // Display streaming provider links for a release
@@ -204,11 +219,13 @@ echo do_shortcode( '[release-links upc="012345678901" show_audio="1" new_tab="1"
 
 #### Add Discography to an Artist Page
 
+Insert **Artist Discography** in the block editor. Search for a published Artist on this site under **Settings → Artist Discography**, or leave the field blank to use the current Artist. On a regular page without an Artist context, select an Artist. If a saved Artist becomes unavailable, the editor warns you and retains the selection until you clear or replace it.
+
+Use the block's **Styles** tab for outer spacing, colors, typography, and borders. The **Discography table**, **header**, **body**, and **cells and links** panels let you style the table separately, including cell padding, grid borders, link decoration, and alternating rows. Available presets and custom options depend on the active theme. Use **Reset discography table styles** to remove the table overrides without resetting the block's outer styles. These controls don't change shortcode output or the automatic Artist-page fallback.
+
 ```php
 // As a shortcode (omit artist_id to use the current Artist):
 echo do_shortcode( '[artist-discography artist_id="5"]' );
-
-// Or use the native Artist Discography block in Gutenberg
 ```
 
 #### Retrieve Releases via REST API
@@ -518,6 +535,33 @@ add_action( 'mds_rm_save_custom_meta', function( $post_id, $raw_post ) {
 add_filter( 'mds_rm_settings_audio_fields', function( $html ) {
     $html .= '<p><label>' . esc_html__( 'My Custom Option', 'mds-release-manager' ) . '</label></p>';
     return $html;
+});
+```
+
+#### Adding blocks to the "MDS Release Manager" inserter section
+
+All MDS plugin blocks share one block category so they appear together in the
+block editor's inserter. To place an extension plugin's blocks in that section:
+
+1. Set `"category": "mds-release-manager"` in each block's `block.json`.
+2. Register the category defensively, so the section exists exactly once no
+   matter which MDS plugins are active or in what order they load:
+
+```php
+add_filter( 'block_categories_all', function( array $categories ): array {
+    foreach ( $categories as $category ) {
+        if ( isset( $category['slug'] ) && 'mds-release-manager' === $category['slug'] ) {
+            return $categories; // Another MDS plugin already registered it.
+        }
+    }
+
+    $categories[] = array(
+        'slug'  => 'mds-release-manager',
+        'title' => __( 'MDS Release Manager', 'my-extension-textdomain' ),
+        'icon'  => 'album',
+    );
+
+    return $categories;
 });
 ```
 

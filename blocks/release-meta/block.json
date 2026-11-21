@@ -3,12 +3,14 @@
 	"apiVersion": 3,
 	"name": "mds-rm/release-meta",
 	"title": "Release Meta Block",
-	"category": "widgets",
+	"category": "mds-release-manager",
 	"icon": "album",
 	"textdomain": "mds-release-manager",
 	"usesContext": ["postId", "postType"],
 	"attributes": {
 		"upcOverride": { "type": "string", "default": "" },
+		"releaseId": { "type": "integer", "default": 0 },
+		"metaStyles": { "type": "object" },
 		"items": {
 			"type": "array",
 			"items": {
@@ -23,5 +25,6 @@
 		},
 		"styles": { "type": "object", "default": {}, "additionalProperties": true }
 	},
-	"editorScript": "mds-rm-release-meta-editor"
+	"editorScript": "mds-rm-release-meta-editor",
+	"editorStyle": "mds-rm-release-meta-editor-style"
 }

@@ -247,11 +247,14 @@ final class MDS_RM_Admin_Interface {
 	 */
 	public static function add_meta_boxes( string $post_type, WP_Post $post ): void {
 		if ( 'release' === $post_type ) {
-			add_meta_box( 'mds_release_settings', 'Release Settings', array( self::class, 'render_release_settings_box' ), 'release', 'normal', 'high' );
+			add_meta_box( 'mds_release_identity', __( 'Release Identity', 'mds-release-manager' ), array( self::class, 'render_release_identity_box' ), 'release', 'normal', 'high' );
+			add_meta_box( 'mds_release_details', __( 'Release Details', 'mds-release-manager' ), array( self::class, 'render_release_details_box' ), 'release', 'normal' );
+			add_meta_box( 'mds_release_streaming', __( 'Streaming & Audio', 'mds-release-manager' ), array( self::class, 'render_release_streaming_box' ), 'release', 'normal' );
+			add_meta_box( 'mds_release_commerce', __( 'Commerce', 'mds-release-manager' ), array( self::class, 'render_release_commerce_box' ), 'release', 'normal' );
 		}
 
 		if ( 'artist' === $post_type ) {
-			add_meta_box( 'mds_artist_settings', 'Artist Settings', array( self::class, 'render_artist_settings_box' ), 'artist', 'normal', 'high' );
+			add_meta_box( 'mds_artist_settings', __( 'Artist Profile', 'mds-release-manager' ), array( self::class, 'render_artist_settings_box' ), 'artist', 'normal', 'high' );
 		}
 
 		/**
@@ -294,13 +297,68 @@ final class MDS_RM_Admin_Interface {
 	}
 
 	/**
-	 * Renders the release settings meta box.
+	 * Renders the release identity meta box.
 	 *
-	 * @since 0.9.0
+	 * @since 1.0.0
 	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
-	public static function render_release_settings_box( WP_Post $post ): void {
+	public static function render_release_identity_box( WP_Post $post ): void {
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
+		echo MDS_RM_Template_Loader::render_admin_view( 'release-identity-box.php', self::release_box_args( $post ) );
+	}
+
+	/**
+	 * Renders the release details meta box.
+	 *
+	 * @since 1.0.0
+	 * @param WP_Post $post The post object.
+	 * @return void
+	 */
+	public static function render_release_details_box( WP_Post $post ): void {
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
+		echo MDS_RM_Template_Loader::render_admin_view( 'release-details-box.php', self::release_box_args( $post ) );
+	}
+
+	/**
+	 * Renders the streaming and audio meta box.
+	 *
+	 * @since 1.0.0
+	 * @param WP_Post $post The post object.
+	 * @return void
+	 */
+	public static function render_release_streaming_box( WP_Post $post ): void {
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
+		echo MDS_RM_Template_Loader::render_admin_view( 'release-streaming-box.php', self::release_box_args( $post ) );
+	}
+
+	/**
+	 * Renders the commerce meta box.
+	 *
+	 * @since 1.0.0
+	 * @param WP_Post $post The post object.
+	 * @return void
+	 */
+	public static function render_release_commerce_box( WP_Post $post ): void {
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
+		echo MDS_RM_Template_Loader::render_admin_view( 'release-commerce-box.php', self::release_box_args( $post ) );
+	}
+
+	/**
+	 * Collects the shared template arguments for the release meta boxes.
+	 *
+	 * The result is cached per post so each box render reuses one lookup.
+	 *
+	 * @since 1.0.0
+	 * @param WP_Post $post The post object.
+	 * @return array<string, mixed> The template arguments.
+	 */
+	private static function release_box_args( WP_Post $post ): array {
+		static $cache = array();
+		if ( isset( $cache[ $post->ID ] ) ) {
+			return $cache[ $post->ID ];
+		}
+
 		$artist_id = get_post_meta( $post->ID, 'artist_id', true );
 		if ( ! $artist_id ) {
 			$artist_id = '';
@@ -393,8 +451,9 @@ final class MDS_RM_Admin_Interface {
 			'format_conflict'   => MDS_RM_Release_Model::has_legacy_format_conflict( $post->ID ),
 		);
 
-    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo MDS_RM_Template_Loader::render_admin_view( 'release-meta-box.php', $args );
+		$cache[ $post->ID ] = $args;
+
+		return $args;
 	}
 
 	/**

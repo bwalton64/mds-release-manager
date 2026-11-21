@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-20T16:16:24+00:00\n"
+"POT-Creation-Date: 2026-11-21T01:06:28+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mds-release-manager\n"
@@ -17,6 +17,7 @@ msgstr ""
 #. Plugin Name of the plugin
 #: mds-release-manager.php
 #: includes/api/class-mds-rm-abilities.php:51
+#: includes/blocks/class-mds-rm-gutenberg-blocks.php:55
 msgid "MDS Release Manager"
 msgstr ""
 
@@ -35,36 +36,57 @@ msgstr ""
 msgid "https://mustydungeon.com"
 msgstr ""
 
+#: includes/admin/class-mds-rm-admin-interface.php:250
+msgid "Release Identity"
+msgstr ""
+
+#: includes/admin/class-mds-rm-admin-interface.php:251
+msgid "Release Details"
+msgstr ""
+
+#: includes/admin/class-mds-rm-admin-interface.php:252
+msgid "Streaming & Audio"
+msgstr ""
+
+#: includes/admin/class-mds-rm-admin-interface.php:253
+msgid "Commerce"
+msgstr ""
+
+#: includes/admin/class-mds-rm-admin-interface.php:257
+#: includes/admin/views/release-identity-box.php:49
+msgid "Artist Profile"
+msgstr ""
+
 #. translators: %s: synchronization error message
-#: includes/admin/class-mds-rm-admin-interface.php:461
+#: includes/admin/class-mds-rm-admin-interface.php:520
 #, php-format
 msgid "The artist was saved, but synchronization failed: %s"
 msgstr ""
 
 #. translators: %s: synchronization error message
-#: includes/admin/class-mds-rm-admin-interface.php:569
-#: includes/core/class-mds-rm-release-model.php:556
+#: includes/admin/class-mds-rm-admin-interface.php:628
+#: includes/core/class-mds-rm-release-model.php:581
 #, php-format
 msgid "The release was saved, but synchronization failed: %s"
 msgstr ""
 
-#: includes/admin/class-mds-rm-admin-interface.php:612
+#: includes/admin/class-mds-rm-admin-interface.php:671
 msgid "HTML5 Player (.mp3)"
 msgstr ""
 
-#: includes/admin/class-mds-rm-admin-interface.php:619
+#: includes/admin/class-mds-rm-admin-interface.php:678
 msgid "Load bundled Font Awesome Free 6"
 msgstr ""
 
-#: includes/admin/class-mds-rm-admin-interface.php:620
+#: includes/admin/class-mds-rm-admin-interface.php:679
 msgid "Use existing plugin (Font Awesome Official)"
 msgstr ""
 
-#: includes/admin/class-mds-rm-admin-interface.php:621
+#: includes/admin/class-mds-rm-admin-interface.php:680
 msgid "Use theme provided Font-Awesome"
 msgstr ""
 
-#: includes/admin/class-mds-rm-admin-interface.php:622
+#: includes/admin/class-mds-rm-admin-interface.php:681
 msgid "Do not load Font-Awesome"
 msgstr ""
 
@@ -89,59 +111,77 @@ msgstr ""
 msgid "Could not create the CSV export."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:186
+#: includes/admin/class-mds-rm-csv-handler.php:185
 msgid "Please select a CSV file to import."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:197
-#: includes/admin/class-mds-rm-csv-handler.php:207
+#: includes/admin/class-mds-rm-csv-handler.php:193
+#: includes/admin/class-mds-rm-csv-handler.php:204
+#: includes/admin/class-mds-rm-csv-handler.php:214
 msgid "The uploaded CSV file could not be opened."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:258
+#: includes/admin/class-mds-rm-csv-handler.php:269
 msgid "The CSV must include a Release Format column."
 msgstr ""
 
 #. translators: %d: CSV row number.
-#: includes/admin/class-mds-rm-csv-handler.php:266
+#: includes/admin/class-mds-rm-csv-handler.php:277
 #, php-format
 msgid "Row %d: incorrect number of columns."
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:305
+#: includes/admin/class-mds-rm-csv-handler.php:316
 msgid "More than one release has this UPC/EAN."
 msgstr ""
 
 #. translators: %1$d: CSV row number. %2$s: Error message.
-#: includes/admin/class-mds-rm-csv-handler.php:308
-#: includes/admin/class-mds-rm-csv-handler.php:411
+#: includes/admin/class-mds-rm-csv-handler.php:319
+#: includes/admin/class-mds-rm-csv-handler.php:422
 #, php-format
 msgid "Row %1$d: %2$s"
 msgstr ""
 
 #. translators: %1$d: CSV row number. %2$s: Error message.
-#: includes/admin/class-mds-rm-csv-handler.php:341
+#: includes/admin/class-mds-rm-csv-handler.php:352
 #, php-format
 msgid "Row %1$d: artist synchronization failed: %2$s"
 msgstr ""
 
 #. translators: %d: CSV row number.
-#: includes/admin/class-mds-rm-csv-handler.php:386
+#: includes/admin/class-mds-rm-csv-handler.php:397
 #, php-format
 msgid "Row %d: could not save the release."
 msgstr ""
 
 #. translators: %1$d: CSV row number. %2$s: Error message.
-#: includes/admin/class-mds-rm-csv-handler.php:429
+#: includes/admin/class-mds-rm-csv-handler.php:440
 #, php-format
 msgid "Row %1$d: release saved but synchronization failed: %2$s"
 msgstr ""
 
-#: includes/admin/class-mds-rm-csv-handler.php:440
+#: includes/admin/class-mds-rm-csv-handler.php:451
 msgid "The CSV must include UPC/EAN and Release Format columns."
 msgstr ""
 
-#: includes/admin/class-mds-rm-network-admin.php:131
+#: includes/admin/class-mds-rm-editor.php:138
+msgid "Releases and Artists are managed on the hub site and are read-only here."
+msgstr ""
+
+#: includes/admin/class-mds-rm-editor.php:140
+msgid "Edit them on the hub site."
+msgstr ""
+
+#: includes/admin/class-mds-rm-editor.php:154
+#: includes/api/class-mds-rm-abilities.php:108
+msgid "Release title"
+msgstr ""
+
+#: includes/admin/class-mds-rm-editor.php:158
+msgid "Artist name"
+msgstr ""
+
+#: includes/admin/class-mds-rm-network-admin.php:132
 msgid "You are not allowed to manage network settings."
 msgstr ""
 
@@ -268,92 +308,72 @@ msgstr ""
 msgid "Settings saved!"
 msgstr ""
 
-#: includes/admin/views/release-meta-box.php:16
-#: includes/admin/views/release-meta-box.php:106
-msgid "Select Provider"
+#: includes/admin/views/release-commerce-box.php:17
+msgid "Buy Now URL"
 msgstr ""
 
-#: includes/admin/views/release-meta-box.php:31
-msgid "Required Fields"
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:34
-msgid "UPC/EAN *"
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:38
-msgid "Release Format *"
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:41
-msgid "Unable to load release formats. Please reload the page."
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:45
-msgid "The existing format conflicts with legacy data. Choose the correct format to resolve it."
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:48
-msgid "Select a release format"
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:64
-msgid "Metadata"
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:67
+#: includes/admin/views/release-details-box.php:17
 msgid "Record Label"
 msgstr ""
 
-#: includes/admin/views/release-meta-box.php:71
-#: includes/frontend/class-mds-rm-discography.php:82
+#: includes/admin/views/release-details-box.php:21
+#: includes/frontend/class-mds-rm-discography.php:153
 msgid "Distributor"
 msgstr ""
 
-#: includes/admin/views/release-meta-box.php:75
-msgid "Artist Profile"
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:79
-msgid "No Artists Found. Please Create One."
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:81
-msgid "-- Select Artist --"
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:92
+#: includes/admin/views/release-details-box.php:25
 msgid "Release Tags"
 msgstr ""
 
-#: includes/admin/views/release-meta-box.php:101
-msgid "Streaming Settings"
+#: includes/admin/views/release-identity-box.php:19
+msgid "UPC/EAN *"
 msgstr ""
 
-#: includes/admin/views/release-meta-box.php:115
+#: includes/admin/views/release-identity-box.php:23
+msgid "Release Format *"
+msgstr ""
+
+#: includes/admin/views/release-identity-box.php:26
+msgid "Unable to load release formats. Please reload the page."
+msgstr ""
+
+#: includes/admin/views/release-identity-box.php:30
+msgid "The existing format conflicts with legacy data. Choose the correct format to resolve it."
+msgstr ""
+
+#: includes/admin/views/release-identity-box.php:33
+msgid "Select a release format"
+msgstr ""
+
+#: includes/admin/views/release-identity-box.php:53
+msgid "No Artists Found. Please Create One."
+msgstr ""
+
+#: includes/admin/views/release-identity-box.php:55
+msgid "-- Select Artist --"
+msgstr ""
+
+#: includes/admin/views/release-streaming-box.php:16
+#: includes/admin/views/release-streaming-box.php:33
+msgid "Select Provider"
+msgstr ""
+
+#: includes/admin/views/release-streaming-box.php:42
 #: includes/admin/views/settings-page.php:36
 #: includes/frontend/class-mds-rm-assets.php:182
 msgid "Remove"
 msgstr ""
 
-#: includes/admin/views/release-meta-box.php:119
+#: includes/admin/views/release-streaming-box.php:46
 msgid "+ Add Link"
 msgstr ""
 
-#: includes/admin/views/release-meta-box.php:123
+#: includes/admin/views/release-streaming-box.php:50
 msgid "Audio Preview URL (.mp3)"
 msgstr ""
 
-#: includes/admin/views/release-meta-box.php:126
+#: includes/admin/views/release-streaming-box.php:53
 msgid "Select Audio"
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:133
-msgid "Advanced Settings"
-msgstr ""
-
-#: includes/admin/views/release-meta-box.php:136
-msgid "Buy Now URL"
 msgstr ""
 
 #: includes/admin/views/settings-page.php:15
@@ -481,10 +501,6 @@ msgstr ""
 msgid "Release post ID"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:108
-msgid "Release title"
-msgstr ""
-
 #: includes/api/class-mds-rm-abilities.php:112
 msgid "UPC/EAN identifier"
 msgstr ""
@@ -605,97 +621,97 @@ msgstr ""
 msgid "Successfully synced %1$d releases and %2$d artists to spoke sites."
 msgstr ""
 
-#: includes/blocks/class-mds-rm-release-links.php:256
+#: includes/blocks/class-mds-rm-release-links.php:264
 msgid "Buy Now"
 msgstr ""
 
 #. translators: %s: Release format name.
-#: includes/core/class-mds-rm-release-model.php:71
+#: includes/core/class-mds-rm-release-model.php:94
 #, php-format
 msgid "Could not register the release format \"%s\". Check the server error log."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:101
+#: includes/core/class-mds-rm-release-model.php:124
 msgid "Release formats must be Single, EP, Album, or Digital without a parent."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:155
+#: includes/core/class-mds-rm-release-model.php:178
 msgid "The release must have exactly one valid release format."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:214
+#: includes/core/class-mds-rm-release-model.php:237
 msgid "These releases need review for missing, malformed, or duplicate UPCs, invalid formats, or conflicting legacy format data:"
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:251
+#: includes/core/class-mds-rm-release-model.php:274
 msgid "A UPC/EAN is required."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:255
+#: includes/core/class-mds-rm-release-model.php:278
 msgid "Select exactly one release format."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:259
+#: includes/core/class-mds-rm-release-model.php:282
 msgid "Select Single, EP, Album, or Digital."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:311
+#: includes/core/class-mds-rm-release-model.php:334
 msgid "This UPC/EAN is already assigned to another release."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:330
+#: includes/core/class-mds-rm-release-model.php:354
 msgid "Could not reserve this UPC/EAN for saving. Please try again."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:383
+#: includes/core/class-mds-rm-release-model.php:409
 msgid "Change the release format in the release editor."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:393
+#: includes/core/class-mds-rm-release-model.php:419
 msgid "Resolve the release format conflict in the release editor first."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:428
-#: includes/core/class-mds-rm-release-model.php:482
+#: includes/core/class-mds-rm-release-model.php:453
+#: includes/core/class-mds-rm-release-model.php:507
 msgid "The saved format conflicts with legacy data. Choose a release format explicitly."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:442
+#: includes/core/class-mds-rm-release-model.php:467
 msgid "You are not allowed to assign a release format."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:454
+#: includes/core/class-mds-rm-release-model.php:479
 msgid "Invalid release"
 msgstr ""
 
-#: includes/core/class-mds-rm-sync.php:93
+#: includes/core/class-mds-rm-sync.php:119
 msgid "Cannot synchronize a record without its identifier."
 msgstr ""
 
-#: includes/core/class-mds-rm-sync.php:96
+#: includes/core/class-mds-rm-sync.php:122
 msgid "Cannot synchronize a release with an invalid or conflicting format."
 msgstr ""
 
 #. translators: %d: Spoke site ID.
-#: includes/core/class-mds-rm-sync.php:198
+#: includes/core/class-mds-rm-sync.php:224
 #, php-format
 msgid "Site %d has conflicting identifiers."
 msgstr ""
 
 #. translators: %d: Spoke site ID.
-#: includes/core/class-mds-rm-sync.php:223
+#: includes/core/class-mds-rm-sync.php:250
 #, php-format
 msgid "Could not save the shadow record on site %d."
 msgstr ""
 
 #. translators: %d: Spoke site ID.
-#: includes/core/class-mds-rm-sync.php:266
+#: includes/core/class-mds-rm-sync.php:293
 #, php-format
 msgid "Could not synchronize a taxonomy term on site %d."
 msgstr ""
 
 #. translators: %1$d: Spoke site ID. %2$s: Error message.
-#: includes/core/class-mds-rm-sync.php:278
+#: includes/core/class-mds-rm-sync.php:305
 #, php-format
 msgid "Could not synchronize taxonomy on site %1$d: %2$s"
 msgstr ""
@@ -717,174 +733,709 @@ msgstr ""
 msgid "Hex Color"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:53
+#: includes/frontend/class-mds-rm-discography.php:116
 msgid "No releases found."
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:79
+#: includes/frontend/class-mds-rm-discography.php:150
 msgid "Title"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:80
+#: includes/frontend/class-mds-rm-discography.php:151
 msgid "UPC/EAN"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:81
+#: includes/frontend/class-mds-rm-discography.php:152
 msgid "Label"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:83
+#: includes/frontend/class-mds-rm-discography.php:154
 msgid "Release Year"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:105
-#: includes/frontend/class-mds-rm-discography.php:106
+#: includes/frontend/class-mds-rm-discography.php:176
+#: includes/frontend/class-mds-rm-discography.php:177
 msgid "Discography"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:140
+#: includes/frontend/class-mds-rm-discography.php:217
 msgid "No releases found on this page."
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:143
+#: includes/frontend/class-mds-rm-discography.php:220
 msgid "Discography pages"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:152
+#: includes/frontend/class-mds-rm-discography.php:229
 msgid "Previous"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:153
+#: includes/frontend/class-mds-rm-discography.php:230
 msgid "Next"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:25
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:34
 msgid "Release Links Block"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:30
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:39
 msgid "Release Links"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:34
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:44
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:43
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:61
 msgid "UPC/EAN Override"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:36
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:46
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:45
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:63
 msgid "Leave blank to use the current release or supported context."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:43
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:52
 msgid "Open links in a new tab"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:52
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:61
 msgid "Show audio player"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:62
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:71
 msgid "Provider name"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:64
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:73
 msgid "Use the provider name from Release Settings, or __buy_now for Buy Now."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:70
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:79
 msgid "Show link"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:79
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:104
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:88
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:121
 msgid "Icon classes"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:81
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:90
 msgid "Leave blank for the provider default. Dashicons and Font Awesome are supported."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:87
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:113
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:96
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:130
 msgid "Tooltip title"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:89
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:98
 msgid "Leave blank for the provider name."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:108
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:117
 msgid "Provider overrides"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:113
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:122
 msgid "Reorder or hide links here. Other saved providers remain visible."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:121
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:130
 msgid "Release Links Styles"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:129
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:140
+#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:138
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:157
 msgid "Tablet styles apply at 1024px and below; mobile styles apply at 767px and below. Blank values inherit."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:25
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:34
 msgid "Release Meta Block"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:40
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:57
+#: blocks/release-meta/edit.js:53
 msgid "Release Meta"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:65
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:82
 msgid "Field"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:73
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:90
 msgid "Show field"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:82
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:99
 msgid "Choose icon"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:86
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:103
 msgid "Custom icon classes"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:87
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:104
 msgid "No icon"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:106
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:123
 msgid "Use Dashicons or Font Awesome classes; leave blank for no icon."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:120
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:137
 msgid "Fields"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:132
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:149
 msgid "Release Meta Styles"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:189
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:206
 msgid "Hex color, transparent, or inherit."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:191
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:208
 msgid "CSS lengths such as 12px or 1em; spacing accepts up to four values."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:193
+#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:210
 msgid "Use auto or a CSS length such as 100% or 20rem."
 msgstr ""
 
 #: templates/artist-fallback.php:22
 msgid "Contact Information"
+msgstr ""
+
+#. translators: %1$s: Artist title. %2$s: Artist post ID.
+#: blocks/artist-discography/edit.js:33
+#, js-format
+msgid "%1$s (ID %2$s)"
+msgstr ""
+
+#: blocks/artist-discography/edit.js:38
+msgid "Untitled Artist"
+msgstr ""
+
+#. translators: %s: Current Artist title.
+#: blocks/artist-discography/edit.js:56
+#, js-format
+msgid "Using the current Artist: %s."
+msgstr ""
+
+#: blocks/artist-discography/edit.js:62
+msgid "Artist Discography"
+msgstr ""
+
+#: blocks/artist-discography/edit.js:64
+msgid "Artist"
+msgstr ""
+
+#: blocks/artist-discography/edit.js:67
+msgid "Leave blank to use the current Artist."
+msgstr ""
+
+#: blocks/artist-discography/edit.js:74
+msgid "Use current Artist"
+msgstr ""
+
+#: blocks/artist-discography/edit.js:75
+#: blocks/release-picker.js:58
+msgid "Previous results"
+msgstr ""
+
+#: blocks/artist-discography/edit.js:76
+#: blocks/release-picker.js:59
+msgid "Next results"
+msgstr ""
+
+#: blocks/artist-discography/edit.js:78
+msgid "No more Artists match this search."
+msgstr ""
+
+#: blocks/artist-discography/edit.js:78
+msgid "Artist search failed. Change the search to try again."
+msgstr ""
+
+#: blocks/artist-discography/edit.js:81
+msgid "The selected Artist is unavailable. Choose another Artist or clear the selection."
+msgstr ""
+
+#: blocks/artist-discography/edit.js:82
+msgid "The selected Artist could not be checked. The saved selection has not changed."
+msgstr ""
+
+#: blocks/artist-discography/edit.js:88
+msgid "Select an Artist to preview the discography."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:24
+msgid "Default / inherit"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:56
+#: blocks/release-meta/controls.js:36
+msgid "Font family"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:57
+#: blocks/release-meta/controls.js:37
+msgid "Font size preset"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:58
+#: blocks/release-meta/controls.js:38
+msgid "Custom font size (px)"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:59
+#: blocks/release-meta/controls.js:39
+msgid "Font weight"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:60
+#: blocks/artist-discography/table-controls.js:64
+#: blocks/release-meta/controls.js:40
+#: blocks/release-meta/controls.js:44
+msgid "Normal"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:60
+#: blocks/release-meta/controls.js:40
+msgid "Medium"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:61
+#: blocks/release-meta/controls.js:41
+msgid "Semibold"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:61
+#: blocks/release-meta/controls.js:41
+msgid "Bold"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:63
+#: blocks/release-meta/controls.js:43
+msgid "Font style"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:64
+#: blocks/release-meta/controls.js:44
+msgid "Italic"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:66
+#: blocks/release-meta/controls.js:46
+msgid "Line height"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:72
+msgid "Top"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:73
+msgid "Right"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:74
+msgid "Bottom"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:75
+msgid "Left"
+msgstr ""
+
+#. translators: %1$s: Spacing setting. %2$s: Side of the table or cell.
+#: blocks/artist-discography/table-controls.js:78
+#, js-format
+msgid "%1$s preset (%2$s)"
+msgstr ""
+
+#. translators: %1$s: Spacing setting. %2$s: Side of the table or cell.
+#: blocks/artist-discography/table-controls.js:80
+#, js-format
+msgid "%1$s (%2$s, px)"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:95
+#: blocks/native-release-styles.js:73
+msgid "Border style"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:96
+#: blocks/native-release-styles.js:74
+msgid "None"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:96
+#: blocks/native-release-styles.js:75
+msgid "Solid"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:97
+#: blocks/native-release-styles.js:76
+msgid "Dashed"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:97
+#: blocks/native-release-styles.js:77
+msgid "Dotted"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:98
+#: blocks/native-release-styles.js:78
+msgid "Double"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:100
+msgid "Border width (px)"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:101
+#: blocks/native-release-styles.js:80
+msgid "Border color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:106
+#: blocks/release-links/controls.js:11
+#: blocks/release-meta/controls.js:17
+msgid "Background color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:107
+#: blocks/release-meta/controls.js:35
+msgid "Text color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:109
+#: blocks/release-meta/controls.js:48
+msgid "Text alignment"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:110
+#: blocks/native-release-styles.js:89
+#: blocks/release-meta/controls.js:49
+msgid "Start"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:110
+#: blocks/native-release-styles.js:90
+#: blocks/release-meta/controls.js:49
+msgid "Center"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:111
+#: blocks/native-release-styles.js:91
+#: blocks/release-meta/controls.js:50
+msgid "End"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:116
+msgid "Discography table"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:117
+msgid "Table margin"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:118
+msgid "Table padding"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:120
+msgid "Table corner radius (px)"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:122
+msgid "Discography header"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:123
+msgid "Discography body"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:125
+msgid "Striped rows"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:126
+msgid "Alternate row color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:128
+msgid "Discography cells and links"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:129
+msgid "Cell padding"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:130
+msgid "Table link color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:131
+msgid "Table link decoration"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:132
+msgid "Underline"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:132
+msgid "No underline"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:135
+msgid "Reset discography table styles"
+msgstr ""
+
+#: blocks/native-release-styles.js:19
+msgid "Default / legacy"
+msgstr ""
+
+#: blocks/native-release-styles.js:72
+msgid "Border width"
+msgstr ""
+
+#: blocks/native-release-styles.js:81
+msgid "Corner radius"
+msgstr ""
+
+#: blocks/native-release-styles.js:85
+msgid "Auto"
+msgstr ""
+
+#: blocks/native-release-styles.js:86
+msgid "Full width"
+msgstr ""
+
+#: blocks/native-release-styles.js:94
+msgid "Legacy responsive styles"
+msgstr ""
+
+#: blocks/native-release-styles.js:95
+msgid "Saved tablet and mobile overrides still apply at their original widths. Use Gutenberg’s device preview to check them."
+msgstr ""
+
+#: blocks/native-release-styles.js:99
+msgid "Remove legacy tablet/mobile overrides"
+msgstr ""
+
+#: blocks/release-links/controls.js:10
+msgid "Release Links layout"
+msgstr ""
+
+#: blocks/release-links/controls.js:12
+#: blocks/release-meta/controls.js:18
+msgid "Margin"
+msgstr ""
+
+#: blocks/release-links/controls.js:13
+#: blocks/release-meta/controls.js:19
+msgid "Padding"
+msgstr ""
+
+#: blocks/release-links/controls.js:14
+#: blocks/release-meta/controls.js:20
+msgid "Container width"
+msgstr ""
+
+#: blocks/release-links/controls.js:15
+msgid "Gap between links and audio"
+msgstr ""
+
+#: blocks/release-links/controls.js:16
+#: blocks/release-meta/controls.js:22
+msgid "Main-axis alignment"
+msgstr ""
+
+#: blocks/release-links/controls.js:16
+#: blocks/release-meta/controls.js:22
+msgid "Space between"
+msgstr ""
+
+#: blocks/release-links/controls.js:17
+#: blocks/release-meta/controls.js:23
+msgid "Cross-axis alignment"
+msgstr ""
+
+#: blocks/release-links/controls.js:17
+#: blocks/release-meta/controls.js:23
+msgid "Stretch"
+msgstr ""
+
+#: blocks/release-links/controls.js:18
+#: blocks/release-meta/controls.js:24
+msgid "Direction"
+msgstr ""
+
+#: blocks/release-links/controls.js:19
+#: blocks/release-meta/controls.js:25
+msgid "Row"
+msgstr ""
+
+#: blocks/release-links/controls.js:20
+#: blocks/release-meta/controls.js:25
+msgid "Reverse row"
+msgstr ""
+
+#: blocks/release-links/controls.js:21
+#: blocks/release-meta/controls.js:26
+msgid "Column"
+msgstr ""
+
+#: blocks/release-links/controls.js:22
+#: blocks/release-meta/controls.js:26
+msgid "Reverse column"
+msgstr ""
+
+#: blocks/release-links/controls.js:24
+#: blocks/release-meta/controls.js:28
+msgid "Wrapping"
+msgstr ""
+
+#: blocks/release-links/controls.js:25
+#: blocks/release-meta/controls.js:29
+msgid "Wrap"
+msgstr ""
+
+#: blocks/release-links/controls.js:26
+#: blocks/release-meta/controls.js:29
+msgid "Do not wrap"
+msgstr ""
+
+#: blocks/release-links/controls.js:27
+#: blocks/release-meta/controls.js:30
+msgid "Reverse wrap"
+msgstr ""
+
+#: blocks/release-links/controls.js:31
+msgid "Release Links buttons"
+msgstr ""
+
+#: blocks/release-links/controls.js:32
+msgid "Gap between buttons"
+msgstr ""
+
+#: blocks/release-links/controls.js:34
+msgid "Button size (px)"
+msgstr ""
+
+#: blocks/release-links/controls.js:38
+#: blocks/release-meta/controls.js:55
+msgid "Icon size (px)"
+msgstr ""
+
+#: blocks/release-links/controls.js:39
+#: blocks/release-meta/controls.js:54
+msgid "Icon color"
+msgstr ""
+
+#: blocks/release-links/controls.js:40
+msgid "Button background"
+msgstr ""
+
+#: blocks/release-links/controls.js:42
+msgid "Hover opacity"
+msgstr ""
+
+#: blocks/release-links/controls.js:44
+msgid "Release Links audio"
+msgstr ""
+
+#: blocks/release-links/controls.js:45
+msgid "Audio player width"
+msgstr ""
+
+#: blocks/release-links/edit.js:94
+msgid "This Release has no links or audio to display."
+msgstr ""
+
+#: blocks/release-links/edit.js:96
+#: blocks/release-meta/edit.js:105
+msgid "The Release source could not be checked."
+msgstr ""
+
+#: blocks/release-links/edit.js:98
+#: blocks/release-meta/edit.js:107
+msgid "Checking Release context…"
+msgstr ""
+
+#: blocks/release-links/edit.js:99
+msgid "Select a Release to preview its links."
+msgstr ""
+
+#: blocks/release-meta/controls.js:16
+msgid "Release Meta layout"
+msgstr ""
+
+#: blocks/release-meta/controls.js:21
+msgid "Gap between fields"
+msgstr ""
+
+#: blocks/release-meta/controls.js:34
+msgid "Release Meta typography"
+msgstr ""
+
+#: blocks/release-meta/controls.js:47
+msgid "Letter spacing (px)"
+msgstr ""
+
+#: blocks/release-meta/controls.js:53
+msgid "Release Meta icons"
+msgstr ""
+
+#: blocks/release-meta/controls.js:56
+msgid "Icon opacity"
+msgstr ""
+
+#: blocks/release-meta/controls.js:57
+msgid "Gap between icon and text"
+msgstr ""
+
+#: blocks/release-meta/edit.js:103
+msgid "This Release has no enabled metadata to display."
+msgstr ""
+
+#: blocks/release-meta/edit.js:108
+msgid "Select a Release to preview its metadata."
+msgstr ""
+
+#: blocks/release-picker.js:23
+msgid "Untitled Release"
+msgstr ""
+
+#. translators: %s: The Release title.
+#: blocks/release-picker.js:43
+#, js-format
+msgid "Using the current context: %s."
+msgstr ""
+
+#: blocks/release-picker.js:46
+msgid "No Release is available in this context."
+msgstr ""
+
+#: blocks/release-picker.js:49
+msgid "Release"
+msgstr ""
+
+#: blocks/release-picker.js:50
+msgid "Search by title or enter the full UPC/EAN. Leave blank to use the current context."
+msgstr ""
+
+#: blocks/release-picker.js:57
+msgid "Use current context"
+msgstr ""
+
+#: blocks/release-picker.js:60
+msgid "Release search failed. Change the search to try again."
+msgstr ""
+
+#: blocks/release-picker.js:61
+msgid "The Release selection could not be checked. The saved selection has not changed."
+msgstr ""
+
+#: blocks/release-picker.js:63
+msgid "The selected Release is unavailable. The saved selection has not changed."
 msgstr ""
 
 #: blocks/artist-discography/block.json

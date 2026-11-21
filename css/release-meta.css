@@ -33,6 +33,11 @@
 	opacity: var(--mds-meta-icon-opacity-desktop, .8);
 }
 .mds-release-meta__icon.dashicons { width: 1em; height: 1em; }
+.wp-block-mds-rm-release-meta .mds-release-meta__item > span:not(.screen-reader-text) {
+	font-style: var(--mds-meta-font-style-desktop, inherit);
+	letter-spacing: var(--mds-meta-letter-spacing-desktop, inherit);
+	text-align: var(--mds-meta-text-align-desktop, inherit);
+}
 .mds-release-meta .screen-reader-text {
 	position: absolute;
 	width: 1px;

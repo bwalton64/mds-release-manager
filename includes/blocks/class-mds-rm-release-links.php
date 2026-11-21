@@ -175,9 +175,17 @@ final class MDS_RM_Release_Links {
 	 */
 	public static function render( $attributes = array(), $context_post_id = 0 ): string {
 		$post = MDS_RM_Release_Meta::resolve_post( isset( $attributes['upc'] ) ? $attributes['upc'] : '', $context_post_id );
-		if ( ! $post ) {
-			return '';
-		}
+		return $post ? self::render_post( $post, $attributes ) : '';
+	}
+
+	/**
+	 * Renders the links for an already resolved, readable Release.
+	 *
+	 * @param WP_Post $post       Resolved Release.
+	 * @param array   $attributes Link, audio, and style overrides.
+	 * @return string Rendered links and audio.
+	 */
+	public static function render_post( WP_Post $post, array $attributes ): string {
 		$stored = get_post_meta( $post->ID, 'streaming_links', true );
 		$links  = json_decode( is_string( $stored ) ? $stored : '', true );
 		if ( ! is_array( $links ) ) {

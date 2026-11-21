@@ -1,0 +1,70 @@
+.wp-block-mds-rm-artist-discography[style*="--mds-discography-table-"] .mds-discography__scroll {
+	box-sizing: border-box;
+	margin: var(--mds-discography-table-margin-top, 0) var(--mds-discography-table-margin-right, 0) var(--mds-discography-table-margin-bottom, 0) var(--mds-discography-table-margin-left, 0);
+	padding: var(--mds-discography-table-padding-top, 0) var(--mds-discography-table-padding-right, 0) var(--mds-discography-table-padding-bottom, 0) var(--mds-discography-table-padding-left, 0);
+	border: var(--mds-discography-table-border-width, 0) var(--mds-discography-table-border-style, solid) var(--mds-discography-table-border-color, currentColor);
+	border-radius: var(--mds-discography-table-radius, 0);
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+.wp-block-mds-rm-artist-discography:is([style*="--mds-discography-table-"], .has-text-color, [class*="-font-size"], [style*="font-size:"], [style*="font-family:"], [style*="font-weight:"], [style*="font-style:"], [style*="line-height:"]) .mds-discography table {
+	background: var(--mds-discography-table-background, var(--mds-artist-table-background, transparent));
+	color: var(--mds-discography-table-color, var(--mds-discography-default-color, var(--mds-artist-table-color, inherit)));
+	font-family: var(--mds-discography-table-font-family, inherit);
+	font-size: var(--mds-discography-table-font-size, var(--mds-discography-default-font-size, var(--mds-artist-table-font-size, inherit)));
+	font-weight: var(--mds-discography-table-font-weight, inherit);
+	font-style: var(--mds-discography-table-font-style, inherit);
+	line-height: var(--mds-discography-table-line-height, inherit);
+}
+
+.wp-block-mds-rm-artist-discography.has-text-color {
+	--mds-discography-default-color: currentColor;
+}
+
+.wp-block-mds-rm-artist-discography:is([class*="-font-size"], [style*="font-size:"]) {
+	--mds-discography-default-font-size: 1em;
+}
+
+.wp-block-mds-rm-artist-discography[style*="--mds-discography-cell-"] .mds-discography :is(th, td) {
+	padding: var(--mds-discography-cell-padding-top, .6em) var(--mds-discography-cell-padding-right, .6em) var(--mds-discography-cell-padding-bottom, .6em) var(--mds-discography-cell-padding-left, .6em);
+	border: var(--mds-discography-cell-border-width, 1px) var(--mds-discography-cell-border-style, solid) var(--mds-discography-cell-border-color, var(--mds-artist-table-border, #ddd));
+}
+
+.wp-block-mds-rm-artist-discography[style*="--mds-discography-header-"] .mds-discography thead {
+	background: var(--mds-discography-header-background, transparent);
+	color: var(--mds-discography-header-color, inherit);
+	font-family: var(--mds-discography-header-font-family, inherit);
+	font-size: var(--mds-discography-header-font-size, inherit);
+	font-weight: var(--mds-discography-header-font-weight, inherit);
+	font-style: var(--mds-discography-header-font-style, inherit);
+	line-height: var(--mds-discography-header-line-height, inherit);
+}
+
+.wp-block-mds-rm-artist-discography:is([style*="--mds-discography-header-text-align:"], [style*="--mds-discography-header-font-weight:"], [style*="--mds-discography-table-font-weight:"]) .mds-discography th {
+	text-align: var(--mds-discography-header-text-align, inherit);
+	font-weight: var(--mds-discography-header-font-weight, var(--mds-discography-table-font-weight, bold));
+}
+
+.wp-block-mds-rm-artist-discography[style*="--mds-discography-body-"] .mds-discography tbody {
+	background: var(--mds-discography-body-background, transparent);
+	color: var(--mds-discography-body-color, inherit);
+	font-family: var(--mds-discography-body-font-family, inherit);
+	font-size: var(--mds-discography-body-font-size, inherit);
+	font-weight: var(--mds-discography-body-font-weight, inherit);
+	font-style: var(--mds-discography-body-font-style, inherit);
+	line-height: var(--mds-discography-body-line-height, inherit);
+	text-align: var(--mds-discography-body-text-align, inherit);
+}
+
+.wp-block-mds-rm-artist-discography[style*="--mds-discography-stripe-background:"] .mds-discography tbody tr:nth-child(even) {
+	background-color: var(--mds-discography-stripe-background, transparent);
+}
+
+.wp-block-mds-rm-artist-discography[style*="--mds-discography-link-color:"] .mds-discography table a {
+	color: var(--mds-discography-link-color);
+}
+
+.wp-block-mds-rm-artist-discography[style*="--mds-discography-link-decoration:"] .mds-discography table a {
+	text-decoration-line: var(--mds-discography-link-decoration);
+}

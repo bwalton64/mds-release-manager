@@ -33,6 +33,12 @@
 .mds-release-links__link i { font-size: var(--mds-links-icon-size-desktop, 22px); }
 .mds-release-links__link .dashicons { width: 1em; height: 1em; }
 .mds-release-links__link:hover { opacity: var(--mds-links-hover-opacity-desktop, .9); }
+.wp-block-mds-rm-release-links .mds-release-links__link:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 3px;
+	box-shadow: 0 0 0 3px CanvasText;
+	opacity: 1;
+}
 .mds-release-links__audio { flex: 0 1 auto; min-width: 0; max-width: 100%; width: var(--mds-links-audio-width-desktop, 300px); }
 .mds-release-links__audio iframe, .mds-release-links__audio audio { display: block; width: 100%; max-width: 100%; }
 @media (max-width: 1024px) {

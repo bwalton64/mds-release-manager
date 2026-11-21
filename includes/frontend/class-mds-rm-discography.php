@@ -36,7 +36,68 @@ final class MDS_RM_Discography {
 	public static function render_block( array $attributes, string $_content, object $block ): string {
 		$artist_id = ! empty( $attributes['artistId'] ) ? absint( $attributes['artistId'] ) : ( isset( $block->context['postId'] ) ? absint( $block->context['postId'] ) : get_the_ID() );
 		$html      = self::render( $artist_id );
-		return $html ? '<div ' . get_block_wrapper_attributes() . '>' . $html . '</div>' : '';
+		$styles    = self::table_style_variables( $attributes['tableStyles'] ?? array() );
+		return $html ? '<div ' . get_block_wrapper_attributes( $styles ? array( 'style' => $styles ) : array() ) . '>' . $html . '</div>' : '';
+	}
+
+	/**
+	 * Converts known table settings to scoped CSS variables.
+	 *
+	 * @param mixed $settings Saved table settings.
+	 * @return string Validated CSS declarations.
+	 */
+	private static function table_style_variables( $settings ): string {
+		if ( ! is_array( $settings ) ) {
+			return '';
+		}
+
+		$presets = array(
+			'color'       => '/\A(?:#[a-f0-9]{3,8}|rgba?\([0-9.,% \/]+\)|transparent|var\(--wp--preset--color--[a-z0-9_-]+\))\z/i',
+			'length'      => '/\A(?:0|[0-9]+(?:\.[0-9]+)?(?:px|em|rem|%|vw|vh|ch|ex|vmin|vmax)|var\(--wp--preset--spacing--[a-z0-9_-]+\))\z/i',
+			'font-family' => '/\Avar\(--wp--preset--font-family--[a-z0-9_-]+\)\z/i',
+			'font-size'   => '/\A(?:[0-9]{1,2}px|var\(--wp--preset--font-size--[a-z0-9_-]+\))\z/i',
+			'font-weight' => '/\A[1-9]00\z/',
+			'font-style'  => '/\A(?:normal|italic)\z/',
+			'line-height' => '/\A[0-9](?:\.[0-9]+)?\z/',
+			'text-align'  => '/\A(?:start|center|end)\z/',
+			'decoration'  => '/\A(?:underline|none)\z/',
+			'border'      => '/\A(?:none|solid|dashed|dotted|double|groove|ridge|inset|outset|hidden)\z/',
+		);
+		$fields  = array(
+			'link-color'      => 'color',
+			'link-decoration' => 'decoration',
+			'table-radius'    => 'length',
+		);
+		foreach ( array( 'table', 'header', 'body' ) as $region ) {
+			$fields[ "$region-background" ] = 'color';
+			$fields[ "$region-color" ]      = 'color';
+			foreach ( array( 'font-family', 'font-size', 'font-style', 'font-weight', 'line-height', 'text-align' ) as $property ) {
+				$fields[ "$region-$property" ] = $property;
+			}
+		}
+		foreach ( array( 'table-margin', 'table-padding', 'cell-padding' ) as $spacing ) {
+			foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) {
+				$fields[ "$spacing-$side" ] = 'length';
+			}
+		}
+		foreach ( array( 'table-border', 'cell-border' ) as $border ) {
+			$fields[ "$border-width" ] = 'length';
+			$fields[ "$border-color" ] = 'color';
+			$fields[ "$border-style" ] = 'border';
+		}
+		if ( true === ( $settings['striped'] ?? false ) ) {
+			$fields['stripe-background']     = 'color';
+			$settings['stripe-background'] ??= 'rgba(0,0,0,0.06)';
+		}
+
+		$css = '';
+		foreach ( $fields as $field => $type ) {
+			$value = $settings[ $field ] ?? null;
+			if ( is_string( $value ) && preg_match( $presets[ $type ], $value ) ) {
+				$css .= "--mds-discography-$field:$value;";
+			}
+		}
+		return $css;
 	}
 
 	/**

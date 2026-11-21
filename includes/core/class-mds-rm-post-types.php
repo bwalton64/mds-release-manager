@@ -94,49 +94,65 @@ final class MDS_RM_Post_Types {
 	 * @since 0.9.0
 	 */
 	public static function register_cpts(): void {
+		// On spoke sites catalog items are read-only shadows managed by the hub.
+		$spoke_caps = MDS_RM_Sync::is_hub()
+			? array()
+			: array(
+				'capabilities' => array( 'create_posts' => 'do_not_allow' ),
+				'map_meta_cap' => true,
+			);
+
 		register_post_type(
 			'release',
 			array(
 				'labels'       => array(
-					'name'          => 'Releases',
-					'singular_name' => 'Release',
-					'add_new'       => 'Add Release',
-					'add_new_item'  => 'Add New Release',
-					'edit_item'     => 'Edit Release',
-					'new_item'      => 'New Release',
-					'all_items'     => 'All Releases',
-					'menu_name'     => 'Releases',
+					'name'                  => 'Releases',
+					'singular_name'         => 'Release',
+					'add_new'               => 'Add Release',
+					'add_new_item'          => 'Add New Release',
+					'edit_item'             => 'Edit Release',
+					'new_item'              => 'New Release',
+					'all_items'             => 'All Releases',
+					'menu_name'             => 'Releases',
+					'featured_image'        => 'Cover Art',
+					'set_featured_image'    => 'Set cover art',
+					'remove_featured_image' => 'Remove cover art',
+					'use_featured_image'    => 'Use as cover art',
 				),
 				'public'       => true,
 				'has_archive'  => true,
 				'show_in_rest' => true,
-				'supports'     => array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
+				'supports'     => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
 				'menu_icon'    => 'dashicons-album',
 				'rewrite'      => array( 'slug' => 'release' ),
-			)
+			) + $spoke_caps
 		);
 
 		register_post_type(
 			'artist',
 			array(
 				'labels'       => array(
-					'name'          => 'Artists',
-					'singular_name' => 'Artist',
-					'add_new'       => 'Add Artist',
-					'add_new_item'  => 'Add New Artist',
-					'edit_item'     => 'Edit Artist',
-					'new_item'      => 'New Artist',
-					'all_items'     => 'All Artists',
-					'menu_name'     => 'Artists',
+					'name'                  => 'Artists',
+					'singular_name'         => 'Artist',
+					'add_new'               => 'Add Artist',
+					'add_new_item'          => 'Add New Artist',
+					'edit_item'             => 'Edit Artist',
+					'new_item'              => 'New Artist',
+					'all_items'             => 'All Artists',
+					'menu_name'             => 'Artists',
+					'featured_image'        => 'Artist Photo',
+					'set_featured_image'    => 'Set artist photo',
+					'remove_featured_image' => 'Remove artist photo',
+					'use_featured_image'    => 'Use as artist photo',
 				),
 				'public'       => true,
 				'has_archive'  => true,
 				'show_in_rest' => true,
 				'show_in_menu' => 'edit.php?post_type=release',
-				'supports'     => array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
+				'supports'     => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
 				'menu_icon'    => 'dashicons-groups',
 				'rewrite'      => array( 'slug' => 'artist' ),
-			)
+			) + $spoke_caps
 		);
 
 		register_taxonomy(

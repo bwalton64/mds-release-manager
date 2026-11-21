@@ -397,9 +397,17 @@ final class MDS_RM_Release_Meta {
 	public static function render( $attributes = array(), $context_post_id = 0 ) {
 		$upc  = isset( $attributes['upc'] ) ? $attributes['upc'] : '';
 		$post = self::resolve_post( $upc, $context_post_id );
-		if ( ! $post ) {
-			return '';
-		}
+		return $post ? self::render_post( $post, $attributes ) : '';
+	}
+
+	/**
+	 * Renders fields for an already resolved, readable Release.
+	 *
+	 * @param WP_Post $post       Resolved Release.
+	 * @param array   $attributes Field and style overrides.
+	 * @return string Rendered metadata.
+	 */
+	public static function render_post( WP_Post $post, array $attributes ): string {
 		self::enqueue_assets();
 		$fields = self::fields();
 		$items  = isset( $attributes['items'] ) && is_array( $attributes['items'] ) ? $attributes['items'] : self::default_items();

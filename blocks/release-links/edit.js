@@ -3,33 +3,20 @@
     var el = wp.element.createElement;
     var InspectorControls = wp.blockEditor.InspectorControls;
     var PanelBody = wp.components.PanelBody;
-    var SelectControl = wp.components.SelectControl;
     var TextControl = wp.components.TextControl;
     var registerBlockType = wp.blocks.registerBlockType;
-    var ServerSideRender = wp.serverSideRender;
-    var styleControl = window.mdsRmBlockStyleControl;
+    var ServerSideRender = wp.serverSideRender.ServerSideRender || wp.serverSideRender;
+    const { __ } = wp.i18n;
+    const name = 'mds-rm/release-links';
 
-    registerBlockType('mds-rm/release-links', {
-        apiVersion: 3,
-        title: 'Release Links Block',
-        icon: 'album',
-        category: 'widgets',
-        usesContext: ['postId', 'postType'],
-        attributes: {
-            upcOverride: { type: 'string', default: '' },
-            items: { type: 'array', default: [] },
-            newTab: { type: 'boolean', default: true },
-            showAudio: { type: 'boolean', default: true },
-            styles: { type: 'object', default: {} }
-        },
+    registerBlockType(name, {
         edit: function(props) {
             var attributes = props.attributes;
             var setAttributes = props.setAttributes;
-            var deviceState = wp.element.useState('desktop');
-            var device = deviceState[0];
             var customState = wp.element.useState('');
             var customName = customState[0];
-            var styles = attributes.styles || {};
+            const contextId = props.context?.postId || 0;
+            const { source, resolved, picker } = window.mdsRmUseReleasePicker({ attributes, setAttributes, contextId });
             var items = (attributes.items || []).slice();
             mdsReleaseLinks.providers.map(function(provider) { return provider.name; }).concat(['__buy_now']).forEach(function(name) {
                 if (name && !items.some(function(item) { return item.name.toLowerCase() === name.toLowerCase(); })) {
@@ -48,22 +35,10 @@
                 next[target] = item;
                 setAttributes({ items: next });
             }
-            function updateStyle(name, value) {
-                var next = Object.assign({}, styles);
-                next[device] = Object.assign({}, next[device] || {});
-                if (value === '') delete next[device][name];
-                else next[device][name] = value;
-                setAttributes({ styles: next });
-            }
             return el('div', wp.blockEditor.useBlockProps(),
                 el(InspectorControls, null,
                     el(PanelBody, { title: 'Release Links', initialOpen: true },
-                        el(TextControl, {
-                            label: 'UPC/EAN Override (Optional)',
-                            help: 'Leave blank to use the current release or supported context.',
-                            value: attributes.upcOverride,
-                            onChange: function(value) { setAttributes({ upcOverride: value }); }
-                        }),
+                        picker,
                         el(wp.components.ToggleControl, {
                             label: 'Open links in a new tab', checked: attributes.newTab,
                             onChange: function(value) { setAttributes({ newTab: value }); }
@@ -111,24 +86,18 @@
                         );
                     })
                 ),
-                el(InspectorControls, { group: 'styles' },
-                    el(PanelBody, { title: 'Release Links Styles', initialOpen: true },
-                        el(SelectControl, {
-                            label: 'Device', value: device,
-                            options: [
-                                { label: 'Desktop', value: 'desktop' },
-                                { label: 'Tablet (1024px and below)', value: 'tablet' },
-                                { label: 'Mobile (767px and below)', value: 'mobile' }
-                            ],
-                            onChange: deviceState[1]
-                        }),
-                        el('p', null, 'Leave blank to inherit the larger device or the default.'),
-                        Object.keys(mdsReleaseLinks.styles).map(function(name) {
-                            return styleControl(name, mdsReleaseLinks.styles[name], (styles[device] || {})[name] || '', updateStyle);
-                        })
-                    )
-                ),
-                el(ServerSideRender, { block: 'mds-rm/release-links', attributes: attributes, httpMethod: 'POST' })
+                el(window.mdsRmReleaseLinksControls, { attributes, setAttributes }),
+                el(ServerSideRender, {
+                    block: name, attributes, httpMethod: 'POST',
+                    urlQueryArgs: contextId ? { post_id: contextId } : undefined,
+                    EmptyResponsePlaceholder: () => el('p', null, resolved
+                        ? __('This Release has no links or audio to display.', 'mds-release-manager')
+                        : source.error
+                            ? __('The Release source could not be checked.', 'mds-release-manager')
+                            : source.loading
+                                ? __('Checking Release context…', 'mds-release-manager')
+                                : __('Select a Release to preview its links.', 'mds-release-manager')),
+                })
             );
         },
         save: function() { return null; }

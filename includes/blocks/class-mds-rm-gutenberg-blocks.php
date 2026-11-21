@@ -26,7 +26,37 @@ final class MDS_RM_Gutenberg_Blocks {
 	public static function register_hooks(): void {
 		add_action( 'enqueue_block_editor_assets', array( self::class, 'enqueue_block_editor_assets' ) );
 		add_action( 'init', array( self::class, 'register_gutenberg_widget_blocks' ) );
+		add_action( 'rest_api_init', array( MDS_RM_Release_Links_Block::class, 'register_routes' ) );
 		add_filter( 'render_block', array( self::class, 'render_core_block_with_meta' ), 10, 2 );
+		add_filter( 'block_categories_all', array( self::class, 'register_block_category' ) );
+	}
+
+	/**
+	 * Adds the shared MDS Release Manager block category to the inserter.
+	 *
+	 * Extension plugins place blocks in this section by setting the
+	 * `mds-release-manager` category in their block.json and registering the
+	 * category the same way: append it on `block_categories_all` only when no
+	 * category with this slug exists yet, so any number of MDS plugins can be
+	 * active in any combination without duplicating the section.
+	 *
+	 * @param array $categories Existing block categories.
+	 * @return array Categories including the MDS Release Manager category.
+	 */
+	public static function register_block_category( array $categories ): array {
+		foreach ( $categories as $category ) {
+			if ( isset( $category['slug'] ) && 'mds-release-manager' === $category['slug'] ) {
+				return $categories;
+			}
+		}
+
+		$categories[] = array(
+			'slug'  => 'mds-release-manager',
+			'title' => __( 'MDS Release Manager', 'mds-release-manager' ),
+			'icon'  => 'album',
+		);
+
+		return $categories;
 	}
 
 	/**
@@ -51,7 +81,6 @@ final class MDS_RM_Gutenberg_Blocks {
 			array(
 				'items'  => MDS_RM_Release_Meta::default_items(),
 				'fields' => MDS_RM_Release_Meta::fields(),
-				'styles' => MDS_RM_Release_Meta::style_fields(),
 			)
 		);
 		wp_localize_script(
@@ -59,7 +88,6 @@ final class MDS_RM_Gutenberg_Blocks {
 			'mdsReleaseLinks',
 			array(
 				'providers' => MDS_RM_Release_Links::providers(),
-				'styles'    => MDS_RM_Release_Links::style_fields(),
 			)
 		);
 
@@ -82,37 +110,45 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @since 0.9.0
 	 */
 	public static function register_gutenberg_widget_blocks(): void {
-		$edit_script = 'blocks/artist-discography/edit.js';
+		$edit_script    = 'blocks/artist-discography/edit.js';
+		$table_controls = 'blocks/artist-discography/table-controls.js';
+		wp_register_script(
+			'mds-rm-discography-table-controls',
+			MDS_RM_URL . $table_controls,
+			array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n' ),
+			filemtime( MDS_RM_PATH . $table_controls ),
+			true
+		);
 		wp_register_script(
 			'mds-rm-artist-discography-editor',
 			MDS_RM_URL . $edit_script,
-			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-server-side-render', 'wp-block-editor' ),
+			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-server-side-render', 'wp-block-editor', 'wp-api-fetch', 'wp-url', 'wp-html-entities', 'wp-i18n', 'mds-rm-discography-table-controls' ),
 			filemtime( MDS_RM_PATH . $edit_script ),
 			true
 		);
+		wp_set_script_translations( 'mds-rm-discography-table-controls', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+		wp_set_script_translations( 'mds-rm-artist-discography-editor', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+
+		$table_style = 'blocks/artist-discography/style.css';
+		wp_register_style( 'mds-rm-discography-block', MDS_RM_URL . $table_style, array(), filemtime( MDS_RM_PATH . $table_style ) );
 		register_block_type(
 			MDS_RM_PATH . 'blocks/artist-discography',
 			array(
 				'render_callback' => array( MDS_RM_Discography::class, 'render_block' ),
 			)
 		);
-		self::register_release_meta_block();
-		self::register_release_block( 'release-links', 'render_gutenberg_release_links' );
-	}
-
-	/**
-	 * Registers the shared style control and Release Meta metadata.
-	 */
-	private static function register_release_meta_block(): void {
-		$style_script = 'blocks/style-control.js';
-		wp_register_script(
-			'mds-rm-block-style-control',
-			MDS_RM_URL . $style_script,
-			array( 'wp-element', 'wp-components' ),
-			filemtime( MDS_RM_PATH . $style_script ),
-			true
-		);
+		foreach (
+			array(
+				'release-picker'        => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-url', 'wp-html-entities', 'wp-i18n' ),
+				'native-release-styles' => array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n' ),
+			) as $script => $dependencies
+		) {
+			$file = "blocks/{$script}.js";
+			wp_register_script( "mds-rm-{$script}", MDS_RM_URL . $file, $dependencies, filemtime( MDS_RM_PATH . $file ), true );
+			wp_set_script_translations( "mds-rm-{$script}", 'mds-release-manager', MDS_RM_PATH . 'languages' );
+		}
 		self::register_release_block( 'release-meta', 'render_gutenberg_release_meta', array( 'items' => MDS_RM_Release_Meta::default_items() ) );
+		self::register_release_block( 'release-links', 'render_gutenberg_release_links' );
 	}
 
 	/**
@@ -124,13 +160,19 @@ final class MDS_RM_Gutenberg_Blocks {
 	 */
 	private static function register_release_block( string $slug, string $callback, array $defaults = array() ): void {
 		$edit_script = "blocks/{$slug}/edit.js";
+		$controls    = "blocks/{$slug}/controls.js";
+		$style       = "css/{$slug}.css";
+		wp_register_style( "mds-rm-{$slug}-editor-style", MDS_RM_URL . $style, array( 'dashicons' ), filemtime( MDS_RM_PATH . $style ) );
+		wp_register_script( "mds-rm-{$slug}-controls", MDS_RM_URL . $controls, array( 'mds-rm-native-release-styles' ), filemtime( MDS_RM_PATH . $controls ), true );
 		wp_register_script(
 			"mds-rm-{$slug}-editor",
 			MDS_RM_URL . $edit_script,
-			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-server-side-render', 'wp-block-editor', 'mds-rm-block-style-control' ),
+			array( 'wp-blocks', 'wp-server-side-render', 'mds-rm-release-picker', "mds-rm-{$slug}-controls" ),
 			filemtime( MDS_RM_PATH . $edit_script ),
 			true
 		);
+		wp_set_script_translations( "mds-rm-{$slug}-editor", 'mds-release-manager', MDS_RM_PATH . 'languages' );
+		wp_set_script_translations( "mds-rm-{$slug}-controls", 'mds-release-manager', MDS_RM_PATH . 'languages' );
 
 		$directory = MDS_RM_PATH . 'blocks/' . $slug;
 		$metadata  = wp_json_file_decode( $directory . '/block.json', array( 'associative' => true ) );
@@ -161,10 +203,7 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @return string The rendered release links.
 	 */
 	public static function render_gutenberg_release_links( $attributes, $_content, $block ): string {
-		$context_post_id   = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
-		$attributes['upc'] = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
-		$content           = MDS_RM_Release_Links::render( $attributes, $context_post_id );
-		return $content ? '<div ' . get_block_wrapper_attributes() . '>' . $content . '</div>' : '';
+		return MDS_RM_Release_Links_Block::render( $attributes, $_content, $block );
 	}
 
 	/**
@@ -177,10 +216,18 @@ final class MDS_RM_Gutenberg_Blocks {
 	 * @return string The rendered metadata.
 	 */
 	public static function render_gutenberg_release_meta( $attributes, $_content, $block ): string {
-		$context_post_id   = isset( $block->context['postId'] ) ? $block->context['postId'] : get_the_ID();
-		$attributes['upc'] = isset( $attributes['upcOverride'] ) ? $attributes['upcOverride'] : '';
-		$content           = MDS_RM_Release_Meta::render( $attributes, $context_post_id );
-		return $content ? '<div ' . get_block_wrapper_attributes() . '>' . $content . '</div>' : '';
+		$post = MDS_RM_Release_Links_Block::resolve_block_source( $attributes, $block );
+		if ( ! $post ) {
+			return '';
+		}
+		$fields                   = MDS_RM_Release_Meta::style_fields();
+		$fields['font_size']      = array( 'type' => 'font_size' );
+		$fields['font_style']     = array( 'type' => 'font_style' );
+		$fields['text_align']     = array( 'type' => 'text_align' );
+		$fields['letter_spacing'] = array( 'type' => 'length' );
+		$wrapper                  = MDS_RM_Release_Links_Block::native_style_wrapper( $attributes, 'metaStyles', $fields, 'meta' );
+		$content                  = MDS_RM_Release_Meta::render_post( $post, $attributes );
+		return $content ? '<div ' . get_block_wrapper_attributes( $wrapper ) . '>' . $content . '</div>' : '';
 	}
 
 	/**

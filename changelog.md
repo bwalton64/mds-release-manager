@@ -7,15 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- Add native block Styles and per-table controls to Artist Discography, covering spacing, typography, colors, borders, links, and striped rows.
+- Add excerpt support to Releases and Artists, shown by default on their edit screens and synchronized to spoke sites with the rest of the record.
+- Make spoke sites read-only for Releases and Artists: creating, editing, and deleting catalog posts is denied outside the hub (admin UI, Quick Edit, bulk actions, and REST alike), spoke list screens link to the hub editor, and hub broadcasts are unaffected. This also stops spoke-local edits from drifting until the next broadcast.
 - Add WordPress.org distribution metadata, a directory readme, and a translation template for existing localized strings.
 - Add `.github/consolidation-plan.md`, the canonical phased plan for aligning plugin structure, nomenclature, blocks, and templates with WordPress standards. It supersedes the abandoned file-merge consolidation attempt, freezes the public API (hooks, blocks, shortcodes, routes, options, meta keys), and defines per-step verification gates.
 - Add an isolated Playwright smoke suite covering Release and Artist fallbacks, Gutenberg metadata persistence, REST settings saves, and rewrite setup and cleanup.
 
 ### Changed
+- Edit Releases and Artists on the native classic screen instead of the block editor. The former monolithic Release Settings box is split into Release Identity, Release Details, Streaming & Audio, and Commerce boxes, with Cover Art/Artist Photo featured-image labels and the redundant Slug box removed. Extension meta boxes (`mds_rm_register_custom_meta_boxes` / `mds_rm_save_custom_meta`), SEO plugin meta boxes, saved field names, and hub-to-spoke broadcasting are unchanged.
+- Remove Custom Fields support from Releases and Artists so the Custom Fields panel no longer appears; stored post meta is unaffected.
+- Give Release Meta a native Release picker with Artist-context fallback and native styling controls for layout, typography, and icons; retain saved responsive overrides until explicitly removed.
+- Replace Release Links' UPC field with a native Release picker and use the latest published Release in Artist context. Replace the Device dropdown and raw CSS fields with native WordPress controls while preserving saved tablet and mobile overrides until explicitly removed.
+- Replace the Artist Discography numeric ID field with a searchable picker for published Artists. Clearing it uses the current Artist; unavailable saved selections are retained with an editor warning.
 - Log routine Release Manager diagnostics only when WordPress debug logging is enabled. Operational failures still go to the PHP log.
 - Serve Font Awesome Free locally instead of using a CDN. Existing icon settings and source selections continue to work.
 - Load the five admin views from the plugin only, localize their labels, and move their layout styles into CSS. Theme overrides still work for the Artist and Release frontend fallbacks.
 - Register Release Meta, Release Links, and Artist Discography from `block.json` without changing their saved markup or PHP renderers. Move core-block metadata bindings into a dedicated editor script.
+- Group the Release Meta, Release Links, and Artist Discography blocks under a shared "MDS Release Manager" section in the block inserter instead of Widgets. Extension plugins join the section by using the `mds-release-manager` block category and registering it defensively on `block_categories_all`.
 - Organize PHP classes by function and register runtime hooks on `plugins_loaded`. Activation and deactivation callbacks still register when the plugin file loads.
 - Set the documented minimums to WordPress 6.9 and PHP 8.0 and license the plugin under GPL-2.0-or-later.
 - Move internal implementation summaries, refactoring reports, and the Abilities API reference documentation from the plugin root into the `.local/` directory. `README.md`, `changelog.md`, and `.github/technical-blueprint.md` are the canonical, maintained documentation.

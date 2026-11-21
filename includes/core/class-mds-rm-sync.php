@@ -17,6 +17,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class MDS_RM_Sync {
 
 	/**
+	 * Returns the hub (master) site ID for the network.
+	 *
+	 * @since 1.0.0
+	 * @return int The hub site ID, or the current site ID outside multisite.
+	 */
+	public static function hub_id(): int {
+		if ( ! is_multisite() ) {
+			return (int) get_current_blog_id();
+		}
+
+		return (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() );
+	}
+
+	/**
+	 * Determines whether the current site is the hub.
+	 *
+	 * Single-site installations always count as the hub.
+	 *
+	 * @since 1.0.0
+	 * @return bool True when catalog editing is allowed on this site.
+	 */
+	public static function is_hub(): bool {
+		return ! is_multisite() || get_current_blog_id() === self::hub_id();
+	}
+
+	/**
 	 * Purges the LiteSpeed cache when its purge hook is available.
 	 *
 	 * @since 0.9.0
@@ -70,7 +96,7 @@ final class MDS_RM_Sync {
 			return null;
 		}
 
-		$master_hub_id   = (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() );
+		$master_hub_id   = self::hub_id();
 		$current_blog_id = get_current_blog_id();
 
 		// Only broadcast if we are saving on the Master Hub.
@@ -204,6 +230,7 @@ final class MDS_RM_Sync {
 			$post_data = array(
 				'post_title'    => $post->post_title,
 				'post_content'  => $post->post_content,
+				'post_excerpt'  => $post->post_excerpt,
 				'post_status'   => $post->post_status,
 				'post_type'     => $post_type,
 				'post_name'     => $post->post_name,

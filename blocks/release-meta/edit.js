@@ -6,8 +6,9 @@
     var SelectControl = wp.components.SelectControl;
     var TextControl = wp.components.TextControl;
     var registerBlockType = wp.blocks.registerBlockType;
-    var ServerSideRender = wp.serverSideRender;
-    var styleControl = window.mdsRmBlockStyleControl;
+    var ServerSideRender = wp.serverSideRender.ServerSideRender || wp.serverSideRender;
+    const { __ } = wp.i18n;
+    const name = 'mds-rm/release-meta';
 
     var iconPresets = [
         { label: 'Choose a common icon...', value: '' },
@@ -24,26 +25,13 @@
         { label: 'Music (Font Awesome)', value: 'fas fa-music' }
     ];
 
-    registerBlockType('mds-rm/release-meta', {
-        apiVersion: 3,
-        title: 'Release Meta Block',
-        icon: 'album',
-        category: 'widgets',
-        usesContext: ['postId', 'postType'],
-        attributes: {
-            upcOverride: { type: 'string', default: '' },
-            items: { type: 'array', default: mdsReleaseMeta.items },
-            styles: { type: 'object', default: {} }
-        },
+    registerBlockType(name, {
         edit: function(props) {
             var attributes = props.attributes;
             var setAttributes = props.setAttributes;
-            var useState = wp.element.useState;
-            var state = useState('desktop');
-            var device = state[0];
-            var setDevice = state[1];
             var items = attributes.items || mdsReleaseMeta.items;
-            var styles = attributes.styles || {};
+            const contextId = props.context?.postId || 0;
+            const { picker, source, resolved } = window.mdsRmUseReleasePicker({ attributes, setAttributes, contextId });
 
             function updateItem(index, change) {
                 var next = items.map(function(item, i) {
@@ -60,23 +48,9 @@
                 next[target] = item;
                 setAttributes({ items: next });
             }
-            function updateStyle(name, value) {
-                var next = Object.assign({}, styles);
-                next[device] = Object.assign({}, next[device] || {});
-                if (value === '') delete next[device][name];
-                else next[device][name] = value;
-                setAttributes({ styles: next });
-            }
             return el('div', wp.blockEditor.useBlockProps(),
                 el(InspectorControls, null,
-                    el(PanelBody, { title: 'Release Meta', initialOpen: true },
-                        el(TextControl, {
-                            label: 'UPC/EAN Override (Optional)',
-                            help: 'Leave blank to use the current release or supported context.',
-                            value: attributes.upcOverride,
-                            onChange: function(val) { setAttributes({ upcOverride: val }); }
-                        })
-                    ),
+                    el(PanelBody, { title: __('Release Meta', 'mds-release-manager'), initialOpen: true }, picker),
                     items.map(function(item, index) {
                         var definition = mdsReleaseMeta.fields[item.field];
                         if (!definition) return null;
@@ -121,25 +95,18 @@
                         );
                     })
                 ),
-                el(InspectorControls, { group: 'styles' },
-                    el(PanelBody, { title: 'Release Meta Styles', initialOpen: true },
-                        el(SelectControl, {
-                            label: 'Device',
-                            value: device,
-                            options: [
-                                { label: 'Desktop', value: 'desktop' },
-                                { label: 'Tablet (1024px and below)', value: 'tablet' },
-                                { label: 'Mobile (767px and below)', value: 'mobile' }
-                            ],
-                            onChange: setDevice
-                        }),
-                        el('p', null, 'Leave blank to inherit the larger device or the default.'),
-                        Object.keys(mdsReleaseMeta.styles).map(function(name) {
-                            return styleControl(name, mdsReleaseMeta.styles[name], (styles[device] || {})[name] || '', updateStyle);
-                        })
-                    )
-                ),
-                el(ServerSideRender, { block: 'mds-rm/release-meta', attributes: attributes, httpMethod: 'POST' })
+                el(window.mdsRmReleaseMetaControls, { attributes, setAttributes }),
+                el(ServerSideRender, {
+                    block: name, attributes, httpMethod: 'POST',
+                    urlQueryArgs: contextId ? { post_id: contextId } : undefined,
+                    EmptyResponsePlaceholder: () => el('p', null, resolved
+                        ? __('This Release has no enabled metadata to display.', 'mds-release-manager')
+                        : source.error
+                            ? __('The Release source could not be checked.', 'mds-release-manager')
+                            : source.loading
+                                ? __('Checking Release context…', 'mds-release-manager')
+                                : __('Select a Release to preview its metadata.', 'mds-release-manager')),
+                })
             );
         },
         save: function() { return null; }
