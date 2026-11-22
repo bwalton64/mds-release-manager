@@ -298,6 +298,56 @@ final class MDS_RM_Release_Meta {
 	}
 
 	/**
+	 * Canonical public Release resolver for core and extension blocks, shortcodes, and players.
+	 *
+	 * Resolves a Release post by explicit `releaseId`/`release_id`, explicit `upcOverride`/`upc`,
+	 * or contextual post ID (including Artist latest-release context and WooCommerce SKU context).
+	 *
+	 * @since 1.1.0
+	 * @param array         $attributes      Block or shortcode attributes.
+	 * @param WP_Block|null $block           Optional Gutenberg block context.
+	 * @param int|string    $context_post_id Fallback context post ID.
+	 * @return WP_Post|null The readable Release, if found.
+	 */
+	public static function resolve_release( array $attributes = array(), ?WP_Block $block = null, int|string $context_post_id = 0 ): ?WP_Post {
+		if ( $block instanceof WP_Block ) {
+			return MDS_RM_Release_Links_Block::resolve_block_source( $attributes, $block );
+		}
+		$release_id = $attributes['release_id'] ?? ( $attributes['releaseId'] ?? 0 );
+		$upc        = $attributes['upc'] ?? ( $attributes['upcOverride'] ?? '' );
+		$context_id = $context_post_id ? $context_post_id : get_the_ID();
+		return self::resolve_shortcode_source( $release_id, $upc, $context_id );
+	}
+
+	/**
+	 * Registers an extension metadata key on the `release` or `artist` custom post type.
+	 *
+	 * Ensures consistent REST API / Block Bindings exposure, single-value storage,
+	 * and edit-capability checks across extension plugins.
+	 *
+	 * @since 1.1.0
+	 * @param string               $meta_key  Post meta key to register.
+	 * @param array<string, mixed> $args      Optional `register_post_meta` overrides.
+	 * @param string               $post_type Target CPT (`release` or `artist`). Default `release`.
+	 * @return bool True if the meta key was successfully registered.
+	 */
+	public static function register_extension_meta( string $meta_key, array $args = array(), string $post_type = 'release' ): bool {
+		if ( '' === $meta_key || sanitize_key( $meta_key ) !== $meta_key || ! in_array( $post_type, array( 'release', 'artist' ), true ) || ! function_exists( 'register_post_meta' ) ) {
+			return false;
+		}
+		$defaults = array(
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'sanitize_text_field',
+			'auth_callback'     => static function ( bool $_allowed, string $_key, int $post_id ): bool {
+				return current_user_can( 'edit_post', $post_id );
+			},
+		);
+		return register_post_meta( $post_type, $meta_key, array_merge( $defaults, $args ) );
+	}
+
+	/**
 	 * Checks whether a candidate is a readable release.
 	 *
 	 * @param mixed $post Candidate from a WordPress post lookup.
@@ -389,6 +439,9 @@ final class MDS_RM_Release_Meta {
 		switch ( $type ) {
 			case 'color':
 				$color = sanitize_hex_color( $value );
+				if ( preg_match( '/\A#[a-f0-9]{4}(?:[a-f0-9]{4})?\z/i', $value ) ) {
+					return $value;
+				}
 				return $color ? $color : ( 'transparent' === $value || 'inherit' === $value || preg_match( '/\A(?:rgba?\([0-9.,% \/]+\))\z/i', $value ) ? $value : '' );
 			case 'font':
 				$family = '(?:[a-zA-Z0-9_-]+(?:\s+[a-zA-Z0-9_-]+)*|"[a-zA-Z0-9 _-]+"|\'[a-zA-Z0-9 _-]+\')';

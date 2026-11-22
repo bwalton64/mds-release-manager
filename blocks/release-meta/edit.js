@@ -33,7 +33,7 @@
             const inheritedItems = defaults.items || mdsReleaseMeta.items;
             var items = window.mdsRmReleaseItems.resolve(inheritedItems, attributes, 'field');
             const contextId = props.context?.postId || 0;
-            const { picker, source, resolved } = window.mdsRmUseReleasePicker({ attributes, setAttributes, contextId });
+            const { picker, source, resolved } = window.mdsRmUseReleasePicker({ attributes, setAttributes, contextId, enabled: props.isSelected });
 
             function updateItem(index, change) {
                 window.mdsRmReleaseItems.update(attributes, setAttributes, items, 'field', index, change);

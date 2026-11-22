@@ -428,10 +428,21 @@ final class MDS_RM_Abilities {
 			update_option( 'mds_rm_providers', $providers );
 
 			if ( isset( $input['audio_players'] ) && is_array( $input['audio_players'] ) ) {
-				$players = array_map( 'sanitize_text_field', wp_unslash( $input['audio_players'] ) );
+				$players = MDS_RM_Audio_Players::sanitize_active_players( wp_unslash( $input['audio_players'] ) );
 				update_option( 'mds_rm_audio_players', $players );
 			} else {
 				update_option( 'mds_rm_audio_players', array() );
+			}
+
+			if ( isset( $input['audio_player_settings'] ) && is_array( $input['audio_player_settings'] ) ) {
+				$validated_audio_settings = MDS_RM_Audio_Players::validate_settings( $input['audio_player_settings'] );
+				if ( is_wp_error( $validated_audio_settings ) ) {
+					return array(
+						'success' => false,
+						'message' => $validated_audio_settings->get_error_message(),
+					);
+				}
+				update_option( 'mds_rm_audio_player_settings', $validated_audio_settings );
 			}
 
 			if ( isset( $input['global_redirect'] ) && $input['global_redirect'] ) {

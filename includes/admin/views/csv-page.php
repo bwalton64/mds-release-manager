@@ -44,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				printf(
 					/* translators: %1$s: literal CSV column names; %2$s: provider column naming pattern; %3$s and %4$s: example provider columns. */
 					esc_html__( '%1$s, plus %2$s columns (e.g. %3$s, %4$s, or any custom provider configured in Settings).', 'mds-release-manager' ),
-					'<code>UPC/EAN</code>, <code>Release Title</code>, <code>Artist</code>, <code>Release Date</code>, <code>Release Format</code>, <code>Record Label</code>, <code>Distributor</code>, <code>Buy Now Link</code>, <code>Bandcamp Shortcode</code>, <code>Tags</code>, <code>Featured Image URL</code>, <code>Audio Preview URL</code>, <code>About</code>',
+					'<code>UPC/EAN</code>, <code>Release Title</code>, <code>Artist</code>, <code>Release Date</code>, <code>Release Format</code>, <code>Record Label</code>, <code>Distributor</code>, <code>Buy Now Link</code>, <code>Tags</code>, <code>Featured Image URL</code>, <code>Audio Preview URL</code>, <code>About</code>',
 					'<code>{Provider Name} Link</code>',
 					'<code>Spotify Link</code>',
 					'<code>Apple Music Link</code>'

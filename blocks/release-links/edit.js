@@ -17,7 +17,7 @@
             var customState = wp.element.useState('');
             var customName = customState[0];
             const contextId = props.context?.postId || 0;
-            const { source, resolved, picker } = window.mdsRmUseReleasePicker({ attributes, setAttributes, contextId });
+            const { source, resolved, picker } = window.mdsRmUseReleasePicker({ attributes, setAttributes, contextId, enabled: props.isSelected });
             var inheritedItems = (defaults.items || []).slice();
             mdsReleaseLinks.providers.map(function(provider) { return provider.name; }).concat(['__buy_now']).forEach(function(name) {
                 if (name && !inheritedItems.some(function(item) { return item.name.toLowerCase() === name.toLowerCase(); })) {

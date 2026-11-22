@@ -40,6 +40,7 @@ $options = array(
 	'mds_rm_woo_meta_gap',
 	'mds_rm_woo_meta_align',
 	'mds_rm_audio_players',
+	'mds_rm_audio_player_settings',
 	'mds_rm_bandcamp_template',
 	'mds_rm_providers',
 	'mds_rm_global_redirect',

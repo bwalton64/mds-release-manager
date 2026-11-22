@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<h2 class="nav-tab-wrapper" id="mds-settings-tabs">
 		<a href="#tab-general-settings" class="nav-tab nav-tab-active" aria-current="page"><?php esc_html_e( 'General Settings', 'mds-release-manager' ); ?></a>
+		<a href="#tab-audio-player-manager" class="nav-tab"><?php esc_html_e( 'Audio Player Manager', 'mds-release-manager' ); ?></a>
 		<a href="#tab-release-meta-block" class="nav-tab"><?php esc_html_e( 'Release Meta Block', 'mds-release-manager' ); ?></a>
 		<a href="#tab-release-links-block" class="nav-tab"><?php esc_html_e( 'Release Links Block', 'mds-release-manager' ); ?></a>
 		<a href="#tab-artist-discography-block" class="nav-tab"><?php esc_html_e( 'Artist Discography Block', 'mds-release-manager' ); ?></a>
@@ -26,6 +27,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<form id="mds-settings-form">
 		<input type="hidden" name="mds_rm_block_defaults" id="mds-rm-block-defaults" value="<?php echo esc_attr( wp_json_encode( $args['block_defaults'] ) ); ?>" />
+		<input type="hidden" name="mds_rm_audio_player_settings" id="mds-rm-audio-player-settings" value="<?php echo esc_attr( wp_json_encode( $args['audio_player_settings'] ?? array() ) ); ?>" />
+		<div id="mds-audio-player-fields">
+			<?php foreach ( $args['active_players'] as $active_slug ) : ?>
+				<input type="hidden" name="mds_rm_audio_players[]" value="<?php echo esc_attr( $active_slug ); ?>" />
+			<?php endforeach; ?>
+		</div>
+		<div id="mds-provider-fields">
+			<?php foreach ( $args['providers'] as $provider ) : ?>
+				<?php if ( isset( $provider['name'] ) && is_string( $provider['name'] ) && '' !== $provider['name'] ) : ?>
+					<input type="hidden" name="mds_rm_providers[name][]" value="<?php echo esc_attr( $provider['name'] ); ?>" />
+					<input type="hidden" name="mds_rm_providers[icon][]" value="<?php echo esc_attr( $provider['icon'] ?? '' ); ?>" />
+					<input type="hidden" name="mds_rm_providers[color][]" value="<?php echo esc_attr( $provider['color'] ?? '' ); ?>" />
+				<?php endif; ?>
+			<?php endforeach; ?>
+		</div>
 		<div id="tab-release-meta-block" class="mds-tab-pane">
 			<div class="mds-panel">
 				<h2><?php esc_html_e( 'Release Meta defaults', 'mds-release-manager' ); ?></h2>
@@ -42,51 +58,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<h2><?php esc_html_e( 'Release Links defaults', 'mds-release-manager' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'These defaults apply to automatic fallback blocks and to inserted blocks that do not override them.', 'mds-release-manager' ); ?></p>
 				<div id="mds-defaults-release-links"></div>
-			</div>
-			<div class="mds-panel">
-				<h3><?php esc_html_e( 'Streaming Provider Defaults', 'mds-release-manager' ); ?></h3>
-				<p class="description"><?php esc_html_e( 'Configure streaming providers used in the release editor.', 'mds-release-manager' ); ?></p>
-				<div id="mds_providers_repeater">
-					<?php foreach ( $args['providers'] as $provider ) : ?>
-						<?php if ( isset( $provider['name'], $provider['icon'], $provider['color'] ) ) : ?>
-							<div class="mds-provider-row mds-provider-row-saved">
-								<input type="text" name="mds_rm_providers[name][]" value="<?php echo esc_attr( $provider['name'] ); ?>" placeholder="<?php esc_attr_e( 'Provider Name', 'mds-release-manager' ); ?>" />
-								<div class="mds-icon-input-wrapper">
-									<input type="text" name="mds_rm_providers[icon][]" value="<?php echo esc_attr( $provider['icon'] ); ?>" placeholder="fab fa-spotify" class="mds-icon-input" />
-								</div>
-								<input type="text" name="mds_rm_providers[color][]" value="<?php echo esc_attr( $provider['color'] ); ?>" class="mds-color-picker" />
-								<button type="button" class="button mds-remove-provider"><?php esc_html_e( 'Remove', 'mds-release-manager' ); ?></button>
-							</div>
-						<?php endif; ?>
-					<?php endforeach; ?>
-				</div>
-				<button type="button" class="button button-secondary" id="mds_add_provider_btn"><?php esc_html_e( '+ Add Provider', 'mds-release-manager' ); ?></button>
-				<hr />
-				<h3><?php esc_html_e( 'Audio Preview Player', 'mds-release-manager' ); ?></h3>
-				<table class="form-table">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Select Active Player(s)', 'mds-release-manager' ); ?></th>
-						<td>
-							<?php foreach ( $args['audio_players'] as $slug => $label ) : ?>
-								<label class="mds-admin-option">
-									<input type="checkbox" name="mds_rm_audio_players[]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $args['active_players'], true ) ); ?> />
-									<?php echo esc_html( $label ); ?>
-								</label>
-							<?php endforeach; ?>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="mds_bandcamp_template"><?php esc_html_e( 'Bandcamp Shortcode Template', 'mds-release-manager' ); ?></label></th>
-						<td>
-							<input type="text" name="mds_rm_bandcamp_template" id="mds_bandcamp_template" value="<?php echo esc_attr( $args['settings']['bandcamp_template'] ); ?>" />
-							<p class="description"><?php esc_html_e( 'Only enabled if Blocks for Bandcamp is selected.', 'mds-release-manager' ); ?></p>
-						</td>
-					</tr>
-					<?php if ( $args['audio_player_custom_fields'] ) : ?>
-						<?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The extension filter provides trusted settings markup. ?>
-						<?php echo $args['audio_player_custom_fields']; ?>
-					<?php endif; ?>
-				</table>
 			</div>
 
 			<div class="mds-admin-save-actions">
@@ -146,6 +117,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<div class="mds-admin-save-actions">
 				<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
 				<span class="mds-save-status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
+			</div>
+		</div>
+
+		<div id="tab-audio-player-manager" class="mds-tab-pane">
+			<div class="mds-panel">
+				<h2><?php esc_html_e( 'Audio Player Manager', 'mds-release-manager' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Select the active audio preview player displayed in the Release Links Block and [release-links] shortcode, and configure each registered player’s site-wide styling and options. When a third-party player is active, releases without third-party audio configured automatically fall back to the built-in HTML5 Player (.mp3).', 'mds-release-manager' ); ?></p>
+				<div id="mds-audio-player-manager"></div>
+				<?php if ( $args['audio_player_custom_fields'] ) : ?>
+					<table class="form-table">
+						<?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The extension filter provides trusted settings markup. ?>
+						<?php echo $args['audio_player_custom_fields']; ?>
+					</table>
+				<?php endif; ?>
+			</div>
+
+			<div class="mds-admin-save-actions">
+				<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
+				<span class="mds-save-status" role="status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
 			</div>
 		</div>
 	</form>

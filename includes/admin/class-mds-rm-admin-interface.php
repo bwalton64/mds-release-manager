@@ -498,16 +498,16 @@ final class MDS_RM_Admin_Interface {
 		update_post_meta( $post_id, 'artist_homepage_routing', isset( $_POST['artist_homepage_routing'] ) ? '1' : '0' );
 		delete_post_meta( $post_id, 'artist_featured_image' );
 
-		$sync_result = MDS_RM_Sync::broadcast_to_spokes( $post_id, 'artist' );
-
 		/**
 		 * Hook: mds_rm_save_custom_meta
-		 * Fires after core artist meta is saved.
+		 * Fires after core artist meta is saved and before spoke synchronization.
 		 *
 		 * @param int   $post_id Post ID.
 		 * @param array $_POST   Sanitized POST data.
 		 */
 		do_action( 'mds_rm_save_custom_meta', $post_id, $_POST );
+
+		$sync_result = MDS_RM_Sync::broadcast_to_spokes( $post_id, 'artist' );
 
 		MDS_RM_Sync::purge_cache();
 		if ( is_wp_error( $sync_result ) ) {
@@ -605,17 +605,17 @@ final class MDS_RM_Admin_Interface {
 			delete_post_meta( $post_id, 'release_format' );
 		}
 
-		$sync_result = MDS_RM_Sync::broadcast_to_spokes( $post_id, 'release' );
-		MDS_RM_Release_Model::release_upc_lock( get_post_meta( $post_id, 'upc_ean', true ) );
-
 		/**
 		 * Hook: mds_rm_save_custom_meta
-		 * Fires after core release meta is saved.
+		 * Fires after core release meta is saved and before spoke synchronization.
 		 *
 		 * @param int   $post_id Post ID.
 		 * @param array $_POST   Sanitized POST data.
 		 */
 		do_action( 'mds_rm_save_custom_meta', $post_id, $_POST );
+
+		$sync_result = MDS_RM_Sync::broadcast_to_spokes( $post_id, 'release' );
+		MDS_RM_Release_Model::release_upc_lock( get_post_meta( $post_id, 'upc_ean', true ) );
 
 		MDS_RM_Sync::purge_cache();
 		if ( is_wp_error( $sync_result ) ) {
@@ -665,12 +665,13 @@ final class MDS_RM_Admin_Interface {
 			$global_providers = array();
 		}
 
-		$audio_players = array(
-			'html5' => __( 'HTML5 Player (.mp3)', 'mds-release-manager' ),
-		);
+		$audio_players = array();
+		foreach ( MDS_RM_Audio_Players::get_registered_players() as $slug => $player ) {
+			$audio_players[ $slug ] = $player['label'];
+		}
 
-		$active_players = get_option( 'mds_rm_audio_players', array( 'html5' ) );
-		$active_players = is_array( $active_players ) ? $active_players : array();
+		$active_player  = MDS_RM_Audio_Players::get_active_player();
+		$active_players = '' !== $active_player ? array( $active_player ) : array();
 
 		$fa_sources = array(
 			'cdn'    => __( 'Load bundled Font Awesome Free 6', 'mds-release-manager' ),
@@ -683,13 +684,14 @@ final class MDS_RM_Admin_Interface {
 			'providers'                  => $global_providers,
 			'audio_players'              => $audio_players,
 			'active_players'             => $active_players,
+			'active_audio_player'        => $active_player,
+			'audio_player_settings'      => MDS_RM_Audio_Players::get_all_settings(),
 			'fa_sources'                 => $fa_sources,
 			'active_fa_source'           => get_option( 'mds_rm_fa_support', 'cdn' ),
 			'audio_player_custom_fields' => apply_filters( 'mds_rm_settings_audio_fields', '' ),
-			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'release-meta-block', 'release-links-block', 'artist-discography-block', 'release-meta', 'release-links', 'artist-discography', 'integrations', 'shortcode' ) ),
+			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'audio-player-manager', 'release-meta-block', 'release-links-block', 'artist-discography-block', 'release-meta', 'release-links', 'artist-discography', 'integrations', 'shortcode' ) ),
 			'block_defaults'             => get_option( 'mds_rm_block_defaults', array() ),
 			'settings'                   => array(
-				'bandcamp_template' => get_option( 'mds_rm_bandcamp_template', '[bandcamp width=100% height=42 album={release_number} size=small bgcol=ffffff linkcol=0687f5 artwork=none]' ),
 				'global_redirect'   => '1' === (string) get_option( 'mds_rm_global_redirect', '0' ),
 			),
 		);

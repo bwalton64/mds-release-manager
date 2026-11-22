@@ -172,7 +172,12 @@ read-only outside the hub.
 - **`apply_filters( 'mds_rm_discography_columns', $columns, $artist )`** — Filters the ordered associative array of column key to plain-text heading for an Artist `WP_Post`.
 - **`apply_filters( 'mds_rm_discography_cell', $html, $column_key, $release, $artist )`** — Filters each cell for the Release and Artist `WP_Post` objects. Return a string; output is sanitized with `wp_kses_post`.
 - **`do_action( 'mds_rm_after_buy_now_field', $post )`** — Lets an integration add controls beside the existing Buy Now URL field.
-- **`apply_filters( 'mds_rm_release_links_audio_html', $html, $post_id, $attributes )`** — Supplies the audio player markup for the Release Links block. The first extension returning non-empty markup wins and replaces the built-in Bandcamp shortcode and HTML5 players; the result is sanitized with the plugin's iframe-aware kses allowlist. The Bandcamp extension supplies its album player here.
+- **`apply_filters( 'mds_rm_register_audio_players', $players )`** — Registers audio preview players into the **Audio Player Manager** tab (`MDS_RM_Audio_Players`). Only one player is active site-wide at a time (`mds_rm_audio_players`); each player defines a `label`, optional `description` and `icon`, `render_callback( int $post_id, array $settings, array $attributes ): string`, and optional declarative `fields` schema (`select`, `color`, `toggle`, `range`, `number`, `text`) validated and stored in `mds_rm_audio_player_settings`. When a third-party player is active but returns empty markup for a release, core automatically falls back to the built-in HTML5 player (`audio_preview_url`).
+- **`do_action( 'mds_rm_save_audio_player_settings', $active_player, $audio_player_settings, $params )`** — Fires after Audio Player Manager settings are validated and saved.
+- **`apply_filters( 'mds_rm_release_links_audio_html', $html, $post_id, $attributes )`** — Legacy audio player markup filter retained for backward compatibility when no registered third-party player overrides it; sanitized with the plugin's iframe- and audio-aware kses allowlist.
+- **`apply_filters( 'mds_rm_release_picker_item', $item, $post )`** and **`apply_filters( 'mds_rm_artist_picker_item', $item, $artist )`** — Enrich Release (`id`, `title`, `artist`, `upc`) and Artist (`id`, `title`, `uuid`) records in `MDS_RM_Release_Search` with extension metadata (such as `bandcamp_album_id` or `artist_url`/`subdomain`) for the preloaded Gutenberg editor catalog (`window.mdsRmCatalog`).
+- **`MDS_RM_Release_Search`** (PHP service, not a hook) — Public editor search surface over published Releases and Artists: `query()` / `query_artists()`, `paginate()`, `describe()` / `describe_artists()`, and `editor_catalog()` feed the preloaded `window.mdsRmCatalog` / `window.mdsRmToolkit` editor toolkit and picker endpoints.
+- **`MDS_RM_Release_Meta::resolve_release( $attributes, $block, $context_post_id )` and `MDS_RM_Release_Meta::register_extension_meta( $meta_key, $args )`** — Public PHP developer toolkit for resolving a Release `WP_Post` across blocks/shortcodes/contexts and registering extension post meta keys on the `release` CPT.
 
 ### Shortcodes
 - **`[release-meta release_id="123" upc="012345678901"]`** — Renders metadata for a Release. A readable Release ID takes precedence over UPC/EAN; an unresolved ID falls through to UPC, then current Release or supported extension context. UPC/EAN is a string and leading zeroes are significant.
@@ -205,7 +210,7 @@ read-only outside the hub.
 - The block stores a local `releaseId` for new choices and still reads legacy `upcOverride` strings. A missing explicit source falls back without rewriting the attributes. Artist context resolves the latest published Release by Artist UUID, post date, then post ID. The editor uses authenticated lookups for published title/UPC choices and contextual source status. The shortcode accepts `release_id` as well as `upc` and current context.
 - Native editor controls store optional `linkStyles`. These values replace matching legacy desktop styles at render time without modifying stored data. Saved tablet and mobile styles keep their existing precedence until explicitly removed. Plugin controls target the same inner layout and button elements as before, rather than applying a second layer of spacing or borders to the block wrapper.
 - Provider URLs come from each release; configured provider names, icons and colors remain defaults in Releases → Settings. Available saved links and Buy Now appear as icons, and missing URLs are omitted. Per-instance overrides control visibility, order, icon classes and tooltip; providers not in the override list remain visible. Add a provider override by its exact saved name, or use `__buy_now` for Buy Now. Dashicons and Font Awesome classes are supported. Link titles also supply accessible names.
-- Links open in a new tab by default; `new_tab="0"` uses the same tab. `show_audio="0"` hides audio. Extension markup from the `mds_rm_release_links_audio_html` filter takes priority over all built-in players. Otherwise, when enabled in settings, a Bandcamp shortcode takes priority over HTML5 audio; if its shortcode is unavailable, the error is logged and HTML5 is used if enabled. Legacy `native` and current `html5` player identifiers are supported.
+- Links open in a new tab by default; `new_tab="0"` uses the same tab. `show_audio="0"` hides audio. Extension markup from the `mds_rm_release_links_audio_html` filter takes priority over the built-in HTML5 player, which renders when enabled in settings. Legacy `native` and current `html5` player identifiers are supported.
 - Shortcode `order` and `hide` are comma-separated provider names; `icon_PROVIDER` and `title_PROVIDER` override individual values, with lowercase provider names and spaces replaced by underscores (for example `icon_apple_music`). Use `icon_buy_now` and `title_buy_now` for Buy Now:
 
   `[release-links upc="012345678901" order="Apple Music,Spotify,__buy_now" hide="Spotify" icon_apple_music="dashicons dashicons-album" title_apple_music="Listen on Apple Music" show_audio="0" new_tab="0" button_size="48px" button_size_mobile="36px"]`
@@ -235,7 +240,7 @@ read-only outside the hub.
 - `artist_id` (string) — Artist post ID or UUID.
 - `streaming_links` (JSON string) — Encoded array of streaming platform URLs: `{"Spotify": "url", "Apple Music": "url", ...}`.
 - `buy_now_link` (string) — URL for purchase/buy now button.
-- `bandcamp_shortcode` (string) — Bandcamp embed shortcode template.
+- `bandcamp_shortcode` (legacy string) — No longer read or written by core; owned and migrated by the Bandcamp extension.
 - `audio_preview_url` (string) — URL to preview audio file.
 - `release_format` (legacy string) — Obsolete; the taxonomy is authoritative. Conflicts require review, and successful saves remove this legacy value.
 - `_mds_previous_upcs` (JSON string) — Former UPCs used to identify legacy spoke releases after a correction.
@@ -282,8 +287,7 @@ read-only outside the hub.
 - `mds_rm_woo_meta_color` — WooCommerce product meta text color.
 - `mds_rm_woo_meta_gap` — WooCommerce product meta gap.
 - `mds_rm_woo_meta_align` — WooCommerce product meta alignment.
-- `mds_rm_audio_players` (array) — Active audio player types: 'html5', 'bandcamp', etc.
-- `mds_rm_bandcamp_template` — Bandcamp embed shortcode template.
+- `mds_rm_audio_players` (array) — Active audio player types: 'html5' (legacy 'native' is accepted).
 - `mds_rm_providers` (array) — Global provider configuration (name, icon, color).
 - `mds_rm_block_defaults` (array) — Site-local block presentation defaults keyed by block slug. Native style values, table styles, field/link lists, and link/audio switches are validated before storage. Block rendering, including automatic fallback blocks, resolves these against saved attributes; legacy lists remain complete overrides and explicit field/style overrides take precedence. Shortcodes and Elementor do not consume these defaults.
 - `mds_rm_global_redirect` — Site-Wide Routing toggle ('0' or '1'). Releases with a Buy Now URL redirect; when enabled, automatic Release fallback composition is suppressed for every Release.
@@ -320,7 +324,7 @@ read-only outside the hub.
 
 **POST `/wp-json/mds/v1/settings`**
 - **Permission:** `manage_options`.
-- **Body params:** Provider config, audio players, feature toggles, optional JSON-encoded `mds_rm_block_defaults`, and Bandcamp shortcode template.
+- **Body params:** Provider config, audio players, feature toggles, and optional JSON-encoded `mds_rm_block_defaults`.
 - **Response:** Success/error JSON.
 
 **POST `/wp-json/mds/v1/network-settings`**

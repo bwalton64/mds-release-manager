@@ -256,10 +256,6 @@ final class MDS_RM_REST_API {
 	public static function save_settings_api( $request ): WP_REST_Response|WP_Error {
 		$params = $request->get_body_params();
 
-		if ( isset( $params['mds_rm_bandcamp_template'] ) && ! is_string( $params['mds_rm_bandcamp_template'] ) ) {
-			return new WP_Error( 'mds_rm_invalid_bandcamp_template', __( 'The Bandcamp shortcode template must be text.', 'mds-release-manager' ), array( 'status' => 400 ) );
-		}
-
 		$block_defaults = null;
 		if ( isset( $params['mds_rm_block_defaults'] ) ) {
 			if ( ! is_string( $params['mds_rm_block_defaults'] ) || strlen( $params['mds_rm_block_defaults'] ) > 65536 ) {
@@ -272,8 +268,28 @@ final class MDS_RM_REST_API {
 			}
 		}
 
-		$providers = array();
-		if ( isset( $params['mds_rm_providers'] ) && is_array( $params['mds_rm_providers'] ) ) {
+		if ( array_key_exists( 'mds_rm_providers', $params ) && ! is_array( $params['mds_rm_providers'] ) ) {
+			return new WP_Error( 'mds_rm_invalid_providers', __( 'The streaming providers are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
+		}
+
+		$audio_player_settings = null;
+		if ( isset( $params['mds_rm_audio_player_settings'] ) ) {
+			$raw_audio_settings = $params['mds_rm_audio_player_settings'];
+			if ( is_string( $raw_audio_settings ) ) {
+				if ( strlen( $raw_audio_settings ) > 65536 ) {
+					return new WP_Error( 'mds_rm_invalid_audio_player_settings', __( 'The audio player settings are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
+				}
+				$raw_audio_settings = json_decode( wp_unslash( $raw_audio_settings ), true );
+			}
+			$validated_audio_settings = MDS_RM_Audio_Players::validate_settings( $raw_audio_settings );
+			if ( is_wp_error( $validated_audio_settings ) ) {
+				return $validated_audio_settings;
+			}
+			$audio_player_settings = $validated_audio_settings;
+		}
+
+		if ( isset( $params['mds_rm_providers'] ) ) {
+			$providers = array();
 			$names  = isset( $params['mds_rm_providers']['name'] ) ? (array) $params['mds_rm_providers']['name'] : array();
 			$icons  = isset( $params['mds_rm_providers']['icon'] ) ? (array) $params['mds_rm_providers']['icon'] : array();
 			$colors = isset( $params['mds_rm_providers']['color'] ) ? (array) $params['mds_rm_providers']['color'] : array();
@@ -290,14 +306,19 @@ final class MDS_RM_REST_API {
 					'color' => sanitize_text_field( wp_unslash( $colors[ $i ] ?? '' ) ),
 				);
 			}
+			update_option( 'mds_rm_providers', $providers );
 		}
-		update_option( 'mds_rm_providers', $providers );
 
+		$players = array();
 		if ( isset( $params['mds_rm_audio_players'] ) && is_array( $params['mds_rm_audio_players'] ) ) {
-			$players = array_map( 'sanitize_text_field', wp_unslash( $params['mds_rm_audio_players'] ) );
+			$players = MDS_RM_Audio_Players::sanitize_active_players( wp_unslash( $params['mds_rm_audio_players'] ) );
 			update_option( 'mds_rm_audio_players', $players );
 		} else {
 			update_option( 'mds_rm_audio_players', array() );
+		}
+
+		if ( null !== $audio_player_settings ) {
+			update_option( 'mds_rm_audio_player_settings', $audio_player_settings );
 		}
 
 		if ( isset( $params['mds_rm_global_redirect'] ) ) {
@@ -310,12 +331,20 @@ final class MDS_RM_REST_API {
 			update_option( 'mds_rm_fa_support', sanitize_text_field( wp_unslash( $params['mds_rm_fa_support'] ) ) );
 		}
 
-		if ( isset( $params['mds_rm_bandcamp_template'] ) ) {
-			update_option( 'mds_rm_bandcamp_template', sanitize_text_field( wp_unslash( $params['mds_rm_bandcamp_template'] ) ) );
-		}
-
 		if ( null !== $block_defaults ) {
 			update_option( 'mds_rm_block_defaults', $block_defaults );
+		}
+
+		if ( function_exists( 'do_action' ) ) {
+			/**
+			 * Fires after Audio Player Manager settings are saved.
+			 *
+			 * @since 1.1.0
+			 * @param string $active_player         Active audio player slug, or empty string.
+			 * @param array  $audio_player_settings Validated per-player settings array.
+			 * @param array  $params                Raw request parameters.
+			 */
+			do_action( 'mds_rm_save_audio_player_settings', $players[0] ?? '', $audio_player_settings ?? array(), $params );
 		}
 
 		MDS_RM_Sync::purge_cache();

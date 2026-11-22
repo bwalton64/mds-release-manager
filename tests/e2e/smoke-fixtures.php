@@ -51,7 +51,7 @@ if ( 'seed' !== ( $args[0] ?? '' ) ) {
 
 $state = array( 'options' => array() );
 $missing = new stdClass();
-foreach ( array( 'mds_rm_providers', 'mds_rm_audio_players', 'mds_rm_bandcamp_template', 'mds_rm_global_redirect', 'mds_rm_fa_support', 'mds_rm_block_defaults', 'mds_rm_artist_image_cleanup_complete', 'mds_rm_normalized_upc_migration_complete', 'mds_rm_network_sync_job' ) as $name ) {
+foreach ( array( 'mds_rm_providers', 'mds_rm_audio_players', 'mds_rm_audio_player_settings', 'mds_rm_bandcamp_template', 'mds_rm_global_redirect', 'mds_rm_fa_support', 'mds_rm_block_defaults', 'mds_rm_artist_image_cleanup_complete', 'mds_rm_normalized_upc_migration_complete', 'mds_rm_network_sync_job' ) as $name ) {
 	$value = get_option( $name, $missing );
 	$state['options'][ $name ] = array( 'exists' => $missing !== $value, 'value' => $missing !== $value ? $value : null );
 }

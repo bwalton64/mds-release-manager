@@ -68,36 +68,17 @@ final class MDS_RM_Release_Links_Block {
 	}
 
 	/**
-	 * Returns published Release choices, by title or exact UPC/EAN.
+	 * Returns published Release choices matching title, Artist name, or exact UPC/EAN.
 	 *
 	 * @param WP_REST_Request $request Editor lookup request.
 	 * @return array Paginated results.
 	 */
 	public static function choices( WP_REST_Request $request ): array {
-		$term = trim( $request['search'] );
-		$args = array(
-			'post_type'           => 'release',
-			'post_status'         => 'publish',
-			'has_password'        => false,
-			'paged'               => (int) $request['page'],
-			'posts_per_page'      => 20,
-			'ignore_sticky_posts' => true,
-			'orderby'             => array(
-				'title' => 'ASC',
-				'ID'    => 'ASC',
-			),
-		);
-		if ( ctype_digit( $term ) ) {
-			$args['meta_key']   = 'upc_ean'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- The picker must find an exact stored barcode without losing leading zeroes.
-			$args['meta_value'] = $term; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		} else {
-			$args['s']              = $term;
-			$args['search_columns'] = array( 'post_title' );
-		}
-		$query = new WP_Query( $args );
+		$found = MDS_RM_Release_Search::query( (string) $request['search'] );
+		$paged = MDS_RM_Release_Search::paginate( $found, (int) $request['page'] );
 		return array(
-			'items' => self::labels( $query->posts ),
-			'pages' => (int) $query->max_num_pages,
+			'items' => MDS_RM_Release_Search::describe( $paged['posts'] ),
+			'pages' => $paged['pages'],
 		);
 	}
 
@@ -133,45 +114,7 @@ final class MDS_RM_Release_Links_Block {
 	 * @return array Picker records.
 	 */
 	private static function labels( array $posts ): array {
-		$ids = array();
-		foreach ( $posts as $post ) {
-			$uuid = get_post_meta( $post->ID, 'artist_id', true );
-			if ( is_string( $uuid ) && '' !== $uuid ) {
-				$ids[ $post->ID ] = $uuid;
-			}
-		}
-		$names = array();
-		if ( $ids ) {
-			$artists = get_posts(
-				array(
-					'post_type'      => 'artist',
-					'post_status'    => 'publish',
-					'has_password'   => false,
-					'posts_per_page' => -1,
-					'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Resolve Artist labels for a bounded page of Release UUIDs together.
-						array(
-							'key'     => '_mds_artist_uuid',
-							'value'   => array_values( array_unique( $ids ) ),
-							'compare' => 'IN',
-						),
-					),
-				)
-			);
-			foreach ( $artists as $artist ) {
-				$names[ get_post_meta( $artist->ID, '_mds_artist_uuid', true ) ] = get_the_title( $artist );
-			}
-		}
-		return array_map(
-			static function ( WP_Post $post ) use ( $ids, $names ): array {
-				return array(
-					'id'     => $post->ID,
-					'title'  => get_the_title( $post ),
-					'artist' => $names[ $ids[ $post->ID ] ?? '' ] ?? '',
-					'upc'    => (string) get_post_meta( $post->ID, 'upc_ean', true ),
-				);
-			},
-			$posts
-		);
+		return MDS_RM_Release_Search::describe( $posts );
 	}
 
 	/**

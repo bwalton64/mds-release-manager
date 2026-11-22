@@ -79,7 +79,6 @@ final class MDS_RM_CSV_Handler {
 			'Record Label',
 			'Distributor',
 			'Buy Now Link',
-			'Bandcamp Shortcode',
 			'Tags',
 			'Featured Image URL',
 			'Audio Preview URL',
@@ -180,7 +179,6 @@ final class MDS_RM_CSV_Handler {
 					get_post_meta( $release->ID, 'record_label', true ),
 					get_post_meta( $release->ID, 'distributor', true ),
 					get_post_meta( $release->ID, 'buy_now_link', true ),
-					get_post_meta( $release->ID, 'bandcamp_shortcode', true ),
 					get_post_meta( $release->ID, 'release_tags', true ),
 					get_post_meta( $release->ID, 'featured_image_url', true ),
 					get_post_meta( $release->ID, 'audio_preview_url', true ),
@@ -341,7 +339,6 @@ final class MDS_RM_CSV_Handler {
 			$label        = sanitize_text_field( $data['Record Label'] ?? '' );
 			$distributor  = sanitize_text_field( $data['Distributor'] ?? '' );
 			$buy_link     = esc_url_raw( $data['Buy Now Link'] ?? '' );
-			$bandcamp     = sanitize_text_field( $data['Bandcamp Shortcode'] ?? '' );
 			$tags_raw     = sanitize_text_field( $data['Tags'] ?? '' );
 			$featured_img = isset( $data['Featured Image URL'] ) ? esc_url_raw( $data['Featured Image URL'] ) : null;
 			$audio_url    = isset( $data['Audio Preview URL'] ) ? esc_url_raw( $data['Audio Preview URL'] ) : null;
@@ -466,7 +463,6 @@ final class MDS_RM_CSV_Handler {
 			update_post_meta( $release_post_id, 'record_label', $label );
 			update_post_meta( $release_post_id, 'distributor', $distributor );
 			update_post_meta( $release_post_id, 'buy_now_link', $buy_link );
-			update_post_meta( $release_post_id, 'bandcamp_shortcode', $bandcamp );
 			update_post_meta( $release_post_id, 'streaming_links', wp_slash( $streaming_json ) );
 
 			$result = wp_set_post_terms( $release_post_id, array( $format_id ), 'release_format', false );

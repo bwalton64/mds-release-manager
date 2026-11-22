@@ -119,6 +119,22 @@ final class MDS_RM_Template_Loader {
 			'title'             => true,
 			'width'             => true,
 		);
+		$allowed_html['audio']  = array(
+			'autoplay'   => true,
+			'class'      => true,
+			'controls'   => true,
+			'crossorigin' => true,
+			'loop'       => true,
+			'muted'      => true,
+			'preload'    => true,
+			'src'        => true,
+			'style'      => true,
+			'title'      => true,
+		);
+		$allowed_html['source'] = array(
+			'src'  => true,
+			'type' => true,
+		);
 
 		return wp_kses( $html, $allowed_html );
 	}

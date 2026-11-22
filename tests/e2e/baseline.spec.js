@@ -47,6 +47,164 @@ async function setCustomColor(page, label, hex) {
 	await button.click();
 }
 
+test('provider controls preserve conflicts and saved release links across rendering paths', async ({ page, fixture }) => {
+	runWpCli(['eval', `
+		update_option('mds_rm_providers', array(
+			array('name' => 'Spotify', 'icon' => 'fab fa-spotify', 'color' => '#1DB954'),
+			array('name' => 'Apple Music', 'color' => '#FA243C')
+		));
+		update_option('mds_rm_block_defaults', array('release-links' => array('items' => array(
+			array('name' => 'Spotify', 'enabled' => true, 'icon' => 'fas fa-star', 'title' => 'Listen here'),
+			array('name' => 'Retired', 'enabled' => false, 'icon' => 'fas fa-music'),
+			array('name' => '__buy_now', 'enabled' => true)
+		))));
+		update_post_meta(${fixture.state.release}, 'streaming_links', wp_slash(wp_json_encode(array('Spotify' => ${JSON.stringify(fixture.spotify)}, 'Retired' => 'https://example.com/retired'))));
+		update_post_meta(${fixture.state.release}, 'buy_now_link', 'https://example.com/buy');
+	`]);
+	const storedLinks = readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_post_meta(${fixture.state.release}, 'streaming_links', true));`]);
+	const readSettings = () => readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(array('providers' => get_option('mds_rm_providers'), 'defaults' => get_option('mds_rm_block_defaults')));"]);
+	const save = async () => {
+		const [response] = await Promise.all([
+			page.waitForResponse((response) => response.request().method() === 'POST' && response.url().includes('/mds/v1/settings')),
+			page.locator('#tab-release-links-block').getByRole('button', { name: 'Save Settings' }).click(),
+		]);
+		expect(response.status()).toBe(200);
+		expect(await response.json()).toMatchObject({ success: true });
+	};
+	await page.goto('/wp-login.php');
+	await page.getByLabel('Username or Email Address').fill(fixture.username);
+	await page.getByLabel('Password', { exact: true }).fill(fixture.password);
+	await page.getByRole('button', { name: 'Log In' }).click();
+	await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings#tab-release-links-block');
+	const tab = page.locator('#tab-release-links-block');
+	await tab.getByRole('button', { name: 'Link buttons and providers', exact: true }).click();
+	await tab.getByRole('button', { name: 'Spotify', exact: true }).click();
+	await expect(tab.getByText(/saved block icon override is "fas fa-star"/)).toBeVisible();
+	await expect(tab.getByText(/Provider names cannot be changed/)).toBeVisible();
+	await setCustomColor(page, 'Background color for Spotify', '000000');
+	await save();
+	let settings = readSettings();
+	expect(settings.providers[0]).toEqual({ name: 'Spotify', icon: 'fab fa-spotify', color: '#000000' });
+	expect(settings.providers[1]).toEqual({ name: 'Apple Music', icon: '', color: '#FA243C' });
+	expect(settings.defaults['release-links'].items).toEqual([
+		{ name: 'Spotify', enabled: true, icon: 'fas fa-star', title: 'Listen here' },
+		{ name: 'Retired', enabled: false, icon: 'fas fa-music' },
+		{ name: '__buy_now', enabled: true },
+	]);
+
+	await page.goto(fixture.releaseUrl);
+	const spotify = page.locator('.mds-release-links__link[title="Listen here"]');
+	await expect(spotify.locator('i')).toHaveClass('fas fa-star');
+	await expect(spotify).toHaveAttribute('style', /--mds-links-provider-background:\s*#000000/i);
+	await expect(page.locator('.mds-release-links__link[title="Buy Now"]')).toBeVisible();
+	const savedBlock = { releaseId: fixture.state.release, items: [{ name: 'Spotify', enabled: true, icon: 'far fa-heart', title: 'Saved block icon' }] };
+	saveMarkup(fixture.state.host, `<!-- wp:mds-rm/release-links ${JSON.stringify(savedBlock)} /-->`);
+	await page.goto(fixture.hostUrl);
+	await expect(page.locator('.mds-release-links__link[title="Saved block icon"] i')).toHaveClass('far fa-heart');
+	const rendered = readWpJson(['eval', `
+		$GLOBALS['post'] = get_post(${fixture.state.release});
+		eval('namespace Elementor; class Widget_Base { public function get_settings_for_display() { return $GLOBALS["mds_test_widget_settings"] ?? array(); } }');
+		require_once MDS_RM_PATH . 'includes/integrations/elementor/class-mds-rm-elementor-widget.php';
+		require_once MDS_RM_PATH . 'includes/integrations/elementor/class-mds-rm-elementor-links-widget.php';
+		class MDS_RM_Test_Links_Widget extends MDS_RM_Elementor_Links_Widget {
+			public function output() { ob_start(); $this->render(); return ob_get_clean(); }
+		}
+		$widget = new MDS_RM_Test_Links_Widget();
+		$default_widget = $widget->output();
+		$GLOBALS['mds_test_widget_settings'] = array('items' => array(array('name' => 'Spotify', 'enabled' => 'yes', 'icon' => 'fas fa-music')));
+		echo 'MDS_RM_TEST_JSON:' . wp_json_encode(array(
+			'shortcode' => do_shortcode('[release-links release_id="${fixture.state.release}"]'),
+			'elementor' => $default_widget,
+			'elementor_override' => $widget->output()
+		));
+	`]);
+	for (const html of [rendered.shortcode, rendered.elementor]) {
+		expect(html).toContain('fab fa-spotify');
+		expect(html).toContain('--mds-links-provider-background:#000000');
+		expect(html).not.toContain('fas fa-star');
+	}
+	expect(rendered.elementor_override).toContain('fas fa-music');
+
+	await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings#tab-release-links-block');
+	await tab.getByRole('button', { name: 'Link buttons and providers', exact: true }).click();
+	await tab.getByRole('button', { name: 'Spotify', exact: true }).click();
+	await tab.getByRole('button', { name: 'Use block icon for all outputs', exact: true }).click();
+	await setCustomColor(page, 'Background color for Spotify', '17304A80');
+	await tab.getByLabel('Show link in blocks', { exact: true }).uncheck();
+	await tab.getByRole('button', { name: 'Move Spotify down', exact: true }).click();
+	await tab.getByLabel('New provider name').fill('Retired');
+	await tab.getByRole('button', { name: 'Add provider', exact: true }).click();
+	await save();
+	settings = readSettings();
+	expect(settings.providers).toEqual(expect.arrayContaining([
+		{ name: 'Spotify', icon: 'fas fa-star', color: '#17304a80' },
+		expect.objectContaining({ name: 'Retired' }),
+	]));
+	expect(settings.defaults['release-links'].items).toEqual(expect.arrayContaining([
+		expect.objectContaining({ name: 'Spotify', enabled: false, title: 'Listen here' }),
+		expect.objectContaining({ name: 'Retired', enabled: false, icon: 'fas fa-music' }),
+	]));
+	expect(settings.defaults['release-links'].items[0].name).toBe('Retired');
+	expect(settings.defaults['release-links'].items.find((item) => item.name === 'Spotify')).not.toHaveProperty('icon');
+	expect(readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_post_meta(${fixture.state.release}, 'streaming_links', true));`])).toBe(storedLinks);
+	await page.goto(fixture.releaseUrl);
+	await expect(page.locator('.mds-release-links__link[href="' + fixture.spotify + '"]')).toHaveCount(0);
+	expect(readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(do_shortcode('[release-links release_id="${fixture.state.release}"]'));`]))
+		.toContain('--mds-links-provider-background:#17304a80');
+
+	await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings#tab-release-links-block');
+	await tab.getByRole('button', { name: 'Link buttons and providers', exact: true }).click();
+	await tab.getByRole('button', { name: 'Retired', exact: true }).click();
+	page.once('dialog', (dialog) => dialog.accept());
+	await tab.getByRole('button', { name: 'Remove provider', exact: true }).click();
+	await save();
+	settings = readSettings();
+	expect(settings.providers.some((provider) => provider.name === 'Retired')).toBe(false);
+	expect(settings.defaults['release-links'].items).toContainEqual({ name: 'Retired', enabled: false, icon: 'fas fa-music' });
+	await page.goto(`/wp-admin/post.php?post=${fixture.state.release}&action=edit`);
+	const rows = page.locator('#mds_streaming_links_wrapper .mds-streaming-row');
+	await expect(rows.nth(0).locator('select')).toHaveValue('Spotify');
+	await expect(rows.nth(1).locator('select')).toHaveValue('Retired');
+	await expect(rows.nth(1).locator('input[type="url"]')).toHaveValue('https://example.com/retired');
+	await page.getByRole('button', { name: 'Update', exact: true }).click();
+	await expect.poll(() => readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_post_meta(${fixture.state.release}, 'streaming_links', true));`])).toBe(storedLinks);
+	await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings#tab-release-links-block');
+	await tab.getByRole('button', { name: 'Link buttons and providers', exact: true }).click();
+	await tab.getByLabel('New provider name').fill('Retired');
+	await tab.getByRole('button', { name: 'Add provider', exact: true }).click();
+	const spotifyPanel = tab.getByRole('button', { name: 'Spotify', exact: true }).locator('xpath=ancestor::div[contains(@class, "components-panel__body")][1]');
+	await tab.getByRole('button', { name: 'Spotify', exact: true }).click();
+	await spotifyPanel.getByLabel('Show link in blocks', { exact: true }).check();
+	await save();
+	await page.goto(fixture.releaseUrl);
+	await expect(page.locator('.mds-release-links__link[title="Listen here"]')).toHaveAttribute('style', /--mds-links-provider-background:\s*#17304a80/i);
+	await expect(page.locator('.mds-release-links__link[title="Listen here"]')).toHaveCSS('background-color', 'rgba(23, 48, 74, 0.5)');
+	expect(readWpJson(['eval', `echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_post_meta(${fixture.state.release}, 'streaming_links', true));`])).toBe(storedLinks);
+
+	runWpCli(['eval', `
+		$defaults = get_option('mds_rm_block_defaults');
+		foreach ($defaults['release-links']['items'] as &$item) {
+			if ('Spotify' === $item['name']) $item['icon'] = 'far fa-heart';
+		}
+		update_option('mds_rm_block_defaults', $defaults);
+	`]);
+	await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings#tab-release-links-block');
+	await tab.getByRole('button', { name: 'Link buttons and providers', exact: true }).click();
+	await tab.getByRole('button', { name: 'Spotify', exact: true }).click();
+	await tab.getByRole('button', { name: 'Use provider icon in blocks', exact: true }).click();
+	await save();
+	settings = readSettings();
+	expect(settings.providers[0].icon).toBe('fas fa-star');
+	expect(settings.defaults['release-links'].items.find((item) => item.name === 'Spotify')).not.toHaveProperty('icon');
+
+	const beforeScriptFailure = readSettings();
+	await page.route('**/js/settings-defaults.js*', (route) => route.abort());
+	await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings#tab-release-links-block');
+	await expect(page.locator('#mds-provider-fields input[name="mds_rm_providers[name][]"]')).toHaveCount(3);
+	await save();
+	expect(readSettings()).toEqual(beforeScriptFailure);
+});
+
 test('network extension tab names are not treated as site tab aliases', async ({ page, fixture }) => {
 	await page.goto('/wp-login.php');
 	await page.getByLabel('Username or Email Address').fill(fixture.username);
@@ -73,13 +231,13 @@ test('fallback blocks reflect site-wide settings saved in the admin', async ({ p
 	await page.getByLabel('Password', { exact: true }).fill(fixture.password);
 	await page.getByRole('button', { name: 'Log In' }).click();
 	await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-settings');
-	expect((await page.locator('#mds-settings-tabs > a').allTextContents()).slice(0, 4)).toEqual([
-		'General Settings', 'Release Meta Block', 'Release Links Block', 'Artist Discography Block',
+	expect((await page.locator('#mds-settings-tabs > a').allTextContents()).slice(0, 5)).toEqual([
+		'General Settings', 'Audio Player Manager', 'Release Meta Block', 'Release Links Block', 'Artist Discography Block',
 	]);
 	const extensionOrder = readWpJson(['eval', `
 		add_filter('mds_rm_site_settings_tabs', function($tabs) {
 			$tab = array('label' => 'Extension', 'render' => function() {});
-			return array('aa-extension' => $tab, 'general-settings' => $tab, 'release-meta-block' => $tab, 'integrations' => $tab) + $tabs;
+			return array('aa-extension' => $tab, 'general-settings' => $tab, 'audio-player-manager' => $tab, 'release-meta-block' => $tab, 'integrations' => $tab) + $tabs;
 		});
 		ob_start();
 		MDS_RM_Admin_Interface::settings_page();
@@ -87,7 +245,7 @@ test('fallback blocks reflect site-wide settings saved in the admin', async ({ p
 		preg_match_all('/href="#tab-([^"]+)"/', $html, $matches);
 		echo 'MDS_RM_TEST_JSON:' . wp_json_encode($matches[1]);
 	`]);
-	expect(extensionOrder).toEqual(['general-settings', 'release-meta-block', 'release-links-block', 'artist-discography-block', 'aa-extension']);
+	expect(extensionOrder).toEqual(['general-settings', 'audio-player-manager', 'release-meta-block', 'release-links-block', 'artist-discography-block', 'aa-extension']);
 	await expect(page.getByRole('link', { name: 'General Settings', exact: true })).toHaveClass(/nav-tab-active/);
 	for (const [old, label] of [
 		['integrations', 'General Settings'], ['release-links', 'Release Links Block'],
@@ -138,7 +296,7 @@ test('fallback blocks reflect site-wide settings saved in the admin', async ({ p
 	const linkButtons = linksTab.getByRole('button', { name: 'Streaming and Buy Now buttons', exact: true });
 	const audioPlayer = linksTab.getByRole('button', { name: 'Audio preview player', exact: true });
 	const behavior = linksTab.getByRole('button', { name: 'Link and audio behavior', exact: true });
-	const linkItems = linksTab.getByRole('button', { name: 'Link buttons: visibility, order, and icons', exact: true });
+	const linkItems = linksTab.getByRole('button', { name: 'Link buttons and providers', exact: true });
 	for (const panel of [linksContainer, linkButtons, audioPlayer]) {
 		await expect(panel).toHaveAttribute('aria-expanded', 'false');
 	}
@@ -345,14 +503,9 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			await expect(page.locator('#mds-settings-form')).toHaveCSS('margin-top', '20px');
 			await page.getByRole('button', { name: 'Link and audio behavior' }).click();
 			await page.getByLabel('Open links in a new tab', { exact: true }).uncheck();
-			await page.getByRole('button', { name: 'Add Provider' }).click();
-			await expect(page.locator('.mds-provider-row-new').last()).toHaveCSS('display', 'flex');
-			await page.getByPlaceholder('Provider Name').last().fill(fixture.label);
-			const template = '[bandcamp album={release_number} size=small]';
-			if (await page.locator('#mds_cb_bandcamp').count()) {
-				await page.locator('#mds_cb_bandcamp').check();
-			}
-			await page.getByLabel('Bandcamp Shortcode Template').fill(template);
+			await page.getByRole('button', { name: 'Link buttons and providers' }).click();
+			await page.getByLabel('New provider name').fill(fixture.label);
+			await page.getByRole('button', { name: 'Add provider', exact: true }).click();
 			const [response] = await Promise.all([
 				page.waitForResponse((response) =>
 					response.request().method() === 'POST' && response.url().includes('/mds/v1/settings'), { timeout: 15_000 }),
@@ -362,7 +515,6 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 			expect(await response.json()).toMatchObject({ success: true });
 			const providers = readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_providers'));"]);
 			expect(providers).toEqual(expect.arrayContaining([expect.objectContaining({ name: fixture.label })]));
-			expect(readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_bandcamp_template'));"])).toBe(template);
 			expect(readWpJson(['eval', "echo 'MDS_RM_TEST_JSON:' . wp_json_encode(get_option('mds_rm_block_defaults'));"]))
 				.toMatchObject({ 'release-links': { newTab: false }, 'artist-discography': { tableStyles: { striped: true } } });
 		});

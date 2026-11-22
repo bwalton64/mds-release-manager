@@ -82,7 +82,6 @@ class MDS_RM_Elementor_Release_Meta_Tag extends \Elementor\Core\DynamicTags\Data
 					'release_tags'         => 'Release Tags',
 					'buy_now_link'         => 'Buy Now Link',
 					'featured_image_url'   => 'Featured Image URL',
-					'bandcamp_shortcode'   => 'Bandcamp Shortcode',
 					'stream_Spotify'       => 'Spotify Link',
 					'stream_Apple Music'   => 'Apple Music Link',
 					'stream_Amazon Music'  => 'Amazon Music Link',

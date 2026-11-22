@@ -5,41 +5,51 @@
 	const { __, sprintf } = wp.i18n;
 	const ServerSideRender = wp.serverSideRender.ServerSideRender || wp.serverSideRender;
 	const name = 'mds-rm/artist-discography';
-	const requestTimeout = 15000;
+	const requestTimeout = 30000;
 
-	function useArtists(path, delay, collection = false) {
+	function useArtists(path, delay, collection = false, enabled = true) {
 		const [result, setResult] = useState({});
 		useEffect(() => {
-			if (!path) {
-				return;
+			if (!path || !enabled) {
+				return undefined;
 			}
 			let active = true;
-			const controller = new AbortController();
-			let timeout;
-			const request = setTimeout(() => {
-				timeout = setTimeout(() => controller.abort(), requestTimeout);
-				wp.apiFetch({ path, parse: !collection, signal: controller.signal }).then(async (response) => {
+			const timers = [];
+			// Retry transient failures: editor boot can saturate PHP workers
+			// with block previews, delaying these lookups past the timeout.
+			function fail(error, attempt) {
+				if (!active) return;
+				if (attempt < 2) {
+					timers.push(setTimeout(() => { if (active) run(attempt + 1); }, 2000 * (attempt + 1)));
+					return;
+				}
+				setResult({ path, error });
+			}
+			function run(attempt) {
+				let timedOut = false;
+				const timer = setTimeout(() => { timedOut = true; fail({ code: 'timeout' }, attempt); }, requestTimeout);
+				timers.push(timer);
+				wp.apiFetch({ path, parse: !collection }).then(async (response) => {
 					const data = collection ? await response.json() : response;
-					if (active) setResult({ path, data, pages: collection ? Number(response.headers.get('X-WP-TotalPages')) : 0 });
+					clearTimeout(timer);
+					if (active && !timedOut) setResult({ path, data, pages: collection ? Number(response.headers.get('X-WP-TotalPages')) : 0 });
 				}).catch(
-					(error) => { if (active) setResult({ path, error }); }
-				).finally(() => clearTimeout(timeout));
-			}, delay);
+					(error) => { clearTimeout(timer); if (active && !timedOut) fail(error, attempt); }
+				);
+			}
+			timers.push(setTimeout(() => run(0), delay));
 			return () => {
 				active = false;
-				clearTimeout(request);
-				clearTimeout(timeout);
-				controller.abort();
+				timers.forEach(clearTimeout);
 			};
-		}, [path, delay, collection]);
+		}, [path, delay, collection, enabled]);
 		return path && result.path === path ? result : { loading: !!path };
 	}
 
 	function option(artist) {
 		return {
 			value: String(artist.id),
-			// translators: %1$s: Artist title. %2$s: Artist post ID.
-			label: sprintf(__('%1$s (ID %2$s)', 'mds-release-manager'), artistTitle(artist), artist.id),
+			label: artistTitle(artist),
 		};
 	}
 
@@ -47,7 +57,7 @@
 		return wp.htmlEntities.decodeEntities(artist.title.rendered) || __('Untitled Artist', 'mds-release-manager');
 	}
 
-	function Edit({ attributes, setAttributes, context = {} }) {
+	function Edit({ attributes, setAttributes, context = {}, isSelected }) {
 		const blockProps = useBlockProps();
 		const [search, setSearch] = useState('');
 		const [page, setPage] = useState(1);
@@ -56,9 +66,9 @@
 		const base = '/wp/v2/artist';
 		const results = useArtists(wp.url.addQueryArgs(base, {
 			search, search_columns: ['post_title'], page, per_page: 20, status: 'publish', orderby: 'title', order: 'asc', _fields: 'id,title,status',
-		}), 250, true);
-		const selected = useArtists(artistId ? `${base}/${artistId}?_fields=id,title,status` : '', 0);
-		const contextual = useArtists(!artistId && contextId ? `${base}/${contextId}?_fields=id,title` : '', 0);
+		}), 250, true, isSelected);
+		const selected = useArtists(artistId ? `${base}/${artistId}?_fields=id,title,status` : '', 0, false, isSelected);
+		const contextual = useArtists(!artistId && contextId ? `${base}/${contextId}?_fields=id,title` : '', 0, false, isSelected);
 		const available = selected.data?.status === 'publish';
 		const missing = artistId && (selected.data && !available || [401, 403, 404].includes(selected.error?.data?.status));
 		// translators: %s: Current Artist title.

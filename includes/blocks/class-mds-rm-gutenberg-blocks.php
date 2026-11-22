@@ -160,6 +160,11 @@ final class MDS_RM_Gutenberg_Blocks {
 			wp_register_script( "mds-rm-{$script}", MDS_RM_URL . $file, $dependencies, filemtime( MDS_RM_PATH . $file ), true );
 			wp_set_script_translations( "mds-rm-{$script}", 'mds-release-manager', MDS_RM_PATH . 'languages' );
 		}
+		wp_add_inline_script(
+			'mds-rm-release-picker',
+			'window.mdsRmDebug = ' . wp_json_encode( defined( 'WP_DEBUG' ) && WP_DEBUG ) . '; window.mdsRmCatalog = ' . wp_json_encode( MDS_RM_Release_Search::editor_catalog() ) . ';',
+			'before'
+		);
 		self::register_release_block( 'release-meta', 'render_gutenberg_release_meta' );
 		self::register_release_block( 'release-links', 'render_gutenberg_release_links' );
 	}

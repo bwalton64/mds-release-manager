@@ -144,44 +144,7 @@ final class MDS_RM_Release_Links {
 	 * @return string Audio markup, or an empty string when unavailable.
 	 */
 	private static function audio( int|string $post_id, array $attributes = array() ): string {
-		/**
-		 * Filters the audio player markup for the Release Links block.
-		 *
-		 * The first extension returning non-empty markup supplies the audio
-		 * player and skips the built-in Bandcamp shortcode and HTML5 players.
-		 * The result is sanitized with the plugin's iframe-aware allowlist.
-		 *
-		 * @since 1.1.0
-		 *
-		 * @param string $html       Audio player markup. Default empty string.
-		 * @param int    $post_id    Release post ID.
-		 * @param array  $attributes Release Links block attributes.
-		 */
-		$extension_html = apply_filters( 'mds_rm_release_links_audio_html', '', (int) $post_id, $attributes );
-		if ( is_string( $extension_html ) && '' !== trim( $extension_html ) ) {
-			return MDS_RM_Template_Loader::kses_shortcode_html( $extension_html );
-		}
-		$players  = (array) get_option( 'mds_rm_audio_players', array( 'html5' ) );
-		$bandcamp = get_post_meta( $post_id, 'bandcamp_shortcode', true );
-		if ( in_array( 'blocks_for_bandcamp', $players, true ) && is_string( $bandcamp ) && '' !== trim( $bandcamp ) ) {
-			$input = trim( $bandcamp );
-			if ( 0 === stripos( $input, '[bandcamp' ) ) {
-				$shortcode = $input;
-			} else {
-				$template  = get_option( 'mds_rm_bandcamp_template', '[bandcamp width=100% height=42 album={release_number} size=small bgcol=ffffff linkcol=0687f5 artwork=none]' );
-				$album_id  = preg_replace( '/[^0-9]/', '', $input );
-				$shortcode = str_replace( array( '{release_number}', '{album_number}' ), $album_id, $template );
-			}
-			if ( shortcode_exists( 'bandcamp' ) ) {
-				return MDS_RM_Template_Loader::kses_shortcode_html( do_shortcode( sanitize_text_field( $shortcode ) ) );
-			}
-			MDS_RM_Logger::report_failure( 'Bandcamp audio is configured but its shortcode is unavailable.' );
-		}
-		$url = get_post_meta( $post_id, 'audio_preview_url', true );
-		if ( ( in_array( 'html5', $players, true ) || in_array( 'native', $players, true ) ) && is_string( $url ) && esc_url( $url ) ) {
-			return '<audio controls src="' . esc_url( $url ) . '"></audio>';
-		}
-		return '';
+		return MDS_RM_Audio_Players::render( (int) $post_id, $attributes );
 	}
 
 	/**

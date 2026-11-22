@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	name="{{PLUGIN_NAME}} Coding Standards"
+	xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/squizlabs/PHP_CodeSniffer/master/phpcs.xsd">
+
+	<description>WordPress Coding Standards (WPCS) with PHP 8.0 compatibility and Composer PSR-4 support.</description>
+
+	<!-- Scan all PHP files in the repository -->
+	<file>.</file>
+
+	<!-- Exclude third-party dependencies, compiled assets, and generated manifests -->
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/build/*</exclude-pattern>
+	<exclude-pattern>*.asset.php</exclude-pattern>
+
+	<!-- CLI flags: show progress, sniff codes, and colors -->
+	<arg value="ps"/>
+	<arg name="colors"/>
+	<arg name="basepath" value="."/>
+	<arg name="parallel" value="8"/>
+	<arg name="extensions" value="php"/>
+
+	<!-- Minimum supported WordPress and PHP versions -->
+	<config name="minimum_wp_version" value="7.0"/>
+	<config name="testVersion" value="8.0-"/>
+
+	<!-- Enforce WordPress Coding Standards (Core, Docs, Extra) -->
+	<rule ref="WordPress">
+		<!-- Allow PSR-4 PascalCase filenames inside Composer-autoloaded src/ directory -->
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+	</rule>
+
+	<!-- Still enforce WPCS lowercase hyphenated filenames outside src/ (root & procedural files) -->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>/src/*</exclude-pattern>
+	</rule>
+
+	<!-- Enforce PHP 8.0+ compatibility via PHPCompatibilityWP (if installed via Composer) -->
+	<rule ref="PHPCompatibilityWP"/>
+
+	<!-- Enforce text domain consistency -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="{{TEXT_DOMAIN}}"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Enforce global prefixing for functions, hooks, classes, and constants -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="{{FUNC_PREFIX}}"/>
+				<element value="{{CLASS_PREFIX}}"/>
+				<element value="{{PHP_NAMESPACE}}"/>
+			</property>
+		</properties>
+	</rule>
+
+</ruleset>

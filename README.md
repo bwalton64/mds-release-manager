@@ -66,6 +66,13 @@ A comprehensive, extensible WordPress plugin for managing artist releases, disco
 
 Font Awesome Free is bundled and loaded locally by default. Under Releases > Settings, you can select a theme or plugin that already provides the icons, or disable the bundled stylesheet.
 Streaming provider and audio preview settings are available under the Release Links Block tab.
+Open **Link buttons and providers** to add providers and configure their icon and
+background once for the release editor, blocks, shortcodes, and Elementor. Block
+visibility, order, and tooltip are separate from the provider defaults. Existing
+provider names are fixed because saved release URLs use them; removing a provider
+does not delete those URLs. Existing block icon overrides are retained and any
+conflict with a provider icon is shown with explicit resolution choices. A shared
+block button background overrides individual provider colors.
 
 The Release Meta Block, Release Links Block, and Artist Discography Block tabs manage site-wide
 block presentation defaults. Existing and new blocks inherit changes unless a
@@ -640,20 +647,65 @@ add_action( 'mds_rm_save_custom_meta', function( $post_id, $raw_post ) {
     update_post_meta( $post_id, 'my_custom_field', $value );
 }, 10, 2 );
 
-// Append custom fields to the audio settings section (HTML string filter)
-add_filter( 'mds_rm_settings_audio_fields', function( $html ) {
-    $html .= '<p><label>' . esc_html__( 'My Custom Option', 'mds-release-manager' ) . '</label></p>';
-    return $html;
+// Register a third-party audio player in the Audio Player Manager tab.
+// Only one player is active site-wide at a time; if the selected player returns
+// empty markup for a release, core automatically falls back to the built-in HTML5 player.
+add_filter( 'mds_rm_register_audio_players', function( array $players ): array {
+    $players['bandcamp'] = array(
+        'label'           => __( 'Bandcamp Album Player', 'mds-bandcamp-integration' ),
+        'description'     => __( 'Renders the embedded Bandcamp album player when a Bandcamp Album ID is configured on the release.', 'mds-bandcamp-integration' ),
+        'icon'            => 'dashicons dashicons-album',
+        'render_callback' => function( int $post_id, array $settings, array $attributes ): string {
+            $album_id = get_post_meta( $post_id, 'bandcamp_album_id', true );
+            if ( ! is_string( $album_id ) || '' === trim( $album_id ) ) {
+                return ''; // Not configured on this release; core falls back to HTML5 (.mp3).
+            }
+            $bgcol   = ltrim( (string) ( $settings['bgcol'] ?? '#ffffff' ), '#' );
+            $linkcol = ltrim( (string) ( $settings['linkcol'] ?? '#0687f5' ), '#' );
+            $size    = $settings['size'] ?? 'small';
+            return sprintf(
+                '<iframe style="border: 0; width: 100%%; height: 42px;" src="https://bandcamp.com/EmbeddedPlayer/album=%1$s/size=%2$s/bgcol=%3$s/linkcol=%4$s/artwork=none/transparent=true/" seamless></iframe>',
+                rawurlencode( $album_id ),
+                rawurlencode( (string) $size ),
+                rawurlencode( $bgcol ),
+                rawurlencode( $linkcol )
+            );
+        },
+        'fields'          => array(
+            'size'    => array(
+                'type'    => 'select',
+                'label'   => __( 'Player Size', 'mds-bandcamp-integration' ),
+                'default' => 'small',
+                'options' => array(
+                    'small' => __( 'Small (42px)', 'mds-bandcamp-integration' ),
+                    'large' => __( 'Large', 'mds-bandcamp-integration' ),
+                ),
+            ),
+            'bgcol'   => array(
+                'type'    => 'color',
+                'label'   => __( 'Background Color', 'mds-bandcamp-integration' ),
+                'default' => '#ffffff',
+            ),
+            'linkcol' => array(
+                'type'    => 'color',
+                'label'   => __( 'Link Color', 'mds-bandcamp-integration' ),
+                'default' => '#0687f5',
+            ),
+        ),
+    );
+    return $players;
 });
 
-// Supply the Release Links block audio player. The first extension returning
-// non-empty markup wins; the result is sanitized with an iframe-aware allowlist.
-add_filter( 'mds_rm_release_links_audio_html', function( $html, $post_id, $attributes ) {
-    if ( '' !== trim( $html ) ) {
-        return $html; // Another extension already supplied a player.
-    }
-    return my_extension_player_markup( $post_id );
-}, 10, 3 );
+// Register extension release post meta and enrich the preloaded Gutenberg Release picker catalog.
+add_action( 'init', function() {
+    MDS_RM_Release_Meta::register_extension_meta( 'bandcamp_album_id' );
+    MDS_RM_Release_Meta::register_extension_meta( 'bandcamp_album_url' );
+});
+
+add_filter( 'mds_rm_release_picker_item', function( array $item, WP_Post $release ): array {
+    $item['bandcamp_album_id'] = (string) get_post_meta( $release->ID, 'bandcamp_album_id', true );
+    return $item;
+}, 10, 2 );
 
 // Add a site settings tab; the callback renders its own secure form.
 add_filter( 'mds_rm_site_settings_tabs', function( array $tabs ): array {
@@ -668,11 +720,11 @@ add_filter( 'mds_rm_site_settings_tabs', function( array $tabs ): array {
 For network settings, use `mds_rm_network_settings_tabs` with the same
 slug/label/render structure. Tab callbacks are rendered outside the core
 settings forms and must handle their own capability checks, nonces, validation,
-and saving. Site extension tabs appear after the four pinned core tabs. The core
-slugs `general-settings`, `release-meta-block`, `release-links-block`, and
+and saving. Site extension tabs appear after the five pinned core tabs. The core
+slugs `general-settings`, `audio-player-manager`, `release-meta-block`, `release-links-block`, and
 `artist-discography-block`, plus their legacy aliases `integrations`,
 `release-meta`, `release-links`, `artist-discography`, and `shortcode`, are reserved.
-Existing `mds_rm_settings_audio_fields` and
+Existing `mds_rm_settings_audio_fields`, `mds_rm_release_links_audio_html`, and
 `mds_rm_network_settings_fields` filters remain available.
 
 #### Adding blocks to the "MDS Release Manager" inserter section

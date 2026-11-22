@@ -7,8 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- Add the **Audio Player Manager** settings tab and `MDS_RM_Audio_Players` registry (`mds_rm_register_audio_players`), supporting single active player selection, automatic per-release fallback to the core HTML5 Player (`.mp3`), and validated declarative player styling/configuration schemas (`mds_rm_audio_player_settings`).
+- Add an Extension Developer Toolkit for Release relationships and Gutenberg pickers: `MDS_RM_Release_Meta::resolve_release()`, `MDS_RM_Release_Meta::register_extension_meta()`, the `mds_rm_release_picker_item` filter, and a preloaded zero-REST editor catalog (`window.mdsRmCatalog` / `window.mdsRmToolkit` / enhanced `window.mdsRmUseReleasePicker` with `filter`, `metaBindings`, and `WP_DEBUG`-aware `debugFields`).
 - Add a searchable, paginated Artist lookup to the Release editor and resumable batch progress to manual network synchronization.
-- Add the `mds_rm_release_links_audio_html` filter so extensions supply the Release Links block audio player. The first non-empty result wins over the built-in Bandcamp shortcode and HTML5 players and is sanitized with the iframe-aware allowlist.
+- Add the `mds_rm_release_links_audio_html` filter so extensions supply the Release Links block audio player. The first non-empty result wins over the built-in HTML5 player and is sanitized with the iframe-aware allowlist.
+- Add the `MDS_RM_Release_Search` service and artist-name matching to the Release picker endpoints: picker searches now match the Release title, its Artist's name, or an exact all-digit UPC/EAN.
+- Show a read-only "Primary ID (UPC/EAN)" field in the Release pickers when `WP_DEBUG` is enabled.
 - Add site-wide presentation defaults for the Release Meta, Release Links, and Artist Discography blocks, with per-block overrides and preservation of legacy saved lists.
 - Add extension-provided site and network settings tabs while retaining existing section hooks. Bandcamp adds a site tab and WooCommerce adds a network tab.
 - Add native block Styles and per-table controls to Artist Discography, covering spacing, typography, colors, borders, links, and striped rows.
@@ -19,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Add an isolated Playwright smoke suite covering Release and Artist fallbacks, Gutenberg metadata persistence, REST settings saves, and rewrite setup and cleanup.
 
 ### Changed
+- Editor Release and Artist pickers fetch choices only while their block is selected, share identical in-flight lookups, and retry transient failures before reporting an error, keeping block-heavy editor sessions responsive.
+- Picker options display "Title — Artist" without identifiers; selecting a Release binds the block to its UPC/EAN primary ID (the post ID is kept only for Releases without a UPC, and legacy saved selections still resolve).
 - Paginate the public releases REST endpoint with standard total headers while retaining its array response; stream validated CSV exports in bounded pages without changing the CSV columns.
 - Automatic Release Meta, Release Links, and Artist Discography blocks use the site-wide defaults under Releases → Settings instead of separate Customizer styles.
 - Group Release and Artist fallback Customizer controls by the part of the page they style.
@@ -49,6 +55,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Prevent strict-types parse errors by keeping `declare(strict_types=1);` as the first executable statement after the file DocBlock and removing stray UTF-8 byte-order marks.
 
 ### Removed
+- Remove the core plugin's remaining Bandcamp coupling: the Release Links `bandcamp_shortcode` audio branch, the Bandcamp Shortcode Template setting and its REST save, the CSV "Bandcamp Shortcode" column, and the Elementor Bandcamp Shortcode field. The Bandcamp extension now supplies the player exclusively through the `mds_rm_release_links_audio_html` filter, and `mds_rm_bandcamp_template` remains only as an uninstall deletion contract.
 - Remove the internal `MDS_RM_Core_Functions` shim after moving its methods into the Logger, Sync, Providers, and Template Loader classes. Custom PHP code that calls the old class directly should use the replacements in the [consolidation plan](.github/consolidation-plan.md#core_functions-split-map).
 - Remove the orphaned, incomplete `includes/class-mds-rm-blocks.php` fragment left over from an abandoned file-consolidation attempt. It duplicated part of `MDS_RM_Release_Meta`, failed PHP linting, and was never loaded at runtime.
 

@@ -209,11 +209,14 @@ final class MDS_RM_Assets {
 				'mds-settings-defaults',
 				'mdsRmDefaultsSettings',
 				array(
-					'editorSettings' => get_block_editor_settings( array(), $context ),
-					'defaults'       => get_option( 'mds_rm_block_defaults', array() ),
-					'metaItems'      => MDS_RM_Release_Meta::default_items(),
-					'metaFields'     => MDS_RM_Release_Meta::fields(),
-					'providers'      => MDS_RM_Release_Links::providers(),
+					'editorSettings'      => get_block_editor_settings( array(), $context ),
+					'defaults'            => get_option( 'mds_rm_block_defaults', array() ),
+					'metaItems'           => MDS_RM_Release_Meta::default_items(),
+					'metaFields'          => MDS_RM_Release_Meta::fields(),
+					'providers'           => MDS_RM_Release_Links::providers(),
+					'audioPlayers'        => MDS_RM_Audio_Players::get_client_players(),
+					'activeAudioPlayer'   => MDS_RM_Audio_Players::get_active_player(),
+					'audioPlayerSettings' => MDS_RM_Audio_Players::get_all_settings(),
 				)
 			);
 			wp_set_script_translations( 'mds-settings-defaults', 'mds-release-manager', MDS_RM_PATH . 'languages' );

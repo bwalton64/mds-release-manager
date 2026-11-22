@@ -55,7 +55,7 @@ final class MDS_RM_Providers {
 			// Save defaults so they populate the settings page.
 			update_option( 'mds_rm_providers', $providers );
 		} else {
-			// Restore brand colors for older configurations with blank or black colors.
+			// Restore brand colors for older configurations with blank colors.
 			$brand_colors = array(
 				'Spotify'       => '#1DB954',
 				'Apple Music'   => '#FA243C',
@@ -65,7 +65,7 @@ final class MDS_RM_Providers {
 			);
 			$updated      = false;
 			foreach ( $providers as &$p ) {
-				if ( isset( $brand_colors[ $p['name'] ] ) && ( empty( $p['color'] ) || '#000000' === $p['color'] ) ) {
+				if ( isset( $brand_colors[ $p['name'] ] ) && empty( $p['color'] ) ) {
 					$p['color'] = $brand_colors[ $p['name'] ];
 					$updated    = true;
 				}

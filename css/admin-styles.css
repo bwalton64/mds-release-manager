@@ -11,16 +11,8 @@
 .mds-spoke-url { color: #777; }
 .mds-admin-save-actions { display: flex; align-items: center; margin-top: 20px; }
 #mds-network-settings-form .mds-save-status { display: none; margin-left: 15px; font-weight: bold; color: #46b450; }
-#mds_bandcamp_template { width: 100%; max-width: 600px; }
 #mds-settings-form select[name="mds_rm_fa_support"] { min-width: 250px; }
 #mds-manual-sync-status { display: none; margin-left: 10px; font-weight: bold; color: #46b450; }
-.mds-provider-row { margin-bottom: 10px; }
-.mds-provider-row-saved input[name="mds_rm_providers[name][]"] { margin-right: 10px; }
-.mds-provider-row-saved .mds-icon-input-wrapper { display: inline-block; position: relative; margin-right: 10px; }
-.mds-provider-row-saved .mds-remove-provider { margin-left: 10px; }
-.mds-provider-row-new { display: flex; gap: 10px; align-items: center; background: #f9f9f9; padding: 10px; border: 1px solid #ddd; }
-.mds-provider-row-new .dashicons-menu { cursor: move; color: #999; }
-.mds-provider-row-new .mds-remove-provider { color: #d63638; border-color: #d63638; }
 #mds_add_streaming_row { margin-top: 10px; margin-bottom: 20px; }
 .mds-buy-now-field { display: flex; gap: 10px; }
 .mds-buy-now-field #buy_now_link { flex-grow: 1; }
