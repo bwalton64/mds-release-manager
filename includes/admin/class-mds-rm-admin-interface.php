@@ -100,7 +100,7 @@ final class MDS_RM_Admin_Interface {
 	 * @return array<string, string> The reordered columns.
 	 */
 	public static function order_release_columns( array $columns ): array {
-		$column_order = array( 'cb', 'mds_thumb', 'title', 'taxonomy-release_tag', 'taxonomy-release_format', 'date' );
+		$column_order = array( 'cb', 'mds_thumb', 'title', 'taxonomy-release_type', 'taxonomy-release_media_format', 'taxonomy-release_tag', 'date' );
 		$ordered      = array();
 
 		foreach ( $column_order as $column ) {
@@ -126,8 +126,9 @@ final class MDS_RM_Admin_Interface {
 	 * @return array<string, string> The updated sortable columns.
 	 */
 	public static function add_sortable_release_taxonomy_columns( array $columns ): array {
-		$columns['taxonomy-release_tag']    = 'release_tag';
-		$columns['taxonomy-release_format'] = 'release_format';
+		$columns['taxonomy-release_tag']          = 'release_tag';
+		$columns['taxonomy-release_type']         = 'release_type';
+		$columns['taxonomy-release_media_format'] = 'release_media_format';
 
 		return $columns;
 	}
@@ -145,7 +146,7 @@ final class MDS_RM_Admin_Interface {
 		}
 
 		$taxonomy = $query->get( 'orderby' );
-		if ( ! in_array( $taxonomy, array( 'release_tag', 'release_format' ), true ) ) {
+		if ( ! in_array( $taxonomy, array( 'release_tag', 'release_type', 'release_media_format' ), true ) ) {
 			return;
 		}
 
@@ -163,7 +164,7 @@ final class MDS_RM_Admin_Interface {
 	 */
 	public static function order_release_taxonomy_posts( string $orderby, WP_Query $query ): string {
 		$taxonomy = $query->get( 'mds_rm_sort_taxonomy' );
-		if ( ! in_array( $taxonomy, array( 'release_tag', 'release_format' ), true ) ) {
+		if ( ! in_array( $taxonomy, array( 'release_tag', 'release_type', 'release_media_format' ), true ) ) {
 			return $orderby;
 		}
 
@@ -196,7 +197,7 @@ final class MDS_RM_Admin_Interface {
 			&& is_string( $_GET['_mds_rm_filter_nonce'] )
 			&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_mds_rm_filter_nonce'] ) ), 'mds_rm_filter_releases' );
 
-		foreach ( array( 'release_tag', 'release_format' ) as $taxonomy ) {
+		foreach ( array( 'release_type', 'release_media_format', 'release_tag' ) as $taxonomy ) {
 			$taxonomy_object = get_taxonomy( $taxonomy );
 			if ( ! $taxonomy_object ) {
 				continue;
@@ -255,6 +256,7 @@ final class MDS_RM_Admin_Interface {
 
 		if ( 'artist' === $post_type ) {
 			add_meta_box( 'mds_artist_settings', __( 'Artist Profile', 'mds-release-manager' ), array( self::class, 'render_artist_settings_box' ), 'artist', 'normal', 'high' );
+			add_meta_box( 'mds_artist_release_routing', __( 'Release Routing', 'mds-release-manager' ), array( self::class, 'render_artist_release_routing_box' ), 'artist', 'normal', 'default' );
 		}
 
 		/**
@@ -262,6 +264,59 @@ final class MDS_RM_Admin_Interface {
 		 * Allows feature plugins to register custom meta boxes to the CPTs.
 		 */
 		do_action( 'mds_rm_register_custom_meta_boxes', $post );
+	}
+
+	/**
+	 * Renders the Artist Release Routing table meta box.
+	 *
+	 * @since 1.1.0
+	 * @param WP_Post $post Artist post object.
+	 * @return void
+	 */
+	public static function render_artist_release_routing_box( WP_Post $post ): void {
+		$uuid     = (string) get_post_meta( $post->ID, '_mds_artist_uuid', true );
+		$releases = array();
+
+		if ( '' !== $uuid ) {
+			$release_posts = get_posts(
+				array(
+					'post_type'      => 'release',
+					'post_status'    => array( 'publish', 'draft', 'pending', 'future', 'private' ),
+					'posts_per_page' => 500,
+					'meta_key'       => 'artist_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- List releases belonging to this Artist.
+					'meta_value'     => $uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'orderby'        => array(
+						'date' => 'DESC',
+						'ID'   => 'DESC',
+					),
+					'no_found_rows'  => true,
+				)
+			);
+			foreach ( $release_posts as $release ) {
+				$own_mode   = MDS_RM_Artist_Routing::sanitize_release_mode( get_post_meta( $release->ID, 'release_routing_mode', true ) );
+				$custom_url = (string) get_post_meta( $release->ID, 'release_routing_url', true );
+				$releases[] = array(
+					'id'         => $release->ID,
+					'title'      => get_the_title( $release ) ? get_the_title( $release ) : __( '(no title)', 'mds-release-manager' ),
+					'edit_url'   => (string) get_edit_post_link( $release->ID, 'raw' ),
+					'upc'        => (string) get_post_meta( $release->ID, 'upc_ean', true ),
+					'thumb'      => get_the_post_thumbnail( $release->ID, array( 40, 40 ) ),
+					'own_mode'   => $own_mode,
+					'custom_url' => $custom_url,
+					'preview'    => MDS_RM_Artist_Routing::describe_release_destination( $release->ID, $post->ID ),
+				);
+			}
+		}
+
+		$args = array(
+			'artist_id'                    => $post->ID,
+			'artist_releases_routing_mode' => MDS_RM_Artist_Routing::sanitize_artist_release_mode( get_post_meta( $post->ID, 'artist_releases_routing_mode', true ) ),
+			'artist_modes'                 => MDS_RM_Artist_Routing::artist_release_modes(),
+			'release_modes'                => MDS_RM_Artist_Routing::release_modes(),
+			'releases'                     => $releases,
+		);
+
+		include MDS_RM_PATH . 'includes/admin/views/artist-release-routing-box.php';
 	}
 
 	/**
@@ -422,31 +477,51 @@ final class MDS_RM_Admin_Interface {
 			$audio_preview_url = '';
 		}
 
-		$release_formats = wp_get_post_terms( $post->ID, 'release_format', array( 'fields' => 'ids' ) );
+		$release_formats = wp_get_post_terms( $post->ID, 'release_type', array( 'fields' => 'ids' ) );
 
 		$all_formats = get_terms(
 			array(
-				'taxonomy'   => 'release_format',
+				'taxonomy'   => 'release_type',
 				'hide_empty' => false,
 				'orderby'    => 'name',
 			)
 		);
 
+		$all_media_formats = get_terms(
+			array(
+				'taxonomy'   => 'release_media_format',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+			)
+		);
+		if ( is_wp_error( $all_media_formats ) ) {
+			$all_media_formats = array();
+		}
+
+		$buy_now_links = MDS_RM_Release_Model::get_buy_now_links( $post->ID );
+
 		$args = array(
-			'nonce_field'       => wp_nonce_field( 'mds_save_release_data', 'mds_release_meta_nonce', true, false ),
-			'post'              => $post,
-			'artist_id'         => $artist_id,
+			'nonce_field'           => wp_nonce_field( 'mds_save_release_data', 'mds_release_meta_nonce', true, false ),
+			'post'                  => $post,
+			'artist_id'             => $artist_id,
 			'selected_artist_title' => $selected_artist_title,
-			'providers'         => $provider_names,
-			'streaming_links'   => $streaming_links,
-			'upc_ean'           => $upc_ean,
-			'record_label'      => $record_label,
-			'distributor'       => $distributor,
-			'buy_now_link'      => $buy_now_link,
-			'audio_preview_url' => $audio_preview_url,
-			'release_formats'   => $release_formats,
-			'all_formats'       => $all_formats,
-			'format_conflict'   => MDS_RM_Release_Model::has_legacy_format_conflict( $post->ID ),
+			'providers'             => $provider_names,
+			'streaming_links'       => $streaming_links,
+			'upc_ean'               => $upc_ean,
+			'record_label'          => $record_label,
+			'distributor'           => $distributor,
+			'buy_now_link'            => $buy_now_link,
+			'buy_now_links'           => $buy_now_links,
+			'buy_now_mode'            => (string) get_post_meta( $post->ID, 'buy_now_mode', true ),
+			'release_routing_mode'    => MDS_RM_Artist_Routing::sanitize_release_mode( get_post_meta( $post->ID, 'release_routing_mode', true ) ),
+			'release_routing_url'     => (string) get_post_meta( $post->ID, 'release_routing_url', true ),
+			'release_routing_modes'   => MDS_RM_Artist_Routing::release_modes(),
+			'release_routing_preview' => MDS_RM_Artist_Routing::describe_release_destination( $post->ID ),
+			'audio_preview_url'       => $audio_preview_url,
+			'release_formats'       => $release_formats,
+			'all_formats'           => $all_formats,
+			'all_media_formats'     => $all_media_formats,
+			'format_conflict'       => MDS_RM_Release_Model::has_legacy_format_conflict( $post->ID ),
 		);
 
 		$cache[ $post->ID ] = $args;
@@ -466,9 +541,17 @@ final class MDS_RM_Admin_Interface {
 			return;
 		}
 
-		// Verify nonce first.
+		// Verify nonce first. If absent (e.g., Quick Edit, REST API, or WP-CLI), still broadcast changes from the Hub.
 		$nonce = isset( $_POST['mds_artist_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mds_artist_meta_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mds_save_artist_data' ) ) {
+			if ( ( ! defined( 'DOING_AUTOSAVE' ) || ! DOING_AUTOSAVE )
+				&& ! wp_is_post_revision( $post_id )
+				&& 'auto-draft' !== get_post_status( $post_id )
+				&& current_user_can( 'edit_post', $post_id )
+			) {
+				MDS_RM_Sync::broadcast_to_spokes( $post_id, 'artist' );
+				MDS_RM_Sync::purge_cache();
+			}
 			return;
 		}
 
@@ -496,6 +579,13 @@ final class MDS_RM_Admin_Interface {
 		}
 
 		update_post_meta( $post_id, 'artist_homepage_routing', isset( $_POST['artist_homepage_routing'] ) ? '1' : '0' );
+		if ( isset( $_POST['artist_releases_routing_mode'] ) && is_string( $_POST['artist_releases_routing_mode'] ) ) {
+			update_post_meta(
+				$post_id,
+				'artist_releases_routing_mode',
+				MDS_RM_Artist_Routing::sanitize_artist_release_mode( wp_unslash( $_POST['artist_releases_routing_mode'] ) )
+			);
+		}
 		delete_post_meta( $post_id, 'artist_featured_image' );
 
 		/**
@@ -540,9 +630,17 @@ final class MDS_RM_Admin_Interface {
 			return;
 		}
 
-		// Verify nonce first.
+		// Verify nonce first. If absent (e.g., Quick Edit, REST API, or WP-CLI), still broadcast changes from the Hub.
 		$nonce = isset( $_POST['mds_release_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mds_release_meta_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mds_save_release_data' ) ) {
+			if ( ( ! defined( 'DOING_AUTOSAVE' ) || ! DOING_AUTOSAVE )
+				&& ! wp_is_post_revision( $post_id )
+				&& 'auto-draft' !== get_post_status( $post_id )
+				&& current_user_can( 'edit_post', $post_id )
+			) {
+				MDS_RM_Sync::broadcast_to_spokes( $post_id, 'release' );
+				MDS_RM_Sync::purge_cache();
+			}
 			return;
 		}
 
@@ -573,8 +671,70 @@ final class MDS_RM_Admin_Interface {
 			update_post_meta( $post_id, 'distributor', sanitize_text_field( wp_unslash( $_POST['distributor'] ) ) );
 		}
 
-		if ( isset( $_POST['buy_now_link'] ) && is_string( $_POST['buy_now_link'] ) ) {
+		if ( isset( $_POST['mds_buy_now_url'] ) && is_array( $_POST['mds_buy_now_url'] ) ) {
+			$bn_formats   = isset( $_POST['mds_buy_now_format'] ) && is_array( $_POST['mds_buy_now_format'] ) ? array_map( 'sanitize_title', wp_unslash( $_POST['mds_buy_now_format'] ) ) : array();
+			$bn_stores    = isset( $_POST['mds_buy_now_store'] ) && is_array( $_POST['mds_buy_now_store'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['mds_buy_now_store'] ) ) : array();
+			$bn_urls      = array_map( 'esc_url_raw', wp_unslash( $_POST['mds_buy_now_url'] ) );
+			$primary_idx  = isset( $_POST['mds_buy_now_primary'] ) && is_scalar( $_POST['mds_buy_now_primary'] ) ? (int) $_POST['mds_buy_now_primary'] : 0;
+			$raw_buy_rows = array();
+			$bn_count     = count( $bn_urls );
+			for ( $i = 0; $i < $bn_count; $i++ ) {
+				$raw_buy_rows[] = array(
+					'format'  => $bn_formats[ $i ] ?? '',
+					'store'   => $bn_stores[ $i ] ?? '',
+					'url'     => $bn_urls[ $i ] ?? '',
+					'primary' => ( $i === $primary_idx ),
+				);
+			}
+			$sanitized_buy_links = MDS_RM_Release_Model::sanitize_buy_now_links( $raw_buy_rows );
+			if ( $sanitized_buy_links ) {
+				update_post_meta( $post_id, 'buy_now_links', wp_slash( wp_json_encode( $sanitized_buy_links ) ) );
+				$primary_url = '';
+				$media_slugs = array();
+				foreach ( $sanitized_buy_links as $row ) {
+					if ( ! empty( $row['primary'] ) && '' === $primary_url ) {
+						$primary_url = $row['url'];
+					}
+					if ( ! empty( $row['format'] ) ) {
+						$media_slugs[] = $row['format'];
+					}
+				}
+				update_post_meta( $post_id, 'buy_now_link', $primary_url ? $primary_url : $sanitized_buy_links[0]['url'] );
+				wp_set_object_terms( $post_id, array_values( array_unique( $media_slugs ) ), 'release_media_format', false );
+			} else {
+				delete_post_meta( $post_id, 'buy_now_links' );
+				delete_post_meta( $post_id, 'buy_now_link' );
+				wp_set_object_terms( $post_id, array(), 'release_media_format', false );
+			}
+		} elseif ( isset( $_POST['buy_now_link'] ) && is_string( $_POST['buy_now_link'] ) ) {
 			update_post_meta( $post_id, 'buy_now_link', esc_url_raw( wp_unslash( $_POST['buy_now_link'] ) ) );
+		}
+
+		if ( isset( $_POST['mds_buy_now_mode'] ) && is_string( $_POST['mds_buy_now_mode'] ) ) {
+			$submitted_mode = sanitize_key( wp_unslash( $_POST['mds_buy_now_mode'] ) );
+			if ( in_array( $submitted_mode, array( 'direct', 'picker' ), true ) ) {
+				update_post_meta( $post_id, 'buy_now_mode', $submitted_mode );
+			} else {
+				delete_post_meta( $post_id, 'buy_now_mode' );
+			}
+		}
+
+		if ( isset( $_POST['mds_release_routing_mode'] ) && is_string( $_POST['mds_release_routing_mode'] ) ) {
+			$routing_mode = MDS_RM_Artist_Routing::sanitize_release_mode( wp_unslash( $_POST['mds_release_routing_mode'] ) );
+			$routing_url  = isset( $_POST['mds_release_routing_url'] ) && is_string( $_POST['mds_release_routing_url'] )
+				? esc_url_raw( trim( wp_unslash( $_POST['mds_release_routing_url'] ) ) )
+				: '';
+			if ( 'inherit' === $routing_mode ) {
+				delete_post_meta( $post_id, 'release_routing_mode' );
+				delete_post_meta( $post_id, 'release_routing_url' );
+			} else {
+				update_post_meta( $post_id, 'release_routing_mode', $routing_mode );
+				if ( 'custom_url' === $routing_mode && '' !== $routing_url ) {
+					update_post_meta( $post_id, 'release_routing_url', $routing_url );
+				} else {
+					delete_post_meta( $post_id, 'release_routing_url' );
+				}
+			}
 		}
 
 		if ( isset( $_POST['audio_preview_url'] ) && is_string( $_POST['audio_preview_url'] ) ) {
@@ -596,9 +756,9 @@ final class MDS_RM_Admin_Interface {
 		}
 		update_post_meta( $post_id, 'streaming_links', wp_slash( wp_json_encode( $streaming_links_arr ) ) );
 
-		$format_taxonomy = get_taxonomy( 'release_format' );
-		if ( $format_taxonomy && current_user_can( $format_taxonomy->cap->assign_terms ) && isset( $_POST['release_format'] ) && is_scalar( $_POST['release_format'] ) ) {
-			$result = wp_set_post_terms( $post_id, array( absint( wp_unslash( $_POST['release_format'] ) ) ), 'release_format' );
+		$format_taxonomy = get_taxonomy( 'release_type' );
+		if ( $format_taxonomy && current_user_can( $format_taxonomy->cap->assign_terms ) && isset( $_POST['release_type'] ) && is_scalar( $_POST['release_type'] ) ) {
+			$result = wp_set_post_terms( $post_id, array( absint( wp_unslash( $_POST['release_type'] ) ) ), 'release_type' );
 			if ( is_wp_error( $result ) ) {
 				wp_die( esc_html( $result->get_error_message() ) );
 			}

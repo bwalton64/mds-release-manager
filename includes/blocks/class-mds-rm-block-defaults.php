@@ -43,7 +43,7 @@ final class MDS_RM_Block_Defaults {
 		}
 		$keys = array(
 			'release-meta'       => array( 'metaStyles', 'items' ),
-			'release-links'      => array( 'linkStyles', 'items', 'newTab', 'showAudio' ),
+			'release-links'      => array( 'linkStyles', 'items', 'newTab', 'showAudio', 'buyNowMode' ),
 			'artist-discography' => array( 'tableStyles', 'style' ),
 		);
 		foreach ( $all as $slug => $settings ) {
@@ -56,6 +56,12 @@ final class MDS_RM_Block_Defaults {
 				}
 				if ( in_array( $key, array( 'newTab', 'showAudio' ), true ) ) {
 					if ( ! is_bool( $value ) ) {
+						return self::invalid();
+					}
+					continue;
+				}
+				if ( 'buyNowMode' === $key ) {
+					if ( ! is_string( $value ) || ! in_array( $value, array( 'picker', 'direct' ), true ) ) {
 						return self::invalid();
 					}
 					continue;
@@ -273,6 +279,9 @@ final class MDS_RM_Block_Defaults {
 				if ( ! array_key_exists( $key, $attributes ) && isset( $defaults[ $key ] ) && is_bool( $defaults[ $key ] ) ) {
 					$attributes[ $key ] = $defaults[ $key ];
 				}
+			}
+			if ( ! array_key_exists( 'buyNowMode', $attributes ) && isset( $defaults['buyNowMode'] ) && in_array( $defaults['buyNowMode'], array( 'picker', 'direct' ), true ) ) {
+				$attributes['buyNowMode'] = $defaults['buyNowMode'];
 			}
 		}
 

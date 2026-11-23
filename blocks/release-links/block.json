@@ -16,6 +16,7 @@
 		"itemOrder": { "type": "array", "items": { "type": "string" } },
 		"newTab": { "type": "boolean" },
 		"showAudio": { "type": "boolean" },
+		"buyNowMode": { "type": "string", "enum": ["picker", "direct"] },
 		"styles": { "type": "object", "default": {}, "additionalProperties": true }
 	},
 	"editorScript": "mds-rm-release-links-editor",

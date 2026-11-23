@@ -16,9 +16,21 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class MDS_RM_Release_Model {
 	public const MDS_RM_FORMATS = array( 'Single', 'EP', 'Album', 'Digital' );
+	public const DEFAULT_MEDIA_FORMATS = array(
+		'Digital Download' => 'fas fa-download',
+		'CD'               => 'fas fa-compact-disc',
+		'Vinyl LP'         => 'fas fa-record-vinyl',
+		'Vinyl EP'         => 'fas fa-record-vinyl',
+		'7" Single'        => 'fas fa-record-vinyl',
+		'Cassette'         => 'fas fa-tape',
+		'USB Flash Drive'  => 'fab fa-usb',
+	);
+	public const MEDIA_FORMAT_ICON_META_KEY = '_mds_media_format_icon';
 	private const AUDIT_CACHE_KEY = 'mds_rm_release_audit';
 	private const NORMALIZED_UPC_META_KEY = '_mds_normalized_upc';
 	private const NORMALIZED_UPC_MIGRATION_OPTION = 'mds_rm_normalized_upc_migration_complete';
+	private const RELEASE_TYPE_MIGRATION_OPTION = 'mds_rm_release_type_migrated';
+	private const MEDIA_FORMATS_SEEDED_OPTION = 'mds_rm_media_formats_seeded';
 
 	/**
 	 * UPC values captured before REST updates, keyed by release ID.
@@ -50,8 +62,15 @@ final class MDS_RM_Release_Model {
 
 	/** Registers the release validation hooks. */
 	public static function register_hooks(): void {
+		add_action( 'init', array( self::class, 'migrate_release_format_taxonomy' ), 15 );
 		add_action( 'init', array( self::class, 'register_fields_and_formats' ), 20 );
 		add_action( 'admin_init', array( self::class, 'migrate_normalized_upcs' ) );
+		add_action( 'release_media_format_add_form_fields', array( self::class, 'render_media_format_add_icon_field' ) );
+		add_action( 'release_media_format_edit_form_fields', array( self::class, 'render_media_format_edit_icon_field' ) );
+		add_action( 'created_release_media_format', array( self::class, 'save_media_format_icon_meta' ) );
+		add_action( 'edited_release_media_format', array( self::class, 'save_media_format_icon_meta' ) );
+		add_filter( 'manage_edit-release_media_format_columns', array( self::class, 'add_media_format_icon_column' ) );
+		add_filter( 'manage_release_media_format_custom_column', array( self::class, 'render_media_format_icon_column' ), 10, 3 );
 		add_filter( 'wp_insert_post_empty_content', array( self::class, 'validate_classic_save' ), 10, 2 );
 		add_filter( 'rest_pre_insert_release', array( self::class, 'validate_rest_save' ), 10, 2 );
 		add_action( 'rest_after_insert_release', array( self::class, 'after_rest_save' ), 10, 3 );
@@ -72,7 +91,34 @@ final class MDS_RM_Release_Model {
 		add_filter( 'map_meta_cap', array( self::class, 'protect_format_terms' ), 10, 4 );
 	}
 
-	/** Registers REST metadata and the supported format terms. */
+	/**
+	 * One-time migration renaming the legacy `release_format` taxonomy rows to `release_type`.
+	 *
+	 * @return void
+	 */
+	public static function migrate_release_format_taxonomy(): void {
+		if ( '1' === get_option( self::RELEASE_TYPE_MIGRATION_OPTION, '0' ) ) {
+			return;
+		}
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time taxonomy slug migration.
+		$updated = $wpdb->update(
+			$wpdb->term_taxonomy,
+			array( 'taxonomy' => 'release_type' ),
+			array( 'taxonomy' => 'release_format' ),
+			array( '%s' ),
+			array( '%s' )
+		);
+		if ( false !== $updated ) {
+			update_option( self::RELEASE_TYPE_MIGRATION_OPTION, '1', false );
+			if ( $updated > 0 ) {
+				clean_taxonomy_cache( 'release_type' );
+				flush_rewrite_rules( false );
+			}
+		}
+	}
+
+	/** Registers REST metadata, canonical Release Type terms, and default Media Format terms. */
 	public static function register_fields_and_formats(): void {
 		register_post_meta(
 			'release',
@@ -89,27 +135,297 @@ final class MDS_RM_Release_Model {
 		);
 
 		foreach ( self::MDS_RM_FORMATS as $format ) {
-			$term = term_exists( $format, 'release_format' );
+			$term = term_exists( $format, 'release_type' );
 			if ( ! $term ) {
-				$term = wp_insert_term( $format, 'release_format' );
+				$term = wp_insert_term( $format, 'release_type' );
 			}
 			if ( is_wp_error( $term ) && 'term_exists' === $term->get_error_code() ) {
-				$existing = term_exists( $format, 'release_format' );
+				$existing = term_exists( $format, 'release_type' );
 				if ( $existing && ! is_wp_error( $existing ) ) {
 					$term = $existing;
 				}
 			}
 			if ( is_wp_error( $term ) ) {
-				MDS_RM_Logger::report_failure( 'Could not register release format: ' . $term->get_error_message() );
+				MDS_RM_Logger::report_failure( 'Could not register release type: ' . $term->get_error_message() );
 				add_action(
 					'admin_notices',
 					static function () use ( $format ) {
-						/* translators: %s: Release format name. */
-						echo '<div class="notice notice-error"><p>' . esc_html( sprintf( __( 'Could not register the release format "%s". Check the server error log.', 'mds-release-manager' ), $format ) ) . '</p></div>';
+						/* translators: %s: Release type name. */
+						echo '<div class="notice notice-error"><p>' . esc_html( sprintf( __( 'Could not register the release type "%s". Check the server error log.', 'mds-release-manager' ), $format ) ) . '</p></div>';
 					}
 				);
 			}
 		}
+
+		if ( '1' !== get_option( self::MEDIA_FORMATS_SEEDED_OPTION, '0' ) && taxonomy_exists( 'release_media_format' ) ) {
+			foreach ( self::DEFAULT_MEDIA_FORMATS as $label => $icon ) {
+				$existing = term_exists( $label, 'release_media_format' );
+				if ( ! $existing ) {
+					$existing = wp_insert_term( $label, 'release_media_format' );
+				}
+				if ( ! is_wp_error( $existing ) && $existing ) {
+					$term_id = is_array( $existing ) ? (int) $existing['term_id'] : (int) $existing;
+					if ( $term_id > 0 && '' === (string) get_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY, true ) ) {
+						update_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY, $icon );
+					}
+				}
+			}
+			update_option( self::MEDIA_FORMATS_SEEDED_OPTION, '1', false );
+		}
+	}
+
+	/**
+	 * Renders the icon CSS class input on the Add Media Format term screen.
+	 *
+	 * @return void
+	 */
+	public static function render_media_format_add_icon_field(): void {
+		?>
+		<div class="form-field term-mds-icon-wrap">
+			<label for="mds_media_format_icon"><?php esc_html_e( 'Icon CSS Classes', 'mds-release-manager' ); ?></label>
+			<input type="text" name="mds_media_format_icon" id="mds_media_format_icon" value="fas fa-compact-disc" />
+			<p class="description"><?php esc_html_e( 'Font Awesome or Dashicons classes shown in the Buy Now format picker (e.g. fas fa-record-vinyl, fas fa-compact-disc, fas fa-download).', 'mds-release-manager' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Renders the icon CSS class input on the Edit Media Format term screen.
+	 *
+	 * @param WP_Term $term Term being edited.
+	 * @return void
+	 */
+	public static function render_media_format_edit_icon_field( $term ): void {
+		$icon = self::get_media_format_icon( (int) $term->term_id, $term->name );
+		?>
+		<tr class="form-field term-mds-icon-wrap">
+			<th scope="row"><label for="mds_media_format_icon"><?php esc_html_e( 'Icon CSS Classes', 'mds-release-manager' ); ?></label></th>
+			<td>
+				<input type="text" name="mds_media_format_icon" id="mds_media_format_icon" value="<?php echo esc_attr( $icon ); ?>" class="regular-text" />
+				<p class="description"><?php esc_html_e( 'Font Awesome or Dashicons classes shown in the Buy Now format picker (e.g. fas fa-record-vinyl, fas fa-compact-disc, fas fa-download).', 'mds-release-manager' ); ?></p>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Persists the icon CSS classes for a `release_media_format` term.
+	 *
+	 * @param int $term_id Term ID.
+	 * @return void
+	 */
+	public static function save_media_format_icon_meta( int $term_id ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress verifies term add/edit nonces before firing created_/edited_ hooks.
+		if ( ! isset( $_POST['mds_media_format_icon'] ) || ! is_string( $_POST['mds_media_format_icon'] ) ) {
+			return;
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$icon = sanitize_text_field( wp_unslash( $_POST['mds_media_format_icon'] ) );
+		if ( '' !== $icon ) {
+			update_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY, $icon );
+		} else {
+			delete_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY );
+		}
+	}
+
+	/**
+	 * Adds an Icon column to the Media Formats taxonomy table.
+	 *
+	 * @param array<string, string> $columns Existing columns.
+	 * @return array<string, string> Updated columns.
+	 */
+	public static function add_media_format_icon_column( array $columns ): array {
+		$updated = array();
+		foreach ( $columns as $key => $label ) {
+			$updated[ $key ] = $label;
+			if ( 'name' === $key ) {
+				$updated['mds_media_icon'] = __( 'Icon', 'mds-release-manager' );
+			}
+		}
+		return $updated;
+	}
+
+	/**
+	 * Renders the Icon column cell for a Media Format term.
+	 *
+	 * @param string $content     Existing cell content.
+	 * @param string $column_name Column slug.
+	 * @param int    $term_id     Term ID.
+	 * @return string Cell markup.
+	 */
+	public static function render_media_format_icon_column( string $content, string $column_name, int $term_id ): string {
+		if ( 'mds_media_icon' !== $column_name ) {
+			return $content;
+		}
+		$term = get_term( $term_id, 'release_media_format' );
+		$icon = self::get_media_format_icon( $term_id, $term && ! is_wp_error( $term ) ? $term->name : '' );
+		return '<code>' . esc_html( $icon ) . '</code>';
+	}
+
+	/**
+	 * Resolves the icon CSS classes for a Media Format term.
+	 *
+	 * @param int    $term_id   Term ID.
+	 * @param string $term_name Optional term name for default fallback.
+	 * @return string Icon CSS classes.
+	 */
+	public static function get_media_format_icon( int $term_id, string $term_name = '' ): string {
+		$stored = $term_id > 0 ? get_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY, true ) : '';
+		if ( is_string( $stored ) && '' !== trim( $stored ) ) {
+			return trim( $stored );
+		}
+		if ( '' !== $term_name ) {
+			foreach ( self::DEFAULT_MEDIA_FORMATS as $default_name => $default_icon ) {
+				if ( 0 === strcasecmp( $default_name, $term_name ) ) {
+					return $default_icon;
+				}
+			}
+		}
+		return 'fas fa-cart-shopping';
+	}
+
+	/**
+	 * Returns all normalized Buy Now purchase offers for a Release.
+	 *
+	 * Falls back seamlessly to the legacy scalar `buy_now_link` post meta when
+	 * `buy_now_links` has not been saved yet. Extensions (such as WooCommerce
+	 * Integration) can filter the result via `mds_rm_buy_now_links`.
+	 *
+	 * @since 1.1.0
+	 * @param int $post_id Release post ID.
+	 * @return array<int, array{format:string,label:string,store:string,url:string,icon:string,primary:bool}> Normalized purchase offers.
+	 */
+	public static function get_buy_now_links( int $post_id ): array {
+		$links = array();
+		$raw   = get_post_meta( $post_id, 'buy_now_links', true );
+		if ( is_string( $raw ) && '' !== trim( $raw ) ) {
+			$decoded = json_decode( $raw, true );
+			if ( is_array( $decoded ) ) {
+				$links = self::sanitize_buy_now_links( $decoded );
+			}
+		} elseif ( is_array( $raw ) ) {
+			$links = self::sanitize_buy_now_links( $raw );
+		}
+
+		if ( empty( $links ) ) {
+			$legacy_url = get_post_meta( $post_id, 'buy_now_link', true );
+			if ( is_string( $legacy_url ) && '' !== trim( $legacy_url ) && '' !== esc_url_raw( $legacy_url ) ) {
+				$links[] = array(
+					'format'  => '',
+					'label'   => __( 'Buy Now', 'mds-release-manager' ),
+					'store'   => '',
+					'url'     => esc_url_raw( $legacy_url ),
+					'icon'    => 'fas fa-cart-shopping',
+					'primary' => true,
+				);
+			}
+		}
+
+		// Enrich each entry with live Media Format term label and icon.
+		foreach ( $links as &$item ) {
+			$slug = $item['format'] ?? '';
+			$term = '' !== $slug && function_exists( 'get_term_by' ) ? get_term_by( 'slug', $slug, 'release_media_format' ) : false;
+			if ( $term && ! is_wp_error( $term ) ) {
+				$item['label'] = $term->name;
+				$item['icon']  = self::get_media_format_icon( (int) $term->term_id, $term->name );
+			} else {
+				if ( '' === ( $item['label'] ?? '' ) ) {
+					$item['label'] = '' !== $slug ? ucwords( str_replace( '-', ' ', $slug ) ) : __( 'Buy Now', 'mds-release-manager' );
+				}
+				if ( '' === ( $item['icon'] ?? '' ) ) {
+					$item['icon'] = self::get_media_format_icon( 0, $item['label'] );
+				}
+			}
+		}
+		unset( $item );
+
+		/**
+		 * Filters the normalized multi-format Buy Now links for a Release.
+		 *
+		 * @since 1.1.0
+		 * @param array $links   Normalized purchase offers.
+		 * @param int   $post_id Release post ID.
+		 */
+		$filtered = apply_filters( 'mds_rm_buy_now_links', $links, $post_id );
+		return is_array( $filtered ) ? $filtered : $links;
+	}
+
+	/**
+	 * Returns the authoritative Primary Buy Now URL for a Release.
+	 *
+	 * Extensions (such as WooCommerce Integration in White-Label mode) can hook
+	 * `mds_rm_buy_now_url` to supply a unified storefront product URL.
+	 *
+	 * @since 1.1.0
+	 * @param int $post_id Release post ID.
+	 * @return string Sanitized URL, or empty string when unavailable.
+	 */
+	public static function get_primary_buy_now_url( int $post_id ): string {
+		$links   = self::get_buy_now_links( $post_id );
+		$primary = '';
+		foreach ( $links as $item ) {
+			if ( ! empty( $item['primary'] ) && ! empty( $item['url'] ) ) {
+				$primary = (string) $item['url'];
+				break;
+			}
+		}
+		if ( '' === $primary && ! empty( $links[0]['url'] ) ) {
+			$primary = (string) $links[0]['url'];
+		}
+
+		/**
+		 * Filters the primary Buy Now destination URL for a Release.
+		 *
+		 * @since 1.1.0
+		 * @param string $primary Primary Buy Now URL.
+		 * @param int    $post_id Release post ID.
+		 * @param array  $links   All normalized Buy Now offers for the Release.
+		 */
+		$filtered = apply_filters( 'mds_rm_buy_now_url', $primary, $post_id, $links );
+		return is_string( $filtered ) ? esc_url_raw( $filtered ) : '';
+	}
+
+	/**
+	 * Sanitizes an array of submitted Buy Now link rows.
+	 *
+	 * @param array<int, mixed> $raw_links Raw link rows.
+	 * @return array<int, array{format:string,label:string,store:string,url:string,icon:string,primary:bool}> Sanitized rows.
+	 */
+	public static function sanitize_buy_now_links( array $raw_links ): array {
+		$clean       = array();
+		$has_primary = false;
+
+		foreach ( $raw_links as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+			$url = isset( $row['url'] ) && is_string( $row['url'] ) ? esc_url_raw( trim( $row['url'] ) ) : '';
+			if ( '' === $url ) {
+				continue;
+			}
+			$format     = isset( $row['format'] ) && is_string( $row['format'] ) ? sanitize_title( $row['format'] ) : '';
+			$label      = isset( $row['label'] ) && is_string( $row['label'] ) ? sanitize_text_field( $row['label'] ) : '';
+			$store      = isset( $row['store'] ) && is_string( $row['store'] ) ? sanitize_text_field( $row['store'] ) : '';
+			$icon       = isset( $row['icon'] ) && is_string( $row['icon'] ) ? sanitize_text_field( $row['icon'] ) : '';
+			$is_primary = ! empty( $row['primary'] ) && ! $has_primary;
+			if ( $is_primary ) {
+				$has_primary = true;
+			}
+			$clean[] = array(
+				'format'  => $format,
+				'label'   => $label,
+				'store'   => $store,
+				'url'     => $url,
+				'icon'    => $icon,
+				'primary' => $is_primary,
+			);
+		}
+
+		if ( $clean && ! $has_primary ) {
+			$clean[0]['primary'] = true;
+		}
+
+		return $clean;
 	}
 
 	/**
@@ -194,17 +510,17 @@ final class MDS_RM_Release_Model {
 	 * @return string|WP_Error Term name or validation error.
 	 */
 	public static function validate_format_term( $term, $taxonomy, $args ) {
-		if ( 'release_format' !== $taxonomy || is_wp_error( $term ) ) {
+		if ( 'release_type' !== $taxonomy || is_wp_error( $term ) ) {
 			return $term;
 		}
 		if ( ! is_string( $term ) || ! in_array( $term, self::MDS_RM_FORMATS, true ) || ! empty( $args['parent'] ) ) {
-			return new WP_Error( 'mds_invalid_format_term', __( 'Release formats must be Single, EP, Album, or Digital without a parent.', 'mds-release-manager' ) );
+			return new WP_Error( 'mds_invalid_format_term', __( 'Release types must be Single, EP, Album, or Digital without a parent.', 'mds-release-manager' ) );
 		}
 		return $term;
 	}
 
 	/**
-	 * Prevents edits or deletion of canonical release formats.
+	 * Prevents edits or deletion of canonical release types.
 	 *
 	 * @param array  $caps Required capabilities.
 	 * @param string $cap Requested meta capability.
@@ -220,7 +536,7 @@ final class MDS_RM_Release_Model {
 		if ( 'edit_term' === $cap && self::$rest_requests && 'GET' === end( self::$rest_requests ) ) {
 			return $caps;
 		}
-		$term = get_term( (int) $args[0], 'release_format' );
+		$term = get_term( (int) $args[0], 'release_type' );
 		if ( $term && ! is_wp_error( $term ) && 0 === (int) $term->parent && in_array( $term->name, self::MDS_RM_FORMATS, true ) ) {
 			return array( 'do_not_allow' );
 		}
@@ -241,18 +557,18 @@ final class MDS_RM_Release_Model {
 	}
 
 	/**
-	 * Returns the authoritative format for a release.
+	 * Returns the authoritative release type for a release.
 	 *
 	 * @param int $post_id Release ID.
-	 * @return string|WP_Error Format name or validation error.
+	 * @return string|WP_Error Release type name or validation error.
 	 */
 	public static function format_name( $post_id ): string|WP_Error {
-		$terms = wp_get_post_terms( $post_id, 'release_format' );
+		$terms = wp_get_post_terms( $post_id, 'release_type' );
 		if ( is_wp_error( $terms ) ) {
 			return $terms;
 		}
 		if ( 1 !== count( $terms ) || 0 !== (int) $terms[0]->parent || ! in_array( $terms[0]->name, self::MDS_RM_FORMATS, true ) ) {
-			return new WP_Error( 'mds_invalid_format', __( 'The release must have exactly one valid release format.', 'mds-release-manager' ) );
+			return new WP_Error( 'mds_invalid_format', __( 'The release must have exactly one valid release type.', 'mds-release-manager' ) );
 		}
 		return $terms[0]->name;
 	}
@@ -385,13 +701,13 @@ final class MDS_RM_Release_Model {
 	 * @return void
 	 */
 	public static function invalidate_audit_on_term_change( int $object_id, array $terms, array $term_taxonomy_ids, string $taxonomy ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Preserve the term hook signature.
-		if ( 'release_format' === $taxonomy && 'release' === get_post_type( $object_id ) ) {
+		if ( 'release_type' === $taxonomy && 'release' === get_post_type( $object_id ) ) {
 			delete_transient( self::AUDIT_CACHE_KEY );
 		}
 	}
 
 	/**
-	 * Invalidates the audit after a canonical Release Format is renamed.
+	 * Invalidates the audit after a canonical Release Type is renamed.
 	 *
 	 * @param int    $term_id Term ID.
 	 * @param int    $term_taxonomy_id Term-taxonomy ID.
@@ -399,21 +715,21 @@ final class MDS_RM_Release_Model {
 	 * @return void
 	 */
 	public static function invalidate_audit_on_format_edit( int $term_id, int $term_taxonomy_id, string $taxonomy ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Preserve the term hook signature.
-		if ( 'release_format' === $taxonomy ) {
+		if ( 'release_type' === $taxonomy ) {
 			delete_transient( self::AUDIT_CACHE_KEY );
 		}
 	}
 
 	/**
-	 * Resolves a supported format name to its local taxonomy term ID.
+	 * Resolves a supported release type name to its local taxonomy term ID.
 	 *
-	 * @param string $name Format name.
+	 * @param string $name Release type name.
 	 * @return int Term ID, or zero if invalid or unavailable.
 	 */
 	public static function format_id( $name ): int {
 		foreach ( self::MDS_RM_FORMATS as $format ) {
 			if ( 0 === strcasecmp( trim( $name ), $format ) ) {
-				$term = get_term_by( 'name', $format, 'release_format' );
+				$term = get_term_by( 'name', $format, 'release_type' );
 				return $term && 0 === (int) $term->parent ? (int) $term->term_id : 0;
 			}
 		}
@@ -421,7 +737,7 @@ final class MDS_RM_Release_Model {
 	}
 
 	/**
-	 * Validates and reserves a release identifier and format for saving.
+	 * Validates and reserves a release identifier and release type for saving.
 	 *
 	 * @param int   $post_id Existing release ID, or zero.
 	 * @param mixed $upc Submitted identifier.
@@ -435,9 +751,9 @@ final class MDS_RM_Release_Model {
 		}
 
 		if ( ! is_array( $format_ids ) || 1 !== count( $format_ids ) ) {
-			return new WP_Error( 'mds_format_required', __( 'Select exactly one release format.', 'mds-release-manager' ), array( 'status' => 400 ) );
+			return new WP_Error( 'mds_format_required', __( 'Select exactly one release type.', 'mds-release-manager' ), array( 'status' => 400 ) );
 		}
-		$term = get_term( (int) reset( $format_ids ), 'release_format' );
+		$term = get_term( (int) reset( $format_ids ), 'release_type' );
 		if ( ! $term || is_wp_error( $term ) || 0 !== (int) $term->parent || ! in_array( $term->name, self::MDS_RM_FORMATS, true ) ) {
 			return new WP_Error( 'mds_invalid_format', __( 'Select Single, EP, Album, or Digital.', 'mds-release-manager' ), array( 'status' => 400 ) );
 		}
@@ -584,9 +900,9 @@ final class MDS_RM_Release_Model {
 		if ( ! $has_nonce ) {
 			$action = isset( $_REQUEST['action'] ) && is_string( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
 			if ( in_array( $action, array( 'inline-save', 'edit' ), true ) && $post_id ) {
-				if ( isset( $postarr['tax_input']['release_format'] ) ) {
+				if ( isset( $postarr['tax_input']['release_type'] ) ) {
 					wp_die(
-						esc_html__( 'Change the release format in the release editor.', 'mds-release-manager' ),
+						esc_html__( 'Change the release type in the release editor.', 'mds-release-manager' ),
 						'',
 						array(
 							'response'  => 400,
@@ -596,7 +912,7 @@ final class MDS_RM_Release_Model {
 				}
 				if ( self::has_legacy_format_conflict( $post_id ) ) {
 					wp_die(
-						esc_html__( 'Resolve the release format conflict in the release editor first.', 'mds-release-manager' ),
+						esc_html__( 'Resolve the release type conflict in the release editor first.', 'mds-release-manager' ),
 						'',
 						array(
 							'response'  => 400,
@@ -605,7 +921,7 @@ final class MDS_RM_Release_Model {
 					);
 				}
 				$upc     = get_post_meta( $post_id, 'upc_ean', true );
-				$formats = wp_get_post_terms( $post_id, 'release_format', array( 'fields' => 'ids' ) );
+				$formats = wp_get_post_terms( $post_id, 'release_type', array( 'fields' => 'ids' ) );
 				$result  = is_wp_error( $formats ) ? $formats : self::validate( $post_id, $upc, $formats );
 				if ( is_wp_error( $result ) ) {
 					wp_die(
@@ -624,13 +940,13 @@ final class MDS_RM_Release_Model {
 
 		$upc = sanitize_text_field( isset( $_POST['upc_ean'] ) && is_string( $_POST['upc_ean'] ) ? wp_unslash( $_POST['upc_ean'] ) : '' );
 
-		$format = isset( $_POST['release_format'] ) && is_scalar( $_POST['release_format'] )
-			? array( absint( wp_unslash( $_POST['release_format'] ) ) )
-			: ( $post_id ? wp_get_post_terms( $post_id, 'release_format', array( 'fields' => 'ids' ) ) : array() );
+		$format = isset( $_POST['release_type'] ) && is_scalar( $_POST['release_type'] )
+			? array( absint( wp_unslash( $_POST['release_type'] ) ) )
+			: ( $post_id ? wp_get_post_terms( $post_id, 'release_type', array( 'fields' => 'ids' ) ) : array() );
 
-		if ( ! isset( $_POST['release_format'] ) && $post_id && self::has_legacy_format_conflict( $post_id ) ) {
+		if ( ! isset( $_POST['release_type'] ) && $post_id && self::has_legacy_format_conflict( $post_id ) ) {
 			wp_die(
-				esc_html__( 'The saved format conflicts with legacy data. Choose a release format explicitly.', 'mds-release-manager' ),
+				esc_html__( 'The saved release type conflicts with legacy data. Choose a release type explicitly.', 'mds-release-manager' ),
 				'',
 				array(
 					'response'  => 400,
@@ -641,10 +957,10 @@ final class MDS_RM_Release_Model {
 		if ( is_wp_error( $format ) ) {
 			wp_die( esc_html( $format->get_error_message() ) );
 		}
-		$taxonomy = get_taxonomy( 'release_format' );
-		if ( isset( $_POST['release_format'] ) && ( ! $taxonomy || ! current_user_can( $taxonomy->cap->assign_terms ) ) ) {
+		$taxonomy = get_taxonomy( 'release_type' );
+		if ( isset( $_POST['release_type'] ) && ( ! $taxonomy || ! current_user_can( $taxonomy->cap->assign_terms ) ) ) {
 			wp_die(
-				esc_html__( 'You are not allowed to assign a release format.', 'mds-release-manager' ),
+				esc_html__( 'You are not allowed to assign a release type.', 'mds-release-manager' ),
 				'',
 				array(
 					'response'  => 403,
@@ -682,12 +998,12 @@ final class MDS_RM_Release_Model {
 		}
 		$meta    = $request->get_param( 'meta' );
 		$upc     = is_array( $meta ) && array_key_exists( 'upc_ean', $meta ) ? $meta['upc_ean'] : ( $post_id ? get_post_meta( $post_id, 'upc_ean', true ) : '' );
-		$formats = $request->get_param( 'release_format' );
+		$formats = $request->get_param( 'release_type' );
 		if ( null === $formats && $post_id && self::has_legacy_format_conflict( $post_id ) ) {
-			return new WP_Error( 'mds_format_conflict', __( 'The saved format conflicts with legacy data. Choose a release format explicitly.', 'mds-release-manager' ), array( 'status' => 400 ) );
+			return new WP_Error( 'mds_format_conflict', __( 'The saved release type conflicts with legacy data. Choose a release type explicitly.', 'mds-release-manager' ), array( 'status' => 400 ) );
 		}
 		if ( null === $formats ) {
-			$formats = $post_id ? wp_get_post_terms( $post_id, 'release_format', array( 'fields' => 'ids' ) ) : array();
+			$formats = $post_id ? wp_get_post_terms( $post_id, 'release_type', array( 'fields' => 'ids' ) ) : array();
 		}
 		if ( is_wp_error( $formats ) ) {
 			return $formats;

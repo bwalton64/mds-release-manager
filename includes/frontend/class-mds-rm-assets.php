@@ -27,7 +27,6 @@ final class MDS_RM_Assets {
 		add_action( 'wp_enqueue_scripts', array( self::class, 'enqueue_frontend_assets' ) );
 		add_action( 'enqueue_block_assets', array( MDS_RM_Release_Meta::class, 'enqueue_assets' ) );
 		add_action( 'enqueue_block_assets', array( MDS_RM_Release_Links::class, 'enqueue_assets' ) );
-		add_action( 'template_redirect', array( self::class, 'handle_global_redirect' ) );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'admin_assets' ) );
 	}
 
@@ -83,16 +82,12 @@ final class MDS_RM_Assets {
 			return;
 		}
 
-		$request = new WP_REST_Request( 'GET', '/mds/v1/releases/post/' . $post_id );
-		$request->set_param( 'blog_id', get_current_blog_id() );
-		$response = rest_do_request( $request );
-		$release  = $response->is_error() ? array() : $response->get_data();
-
-		if ( empty( $release['buy_now_link'] ) ) {
+		$primary_buy_now = MDS_RM_Release_Model::get_primary_buy_now_url( $post_id );
+		if ( '' === $primary_buy_now ) {
 			return;
 		}
 
-		$target_url  = esc_url_raw( $release['buy_now_link'] );
+		$target_url  = esc_url_raw( $primary_buy_now );
 		$current_url = home_url( add_query_arg( array(), $GLOBALS['wp']->request ?? '' ) );
 		if ( empty( $target_url ) || untrailingslashit( $target_url ) === untrailingslashit( $current_url ) ) {
 			return;
@@ -184,6 +179,30 @@ final class MDS_RM_Assets {
 					)
 				);
 				wp_set_script_translations( 'mds-release-artist-picker', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+			}
+
+			if ( 'post' === $screen->base && 'artist' === $screen->post_type ) {
+				$routing_script = 'js/artist-routing.js';
+				wp_enqueue_script(
+					'mds-artist-routing',
+					MDS_RM_URL . $routing_script,
+					array(),
+					filemtime( MDS_RM_PATH . $routing_script ),
+					true
+				);
+				wp_localize_script(
+					'mds-artist-routing',
+					'mdsArtistRoutingData',
+					array(
+						'rest_base' => esc_url_raw( rest_url( 'mds/v1/artists/' ) ),
+						'nonce'     => wp_create_nonce( 'wp_rest' ),
+						'saving'    => __( 'Saving & syncing…', 'mds-release-manager' ),
+						'save_btn'  => __( 'Save Routing Changes', 'mds-release-manager' ),
+						'saved'     => __( 'Routing saved.', 'mds-release-manager' ),
+						'error'     => __( 'Could not save routing changes.', 'mds-release-manager' ),
+						'no_select' => __( 'Select at least one release to apply a bulk action.', 'mds-release-manager' ),
+					)
+				);
 			}
 		}
 

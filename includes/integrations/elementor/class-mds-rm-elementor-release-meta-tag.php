@@ -78,9 +78,10 @@ class MDS_RM_Elementor_Release_Meta_Tag extends \Elementor\Core\DynamicTags\Data
 					'release_year'         => 'Release Year (Derived)',
 					'record_label'         => 'Record Label',
 					'distributor'          => 'Distributor',
-					'release_format'       => 'Release Format',
+					'release_type'         => 'Release Type',
+					'release_media_format' => 'Media Formats',
 					'release_tags'         => 'Release Tags',
-					'buy_now_link'         => 'Buy Now Link',
+					'buy_now_link'         => 'Buy Now Link (Primary)',
 					'featured_image_url'   => 'Featured Image URL',
 					'stream_Spotify'       => 'Spotify Link',
 					'stream_Apple Music'   => 'Apple Music Link',
@@ -117,13 +118,22 @@ class MDS_RM_Elementor_Release_Meta_Tag extends \Elementor\Core\DynamicTags\Data
 			return isset( $links[ $provider ] ) ? $links[ $provider ] : '';
 		}
 
-		if ( 'release_format' === $key ) {
+		if ( 'release_type' === $key || 'release_format' === $key ) {
 			$format = MDS_RM_Release_Model::format_name( $post_id );
 			if ( is_wp_error( $format ) ) {
 				MDS_RM_Logger::report_failure( 'Release ' . $post_id . ': ' . $format->get_error_message() );
 				return '';
 			}
 			return $format;
+		}
+
+		if ( 'release_media_format' === $key ) {
+			$terms = wp_get_post_terms( $post_id, 'release_media_format', array( 'fields' => 'names' ) );
+			return ! is_wp_error( $terms ) && ! empty( $terms ) ? implode( ', ', $terms ) : '';
+		}
+
+		if ( 'buy_now_link' === $key ) {
+			return MDS_RM_Release_Model::get_primary_buy_now_url( (int) $post_id );
 		}
 
 		if ( 'release_tags' === $key ) {

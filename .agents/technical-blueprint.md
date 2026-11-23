@@ -134,8 +134,7 @@ read-only outside the hub.
 ### Core Actions & Filters
 - **`init`** → `MDS_RM_Post_Types::register_cpts()` — Registers release and artist CPTs.
 - **`wp_enqueue_scripts`** → `MDS_RM_Assets::enqueue_frontend_assets()` — Loads frontend CSS and Font Awesome.
-- **`template_redirect`** → `MDS_RM_Assets::handle_global_redirect()` — Redirects release pages if enabled.
-- **`template_redirect`** → `MDS_RM_Artist_Routing::redirect()` — Redirects an Artist to its valid enabled homepage with HTTP 302, except in admin, previews, feeds, and REST requests. Invalid, missing, or self-referencing URLs leave the Artist page available and show a warning in Artist Settings.
+- **`template_redirect`** → `MDS_RM_Artist_Routing::redirect()` — Unified 2-tier HTTP 302 routing for singular `artist` and `release` pages (skipped in admin, previews, feeds, and REST requests, with automatic `allowed_redirect_hosts` whitelisting and self-redirect loop guards). Replaces the retired site-wide `mds_rm_global_redirect` handler.
 - **`admin_enqueue_scripts`** → `MDS_RM_Assets::admin_assets()` — Loads admin JS/CSS.
 - **`customize_register`** → `MDS_RM_Customizer::customize_register()` — Adds Customizer settings.
 - **`enqueue_block_assets`** → `MDS_RM_Release_Meta::enqueue_assets()` — Loads metadata CSS and icon assets in the frontend and editor.
@@ -176,6 +175,9 @@ read-only outside the hub.
 - **`do_action( 'mds_rm_save_audio_player_settings', $active_player, $audio_player_settings, $params )`** — Fires after Audio Player Manager settings are validated and saved.
 - **`apply_filters( 'mds_rm_release_links_audio_html', $html, $post_id, $attributes )`** — Legacy audio player markup filter retained for backward compatibility when no registered third-party player overrides it; sanitized with the plugin's iframe- and audio-aware kses allowlist.
 - **`apply_filters( 'mds_rm_release_picker_item', $item, $post )`** and **`apply_filters( 'mds_rm_artist_picker_item', $item, $artist )`** — Enrich Release (`id`, `title`, `artist`, `upc`) and Artist (`id`, `title`, `uuid`) records in `MDS_RM_Release_Search` with extension metadata (such as `bandcamp_album_id` or `artist_url`/`subdomain`) for the preloaded Gutenberg editor catalog (`window.mdsRmCatalog`).
+- **`apply_filters( 'mds_rm_release_routing_modes', $modes, $context )`** — Allows extensions (such as `mds-woocommerce-integration`) to register additional per-release routing modes (e.g., `shop_product`).
+- **`apply_filters( 'mds_rm_resolve_release_redirect_url', $url, $mode, $release_id, $artist_id )`** — Resolves extension-registered routing modes into a target redirect URL.
+- **`apply_filters( 'mds_rm_routing_destination_preview', $preview, $mode, $release_id, $artist_id )`** — Supplies a human-readable destination label and URL preview for extension routing modes in the Artist Release Routing table and Release Commerce meta box.
 - **`MDS_RM_Release_Search`** (PHP service, not a hook) — Public editor search surface over published Releases and Artists: `query()` / `query_artists()`, `paginate()`, `describe()` / `describe_artists()`, and `editor_catalog()` feed the preloaded `window.mdsRmCatalog` / `window.mdsRmToolkit` editor toolkit and picker endpoints.
 - **`MDS_RM_Release_Meta::resolve_release( $attributes, $block, $context_post_id )` and `MDS_RM_Release_Meta::register_extension_meta( $meta_key, $args )`** — Public PHP developer toolkit for resolving a Release `WP_Post` across blocks/shortcodes/contexts and registering extension post meta keys on the `release` CPT.
 
@@ -239,7 +241,11 @@ read-only outside the hub.
 - `_mds_normalized_upc` (string) — Digit-only exact-match lookup key maintained from `upc_ean`.
 - `artist_id` (string) — Artist post ID or UUID.
 - `streaming_links` (JSON string) — Encoded array of streaming platform URLs: `{"Spotify": "url", "Apple Music": "url", ...}`.
-- `buy_now_link` (string) — URL for purchase/buy now button.
+- `buy_now_link` (string) — Primary URL for purchase/buy now button (mirrored from `buy_now_links`).
+- `buy_now_links` (JSON string) — Multi-format Buy Now repeater entries (`format`, `url`, `is_primary`).
+- `buy_now_mode` (string) — Per-release Buy Now button behavior (`modal` or `primary_only`).
+- `release_routing_mode` (string) — Per-release routing override (`inherit`, `fallback`, `artist_website`, `buy_now`, `custom_url`, or extension mode such as `shop_product`).
+- `release_routing_url` (string) — Custom HTTP(S) redirect destination when `release_routing_mode` is `custom_url`.
 - `bandcamp_shortcode` (legacy string) — No longer read or written by core; owned and migrated by the Bandcamp extension.
 - `audio_preview_url` (string) — URL to preview audio file.
 - `release_format` (legacy string) — Obsolete; the taxonomy is authoritative. Conflicts require review, and successful saves remove this legacy value.
@@ -255,6 +261,7 @@ read-only outside the hub.
 - `artist_contact` (string) — Contact information.
 - `artist_homepage_url` (string) — Optional HTTP(S) homepage.
 - `artist_homepage_routing` (string) — Per-Artist redirect toggle (`0` or `1`).
+- `artist_releases_routing_mode` (string) — Default routing policy inherited by all Releases belonging to this Artist (`fallback`, `artist_website`, `buy_now_or_artist`, `buy_now_or_fallback`).
 - The deprecated `artist_featured_image` URL is no longer used or synchronized. On each site's administrator visits, up to 100 Artist records are cleaned per request until the per-site completion marker is set; sites not visited or with outstanding batches remain pending. The WordPress featured image is used instead.
 
 ### Post Meta Keys (Attachments)
@@ -290,7 +297,7 @@ read-only outside the hub.
 - `mds_rm_audio_players` (array) — Active audio player types: 'html5' (legacy 'native' is accepted).
 - `mds_rm_providers` (array) — Global provider configuration (name, icon, color).
 - `mds_rm_block_defaults` (array) — Site-local block presentation defaults keyed by block slug. Native style values, table styles, field/link lists, and link/audio switches are validated before storage. Block rendering, including automatic fallback blocks, resolves these against saved attributes; legacy lists remain complete overrides and explicit field/style overrides take precedence. Shortcodes and Elementor do not consume these defaults.
-- `mds_rm_global_redirect` — Site-Wide Routing toggle ('0' or '1'). Releases with a Buy Now URL redirect; when enabled, automatic Release fallback composition is suppressed for every Release.
+- `mds_rm_global_redirect` — Retired legacy option (no longer read or written by core; routing is governed per Artist and per Release via `MDS_RM_Artist_Routing`).
 - `mds_rm_artist_image_cleanup_complete` — Per-site marker for the deprecated Artist image URL cleanup.
 - `mds_rm_normalized_upc_migration_complete` — Per-site marker set after all existing Release UPC lookup keys have been backfilled in bounded batches.
 - `mds_rm_release_audit` (transient) — Cached IDs flagged by the Release list audit; invalidated when audited metadata or format terms change.
@@ -321,6 +328,11 @@ read-only outside the hub.
 - **Permission:** `edit_posts`.
 - **Query params:** Required `search` term and optional `page`.
 - **Response:** Up to 20 Artist UUID/title choices and a page count for the Release editor picker.
+
+**POST `/wp-json/mds/v1/artists/{id}/release-routing`**
+- **Permission:** `edit_post` for the target Artist ID.
+- **Body params:** `artist_releases_routing_mode` and `releases` array (`id`, `mode`, `url`).
+- **Response:** Updated counts, live resolved destination previews per release, and triggers a single `MDS_RM_Sync::broadcast_batch_to_spokes()` sync and cache purge.
 
 **POST `/wp-json/mds/v1/settings`**
 - **Permission:** `manage_options`.

@@ -57,6 +57,17 @@
                             options: [{ label: defaults.showAudio === false ? __('Use site default (No)', 'mds-release-manager') : __('Use site default (Yes)', 'mds-release-manager'), value: '' }, { label: __('Yes', 'mds-release-manager'), value: 'true' }, { label: __('No', 'mds-release-manager'), value: 'false' }],
                             onChange: function(value) { setAttributes({ showAudio: value === '' ? undefined : value === 'true' }); }
                         }),
+                        el(wp.components.SelectControl, {
+                            label: __('Multi-format Buy Now behavior', 'mds-release-manager'),
+                            help: __('Applies when a release has 2+ Media Formats and no store extension overrides Buy Now.', 'mds-release-manager'),
+                            value: attributes.buyNowMode === undefined ? '' : String(attributes.buyNowMode),
+                            options: [
+                                { label: defaults.buyNowMode === 'direct' ? __('Use site default (Primary Direct Link)', 'mds-release-manager') : __('Use site default (Choose Format Modal)', 'mds-release-manager'), value: '' },
+                                { label: __('Choose Format Modal', 'mds-release-manager'), value: 'picker' },
+                                { label: __('Primary Direct Link', 'mds-release-manager'), value: 'direct' }
+                            ],
+                            onChange: function(value) { setAttributes({ buyNowMode: value === '' ? undefined : value }); }
+                        }),
                         (attributes.items || attributes.itemOrder || attributes.itemOverrides) && el(wp.components.Button, {
                             variant: 'tertiary',
                             onClick: function() { setAttributes({ items: undefined, itemOrder: undefined, itemOverrides: undefined }); }
@@ -88,6 +99,14 @@
                                 onChange: function(value) { updateItem(index, { enabled: value }); }
                             }),
                             resetProperty(item, 'enabled', __('Use site visibility', 'mds-release-manager')),
+                            el(wp.components.SelectControl, {
+                                label: __('Choose icon preset', 'mds-release-manager'),
+                                value: '',
+                                options: (window.mdsRmStylePrimitives && window.mdsRmStylePrimitives.ICON_PRESETS) || [],
+                                onChange: function(value) {
+                                    if (value) updateItem(index, { icon: value === '__none' ? '' : value });
+                                }
+                            }),
                             el(TextControl, {
                                 label: 'Icon classes', help: 'Leave blank to use the provider default. Dashicons and Font Awesome are supported.',
                                 value: item.icon || '', onChange: function(value) { updateItem(index, { icon: value }); }

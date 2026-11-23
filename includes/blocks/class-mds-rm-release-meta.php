@@ -40,9 +40,14 @@ final class MDS_RM_Release_Meta {
 				'icon'    => 'fas fa-barcode',
 				'enabled' => true,
 			),
-			'release_format' => array(
-				'label'   => 'Release Format',
+			'release_type'         => array(
+				'label'   => 'Release Type',
 				'icon'    => 'dashicons dashicons-album',
+				'enabled' => false,
+			),
+			'release_media_format' => array(
+				'label'   => 'Media Formats',
+				'icon'    => 'fas fa-record-vinyl',
 				'enabled' => false,
 			),
 			'release_date'   => array(
@@ -373,6 +378,7 @@ final class MDS_RM_Release_Meta {
 				return '0000-00-00 00:00:00' !== $post->post_date ? mysql2date( get_option( 'date_format' ), $post->post_date ) : '';
 			case 'release_title':
 				return get_the_title( $post );
+			case 'release_type':
 			case 'release_format':
 				$value = MDS_RM_Release_Model::format_name( $post->ID );
 				if ( is_wp_error( $value ) ) {
@@ -380,6 +386,13 @@ final class MDS_RM_Release_Meta {
 					return '';
 				}
 				return $value;
+			case 'release_media_format':
+				$terms = wp_get_post_terms( $post->ID, 'release_media_format', array( 'fields' => 'names' ) );
+				if ( is_wp_error( $terms ) ) {
+					MDS_RM_Logger::report_failure( 'Release ' . $post->ID . ': ' . $terms->get_error_message() );
+					return '';
+				}
+				return $terms ? implode( ', ', $terms ) : '';
 			case 'release_tags':
 				$terms = wp_get_post_terms( $post->ID, 'release_tag', array( 'fields' => 'names' ) );
 				if ( is_wp_error( $terms ) ) {

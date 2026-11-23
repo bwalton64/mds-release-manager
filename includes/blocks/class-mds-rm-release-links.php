@@ -201,8 +201,32 @@ final class MDS_RM_Release_Links {
 			}
 			unset( $link );
 		}
-		$buy_url = get_post_meta( $post->ID, 'buy_now_link', true );
-		if ( is_string( $buy_url ) && '' !== esc_url( $buy_url ) ) {
+		$buy_now_links  = class_exists( 'MDS_RM_Release_Model' ) ? MDS_RM_Release_Model::get_buy_now_links( $post->ID ) : array();
+		$buy_url        = class_exists( 'MDS_RM_Release_Model' ) ? MDS_RM_Release_Model::get_primary_buy_now_url( $post->ID ) : (string) get_post_meta( $post->ID, 'buy_now_link', true );
+		$release_mode   = get_post_meta( $post->ID, 'buy_now_mode', true );
+		if ( is_string( $release_mode ) && in_array( $release_mode, array( 'picker', 'direct' ), true ) ) {
+			$buy_mode = $release_mode;
+		} else {
+			$buy_mode = isset( $attributes['buyNowMode'] ) && in_array( $attributes['buyNowMode'], array( 'picker', 'direct' ), true )
+				? $attributes['buyNowMode']
+				: 'picker';
+		}
+		/**
+		 * Filters how the Buy Now button behaves when multiple media formats exist.
+		 *
+		 * Extensions (such as MDS WooCommerce Integration) can return `'direct'`
+		 * when a unified White-Label product URL handles format selection.
+		 *
+		 * @since 1.1.0
+		 * @param string $buy_mode      Display mode (`picker` or `direct`).
+		 * @param int    $post_id       Release post ID.
+		 * @param array  $buy_now_links Normalized Buy Now offers for the release.
+		 */
+		$buy_mode       = (string) apply_filters( 'mds_rm_buy_now_display_mode', $buy_mode, $post->ID, $buy_now_links );
+		$use_buy_modal  = 'picker' === $buy_mode && count( $buy_now_links ) >= 2;
+		$buy_dialog_id  = $use_buy_modal ? 'mds-buy-now-dialog-' . $post->ID : '';
+
+		if ( '' !== $buy_url && '' !== esc_url( $buy_url ) ) {
 			$available['__buy_now'] = array(
 				'url'   => $buy_url,
 				'icon'  => 'fas fa-cart-shopping',
@@ -255,10 +279,43 @@ final class MDS_RM_Release_Links {
 			if ( '' === $color && ! empty( $link['color'] ) ) {
 				MDS_RM_Logger::diagnostic( 'Invalid Release Links provider color for ' . $label );
 			}
-			$output .= '<a class="mds-release-links__link" href="' . esc_url( $link['url'] ) . '" aria-label="' . esc_attr( $title ) . '" title="' . esc_attr( $title ) . '"' .
+			$modal_attrs = ( '__buy_now' === $name && $use_buy_modal )
+				? ' data-mds-buy-now-modal="' . esc_attr( $buy_dialog_id ) . '" aria-haspopup="dialog" aria-controls="' . esc_attr( $buy_dialog_id ) . '"'
+				: '';
+			$output     .= '<a class="mds-release-links__link" href="' . esc_url( $link['url'] ) . '" aria-label="' . esc_attr( $title ) . '" title="' . esc_attr( $title ) . '"' .
 				( $new_tab ? ' target="_blank" rel="noopener noreferrer"' : '' ) .
 				( $color ? ' style="--mds-links-provider-background:' . esc_attr( $color ) . '"' : '' ) .
+				$modal_attrs .
 				'><i class="' . esc_attr( $icon ) . '" aria-hidden="true"></i></a>';
+		}
+		$modal_html = '';
+		if ( $use_buy_modal && ! empty( $ordered['__buy_now'] ) ) {
+			if ( function_exists( 'wp_enqueue_script' ) && defined( 'MDS_RM_URL' ) && defined( 'MDS_RM_PATH' ) && is_readable( MDS_RM_PATH . 'js/buy-now-modal.js' ) ) {
+				wp_enqueue_script( 'mds-buy-now-modal', MDS_RM_URL . 'js/buy-now-modal.js', array(), filemtime( MDS_RM_PATH . 'js/buy-now-modal.js' ), true );
+			}
+			$items_html = '';
+			foreach ( $buy_now_links as $offer ) {
+				$offer_icon = isset( $offer['icon'] ) && is_string( $offer['icon'] ) ? trim( $offer['icon'] ) : '';
+				if ( ! preg_match( '/^(?:dashicons dashicons-[a-z0-9-]+|(?:fa[srbl]|fa-(?:solid|regular|brands|light)) fa-[a-z0-9-]+)$/D', $offer_icon ) ) {
+					$offer_icon = 'fas fa-cart-shopping';
+				}
+				$store_html = ! empty( $offer['store'] )
+					? '<span class="mds-buy-now-dialog__store">' . esc_html( (string) $offer['store'] ) . '</span>'
+					: '';
+				$items_html .= '<li><a class="mds-buy-now-dialog__option" href="' . esc_url( (string) $offer['url'] ) . '"' .
+					( $new_tab ? ' target="_blank" rel="noopener noreferrer"' : '' ) . '>' .
+					'<span class="mds-buy-now-dialog__icon"><i class="' . esc_attr( $offer_icon ) . '" aria-hidden="true"></i></span>' .
+					'<span class="mds-buy-now-dialog__text"><span class="mds-buy-now-dialog__format">' . esc_html( (string) $offer['label'] ) . '</span>' . $store_html . '</span>' .
+					'<span class="mds-buy-now-dialog__cta">' . esc_html__( 'Buy', 'mds-release-manager' ) . ' →</span>' .
+					'</a></li>';
+			}
+			$modal_html = '<dialog id="' . esc_attr( $buy_dialog_id ) . '" class="mds-buy-now-dialog" aria-labelledby="' . esc_attr( $buy_dialog_id . '-title' ) . '">' .
+				'<div class="mds-buy-now-dialog__header">' .
+				'<h3 id="' . esc_attr( $buy_dialog_id . '-title' ) . '" class="mds-buy-now-dialog__title">' . esc_html__( 'Choose a Format', 'mds-release-manager' ) . '</h3>' .
+				'<button type="button" class="mds-buy-now-dialog__close" aria-label="' . esc_attr__( 'Close', 'mds-release-manager' ) . '">&times;</button>' .
+				'</div>' .
+				'<ul class="mds-buy-now-dialog__list">' . $items_html . '</ul>' .
+				'</dialog>';
 		}
 		$audio = ! isset( $attributes['showAudio'] ) || $attributes['showAudio'] ? self::audio( $post->ID, $attributes ) : '';
 		if ( '' === $output && '' === $audio ) {
@@ -268,7 +325,8 @@ final class MDS_RM_Release_Links {
 		$style = MDS_RM_Release_Meta::style_attribute( isset( $attributes['styles'] ) ? $attributes['styles'] : array(), self::style_fields(), 'links' );
 		return '<div class="mds-release-links"' . ( $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>' .
 			( $output ? '<div class="mds-release-links__buttons">' . $output . '</div>' : '' ) .
-			( $audio ? '<div class="mds-release-links__audio">' . $audio . '</div>' : '' ) . '</div>';
+			( $audio ? '<div class="mds-release-links__audio">' . $audio . '</div>' : '' ) .
+			$modal_html . '</div>';
 	}
 
 	/**
@@ -328,14 +386,18 @@ final class MDS_RM_Release_Links {
 				}
 			}
 		}
+		$buy_now_mode = isset( $atts['buy_now_mode'] ) && in_array( $atts['buy_now_mode'], array( 'picker', 'direct' ), true )
+			? $atts['buy_now_mode']
+			: 'picker';
 		return self::render(
 			array(
 				'upc'        => isset( $atts['upc'] ) ? $atts['upc'] : '',
 				'release_id' => isset( $atts['release_id'] ) ? $atts['release_id'] : '',
-				'items'     => $items,
-				'newTab'    => self::shortcode_toggle( $atts, 'new_tab' ),
-				'showAudio' => self::shortcode_toggle( $atts, 'show_audio' ),
-				'styles'    => $styles,
+				'items'      => $items,
+				'newTab'     => self::shortcode_toggle( $atts, 'new_tab' ),
+				'showAudio'  => self::shortcode_toggle( $atts, 'show_audio' ),
+				'buyNowMode' => $buy_now_mode,
+				'styles'     => $styles,
 			),
 			get_the_ID()
 		);

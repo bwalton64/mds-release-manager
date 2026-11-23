@@ -7,7 +7,7 @@ jQuery(function ($) {
         return;
     }
 
-    $(document).on('input change', '#upc_ean, #release_format', function () {
+    $(document).on('input change', '#upc_ean, #release_type', function () {
         var editor = wp.data.select('core/editor');
         var meta = Object.assign({}, editor.getEditedPostAttribute('meta') || {});
         var changes = {};
@@ -15,7 +15,7 @@ jQuery(function ($) {
             meta.upc_ean = $(this).val();
             changes.meta = meta;
         } else {
-            changes.release_format = $(this).val() ? [Number($(this).val())] : [];
+            changes.release_type = $(this).val() ? [Number($(this).val())] : [];
         }
         wp.data.dispatch('core/editor').editPost(changes);
     });
@@ -25,7 +25,8 @@ jQuery(function ($) {
         var panels = editor.removeEditorPanel ? editor : wp.data.dispatch('core/edit-post');
 
         panels.removeEditorPanel('taxonomy-panel-release_tag');
-        panels.removeEditorPanel('taxonomy-panel-release_format');
+        panels.removeEditorPanel('taxonomy-panel-release_type');
+        panels.removeEditorPanel('taxonomy-panel-release_media_format');
     });
 
     wp.hooks.addFilter('editor.preSavePost', 'mds-rm/required-release-fields', function (edits, options) {
@@ -33,12 +34,12 @@ jQuery(function ($) {
             return edits;
         }
         var upc = $('#upc_ean');
-        var format = $('#release_format');
+        var format = $('#release_type');
         if (upc.length) {
             edits.meta = Object.assign({}, wp.data.select('core/editor').getEditedPostAttribute('meta') || {}, edits.meta || {}, { upc_ean: upc.val() });
         }
         if (format.length && !format.prop('disabled')) {
-            edits.release_format = format.val() ? [Number(format.val())] : [];
+            edits.release_type = format.val() ? [Number(format.val())] : [];
         }
         return edits;
     });

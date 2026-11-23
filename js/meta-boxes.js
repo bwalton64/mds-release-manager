@@ -46,4 +46,37 @@ jQuery(document).ready(function($){
 
     $(document).on("click", ".mds-remove-row", function(e) { e.preventDefault(); $(this).closest(".mds-streaming-row").remove(); });
 
+    function reindexBuyNowPrimary() {
+        var $rows = $("#mds_buy_now_links_wrapper .mds-buy-now-row");
+        var hasChecked = false;
+        $rows.each(function(index) {
+            var $radio = $(this).find('input[name="mds_buy_now_primary"]');
+            $radio.val(String(index));
+            if ($radio.prop("checked")) { hasChecked = true; }
+        });
+        if (!hasChecked && $rows.length) {
+            $rows.first().find('input[name="mds_buy_now_primary"]').prop("checked", true);
+        }
+    }
+
+    $("#mds_add_buy_now_row").on("click", function(e) {
+        e.preventDefault();
+        var tpl = document.getElementById("mds_buy_now_row_template");
+        if (!tpl) { return; }
+        var index = $("#mds_buy_now_links_wrapper .mds-buy-now-row").length;
+        var html = tpl.innerHTML.replace(/__INDEX__/g, String(index));
+        $("#mds_buy_now_links_wrapper").append(html);
+        reindexBuyNowPrimary();
+    });
+
+    $(document).on("click", ".mds-remove-buy-now-row", function(e) {
+        e.preventDefault();
+        $(this).closest(".mds-buy-now-row").remove();
+        reindexBuyNowPrimary();
+    });
+
+    $("#mds_release_routing_mode").on("change", function() {
+        $("#mds_release_routing_url_wrap").prop("hidden", $(this).val() !== "custom_url");
+    });
+
 });

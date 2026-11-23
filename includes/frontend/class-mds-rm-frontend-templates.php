@@ -86,8 +86,8 @@ final class MDS_RM_Frontend_Templates {
 		if (
 			! is_singular( 'release' )
 			|| is_admin()
-			|| '1' === get_option( 'mds_rm_global_redirect', '0' )
 			|| ! $post_id
+			|| '' !== MDS_RM_Artist_Routing::resolve_release_redirect( $post_id )
 			|| MDS_RM_Builder_Detection::detect_builder( $post_id )
 		) {
 			return;
@@ -259,7 +259,7 @@ final class MDS_RM_Frontend_Templates {
 			! $post instanceof WP_Post
 			|| 'release' !== $post->post_type
 			|| ( $post_id && absint( $post_id ) !== $post->ID )
-			|| '1' === get_option( 'mds_rm_global_redirect', '0' )
+			|| '' !== MDS_RM_Artist_Routing::resolve_release_redirect( $post->ID )
 			|| MDS_RM_Builder_Detection::detect_builder( $post->ID )
 		) {
 			return false;

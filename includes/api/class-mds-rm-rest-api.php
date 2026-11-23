@@ -164,6 +164,19 @@ final class MDS_RM_REST_API {
 					},
 			)
 		);
+
+		register_rest_route(
+			'mds/v1',
+			'/artists/(?P<id>\d+)/release-routing',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( self::class, 'save_artist_release_routing_api' ),
+				'permission_callback' => static function ( WP_REST_Request $request ): bool {
+					$artist_id = absint( $request->get_param( 'id' ) );
+					return $artist_id > 0 && MDS_RM_Sync::is_hub() && current_user_can( 'edit_post', $artist_id );
+				},
+			)
+		);
 	}
 
 	/**
@@ -321,12 +334,6 @@ final class MDS_RM_REST_API {
 			update_option( 'mds_rm_audio_player_settings', $audio_player_settings );
 		}
 
-		if ( isset( $params['mds_rm_global_redirect'] ) ) {
-			update_option( 'mds_rm_global_redirect', '1' );
-		} else {
-			update_option( 'mds_rm_global_redirect', '0' );
-		}
-
 		if ( isset( $params['mds_rm_fa_support'] ) ) {
 			update_option( 'mds_rm_fa_support', sanitize_text_field( wp_unslash( $params['mds_rm_fa_support'] ) ) );
 		}
@@ -389,5 +396,109 @@ final class MDS_RM_REST_API {
 		}
 
 		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Saves the Artist-level default release routing policy and per-release routing overrides,
+	 * then batch-broadcasts changed records to configured spoke sites.
+	 *
+	 * @since 1.1.0
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error Updated destination previews or an error.
+	 */
+	public static function save_artist_release_routing_api( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$artist_id = absint( $request->get_param( 'id' ) );
+		$artist    = get_post( $artist_id );
+		if ( ! $artist instanceof WP_Post || 'artist' !== $artist->post_type ) {
+			return new WP_Error( 'mds_artist_not_found', __( 'Artist not found.', 'mds-release-manager' ), array( 'status' => 404 ) );
+		}
+
+		$artist_uuid = (string) get_post_meta( $artist_id, '_mds_artist_uuid', true );
+		$json_body   = $request->get_json_params();
+		$payload     = is_array( $json_body ) && ! empty( $json_body ) ? $json_body : $request->get_body_params();
+
+		$sync_items = array();
+
+		if ( isset( $payload['artist_releases_routing_mode'] ) ) {
+			$artist_mode = MDS_RM_Artist_Routing::sanitize_artist_release_mode( $payload['artist_releases_routing_mode'] );
+			update_post_meta( $artist_id, 'artist_releases_routing_mode', $artist_mode );
+			$sync_items[] = array(
+				'id'        => $artist_id,
+				'post_type' => 'artist',
+			);
+		}
+
+		if ( isset( $payload['artist_homepage_url'] ) && is_string( $payload['artist_homepage_url'] ) ) {
+			update_post_meta( $artist_id, 'artist_homepage_url', esc_url_raw( trim( $payload['artist_homepage_url'] ) ) );
+		}
+
+		$submitted_releases = isset( $payload['releases'] ) && is_array( $payload['releases'] ) ? $payload['releases'] : array();
+		$updated_releases   = 0;
+		$previews           = array();
+
+		foreach ( $submitted_releases as $row ) {
+			if ( ! is_array( $row ) || empty( $row['id'] ) ) {
+				continue;
+			}
+			$release_id = absint( $row['id'] );
+			$release    = get_post( $release_id );
+			if ( ! $release instanceof WP_Post || 'release' !== $release->post_type || ! current_user_can( 'edit_post', $release_id ) ) {
+				continue;
+			}
+			// Verify the release belongs to this Artist.
+			if ( '' !== $artist_uuid && (string) get_post_meta( $release_id, 'artist_id', true ) !== $artist_uuid ) {
+				continue;
+			}
+
+			$mode       = MDS_RM_Artist_Routing::sanitize_release_mode( $row['mode'] ?? 'inherit' );
+			$custom_url = isset( $row['custom_url'] ) && is_string( $row['custom_url'] ) ? esc_url_raw( trim( $row['custom_url'] ) ) : '';
+
+			if ( 'inherit' === $mode ) {
+				delete_post_meta( $release_id, 'release_routing_mode' );
+				delete_post_meta( $release_id, 'release_routing_url' );
+			} else {
+				update_post_meta( $release_id, 'release_routing_mode', $mode );
+				if ( 'custom_url' === $mode && '' !== $custom_url ) {
+					update_post_meta( $release_id, 'release_routing_url', $custom_url );
+				} else {
+					delete_post_meta( $release_id, 'release_routing_url' );
+				}
+			}
+
+			$sync_items[] = array(
+				'id'        => $release_id,
+				'post_type' => 'release',
+			);
+			++$updated_releases;
+			$previews[ (string) $release_id ] = MDS_RM_Artist_Routing::describe_release_destination( $release_id, $artist_id );
+		}
+
+		$sync_errors = array();
+		if ( $sync_items ) {
+			$sync_results = MDS_RM_Sync::broadcast_batch_to_spokes( $sync_items );
+			foreach ( $sync_results as $item_key => $item_result ) {
+				if ( is_wp_error( $item_result ) ) {
+					$sync_errors[] = $item_key . ': ' . $item_result->get_error_message();
+				}
+			}
+		}
+
+		MDS_RM_Sync::purge_cache();
+
+		return rest_ensure_response(
+			array(
+				'success'          => empty( $sync_errors ),
+				'updated_releases' => $updated_releases,
+				'previews'         => $previews,
+				'errors'           => $sync_errors,
+				'message'          => empty( $sync_errors )
+					? sprintf(
+						/* translators: %d: Number of updated releases. */
+						__( 'Routing saved and synchronized (%d releases).', 'mds-release-manager' ),
+						$updated_releases
+					)
+					: __( 'Routing saved, but some spoke synchronizations reported errors.', 'mds-release-manager' ),
+			)
+		);
 	}
 }

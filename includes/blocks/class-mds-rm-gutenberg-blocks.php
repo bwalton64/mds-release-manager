@@ -103,6 +103,22 @@ final class MDS_RM_Gutenberg_Blocks {
             background: #2271b1; color: #fff; font-size: 10px; padding: 2px 6px; 
             border-radius: 3px; z-index: 10; pointer-events: none;
         }
+        .mds-section-info { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; margin: 0 0 16px; background: #f0f6fc; border: 1px solid #c5d9ed; border-left: 3px solid #2271b1; border-radius: 3px; }
+        .mds-section-info__icon { color: #2271b1; margin-top: 1px; flex-shrink: 0; }
+        .mds-section-info__title { display: block; font-size: 12px; color: #1e1e1e; margin-bottom: 3px; }
+        .mds-section-info__summary, .mds-section-info__inheritance { margin: 0; font-size: 12px; line-height: 1.45; color: #3c434a; }
+        .mds-section-info__inheritance { margin-top: 5px; font-style: italic; color: #50575e; }
+        .mds-control-group { padding: 12px; margin: 0 0 16px; background: #fcfcfc; border: 1px solid #e2e4e7; border-radius: 4px; }
+        .mds-control-group__title { margin: 0 0 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: #1e1e1e; }
+        .mds-control-group__description { margin: 0 0 12px; font-size: 12px; color: #646970; }
+        .mds-control-group__fields { display: flex; flex-direction: column; gap: 14px; }
+        .mds-style-grid-2col { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        .mds-style-field { display: flex; flex-direction: column; gap: 6px; }
+        .mds-style-field .components-base-control { margin-bottom: 0; }
+        .mds-style-field--paired, .mds-style-field--color { padding: 10px; background: #fff; border: 1px solid #e6e8ea; border-radius: 3px; gap: 8px; }
+        .mds-style-field__label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #1e1e1e; }
+        .mds-style-field__help { margin: 2px 0 0; font-size: 11.5px; line-height: 1.4; color: #646970; }
+        .mds-site-default-btn { align-self: flex-start; font-size: 12px; }
     '
 		);
 	}
@@ -122,12 +138,28 @@ final class MDS_RM_Gutenberg_Blocks {
 			true
 		);
 		wp_set_script_translations( 'mds-rm-color-control', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+		foreach (
+			array(
+				'release-picker'        => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-url', 'wp-html-entities', 'wp-i18n' ),
+				'release-items'         => array(),
+				'native-release-styles' => array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-color-control' ),
+			) as $script => $dependencies
+		) {
+			$file = "blocks/{$script}.js";
+			wp_register_script( "mds-rm-{$script}", MDS_RM_URL . $file, $dependencies, filemtime( MDS_RM_PATH . $file ), true );
+			wp_set_script_translations( "mds-rm-{$script}", 'mds-release-manager', MDS_RM_PATH . 'languages' );
+		}
+		wp_add_inline_script(
+			'mds-rm-release-picker',
+			'window.mdsRmDebug = ' . wp_json_encode( defined( 'WP_DEBUG' ) && WP_DEBUG ) . '; window.mdsRmCatalog = ' . wp_json_encode( MDS_RM_Release_Search::editor_catalog() ) . ';',
+			'before'
+		);
 		$edit_script    = 'blocks/artist-discography/edit.js';
 		$table_controls = 'blocks/artist-discography/table-controls.js';
 		wp_register_script(
 			'mds-rm-discography-table-controls',
 			MDS_RM_URL . $table_controls,
-			array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-color-control' ),
+			array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-color-control', 'mds-rm-native-release-styles' ),
 			filemtime( MDS_RM_PATH . $table_controls ),
 			true
 		);
@@ -148,22 +180,6 @@ final class MDS_RM_Gutenberg_Blocks {
 			array(
 				'render_callback' => array( MDS_RM_Discography::class, 'render_block' ),
 			)
-		);
-		foreach (
-			array(
-				'release-picker'        => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-url', 'wp-html-entities', 'wp-i18n' ),
-				'release-items'         => array(),
-				'native-release-styles' => array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-color-control' ),
-			) as $script => $dependencies
-		) {
-			$file = "blocks/{$script}.js";
-			wp_register_script( "mds-rm-{$script}", MDS_RM_URL . $file, $dependencies, filemtime( MDS_RM_PATH . $file ), true );
-			wp_set_script_translations( "mds-rm-{$script}", 'mds-release-manager', MDS_RM_PATH . 'languages' );
-		}
-		wp_add_inline_script(
-			'mds-rm-release-picker',
-			'window.mdsRmDebug = ' . wp_json_encode( defined( 'WP_DEBUG' ) && WP_DEBUG ) . '; window.mdsRmCatalog = ' . wp_json_encode( MDS_RM_Release_Search::editor_catalog() ) . ';',
-			'before'
 		);
 		self::register_release_block( 'release-meta', 'render_gutenberg_release_meta' );
 		self::register_release_block( 'release-links', 'render_gutenberg_release_links' );
@@ -292,14 +308,19 @@ final class MDS_RM_Gutenberg_Blocks {
 			$json     = get_post_meta( $post_id, 'streaming_links', true );
 			$links    = json_decode( $json, true );
 			$val      = isset( $links[ $provider ] ) ? $links[ $provider ] : '';
-		} elseif ( 'featured_image_url' === $meta_field || 'buy_now_link' === $meta_field ) {
+		} elseif ( 'buy_now_link' === $meta_field ) {
+			$val = MDS_RM_Release_Model::get_primary_buy_now_url( (int) $post_id );
+		} elseif ( 'featured_image_url' === $meta_field ) {
 			$val = get_post_meta( $post_id, $meta_field, true );
-		} elseif ( 'release_format' === $meta_field ) {
+		} elseif ( 'release_type' === $meta_field || 'release_format' === $meta_field ) {
 			$val = MDS_RM_Release_Model::format_name( $post_id );
 			if ( is_wp_error( $val ) ) {
 				MDS_RM_Logger::report_failure( 'Release ' . $post_id . ': ' . $val->get_error_message() );
 				return '';
 			}
+		} elseif ( 'release_media_format' === $meta_field ) {
+			$terms = wp_get_post_terms( $post_id, 'release_media_format', array( 'fields' => 'names' ) );
+			$val   = ! is_wp_error( $terms ) && ! empty( $terms ) ? implode( ', ', $terms ) : '';
 		} elseif ( 'release_tags' === $meta_field ) {
 			$val = get_post_meta( $post_id, 'release_tags', true );
 			if ( ! $val ) {

@@ -10,20 +10,7 @@
     const { __ } = wp.i18n;
     const name = 'mds-rm/release-meta';
 
-    var iconPresets = [
-        { label: 'Choose a common icon...', value: '' },
-        { label: 'No icon', value: '__none' },
-        { label: 'Album (Dashicons)', value: 'dashicons dashicons-album' },
-        { label: 'Calendar (Dashicons)', value: 'dashicons dashicons-calendar-alt' },
-        { label: 'Artist (Dashicons)', value: 'dashicons dashicons-groups' },
-        { label: 'Tag (Dashicons)', value: 'dashicons dashicons-tag' },
-        { label: 'Star (Dashicons)', value: 'dashicons dashicons-star-filled' },
-        { label: 'Calendar (Font Awesome)', value: 'fas fa-calendar' },
-        { label: 'Disc (Font Awesome)', value: 'fas fa-compact-disc' },
-        { label: 'Distributor (Font Awesome)', value: 'fas fa-tower-broadcast' },
-        { label: 'Barcode (Font Awesome)', value: 'fas fa-barcode' },
-        { label: 'Music (Font Awesome)', value: 'fas fa-music' }
-    ];
+    var iconPresets = (window.mdsRmStylePrimitives && window.mdsRmStylePrimitives.ICON_PRESETS) || [];
 
     registerBlockType(name, {
         edit: function(props) {

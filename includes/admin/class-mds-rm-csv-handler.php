@@ -75,7 +75,7 @@ final class MDS_RM_CSV_Handler {
 			'Release Title',
 			'Artist',
 			'Release Date',
-			'Release Format',
+			'Release Type',
 			'Record Label',
 			'Distributor',
 			'Buy Now Link',
@@ -316,8 +316,8 @@ final class MDS_RM_CSV_Handler {
 				$trimmed_row = array_map( 'trim', $row );
 				if ( in_array( 'UPC/EAN', $trimmed_row, true ) ) {
 					$headers = $trimmed_row;
-					if ( ! in_array( 'Release Format', $headers, true ) ) {
-						self::csv_redirect_with_message( 'mds_csv_missing_format', __( 'The CSV must include a Release Format column.', 'mds-release-manager' ), 'error' );
+					if ( ! in_array( 'Release Type', $headers, true ) ) {
+						self::csv_redirect_with_message( 'mds_csv_missing_format', __( 'The CSV must include a Release Type column.', 'mds-release-manager' ), 'error' );
 					}
 				}
 				continue;
@@ -335,7 +335,7 @@ final class MDS_RM_CSV_Handler {
 			$upc          = preg_replace( '/[^0-9]/', '', $upc_raw );
 			$title        = sanitize_text_field( $data['Release Title'] ?? 'Untitled' );
 			$release_date = sanitize_text_field( $data['Release Date'] ?? '' );
-			$format       = sanitize_text_field( $data['Release Format'] ?? '' );
+			$format       = sanitize_text_field( $data['Release Type'] ?? '' );
 			$label        = sanitize_text_field( $data['Record Label'] ?? '' );
 			$distributor  = sanitize_text_field( $data['Distributor'] ?? '' );
 			$buy_link     = esc_url_raw( $data['Buy Now Link'] ?? '' );
@@ -465,7 +465,7 @@ final class MDS_RM_CSV_Handler {
 			update_post_meta( $release_post_id, 'buy_now_link', $buy_link );
 			update_post_meta( $release_post_id, 'streaming_links', wp_slash( $streaming_json ) );
 
-			$result = wp_set_post_terms( $release_post_id, array( $format_id ), 'release_format', false );
+			$result = wp_set_post_terms( $release_post_id, array( $format_id ), 'release_type', false );
 			if ( is_wp_error( $result ) ) {
 				/* translators: %1$d: CSV row number. %2$s: Error message. */
 				$errors[] = sprintf( __( 'Row %1$d: %2$s', 'mds-release-manager' ), $row_number, $result->get_error_message() );

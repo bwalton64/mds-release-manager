@@ -80,25 +80,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<div id="tab-general-settings" class="mds-tab-pane active">
 			<div class="mds-panel">
-				<h2><?php esc_html_e( 'Routing', 'mds-release-manager' ); ?></h2>
-				<table class="form-table mds-admin-spaced-table">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Site-Wide Routing', 'mds-release-manager' ); ?></th>
-						<td>
-							<label><input type="checkbox" name="mds_rm_global_redirect" value="1" <?php checked( $args['settings']['global_redirect'] ); ?>> <?php esc_html_e( 'Enable Site-Wide Routing', 'mds-release-manager' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Redirect releases with a Buy Now URL. When enabled, the automatic Release fallback composition is disabled for all releases.', 'mds-release-manager' ); ?></p>
-							<p class="description">
-								<?php
-								printf(
-									/* translators: %s: the emphasized Buy Now Link field name. */
-									esc_html__( "Redirect visitors directly to the release's configured %s.", 'mds-release-manager' ),
-									'<em>' . esc_html__( 'Buy Now Link', 'mds-release-manager' ) . '</em>'
-								);
-								?>
-							</p>
-						</td>
-					</tr>
-				</table>
+				<h2><?php esc_html_e( 'Artist & Release Routing', 'mds-release-manager' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Routing is managed per Artist and per Release. Open any Artist profile to configure their homepage redirect, set a default release routing policy, or bulk-edit routing rules for all of their releases.', 'mds-release-manager' ); ?></p>
 				<hr />
 				<h2><?php esc_html_e( 'Network Synchronization', 'mds-release-manager' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Manually force a broadcast of all Artists and Releases from this Hub site to all configured Spoke sites. This is useful if a Spoke site was added recently or if sync was interrupted.', 'mds-release-manager' ); ?></p>

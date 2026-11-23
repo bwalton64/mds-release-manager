@@ -43,7 +43,7 @@ final class MDS_RM_Post_Types {
 	 * @param bool $network_wide Whether the plugin is being network-deactivated.
 	 */
 	public static function deactivate( $network_wide = false ): void {
-		foreach ( array( 'release_tag', 'release_format' ) as $taxonomy ) {
+		foreach ( array( 'release_tag', 'release_type', 'release_media_format' ) as $taxonomy ) {
 			if ( taxonomy_exists( $taxonomy ) ) {
 				unregister_taxonomy( $taxonomy );
 			}
@@ -169,13 +169,13 @@ final class MDS_RM_Post_Types {
 		);
 
 		register_taxonomy(
-			'release_format',
+			'release_type',
 			'release',
 			array(
 				'labels'             => array(
-					'name'          => 'Release Formats',
-					'singular_name' => 'Release Format',
-					'menu_name'     => 'Release Formats',
+					'name'          => __( 'Release Types', 'mds-release-manager' ),
+					'singular_name' => __( 'Release Type', 'mds-release-manager' ),
+					'menu_name'     => __( 'Release Types', 'mds-release-manager' ),
 				),
 				'hierarchical'       => true,
 				'show_admin_column'  => true,
@@ -183,7 +183,28 @@ final class MDS_RM_Post_Types {
 				'show_in_rest'       => true,
 				'meta_box_cb'        => false,
 				'show_in_quick_edit' => false,
-				'rewrite'            => array( 'slug' => 'release-format' ),
+				'rewrite'            => array( 'slug' => 'release-type' ),
+			)
+		);
+
+		register_taxonomy(
+			'release_media_format',
+			'release',
+			array(
+				'labels'             => array(
+					'name'          => __( 'Media Formats', 'mds-release-manager' ),
+					'singular_name' => __( 'Media Format', 'mds-release-manager' ),
+					'menu_name'     => __( 'Media Formats', 'mds-release-manager' ),
+					'add_new_item'  => __( 'Add New Media Format', 'mds-release-manager' ),
+					'edit_item'     => __( 'Edit Media Format', 'mds-release-manager' ),
+				),
+				'hierarchical'       => false,
+				'show_admin_column'  => true,
+				'show_ui'            => true,
+				'show_in_rest'       => true,
+				'meta_box_cb'        => false,
+				'show_in_quick_edit' => false,
+				'rewrite'            => array( 'slug' => 'media-format' ),
 			)
 		);
 	}

@@ -31,6 +31,21 @@ final class MDS_RM_Sync {
 	private const NETWORK_SYNC_MAX_ERRORS = 100;
 
 	/**
+	 * Private or managed meta keys that should not be blindly copied from hub to spoke.
+	 *
+	 * @var string[]
+	 */
+	private const EXCLUDED_SYNC_META_KEYS = array(
+		'_edit_lock',
+		'_edit_last',
+		'_thumbnail_id',
+		'_mds_hub_release_key',
+		'_mds_normalized_upc',
+		'_wp_old_slug',
+		'_wp_old_date',
+	);
+
+	/**
 	 * Returns the hub (master) site ID for the network.
 	 *
 	 * @since 1.0.0
@@ -129,32 +144,54 @@ final class MDS_RM_Sync {
 				return self::network_sync_result( $job );
 			}
 
-			$post_type = 'artists' === $job['phase'] ? 'artist' : 'release';
-			$ids       = self::network_sync_batch_ids( $post_type, (int) $job['last_id'], (int) $job['max_id'] );
+			$remaining = self::NETWORK_SYNC_BATCH_SIZE;
+			$items     = array();
 
-			if ( ! $ids ) {
-				if ( 'artists' === $job['phase'] ) {
-					$job['phase']   = 'releases';
-					$job['last_id'] = 0;
-				} else {
-					$job['phase']  = 'complete';
-					$job['status'] = 'complete';
-					self::purge_cache();
-				}
-			} else {
+			while ( $remaining > 0 && 'running' === $job['status'] ) {
+				$post_type = 'artists' === $job['phase'] ? 'artist' : 'release';
+				$ids       = self::network_sync_batch_ids( $post_type, (int) $job['last_id'], (int) $job['max_id'], $remaining );
+
 				foreach ( $ids as $id ) {
-					$result = self::broadcast_to_spokes( $id, $post_type );
+					$items[]        = array(
+						'id'        => $id,
+						'post_type' => $post_type,
+					);
+					$job['last_id'] = $id;
+				}
+				$remaining -= count( $ids );
+
+				if ( count( $ids ) < ( $remaining + count( $ids ) ) ) {
+					// Current phase has been exhausted; advance immediately without wasting an empty HTTP round-trip.
+					if ( 'artists' === $job['phase'] ) {
+						$job['phase']   = 'releases';
+						$job['last_id'] = 0;
+					} else {
+						$job['phase']  = 'complete';
+						$job['status'] = 'complete';
+						break;
+					}
+				}
+			}
+
+			if ( $items ) {
+				$batch_results = self::broadcast_batch_to_spokes( $items );
+				foreach ( $items as $item ) {
+					$key    = $item['post_type'] . ':' . $item['id'];
+					$result = $batch_results[ $key ] ?? null;
 					if ( is_wp_error( $result ) ) {
 						++$job['error_count'];
 						if ( count( $job['errors'] ) < self::NETWORK_SYNC_MAX_ERRORS ) {
-							$job['errors'][] = sprintf( '%1$s %2$d: %3$s', ucfirst( $post_type ), $id, $result->get_error_message() );
+							$job['errors'][] = sprintf( '%1$s %2$d: %3$s', ucfirst( $item['post_type'] ), $item['id'], $result->get_error_message() );
 						}
 					} else {
-						$count_key = 'artist' === $post_type ? 'artists_synced' : 'releases_synced';
+						$count_key = 'artist' === $item['post_type'] ? 'artists_synced' : 'releases_synced';
 						++$job[ $count_key ];
 					}
-					$job['last_id'] = $id;
 				}
+			}
+
+			if ( 'complete' === $job['status'] ) {
+				self::purge_cache();
 			}
 
 			$job['updated_at'] = time();
@@ -173,22 +210,23 @@ final class MDS_RM_Sync {
 	 * Fetches one ascending-ID batch without loading the complete catalog.
 	 *
 	 * @param string $post_type Post type to query.
-	 * @param int    $after_id Exclusive ID cursor.
-	 * @param int    $max_id Maximum ID captured when the job started.
+	 * @param int    $after_id  Exclusive ID cursor.
+	 * @param int    $max_id    Maximum ID captured when the job started.
+	 * @param int    $limit     Maximum rows to fetch.
 	 * @return int[] Post IDs.
 	 */
-	private static function network_sync_batch_ids( string $post_type, int $after_id, int $max_id ): array {
+	private static function network_sync_batch_ids( string $post_type, int $after_id, int $max_id, int $limit = self::NETWORK_SYNC_BATCH_SIZE ): array {
 		global $wpdb;
 
 		$statuses = array_values( array_diff( get_post_stati(), array( 'auto-draft', 'inherit', 'trash' ) ) );
-		if ( ! $statuses ) {
+		if ( ! $statuses || $limit <= 0 ) {
 			return array();
 		}
 
 		$placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
 		$sql          = $wpdb->prepare(
 			"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status IN ({$placeholders}) AND ID > %d AND ID <= %d ORDER BY ID ASC LIMIT %d",
-			array_merge( array( $post_type ), $statuses, array( $after_id, $max_id, self::NETWORK_SYNC_BATCH_SIZE ) )
+			array_merge( array( $post_type ), $statuses, array( $after_id, $max_id, $limit ) )
 		);
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Keyset pagination requires an ID cursor and avoids loading the full catalog.
@@ -214,12 +252,12 @@ final class MDS_RM_Sync {
 	 * @return array<string, mixed> Progress response.
 	 */
 	private static function network_sync_result( array $job ): array {
-		$done    = 'complete' === ( $job['status'] ?? '' );
-		$phase   = (string) ( $job['phase'] ?? 'artists' );
-		$artists = (int) ( $job['artists_synced'] ?? 0 );
+		$done     = 'complete' === ( $job['status'] ?? '' );
+		$phase    = (string) ( $job['phase'] ?? 'artists' );
+		$artists  = (int) ( $job['artists_synced'] ?? 0 );
 		$releases = (int) ( $job['releases_synced'] ?? 0 );
-		$errors  = (int) ( $job['error_count'] ?? 0 );
-		$message = $done
+		$errors   = (int) ( $job['error_count'] ?? 0 );
+		$message  = $done
 			? sprintf(
 				/* translators: %1$d: Release count. %2$d: Artist count. */
 				__( 'Sync completed: %1$d releases and %2$d artists processed.', 'mds-release-manager' ),
@@ -288,14 +326,34 @@ final class MDS_RM_Sync {
 	 * @return true|WP_Error|null True on success, an error on failure, or null when synchronization is not applicable.
 	 */
 	public static function broadcast_to_spokes( $post_id, $post_type ): bool|WP_Error|null {
-		if ( ! is_multisite() ) {
-			return null;
+		$results = self::broadcast_batch_to_spokes(
+			array(
+				array(
+					'id'        => (int) $post_id,
+					'post_type' => (string) $post_type,
+				),
+			)
+		);
+		$key = $post_type . ':' . (int) $post_id;
+		return $results[ $key ] ?? null;
+	}
+
+	/**
+	 * Synchronizes a batch of Hub posts to their configured spoke sites, switching to each spoke once per batch.
+	 *
+	 * @param array<int, array{id:int,post_type:string}> $items List of Hub post IDs and post types.
+	 * @return array<string, bool|WP_Error|null> Per-record results keyed by `"{post_type}:{id}"`.
+	 */
+	public static function broadcast_batch_to_spokes( array $items ): array {
+		$results = array();
+		if ( ! is_multisite() || ! $items ) {
+			return $results;
 		}
 
 		// Prevent infinite loops if saving happens inside a switched context.
 		static $is_broadcasting = false;
 		if ( $is_broadcasting ) {
-			return null;
+			return $results;
 		}
 
 		$master_hub_id   = self::hub_id();
@@ -303,15 +361,100 @@ final class MDS_RM_Sync {
 
 		// Only broadcast if we are saving on the Master Hub.
 		if ( $current_blog_id !== $master_hub_id ) {
-			return null;
+			return $results;
 		}
 
+		$payloads_by_spoke = array();
+		$record_errors     = array();
+		$record_applicable = array();
+
+		foreach ( $items as $item ) {
+			$post_id   = (int) $item['id'];
+			$post_type = (string) $item['post_type'];
+			$rec_key   = $post_type . ':' . $post_id;
+
+			$payload = self::collect_hub_payload( $post_id, $post_type, $master_hub_id );
+			if ( null === $payload ) {
+				$results[ $rec_key ] = null;
+				continue;
+			}
+			if ( is_wp_error( $payload ) ) {
+				$results[ $rec_key ] = $payload;
+				continue;
+			}
+
+			$record_applicable[ $rec_key ] = true;
+			$record_errors[ $rec_key ]     = array();
+			foreach ( $payload['spokes'] as $spoke_id ) {
+				if ( $spoke_id === $master_hub_id ) {
+					continue;
+				}
+				$payloads_by_spoke[ $spoke_id ][] = array(
+					'key'     => $rec_key,
+					'payload' => $payload,
+				);
+			}
+		}
+
+		if ( ! $payloads_by_spoke ) {
+			foreach ( array_keys( $record_applicable ) as $rec_key ) {
+				$results[ $rec_key ] = true;
+			}
+			return $results;
+		}
+
+		$is_broadcasting = true;
+		try {
+			foreach ( $payloads_by_spoke as $spoke_id => $spoke_items ) {
+				switch_to_blog( (int) $spoke_id );
+				try {
+					foreach ( $spoke_items as $entry ) {
+						$err = self::apply_payload_to_current_spoke( $entry['payload'], (int) $spoke_id );
+						if ( null !== $err ) {
+							$record_errors[ $entry['key'] ][] = $err;
+						}
+					}
+				} finally {
+					restore_current_blog();
+				}
+			}
+		} finally {
+			$is_broadcasting = false;
+		}
+
+		foreach ( array_keys( $record_applicable ) as $rec_key ) {
+			if ( ! empty( $record_errors[ $rec_key ] ) ) {
+				$results[ $rec_key ] = new WP_Error( 'mds_sync_failed', implode( ' ', $record_errors[ $rec_key ] ) );
+			} else {
+				$results[ $rec_key ] = true;
+			}
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Collects all Hub post, meta, taxonomy, and thumbnail metadata prior to blog switching.
+	 *
+	 * @param int    $post_id       Hub post ID.
+	 * @param string $post_type     Post type (`release` or `artist`).
+	 * @param int    $master_hub_id Hub blog ID.
+	 * @return array<string, mixed>|WP_Error|null Payload array, WP_Error on validation failure, or null if not applicable.
+	 */
+	private static function collect_hub_payload( int $post_id, string $post_type, int $master_hub_id ): array|WP_Error|null {
 		$post = get_post( $post_id );
 		if ( ! $post || ! in_array( $post_type, array( 'release', 'artist' ), true ) ) {
 			return null;
 		}
 
-		$spokes = array_map( 'intval', (array) apply_filters( 'mds_rm_sync_target_sites', array(), $post_id, $post_type ) );
+		$spokes = array_values(
+			array_unique(
+				array_filter(
+					array_map( 'intval', (array) apply_filters( 'mds_rm_sync_target_sites', array(), $post_id, $post_type ) ),
+					static fn( int $id ): bool => $id > 0 && $id !== $master_hub_id
+				)
+			)
+		);
 		if ( empty( $spokes ) ) {
 			return null;
 		}
@@ -324,226 +467,349 @@ final class MDS_RM_Sync {
 			return new WP_Error( 'mds_sync_invalid_format', __( 'Cannot synchronize a release with an invalid or conflicting format.', 'mds-release-manager' ) );
 		}
 
-		$meta = get_post_meta( $post_id );
-		if ( 'artist' === $post_type ) {
-			unset( $meta['artist_featured_image'] );
+		$raw_meta = get_post_meta( $post_id );
+		$meta     = array();
+		foreach ( $raw_meta as $key => $values ) {
+			if ( in_array( $key, self::EXCLUDED_SYNC_META_KEYS, true ) ) {
+				continue;
+			}
+			if ( 'artist' === $post_type && 'artist_featured_image' === $key ) {
+				continue;
+			}
+			$meta[ $key ] = $values;
 		}
-		$hub_release_key = $master_hub_id . ':' . $post_id;
-		$previous_upcs   = json_decode( get_post_meta( $post_id, '_mds_previous_upcs', true ), true );
-		$previous_upcs   = is_array( $previous_upcs ) ? $previous_upcs : array();
-		$taxonomies      = get_object_taxonomies( $post_type );
-		$terms_data      = array();
+
+		$previous_upcs = json_decode( (string) get_post_meta( $post_id, '_mds_previous_upcs', true ), true );
+		$previous_upcs = is_array( $previous_upcs ) ? $previous_upcs : array();
+
+		$taxonomies       = get_object_taxonomies( $post_type );
+		$terms_data       = array();
+		$media_icon_cache = array();
 		foreach ( $taxonomies as $tax ) {
 			$terms = wp_get_post_terms( $post_id, $tax, array( 'fields' => 'names' ) );
 			if ( is_wp_error( $terms ) ) {
 				return $terms;
 			}
 			$terms_data[ $tax ] = $terms;
+			if ( 'release_media_format' === $tax && ! empty( $terms ) ) {
+				$term_objs = wp_get_post_terms( $post_id, $tax );
+				if ( ! is_wp_error( $term_objs ) ) {
+					foreach ( $term_objs as $term_obj ) {
+						$media_icon_cache[ $term_obj->name ] = MDS_RM_Release_Model::get_media_format_icon( (int) $term_obj->term_id, $term_obj->name );
+					}
+				}
+			}
 		}
 
-		$thumbnail_id = get_post_thumbnail_id( $post_id );
-		$hub_img_url  = $thumbnail_id ? wp_get_attachment_url( $thumbnail_id ) : '';
+		$thumbnail_id = (int) get_post_thumbnail_id( $post_id );
+		$hub_img_url  = $thumbnail_id ? (string) wp_get_attachment_url( $thumbnail_id ) : '';
+		$media_info   = array( 'hub_blog_id' => $master_hub_id );
+		if ( $thumbnail_id && '' !== $hub_img_url ) {
+			$att_meta = wp_get_attachment_metadata( $thumbnail_id );
+			if ( is_array( $att_meta ) ) {
+				if ( ! empty( $att_meta['width'] ) ) {
+					$media_info['width'] = absint( $att_meta['width'] );
+				}
+				if ( ! empty( $att_meta['height'] ) ) {
+					$media_info['height'] = absint( $att_meta['height'] );
+				}
+			}
+			$mime_type = get_post_mime_type( $thumbnail_id );
+			if ( is_string( $mime_type ) && '' !== $mime_type ) {
+				$media_info['mime_type'] = $mime_type;
+			}
+		}
 
-		$is_broadcasting = true;
-		$errors          = array();
+		return array(
+			'post'            => $post,
+			'post_id'         => $post_id,
+			'post_type'       => $post_type,
+			'spokes'          => $spokes,
+			'uuid'            => (string) $uuid,
+			'hub_release_key' => $master_hub_id . ':' . $post_id,
+			'previous_upcs'   => $previous_upcs,
+			'meta'            => $meta,
+			'terms_data'      => $terms_data,
+			'media_icons'     => $media_icon_cache,
+			'thumbnail_id'    => $thumbnail_id,
+			'hub_img_url'     => $hub_img_url,
+			'media_info'      => $media_info,
+		);
+	}
 
-		foreach ( $spokes as $spoke_id ) {
-			if ( $spoke_id === $master_hub_id ) {
-				continue;
+	/**
+	 * Applies a collected Hub payload to the currently switched spoke site.
+	 *
+	 * @param array<string, mixed> $payload  Collected Hub payload.
+	 * @param int                  $spoke_id Current spoke blog ID.
+	 * @return string|null Error message on failure, or null on success.
+	 */
+	private static function apply_payload_to_current_spoke( array $payload, int $spoke_id ): ?string {
+		$post            = $payload['post'];
+		$post_id         = (int) $payload['post_id'];
+		$post_type       = (string) $payload['post_type'];
+		$uuid            = (string) $payload['uuid'];
+		$hub_release_key = (string) $payload['hub_release_key'];
+		$previous_upcs   = (array) $payload['previous_upcs'];
+		$meta            = (array) $payload['meta'];
+		$terms_data      = (array) $payload['terms_data'];
+		$thumbnail_id    = (int) $payload['thumbnail_id'];
+		$hub_img_url     = (string) $payload['hub_img_url'];
+		$media_info      = (array) $payload['media_info'];
+
+		// Prefer a stable hub identity; legacy shadows are adopted by their current or former UPC.
+		$shadow_post_id = 0;
+		$sync_conflict  = false;
+		$has_stable_key = false;
+
+		if ( 'artist' === $post_type ) {
+			$shadow_posts = get_posts(
+				array(
+					'post_type'              => $post_type,
+					'post_status'            => array_keys( get_post_stati() ),
+					'posts_per_page'         => 2,
+					'fields'                 => 'ids',
+					'meta_key'               => '_mds_artist_uuid', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Artist shadows match their stable UUID.
+					'meta_value'             => $uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'orderby'                => array(
+						'date' => 'DESC',
+						'ID'   => 'DESC',
+					),
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
+				)
+			);
+			if ( count( $shadow_posts ) > 1 ) {
+				$sync_conflict = true;
+			} elseif ( $shadow_posts ) {
+				$shadow_post_id = (int) $shadow_posts[0];
+			}
+		} else {
+			$stable_posts = get_posts(
+				array(
+					'post_type'              => $post_type,
+					'post_status'            => array_keys( get_post_stati() ),
+					'posts_per_page'         => 2,
+					'fields'                 => 'ids',
+					'meta_key'               => '_mds_hub_release_key', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Stable hub identity takes precedence over legacy UPC lookup.
+					'meta_value'             => $hub_release_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
+				)
+			);
+			if ( count( $stable_posts ) > 1 ) {
+				$sync_conflict = true;
+			} elseif ( $stable_posts ) {
+				$shadow_post_id = (int) $stable_posts[0];
+				$has_stable_key = true;
 			}
 
-			switch_to_blog( $spoke_id );
-
-			// Prefer a stable hub identity; legacy shadows are adopted by their current or former UPC.
-			$shadow_post_id = 0;
-			$sync_conflict  = false;
-			$has_stable_key = false;
-
-			if ( 'artist' === $post_type ) {
-				$shadow_posts = get_posts(
-					array(
-						'post_type'              => $post_type,
-						'post_status'            => array_keys( get_post_stati() ),
-						'posts_per_page'         => 2,
-						'fields'                 => 'ids',
-						'meta_key'               => '_mds_artist_uuid', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Artist shadows match their stable UUID.
-						'meta_value'             => $uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-						'orderby'                => array(
-							'date' => 'DESC',
-							'ID'   => 'DESC',
-						),
-						'no_found_rows'          => true,
-						'update_post_meta_cache' => false,
-						'update_post_term_cache' => false,
-					)
-				);
-				if ( count( $shadow_posts ) > 1 ) {
-					$sync_conflict = true;
-				} elseif ( $shadow_posts ) {
-					$shadow_post_id = (int) $shadow_posts[0];
-				}
-			} else {
-				$stable_posts = get_posts(
-					array(
-						'post_type'              => $post_type,
-						'post_status'            => array_keys( get_post_stati() ),
-						'posts_per_page'         => 2,
-						'fields'                 => 'ids',
-						'meta_key'               => '_mds_hub_release_key', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Stable hub identity takes precedence over legacy UPC lookup.
-						'meta_value'             => $hub_release_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-						'no_found_rows'          => true,
-						'update_post_meta_cache' => false,
-						'update_post_term_cache' => false,
-					)
-				);
-				if ( count( $stable_posts ) > 1 ) {
-					$sync_conflict = true;
-				} elseif ( $stable_posts ) {
-					$shadow_post_id = (int) $stable_posts[0];
-					$has_stable_key = true;
-				}
-
-				if ( ! $sync_conflict && ! $has_stable_key ) {
-					$upc_identifiers = array_values( array_unique( array_filter( array_merge( array( (string) $uuid ), array_filter( $previous_upcs, 'is_string' ) ) ) ) );
-					if ( $upc_identifiers ) {
-						$shadow_posts = get_posts(
-							array(
-								'post_type'              => $post_type,
-								'post_status'            => array_keys( get_post_stati() ),
-								'posts_per_page'         => 2,
-								'fields'                 => 'ids',
-								'meta_key'               => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- One bounded lookup covers current and former UPCs.
-								'meta_value'             => $upc_identifiers, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-								'meta_compare'           => 'IN',
-								'no_found_rows'          => true,
-								'update_post_meta_cache' => false,
-								'update_post_term_cache' => false,
-							)
-						);
-						if ( count( $shadow_posts ) > 1 ) {
+			if ( ! $sync_conflict && ! $has_stable_key ) {
+				$upc_identifiers = array_values( array_unique( array_filter( array_merge( array( $uuid ), array_filter( $previous_upcs, 'is_string' ) ) ) ) );
+				if ( $upc_identifiers ) {
+					$shadow_posts = get_posts(
+						array(
+							'post_type'              => $post_type,
+							'post_status'            => array_keys( get_post_stati() ),
+							'posts_per_page'         => 2,
+							'fields'                 => 'ids',
+							'meta_key'               => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- One bounded lookup covers current and former UPCs.
+							'meta_value'             => $upc_identifiers, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+							'meta_compare'           => 'IN',
+							'no_found_rows'          => true,
+							'update_post_meta_cache' => false,
+							'update_post_term_cache' => false,
+						)
+					);
+					if ( count( $shadow_posts ) > 1 ) {
+						$sync_conflict = true;
+					} elseif ( $shadow_posts ) {
+						$candidate  = (int) $shadow_posts[0];
+						$linked_key = get_post_meta( $candidate, '_mds_hub_release_key', true );
+						if ( $linked_key && $linked_key !== $hub_release_key ) {
 							$sync_conflict = true;
-						} elseif ( $shadow_posts ) {
-							$candidate  = (int) $shadow_posts[0];
-							$linked_key = get_post_meta( $candidate, '_mds_hub_release_key', true );
-							if ( $linked_key && $linked_key !== $hub_release_key ) {
-								$sync_conflict = true;
-							} else {
-								$shadow_post_id = $candidate;
-							}
+						} else {
+							$shadow_post_id = $candidate;
 						}
 					}
 				}
 			}
-			if ( 'release' === $post_type && $has_stable_key && ! $sync_conflict ) {
-				$conflicts     = get_posts(
-					array(
-						'post_type'      => 'release',
-						'post_status'    => array_keys( get_post_stati() ),
-						'posts_per_page' => 1,
-						'fields'         => 'ids',
-						'post__not_in'   => $shadow_post_id ? array( $shadow_post_id ) : array(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- The matched shadow is not a conflict.
-						'meta_key'       => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Reject a competing spoke release with the same stored UPC.
-						'meta_value'     => $uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-						'no_found_rows'  => true,
-					)
-				);
-				$sync_conflict = ! empty( $conflicts );
-			}
-			if ( $sync_conflict ) {
-				/* translators: %d: Spoke site ID. */
-				$errors[] = sprintf( __( 'Site %d has conflicting identifiers.', 'mds-release-manager' ), $spoke_id );
-				restore_current_blog();
-				continue;
-			}
+		}
 
-			// Prepare core post data.
-			$post_data = array(
-				'post_title'    => $post->post_title,
-				'post_content'  => $post->post_content,
-				'post_excerpt'  => $post->post_excerpt,
-				'post_status'   => $post->post_status,
-				'post_type'     => $post_type,
-				'post_name'     => $post->post_name,
-				'post_date'     => $post->post_date,
-				'post_date_gmt' => $post->post_date_gmt,
+		if ( 'release' === $post_type && $has_stable_key && ! $sync_conflict ) {
+			$conflicts     = get_posts(
+				array(
+					'post_type'              => 'release',
+					'post_status'            => array_keys( get_post_stati() ),
+					'posts_per_page'         => 1,
+					'fields'                 => 'ids',
+					'post__not_in'           => $shadow_post_id ? array( $shadow_post_id ) : array(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- The matched shadow is not a conflict.
+					'meta_key'               => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Reject a competing spoke release with the same stored UPC.
+					'meta_value'             => $uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
+				)
 			);
+			$sync_conflict = ! empty( $conflicts );
+		}
 
-			if ( $shadow_post_id ) {
+		if ( $sync_conflict ) {
+			/* translators: %d: Spoke site ID. */
+			return sprintf( __( 'Site %d has conflicting identifiers.', 'mds-release-manager' ), $spoke_id );
+		}
+
+		// Prepare core post data and skip wp_update_post when unchanged.
+		$post_data = array(
+			'post_title'    => $post->post_title,
+			'post_content'  => $post->post_content,
+			'post_excerpt'  => $post->post_excerpt,
+			'post_status'   => $post->post_status,
+			'post_type'     => $post_type,
+			'post_name'     => $post->post_name,
+			'post_date'     => $post->post_date,
+			'post_date_gmt' => $post->post_date_gmt,
+		);
+
+		if ( $shadow_post_id ) {
+			$existing_post = get_post( $shadow_post_id );
+			$needs_update  = ! $existing_post
+				|| $existing_post->post_title !== $post_data['post_title']
+				|| $existing_post->post_content !== $post_data['post_content']
+				|| $existing_post->post_excerpt !== $post_data['post_excerpt']
+				|| $existing_post->post_status !== $post_data['post_status']
+				|| $existing_post->post_name !== $post_data['post_name']
+				|| $existing_post->post_date !== $post_data['post_date'];
+			if ( $needs_update ) {
 				$post_data['ID'] = $shadow_post_id;
 				$shadow_post_id  = wp_update_post( $post_data, true );
-			} else {
-				$shadow_post_id = wp_insert_post( $post_data, true );
+			}
+		} else {
+			$shadow_post_id = wp_insert_post( $post_data, true );
+		}
+
+		if ( ! $shadow_post_id || is_wp_error( $shadow_post_id ) ) {
+			/* translators: %d: Spoke site ID. */
+			return sprintf( __( 'Could not save the shadow record on site %d.', 'mds-release-manager' ), $spoke_id );
+		}
+
+		$shadow_post_id = (int) $shadow_post_id;
+
+		// Diff-based meta sync: only delete removed keys and update changed keys.
+		self::sync_shadow_meta( $shadow_post_id, $meta );
+
+		if ( 'release' === $post_type && get_post_meta( $shadow_post_id, '_mds_hub_release_key', true ) !== $hub_release_key ) {
+			update_post_meta( $shadow_post_id, '_mds_hub_release_key', $hub_release_key );
+		}
+
+		// Sync thumbnail via virtual attachment only when changed.
+		$virt_id       = $thumbnail_id && '' !== $hub_img_url
+			? (int) MDS_RM_Virtual_Media::get_or_create_virtual_attachment( $hub_img_url, $thumbnail_id, $media_info )
+			: 0;
+		$current_thumb = (int) get_post_thumbnail_id( $shadow_post_id );
+		if ( $virt_id > 0 ) {
+			if ( $current_thumb !== $virt_id ) {
+				set_post_thumbnail( $shadow_post_id, $virt_id );
+			}
+		} elseif ( $current_thumb > 0 ) {
+			delete_post_thumbnail( $shadow_post_id );
+		}
+
+		do_action( 'mds_rm_after_shadow_meta_sync', $shadow_post_id, $spoke_id, $post_id, $meta );
+
+		// Sync taxonomies only when terms differ.
+		$errors      = array();
+		$media_icons = is_array( $payload['media_icons'] ?? null ) ? $payload['media_icons'] : array();
+		foreach ( $terms_data as $tax => $names ) {
+			$existing_terms = wp_get_post_terms( $shadow_post_id, $tax, array( 'fields' => 'names' ) );
+			$terms_match    = false;
+			if ( ! is_wp_error( $existing_terms ) ) {
+				$desired_sorted  = array_values( $names );
+				$existing_sorted = array_values( $existing_terms );
+				sort( $desired_sorted );
+				sort( $existing_sorted );
+				$terms_match = ( $desired_sorted === $existing_sorted );
 			}
 
-			if ( ! $shadow_post_id || is_wp_error( $shadow_post_id ) ) {
-				/* translators: %d: Spoke site ID. */
-				$errors[] = sprintf( __( 'Could not save the shadow record on site %d.', 'mds-release-manager' ), $spoke_id );
-				restore_current_blog();
+			if ( ! $terms_match ) {
+				$is_hierarchical = is_taxonomy_hierarchical( $tax );
+				if ( $is_hierarchical ) {
+					$term_ids = array();
+					foreach ( $names as $name ) {
+						$tid = self::ensure_term_exists( $name, $tax );
+						if ( $tid ) {
+							$term_ids[] = $tid;
+						} else {
+							/* translators: %d: Spoke site ID. */
+							$errors[] = sprintf( __( 'Could not synchronize a taxonomy term on site %d.', 'mds-release-manager' ), $spoke_id );
+						}
+					}
+					if ( count( $term_ids ) !== count( $names ) ) {
+						continue;
+					}
+					$result = wp_set_post_terms( $shadow_post_id, $term_ids, $tax, false );
+				} else {
+					$result = wp_set_post_terms( $shadow_post_id, $names, $tax, false );
+				}
+				if ( is_wp_error( $result ) ) {
+					/* translators: %1$d: Spoke site ID. %2$s: Error message. */
+					$errors[] = sprintf( __( 'Could not synchronize taxonomy on site %1$d: %2$s', 'mds-release-manager' ), $spoke_id, $result->get_error_message() );
+				}
+			}
+
+			if ( 'release_media_format' === $tax && $media_icons ) {
+				foreach ( $media_icons as $term_name => $icon_val ) {
+					$spoke_term = get_term_by( 'name', $term_name, 'release_media_format' );
+					if ( $spoke_term && ! is_wp_error( $spoke_term ) && get_term_meta( (int) $spoke_term->term_id, MDS_RM_Release_Model::MEDIA_FORMAT_ICON_META_KEY, true ) !== $icon_val ) {
+						update_term_meta( (int) $spoke_term->term_id, MDS_RM_Release_Model::MEDIA_FORMAT_ICON_META_KEY, $icon_val );
+					}
+				}
+			}
+		}
+
+		return $errors ? implode( ' ', $errors ) : null;
+	}
+
+	/**
+	 * Synchronizes post meta onto a shadow post using a diff so unchanged keys are not deleted and re-inserted.
+	 *
+	 * @param int                         $shadow_post_id Spoke shadow post ID.
+	 * @param array<string, array<mixed>> $hub_meta       Filtered hub post meta array (`key => list of raw meta strings`).
+	 * @return void
+	 */
+	private static function sync_shadow_meta( int $shadow_post_id, array $hub_meta ): void {
+		$existing_meta = get_post_meta( $shadow_post_id );
+		if ( ! is_array( $existing_meta ) ) {
+			$existing_meta = array();
+		}
+
+		// Delete keys present on the spoke that were removed on the hub (excluding managed/excluded keys).
+		foreach ( array_keys( $existing_meta ) as $existing_key ) {
+			if ( in_array( $existing_key, self::EXCLUDED_SYNC_META_KEYS, true ) ) {
 				continue;
 			}
-			if ( $shadow_post_id && ! is_wp_error( $shadow_post_id ) ) {
-				// Clean old meta.
-				foreach ( array_keys( get_post_meta( $shadow_post_id ) ) as $ek ) {
-					delete_post_meta( $shadow_post_id, $ek );
-				}
+			if ( ! array_key_exists( $existing_key, $hub_meta ) ) {
+				delete_post_meta( $shadow_post_id, $existing_key );
+			}
+		}
 
-				// Sync meta.
-				foreach ( $meta as $key => $values ) {
-					foreach ( $values as $val ) {
-						add_post_meta( $shadow_post_id, $key, wp_slash( maybe_unserialize( $val ) ) );
-					}
-				}
-				if ( 'release' === $post_type ) {
-					update_post_meta( $shadow_post_id, '_mds_hub_release_key', $hub_release_key );
-				}
-
-				// Sync thumbnail via virtual attachment.
-				$virt_id = $thumbnail_id
-					? MDS_RM_Virtual_Media::get_or_create_virtual_attachment( $hub_img_url, $thumbnail_id )
-					: 0;
-				if ( $virt_id ) {
-					set_post_thumbnail( $shadow_post_id, $virt_id );
-				} else {
-					delete_post_thumbnail( $shadow_post_id );
-				}
-
-				do_action( 'mds_rm_after_shadow_meta_sync', $shadow_post_id, $spoke_id, $post_id, $meta );
-
-				// Sync taxonomies securely.
-				foreach ( $terms_data as $tax => $names ) {
-					$is_hierarchical = is_taxonomy_hierarchical( $tax );
-					if ( $is_hierarchical ) {
-						$term_ids = array();
-						foreach ( $names as $name ) {
-							$tid = self::ensure_term_exists( $name, $tax );
-							if ( $tid ) {
-								$term_ids[] = $tid;
-							} else {
-								/* translators: %d: Spoke site ID. */
-								$errors[] = sprintf( __( 'Could not synchronize a taxonomy term on site %d.', 'mds-release-manager' ), $spoke_id );
-							}
-						}
-						if ( count( $term_ids ) !== count( $names ) ) {
-							continue;
-						}
-						$result = wp_set_post_terms( $shadow_post_id, $term_ids, $tax, false );
-					} else {
-						$result = wp_set_post_terms( $shadow_post_id, $names, $tax, false );
-					}
-					if ( is_wp_error( $result ) ) {
-						/* translators: %1$d: Spoke site ID. %2$s: Error message. */
-						$errors[] = sprintf( __( 'Could not synchronize taxonomy on site %1$d: %2$s', 'mds-release-manager' ), $spoke_id, $result->get_error_message() );
-					}
-				}
+		// Update only keys whose raw values actually differ.
+		foreach ( $hub_meta as $key => $values ) {
+			$existing_values = $existing_meta[ $key ] ?? null;
+			if ( is_array( $existing_values ) && $existing_values === $values ) {
+				continue;
 			}
 
-			restore_current_blog();
+			if ( 1 === count( $values ) && ( null === $existing_values || 1 === count( $existing_values ) ) ) {
+				update_post_meta( $shadow_post_id, $key, wp_slash( maybe_unserialize( $values[0] ) ) );
+			} else {
+				delete_post_meta( $shadow_post_id, $key );
+				foreach ( $values as $val ) {
+					add_post_meta( $shadow_post_id, $key, wp_slash( maybe_unserialize( $val ) ) );
+				}
+			}
 		}
-
-		$is_broadcasting = false;
-		if ( $errors ) {
-			return new WP_Error( 'mds_sync_failed', implode( ' ', $errors ) );
-		}
-		return true;
 	}
 }

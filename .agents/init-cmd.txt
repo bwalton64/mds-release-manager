@@ -1,0 +1,18 @@
+Initialize this WordPress plugin workspace according to my global rules in ~/.gemini/config/rules/:
+
+1. Inspect the repository first (main plugin PHP file, composer.json, package.json, readme.txt) to detect existing plugin metadata. Ask me only for any values you cannot infer:
+   - Plugin Name, Plugin Slug / Text Domain
+   - PHP Root Namespace (e.g., Vendor\PluginName)
+   - Global Class Prefix, Function/Hook Prefix, and Constant Prefix (with trailing underscores)
+   - LocalWP site folder name (to map C:\Users\Brian\Local Sites\bgw-dev\app\public and http://bgw-dev.local/)
+
+2. Create or update these workspace configuration files using LF line endings and clean literal values (no template braces):
+   - .agents/rules/project-config.md (centralized variables table)
+   - .gitattributes (enforce eol=lf for Windows 11)
+   - phpcs.xml.dist (WPCS ruleset with PHP 8.0+, PSR-4 filename exclusions for src/, text domain, and prefix checks)
+   - .vscode/settings.json (set intelephense.environment.phpVersion to 8.0.0 and point includePaths to the LocalWP site's wp-includes and wp-admin folders)
+   - wpml-config.xml (root multilingual config stub)
+
+3. Scaffold src/Config.php (if missing) with Tier 2 system constants, a locale-aware transient key helper, and a lazy get_default_labels() method, and ensure composer.json (PSR-4 autoload + phpcs/phpcbf scripts) and package.json (@wordpress/scripts lint/build scripts) are properly wired.
+
+4. Create any missing baseline documentation files (README.MD, readme.txt, changelog.md, .agents/technical-blueprint.md) without overwriting existing project docs, run composer dump-autoload if available, and summarize what was configured.
