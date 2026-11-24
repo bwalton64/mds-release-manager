@@ -12,12 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 ( static function ( array $args ): void {
-$artist_id     = (int) ( $args['artist_id'] ?? 0 );
-$artist_mode   = (string) ( $args['artist_releases_routing_mode'] ?? 'fallback' );
-$artist_modes  = is_array( $args['artist_modes'] ?? null ) ? $args['artist_modes'] : array();
-$release_modes = is_array( $args['release_modes'] ?? null ) ? $args['release_modes'] : array();
-$releases      = is_array( $args['releases'] ?? null ) ? $args['releases'] : array();
-?>
+	$artist_id     = (int) ( $args['artist_id'] ?? 0 );
+	$artist_mode   = (string) ( $args['artist_releases_routing_mode'] ?? 'fallback' );
+	$artist_modes  = is_array( $args['artist_modes'] ?? null ) ? $args['artist_modes'] : array();
+	$release_modes = is_array( $args['release_modes'] ?? null ) ? $args['release_modes'] : array();
+	$releases      = is_array( $args['releases'] ?? null ) ? $args['releases'] : array();
+	?>
 <div id="mds-artist-routing-manager" class="mds-routing-manager" data-artist-id="<?php echo esc_attr( (string) $artist_id ); ?>">
 	<div class="mds-routing-policy-bar">
 		<div class="mds-routing-policy-field">

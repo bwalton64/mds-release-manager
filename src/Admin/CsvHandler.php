@@ -88,7 +88,7 @@ final class CsvHandler {
 			'Streaming Links',
 		);
 
-		$stream     = new SplTempFileObject();
+		$stream     = new \SplTempFileObject();
 		$batch_size = 100;
 		$page       = 1;
 		$has_data   = false;
@@ -141,7 +141,7 @@ final class CsvHandler {
 								'ID'   => 'DESC',
 							),
 							'no_found_rows'  => true,
-							'meta_query'     => array(
+							'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Resolves artist names by UUID batch during CSV export.
 								array(
 									'key'     => '_mds_artist_uuid',
 									'value'   => $artist_uuids,
@@ -157,7 +157,10 @@ final class CsvHandler {
 						}
 					}
 					++$artist_page;
-				} while ( count( $artists ) === 100 && count( $artist_names_by_uuid ) < count( $artist_uuids ) );
+					$artists_count  = count( $artists );
+					$resolved_count = count( $artist_names_by_uuid );
+					$total_uuids    = count( $artist_uuids );
+				} while ( 100 === $artists_count && $resolved_count < $total_uuids );
 			}
 
 			foreach ( $releases as $release ) {
@@ -193,7 +196,8 @@ final class CsvHandler {
 			}
 
 			++$page;
-		} while ( count( $releases ) === $batch_size );
+			$releases_count = count( $releases );
+		} while ( $releases_count === $batch_size );
 
 		if ( ! $has_data && false === $stream->fputcsv( array( 'No data found in WordPress posts.' ) ) ) {
 			wp_die( esc_html__( 'Could not create the CSV export.', 'mds-release-manager' ) );
@@ -274,7 +278,7 @@ final class CsvHandler {
 			$csv_content = substr( $csv_content, 3 );
 		}
 
-		$csv_stream = new SplTempFileObject();
+		$csv_stream = new \SplTempFileObject();
 		$csv_stream->fwrite( $csv_content );
 		$csv_stream->rewind();
 

@@ -10,7 +10,9 @@ declare(strict_types=1);
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-?>
+
+( static function ( array $args ): void {
+	?>
 <div class="wrap mds-settings-wrap">
 	<h1><?php esc_html_e( 'Release Manager Settings', 'mds-release-manager' ); ?></h1>
 
@@ -176,3 +178,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	<?php endforeach; ?>
 </div>
+	<?php
+} )( is_array( $args ?? null ) ? $args : array() );

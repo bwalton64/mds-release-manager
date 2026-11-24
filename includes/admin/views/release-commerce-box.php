@@ -12,19 +12,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 ( static function ( array $args ): void {
-$buy_now_links = is_array( $args['buy_now_links'] ?? null ) ? $args['buy_now_links'] : array();
-$media_formats = is_array( $args['all_media_formats'] ?? null ) ? $args['all_media_formats'] : array();
-if ( empty( $buy_now_links ) ) {
-	$buy_now_links = array(
-		array(
-			'format'  => '',
-			'store'   => '',
-			'url'     => '',
-			'primary' => true,
-		),
-	);
-}
-?>
+	$buy_now_links = is_array( $args['buy_now_links'] ?? null ) ? $args['buy_now_links'] : array();
+	$media_formats = is_array( $args['all_media_formats'] ?? null ) ? $args['all_media_formats'] : array();
+	if ( empty( $buy_now_links ) ) {
+		$buy_now_links = array(
+			array(
+				'format'  => '',
+				'store'   => '',
+				'url'     => '',
+				'primary' => true,
+			),
+		);
+	}
+	?>
 <div class="mds-meta-section">
 	<p class="description">
 		<?php esc_html_e( 'Add one Buy Now URL per available Media Format (Digital Download, CD, Vinyl LP, etc.). Select a Primary format for direct links and Site-Wide Routing. Manage available formats and icons under Releases → Media Formats.', 'mds-release-manager' ); ?>

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace MDS\ReleaseManager\Core;
 
+use WP_Post;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -32,7 +34,7 @@ final class BuilderDetection {
 	 */
 	public static function detect_builder( mixed $post_id ): string {
 		$post = get_post( absint( $post_id ) );
-		if ( ! $post instanceof \WP_Post ) {
+		if ( ! $post instanceof WP_Post ) {
 			return '';
 		}
 
@@ -60,7 +62,7 @@ final class BuilderDetection {
 	 * @param WP_Post $post The post to inspect.
 	 * @return string The builder slug, or an empty string.
 	 */
-	private static function detect_elementor( \WP_Post $post ): string {
+	private static function detect_elementor( WP_Post $post ): string {
 		if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance->documents ) ) {
 			$document = \Elementor\Plugin::$instance->documents->get( $post->ID );
 			if ( is_object( $document ) && is_callable( array( $document, 'is_built_with_elementor' ) ) && $document->is_built_with_elementor() ) {
@@ -84,7 +86,7 @@ final class BuilderDetection {
 	 * @param WP_Post $post The post to inspect.
 	 * @return string The builder slug, or an empty string.
 	 */
-	private static function detect_divi( \WP_Post $post ): string {
+	private static function detect_divi( WP_Post $post ): string {
 		if ( 'on' === get_post_meta( $post->ID, '_et_pb_use_builder', true ) ) {
 			return 'divi';
 		}
@@ -105,7 +107,7 @@ final class BuilderDetection {
 	 * @param WP_Post $post The post to inspect.
 	 * @return string The builder slug, or an empty string.
 	 */
-	private static function detect_bricks( \WP_Post $post ): string {
+	private static function detect_bricks( WP_Post $post ): string {
 		if (
 			'bricks' === get_post_meta( $post->ID, '_bricks_editor_mode', true )
 			|| ! empty( get_post_meta( $post->ID, '_bricks_page_content_2', true ) )
@@ -122,7 +124,7 @@ final class BuilderDetection {
 	 * @param WP_Post $post The post to inspect.
 	 * @return string The builder slug, or an empty string.
 	 */
-	private static function detect_wpbakery( \WP_Post $post ): string {
+	private static function detect_wpbakery( WP_Post $post ): string {
 		$status = get_post_meta( $post->ID, '_wpb_vc_js_status', true );
 		if (
 			( is_scalar( $status ) && 'true' === (string) $status )
@@ -140,7 +142,7 @@ final class BuilderDetection {
 	 * @param WP_Post $post The post to inspect.
 	 * @return string The builder slug, or an empty string.
 	 */
-	private static function detect_beaver_builder( \WP_Post $post ): string {
+	private static function detect_beaver_builder( WP_Post $post ): string {
 		$enabled = get_post_meta( $post->ID, '_fl_builder_enabled', true );
 		if ( is_scalar( $enabled ) && in_array( (string) $enabled, array( '1', 'true', 'yes', 'on' ), true ) ) {
 			return 'beaver-builder';

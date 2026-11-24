@@ -40,6 +40,7 @@ if ( ! defined( 'MDS_RM_BASENAME' ) ) {
 
 // Legacy bootstrap constant aliases retained for companion-plugin compatibility.
 if ( ! defined( 'MDS_RELEASE_MANAGER_VERSION' ) ) {
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Legacy BC constant alias.
 	define( 'MDS_RELEASE_MANAGER_VERSION', MDS_RM_VERSION ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Legacy backward-compatibility alias.
 }
 if ( ! defined( 'MDS_RM_MAIN_FILE' ) ) {

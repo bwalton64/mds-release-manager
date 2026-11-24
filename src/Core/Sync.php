@@ -86,7 +86,7 @@ final class Sync {
 			return;
 		}
 		if ( defined( 'LSCWP_V' ) || has_action( 'litespeed_purge_all' ) ) {
-			do_action( 'litespeed_purge_all' );
+			do_action( 'litespeed_purge_all' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Third-party LiteSpeed Cache hook.
 		}
 	}
 
@@ -232,12 +232,14 @@ final class Sync {
 		}
 
 		$placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
-		$sql          = $wpdb->prepare(
+		// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Dynamic IN() placeholders are generated from get_post_stati().
+		$sql = $wpdb->prepare(
 			"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status IN ({$placeholders}) AND ID > %d AND ID <= %d ORDER BY ID ASC LIMIT %d",
 			array_merge( array( $post_type ), $statuses, array( $after_id, $max_id, $limit ) )
 		);
+		// phpcs:enable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Keyset pagination requires an ID cursor and avoids loading the full catalog.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Prepared above; keyset pagination avoids loading the full catalog.
 		return array_map( 'intval', $wpdb->get_col( $sql ) );
 	}
 

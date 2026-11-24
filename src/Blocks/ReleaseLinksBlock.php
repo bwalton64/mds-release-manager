@@ -9,6 +9,11 @@ declare(strict_types=1);
 
 namespace MDS\ReleaseManager\Blocks;
 
+use WP_Block;
+use WP_Post;
+use WP_REST_Request;
+use WP_REST_Response;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -75,7 +80,7 @@ final class ReleaseLinksBlock {
 	 * @param WP_REST_Request $request Editor lookup request.
 	 * @return array Paginated results.
 	 */
-	public static function choices( \WP_REST_Request $request ): array {
+	public static function choices( WP_REST_Request $request ): array {
 		$found = \MDS\ReleaseManager\Core\ReleaseSearch::query( (string) $request['search'] );
 		$paged = \MDS\ReleaseManager\Core\ReleaseSearch::paginate( $found, (int) $request['page'] );
 		return array(
@@ -90,7 +95,7 @@ final class ReleaseLinksBlock {
 	 * @param WP_REST_Request $request Editor context request.
 	 * @return array Source state without link or audio data.
 	 */
-	public static function source( \WP_REST_Request $request ): array {
+	public static function source( WP_REST_Request $request ): array {
 		$context = (int) $request['context_id'];
 		$post    = $context ? get_post( $context ) : null;
 		if ( ! $post || ( 'publish' !== $post->post_status && ! current_user_can( 'read_post', $context ) ) ) {
@@ -125,7 +130,7 @@ final class ReleaseLinksBlock {
 	 * @param array $attributes Block attributes.
 	 * @return WP_Post|null Explicit Release.
 	 */
-	private static function explicit( array $attributes ): ?\WP_Post {
+	private static function explicit( array $attributes ): ?WP_Post {
 		if ( ! empty( $attributes['releaseId'] ) ) {
 			$post = get_post( $attributes['releaseId'] );
 			return $post && 'release' === $post->post_type && 'publish' === $post->post_status && ! $post->post_password ? $post : null;
@@ -141,7 +146,7 @@ final class ReleaseLinksBlock {
 	 * @param int $id Context post ID.
 	 * @return WP_Post|null Contextual Release.
 	 */
-	private static function context( int $id ): ?\WP_Post {
+	private static function context( int $id ): ?WP_Post {
 		if ( ! $id ) {
 			return null;
 		}
@@ -177,7 +182,7 @@ final class ReleaseLinksBlock {
 	 * @param WP_Block $block      Block context.
 	 * @return string Rendered block.
 	 */
-	public static function render( array $attributes, string $_content, \WP_Block $block ): string {
+	public static function render( array $attributes, string $_content, WP_Block $block ): string {
 		$post = self::resolve_block_source( $attributes, $block );
 		if ( ! $post ) {
 			return '';
@@ -194,7 +199,7 @@ final class ReleaseLinksBlock {
 	 * @param WP_Block $block      Context provider.
 	 * @return WP_Post|null Resolved Release.
 	 */
-	public static function resolve_block_source( array $attributes, \WP_Block $block ): ?\WP_Post {
+	public static function resolve_block_source( array $attributes, WP_Block $block ): ?WP_Post {
 		return self::explicit( $attributes ) ?? self::context( (int) ( $block->context['postId'] ?? get_the_ID() ) );
 	}
 

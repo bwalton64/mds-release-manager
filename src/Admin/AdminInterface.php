@@ -9,6 +9,9 @@ declare(strict_types=1);
 
 namespace MDS\ReleaseManager\Admin;
 
+use WP_Post;
+use WP_Query;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -142,7 +145,7 @@ final class AdminInterface {
 	 * @param WP_Query $query The query being modified.
 	 * @return void
 	 */
-	public static function prepare_release_taxonomy_sorting( \WP_Query $query ): void {
+	public static function prepare_release_taxonomy_sorting( WP_Query $query ): void {
 		if ( ! is_admin() || ! $query->is_main_query() || 'release' !== $query->get( 'post_type' ) ) {
 			return;
 		}
@@ -164,7 +167,7 @@ final class AdminInterface {
 	 * @param WP_Query $query   The query being modified.
 	 * @return string The updated ORDER BY clause.
 	 */
-	public static function order_release_taxonomy_posts( string $orderby, \WP_Query $query ): string {
+	public static function order_release_taxonomy_posts( string $orderby, WP_Query $query ): string {
 		$taxonomy = $query->get( 'mds_rm_sort_taxonomy' );
 		if ( ! in_array( $taxonomy, array( 'release_tag', 'release_type', 'release_media_format' ), true ) ) {
 			return $orderby;
@@ -248,7 +251,7 @@ final class AdminInterface {
 	 * @param WP_Post $post      Post object.
 	 * @return void
 	 */
-	public static function add_meta_boxes( string $post_type, \WP_Post $post ): void {
+	public static function add_meta_boxes( string $post_type, WP_Post $post ): void {
 		if ( 'release' === $post_type ) {
 			add_meta_box( 'mds_release_identity', __( 'Release Identity', 'mds-release-manager' ), array( self::class, 'render_release_identity_box' ), 'release', 'normal', 'high' );
 			add_meta_box( 'mds_release_details', __( 'Release Details', 'mds-release-manager' ), array( self::class, 'render_release_details_box' ), 'release', 'normal' );
@@ -275,7 +278,7 @@ final class AdminInterface {
 	 * @param WP_Post $post Artist post object.
 	 * @return void
 	 */
-	public static function render_artist_release_routing_box( \WP_Post $post ): void {
+	public static function render_artist_release_routing_box( WP_Post $post ): void {
 		$uuid     = (string) get_post_meta( $post->ID, '_mds_artist_uuid', true );
 		$releases = array();
 
@@ -284,7 +287,7 @@ final class AdminInterface {
 				array(
 					'post_type'      => 'release',
 					'post_status'    => array( 'publish', 'draft', 'pending', 'future', 'private' ),
-					'posts_per_page' => 500,
+					'posts_per_page' => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Bounded artist release routing table.
 					'meta_key'       => 'artist_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- List releases belonging to this Artist.
 					'meta_value'     => $uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 					'orderby'        => array(
@@ -328,7 +331,7 @@ final class AdminInterface {
 	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
-	public static function render_artist_settings_box( \WP_Post $post ): void {
+	public static function render_artist_settings_box( WP_Post $post ): void {
 		$contact = get_post_meta( $post->ID, 'artist_contact', true );
 
 		ob_start();
@@ -360,7 +363,7 @@ final class AdminInterface {
 	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
-	public static function render_release_identity_box( \WP_Post $post ): void {
+	public static function render_release_identity_box( WP_Post $post ): void {
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
 		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'release-identity-box.php', self::release_box_args( $post ) );
 	}
@@ -372,7 +375,7 @@ final class AdminInterface {
 	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
-	public static function render_release_details_box( \WP_Post $post ): void {
+	public static function render_release_details_box( WP_Post $post ): void {
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
 		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'release-details-box.php', self::release_box_args( $post ) );
 	}
@@ -384,7 +387,7 @@ final class AdminInterface {
 	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
-	public static function render_release_streaming_box( \WP_Post $post ): void {
+	public static function render_release_streaming_box( WP_Post $post ): void {
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
 		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'release-streaming-box.php', self::release_box_args( $post ) );
 	}
@@ -396,7 +399,7 @@ final class AdminInterface {
 	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
-	public static function render_release_commerce_box( \WP_Post $post ): void {
+	public static function render_release_commerce_box( WP_Post $post ): void {
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
 		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'release-commerce-box.php', self::release_box_args( $post ) );
 	}
@@ -410,7 +413,7 @@ final class AdminInterface {
 	 * @param WP_Post $post The post object.
 	 * @return array<string, mixed> The template arguments.
 	 */
-	private static function release_box_args( \WP_Post $post ): array {
+	private static function release_box_args( WP_Post $post ): array {
 		static $cache = array();
 		if ( isset( $cache[ $post->ID ] ) ) {
 			return $cache[ $post->ID ];
@@ -585,7 +588,7 @@ final class AdminInterface {
 			update_post_meta(
 				$post_id,
 				'artist_releases_routing_mode',
-				\MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_artist_release_mode( wp_unslash( $_POST['artist_releases_routing_mode'] ) )
+				\MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_artist_release_mode( sanitize_text_field( wp_unslash( $_POST['artist_releases_routing_mode'] ) ) )
 			);
 		}
 		delete_post_meta( $post_id, 'artist_featured_image' );
@@ -722,9 +725,9 @@ final class AdminInterface {
 		}
 
 		if ( isset( $_POST['mds_release_routing_mode'] ) && is_string( $_POST['mds_release_routing_mode'] ) ) {
-			$routing_mode = \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( wp_unslash( $_POST['mds_release_routing_mode'] ) );
+			$routing_mode = \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( sanitize_text_field( wp_unslash( $_POST['mds_release_routing_mode'] ) ) );
 			$routing_url  = isset( $_POST['mds_release_routing_url'] ) && is_string( $_POST['mds_release_routing_url'] )
-				? esc_url_raw( trim( wp_unslash( $_POST['mds_release_routing_url'] ) ) )
+				? esc_url_raw( trim( wp_unslash( $_POST['mds_release_routing_url'] ) ) ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- esc_url_raw() sanitizes; sanitize_text_field() would strip percent-encoded octets.
 				: '';
 			if ( 'inherit' === $routing_mode ) {
 				delete_post_meta( $post_id, 'release_routing_mode' );
@@ -879,7 +882,7 @@ final class AdminInterface {
 	 * @return array Valid tab definitions.
 	 */
 	public static function extension_tabs( string $hook, array $reserved ): array {
-		$tabs = apply_filters( $hook, array() );
+		$tabs = apply_filters( $hook, array() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Callers pass mds_rm_* hook names.
 		if ( ! is_array( $tabs ) ) {
 			\MDS\ReleaseManager\Core\Logger::report_failure( 'Invalid Release Manager settings tabs supplied to ' . $hook );
 			return array();

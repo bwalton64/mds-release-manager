@@ -156,11 +156,11 @@ final class Cache {
 				),
 				'purge'        => static function ( string $mode ): bool {
 					if ( 'assets' === $mode ) {
-						do_action( 'litespeed_purge_cssjs' );
+						do_action( 'litespeed_purge_cssjs' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Third-party LiteSpeed Cache hook.
 						return true;
 					}
 					if ( 'all' === $mode ) {
-						do_action( 'litespeed_purge_all' );
+						do_action( 'litespeed_purge_all' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Third-party LiteSpeed Cache hook.
 						return true;
 					}
 					return false;
@@ -354,7 +354,7 @@ final class Cache {
 					if ( 'all' !== $mode ) {
 						return false;
 					}
-					do_action( 'breeze_clear_all_cache' );
+					do_action( 'breeze_clear_all_cache' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Third-party Breeze Cache hook.
 					return true;
 				},
 			),

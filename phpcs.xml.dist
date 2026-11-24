@@ -63,4 +63,14 @@
 		</properties>
 	</rule>
 
+	<!-- Admin views and fallback templates are included from method scope (TemplateLoader), so their variables are local, not global. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound">
+		<exclude-pattern>/includes/admin/views/*</exclude-pattern>
+		<exclude-pattern>/templates/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.GlobalVariablesOverride.Prohibited">
+		<exclude-pattern>/includes/admin/views/*</exclude-pattern>
+		<exclude-pattern>/templates/*</exclude-pattern>
+	</rule>
+
 </ruleset>

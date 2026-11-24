@@ -488,7 +488,7 @@ final class ReleaseModel {
 				'no_found_rows'          => true,
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,
-				'meta_query'             => array(
+				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- One-time bounded migration for legacy un-normalized UPCs.
 					array(
 						'key'     => self::NORMALIZED_UPC_META_KEY,
 						'compare' => 'NOT EXISTS',
@@ -658,7 +658,8 @@ final class ReleaseModel {
 				}
 			}
 			++$page;
-		} while ( count( $posts ) === 100 );
+			$posts_count = count( $posts );
+		} while ( 100 === $posts_count );
 		foreach ( $upcs as $ids ) {
 			if ( count( $ids ) > 1 ) {
 				foreach ( $ids as $id ) {
@@ -829,7 +830,8 @@ final class ReleaseModel {
 					}
 				}
 				++$page;
-			} while ( ! $matches && count( $legacy_ids ) === $batch_size );
+				$legacy_count = count( $legacy_ids );
+			} while ( ! $matches && $legacy_count === $batch_size );
 		}
 		if ( $matches ) {
 			self::release_upc_lock( $upc );

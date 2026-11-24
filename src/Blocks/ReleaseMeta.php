@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace MDS\ReleaseManager\Blocks;
 
+use WP_Post;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -233,7 +235,7 @@ final class ReleaseMeta {
 	 * @param int|string $context_post_id Post ID to use when no UPC is supplied.
 	 * @return WP_Post|null The readable release, if found.
 	 */
-	public static function resolve_post( $upc = '', $context_post_id = 0 ): ?\WP_Post {
+	public static function resolve_post( $upc = '', $context_post_id = 0 ): ?WP_Post {
 		if ( ! is_scalar( $upc ) ) {
 			\MDS\ReleaseManager\Core\Logger::diagnostic( 'Invalid Release Meta UPC/EAN.' );
 			return null;
@@ -283,7 +285,7 @@ final class ReleaseMeta {
 	 * @param int|string $context_id Current post context.
 	 * @return WP_Post|null The readable Release, if found.
 	 */
-	public static function resolve_shortcode_source( $release_id, $upc, $context_id = 0 ): ?\WP_Post {
+	public static function resolve_shortcode_source( $release_id, $upc, $context_id = 0 ): ?WP_Post {
 		if ( is_scalar( $release_id ) && '' !== (string) $release_id && '0' !== (string) $release_id ) {
 			$id   = (string) $release_id;
 			$post = preg_match( '/\A[1-9][0-9]*\z/D', $id ) ? get_post( (int) $id ) : null;
@@ -316,7 +318,7 @@ final class ReleaseMeta {
 	 * @param int|string    $context_post_id Fallback context post ID.
 	 * @return WP_Post|null The readable Release, if found.
 	 */
-	public static function resolve_release( array $attributes = array(), ?\WP_Block $block = null, int|string $context_post_id = 0 ): ?\WP_Post {
+	public static function resolve_release( array $attributes = array(), ?\WP_Block $block = null, int|string $context_post_id = 0 ): ?WP_Post {
 		if ( $block instanceof \WP_Block ) {
 			return ReleaseLinksBlock::resolve_block_source( $attributes, $block );
 		}
@@ -361,7 +363,7 @@ final class ReleaseMeta {
 	 * @return bool Whether the release can be displayed.
 	 */
 	private static function can_display( mixed $post ): bool {
-		return $post instanceof \WP_Post && 'release' === $post->post_type
+		return $post instanceof WP_Post && 'release' === $post->post_type
 			&& ( 'publish' === $post->post_status || current_user_can( 'read_post', $post->ID ) );
 	}
 
@@ -548,7 +550,7 @@ final class ReleaseMeta {
 	 * @param array   $style_fields Optional style definitions.
 	 * @return string Rendered metadata.
 	 */
-	public static function render_post( \WP_Post $post, array $attributes, $style_fields = null ): string {
+	public static function render_post( WP_Post $post, array $attributes, $style_fields = null ): string {
 		self::enqueue_assets();
 		$fields = self::fields();
 		$items  = isset( $attributes['items'] ) && is_array( $attributes['items'] ) ? $attributes['items'] : self::default_items();

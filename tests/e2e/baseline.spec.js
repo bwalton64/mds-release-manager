@@ -104,8 +104,8 @@ test('provider controls preserve conflicts and saved release links across render
 	const rendered = readWpJson(['eval', `
 		$GLOBALS['post'] = get_post(${fixture.state.release});
 		eval('namespace Elementor; class Widget_Base { public function get_settings_for_display() { return $GLOBALS["mds_test_widget_settings"] ?? array(); } }');
-		require_once MDS_RM_PATH . 'includes/integrations/elementor/class-mds-rm-elementor-widget.php';
-		require_once MDS_RM_PATH . 'includes/integrations/elementor/class-mds-rm-elementor-links-widget.php';
+		// PSR-4 autoloading + legacy class aliases resolve the Elementor widgets once the stub base class exists.
+		class_exists('MDS_RM_Elementor_Links_Widget');
 		class MDS_RM_Test_Links_Widget extends MDS_RM_Elementor_Links_Widget {
 			public function output() { ob_start(); $this->render(); return ob_get_clean(); }
 		}

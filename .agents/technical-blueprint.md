@@ -28,43 +28,21 @@ mds-release-manager/
 ├── uninstall.php                     # Uninstall handler
 ├── README.md                         # End-user and contributor documentation
 ├── changelog.md                      # Version history (Keep a Changelog format)
-├── includes/                         # All class definitions (SPL autoloader)
-│   ├── class-mds-rm-plugin.php
-│   ├── admin/
-│   │   ├── class-mds-rm-admin-interface.php
-│   │   ├── class-mds-rm-csv-handler.php
-│   │   ├── class-mds-rm-editor.php   # Classic edit-screen setup and spoke read-only rules
-│   │   ├── class-mds-rm-network-admin.php
-│   │   └── views/                    # Bundled admin views, never resolved through the theme
-│   ├── core/
-│   │   ├── class-mds-rm-builder-detection.php
-│   │   ├── class-mds-rm-logger.php
-│   │   ├── class-mds-rm-post-types.php
-│   │   ├── class-mds-rm-providers.php
-│   │   ├── class-mds-rm-release-model.php  # Release format/UPC validation and sync model
-│   │   ├── class-mds-rm-sync.php
-│   │   └── class-mds-rm-template-loader.php
-│   ├── frontend/
-│   │   ├── class-mds-rm-artist-routing.php
-│   │   ├── class-mds-rm-assets.php
-│   │   ├── class-mds-rm-customizer.php
-│   │   ├── class-mds-rm-discography.php
-│   │   ├── class-mds-rm-frontend-templates.php
-│   │   └── class-mds-rm-shortcodes.php
-│   ├── blocks/
-│   │   ├── class-mds-rm-gutenberg-blocks.php
-│   │   ├── class-mds-rm-release-meta.php
-│   │   └── class-mds-rm-release-links.php
-│   ├── api/
-│   │   ├── class-mds-rm-abilities.php
-│   │   ├── class-mds-rm-rest-api.php
-│   │   └── class-mds-rm-virtual-media.php
-│   └── integrations/
-│       └── elementor/
-│           ├── class-mds-rm-elementor-tags.php
-│           ├── class-mds-rm-elementor-widget.php
-│           ├── class-mds-rm-elementor-links-widget.php
-│           └── class-mds-rm-elementor-release-meta-tag.php
+├── composer.json / phpcs.xml.dist    # PSR-4 autoload + WPCS rules (tests/ excluded)
+├── src/                              # PSR-4 classes: MDS\ReleaseManager\* (Composer autoload)
+│   ├── Plugin.php                    # Bootstrap: register_hooks(), init(), load_textdomain()
+│   ├── Config.php                    # Tier 2 option/meta/taxonomy/REST constants
+│   ├── Admin/                        # AdminInterface, CsvHandler, Editor, NetworkAdmin
+│   ├── Core/                         # AudioPlayers, BuilderDetection, Cache, Logger, PostTypes,
+│   │                                 # Providers, ReleaseModel, ReleaseSearch, Sync, TemplateLoader
+│   ├── Frontend/                     # ArtistRouting, Assets, Customizer, Discography,
+│   │                                 # FrontendTemplates, Shortcodes, TemplateDefaults
+│   ├── Blocks/                       # BlockDefaults, GutenbergBlocks, ReleaseLinks, ReleaseLinksBlock, ReleaseMeta
+│   ├── Api/                          # Abilities, RestApi, VirtualMedia
+│   └── Integrations/Elementor/       # Tags, Widget, LinksWidget, ReleaseMetaTag
+├── includes/
+│   ├── legacy-class-aliases.php      # Lazy spl_autoload class_alias() bridge for 34 MDS_RM_* names
+│   └── admin/views/                  # Bundled admin views (IIFE-scoped), never resolved through the theme
 ├── templates/                        # Theme-overridable frontend fallbacks
 │   ├── artist-fallback.php
 │   └── release-fallback.php
@@ -97,10 +75,11 @@ mds-release-manager/
 
 **Architecture Pattern:**
 - **Static class-based:** All classes are `final` and use static `register_hooks()` and static methods.
-- **No DI container:** Direct static hook registration in the main plugin file.
-- **Autoloading:** SPL autoloader in `mds-release-manager.php` loads `/includes/class-mds-rm-*.php` files by converting class name `MDS_RM_ClassName` → `includes/class-mds-rm-classname.php`.
-- **Namespace prefix:** All plugin classes use `MDS_RM_` prefix to avoid conflicts.
+- **No DI container:** `mds-release-manager.php` loads `vendor/autoload.php` + `includes/legacy-class-aliases.php`, then calls `MDS\ReleaseManager\Plugin::register_hooks()`.
+- **Autoloading:** Composer PSR-4 maps `MDS\ReleaseManager\` → `src/`. A lazy `spl_autoload_register()` bridge in `includes/legacy-class-aliases.php` resolves the 34 legacy `MDS_RM_*` names via `class_alias()` (case-insensitive) for companion plugins and themes. It is required from the main plugin file, never from `composer.json` `"files"`, because its `ABSPATH` guard would silently exit CLI tools such as PHPCS.
+- **Namespaces:** `MDS\ReleaseManager\{Admin,Core,Frontend,Blocks,Api,Integrations\Elementor}`; WordPress core classes are imported with `use WP_Post;` etc.
 - **Separation of concerns:** Each class handles one domain (Post Types, REST API, Admin UI, Customizer, etc.).
+- **Templates & views:** `templates/*.php` and `includes/admin/views/*.php` wrap their logic in a static IIFE that receives `$args`, so template variables never leak into global scope.
 
 ---
 
@@ -405,9 +384,9 @@ The plugin exposes core features as native MCP tools using the WordPress Abiliti
 ## 5. Coding Standards & Security Conventions
 
 ### Naming Conventions
-- **Classes:** `MDS_RM_` prefix, PascalCase. Example: `MDS_RM_Post_Types`.
+- **Classes:** PSR-4 `MDS\ReleaseManager\Area\FeatureName` in `src/Area/FeatureName.php`. Legacy `MDS_RM_Feature_Name` names are aliases only (used in this document for brevity).
 - **Functions:** Lowercase with underscores and an `mds_rm_` prefix for global functions. Class methods omit the redundant prefix as they are migrated, e.g. `MDS_RM_Assets::enqueue_frontend_assets()`.
-- **Constants:** `MDS_RELEASE_MANAGER_VERSION`, `MDS_RM_PATH`, `MDS_RM_URL`, `MDS_RM_MAIN_FILE`.
+- **Constants:** `MDS_RM_VERSION`, `MDS_RM_FILE`, `MDS_RM_PATH`, `MDS_RM_URL`, `MDS_RM_BASENAME`; `MDS_RELEASE_MANAGER_VERSION` and `MDS_RM_MAIN_FILE` are retained aliases.
 - **Hooks:** `mds_rm_` prefix. Example: `do_action( 'mds_rm_save_custom_meta' )`.
 - **Options:** `mds_rm_` prefix. Example: `get_option( 'mds_rm_links_color' )`.
 
@@ -492,10 +471,10 @@ public static function mds_rm_render_widget( array $attributes, WP_Block $block 
 ```
 
 ### Testing & Validation Commands
-- **No automated test suite configured.** Manual testing recommended.
-- **No PHPCS configured.** Adhere to the conventions above manually.
-- **Lint PHP syntax before committing:** `php -l includes/class-mds-rm-<name>.php` (or loop over all files in `includes/`).
-- **No build commands required.**
+- **Standalone PHP tests:** `tests/*.php` (8 harnesses: block-defaults, cache, customizer, release-links-audio, release-search, settings-save, settings-tabs, uninstall); run each with `php tests/<name>.php`.
+- **PHPCS:** `composer phpcs` / `composer phpcbf` (WPCS 3, PHPCompatibilityWP `8.0-`, `minimum_wp_version` 7.0; `tests/` excluded).
+- **E2E:** Playwright `tests/e2e/` against LocalWP (`npm run test:e2e`, requires Node).
+- **Build:** `composer install` / `composer dump-autoload` (no JS build step yet).
 
 ---
 

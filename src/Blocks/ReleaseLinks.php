@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace MDS\ReleaseManager\Blocks;
 
+use WP_Post;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -170,7 +172,7 @@ final class ReleaseLinks {
 	 * @param array   $attributes Link, audio, and style overrides.
 	 * @return string Rendered links and audio.
 	 */
-	public static function render_post( \WP_Post $post, array $attributes ): string {
+	public static function render_post( WP_Post $post, array $attributes ): string {
 		$stored = get_post_meta( $post->ID, 'streaming_links', true );
 		$links  = json_decode( is_string( $stored ) ? $stored : '', true );
 		if ( ! is_array( $links ) ) {

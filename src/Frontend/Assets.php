@@ -321,6 +321,7 @@ final class Assets {
 							'no_results'     => __( 'No matching Artists found.', 'mds-release-manager' ),
 							'previous'       => __( 'Previous', 'mds-release-manager' ),
 							'next'           => __( 'Next', 'mds-release-manager' ),
+							/* translators: %s: Selected artist title. */
 							'selected'       => __( 'Selected: %s', 'mds-release-manager' ),
 							'cleared'        => __( 'No Artist selected.', 'mds-release-manager' ),
 							'type_to_search' => __( 'Type an Artist name to search.', 'mds-release-manager' ),

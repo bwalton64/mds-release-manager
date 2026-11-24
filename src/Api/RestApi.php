@@ -9,6 +9,12 @@ declare(strict_types=1);
 
 namespace MDS\ReleaseManager\Api;
 
+use WP_Error;
+use WP_Post;
+use WP_Query;
+use WP_REST_Request;
+use WP_REST_Response;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -157,7 +163,7 @@ final class RestApi {
 					'job_id' => array(
 						'sanitize_callback' => static function ( $value ) {
 							if ( ! is_string( $value ) ) {
-								return new \WP_Error( 'mds_invalid_sync_job_id', __( 'The synchronization job ID must be text.', 'mds-release-manager' ), array( 'status' => 400 ) );
+								return new WP_Error( 'mds_invalid_sync_job_id', __( 'The synchronization job ID must be text.', 'mds-release-manager' ), array( 'status' => 400 ) );
 							}
 							return sanitize_text_field( $value );
 						},
@@ -185,7 +191,7 @@ final class RestApi {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( self::class, 'save_artist_release_routing_api' ),
-				'permission_callback' => static function ( \WP_REST_Request $request ): bool {
+				'permission_callback' => static function ( WP_REST_Request $request ): bool {
 					$artist_id = absint( $request->get_param( 'id' ) );
 					return $artist_id > 0 && \MDS\ReleaseManager\Core\Sync::is_hub() && current_user_can( 'edit_post', $artist_id );
 				},
@@ -197,12 +203,13 @@ final class RestApi {
 	 * Gets releases through the REST API.
 	 *
 	 * @since 0.9.0
+	 * @param WP_REST_Request $request The REST request.
 	 * @return WP_REST_Response The response containing the releases.
 	 */
-	public static function get_releases_api( \WP_REST_Request $request ): \WP_REST_Response {
+	public static function get_releases_api( WP_REST_Request $request ): WP_REST_Response {
 		$page     = $request->get_param( 'page' );
 		$per_page = $request->get_param( 'per_page' );
-		$query    = new \WP_Query(
+		$query    = new WP_Query(
 			array(
 				'post_type'      => 'release',
 				'post_status'    => 'publish',
@@ -233,8 +240,8 @@ final class RestApi {
 	 * @param WP_REST_Request $request The request.
 	 * @return WP_REST_Response Paginated Artist matches.
 	 */
-	public static function search_artists_api( \WP_REST_Request $request ): \WP_REST_Response {
-		$query = new \WP_Query(
+	public static function search_artists_api( WP_REST_Request $request ): WP_REST_Response {
+		$query = new WP_Query(
 			array(
 				'post_type'      => 'artist',
 				'post_status'    => 'any',
@@ -244,7 +251,7 @@ final class RestApi {
 				'order'          => 'ASC',
 				's'              => trim( sanitize_text_field( $request->get_param( 'search' ) ) ),
 				'search_columns' => array( 'post_title' ),
-				'meta_query'     => array(
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Restricts artist picker to synced artists with UUIDs.
 					array(
 						'key'     => '_mds_artist_uuid',
 						'compare' => 'EXISTS',
@@ -280,13 +287,13 @@ final class RestApi {
 	 * @param WP_REST_Request $request The request.
 	 * @return WP_REST_Response|WP_Error The response indicating whether settings were saved.
 	 */
-	public static function save_settings_api( $request ): \WP_REST_Response|\WP_Error {
+	public static function save_settings_api( $request ): WP_REST_Response|WP_Error {
 		$params = $request->get_body_params();
 
 		$block_defaults = null;
 		if ( isset( $params['mds_rm_block_defaults'] ) ) {
 			if ( ! is_string( $params['mds_rm_block_defaults'] ) || strlen( $params['mds_rm_block_defaults'] ) > 65536 ) {
-				return new \WP_Error( 'mds_rm_invalid_block_defaults', __( 'The block defaults are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
+				return new WP_Error( 'mds_rm_invalid_block_defaults', __( 'The block defaults are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
 			}
 			$block_defaults = json_decode( $params['mds_rm_block_defaults'], true );
 			$valid          = \MDS\ReleaseManager\Blocks\BlockDefaults::validate( $block_defaults );
@@ -300,7 +307,7 @@ final class RestApi {
 			$raw_tpl = $params['mds_rm_template_defaults'];
 			if ( is_string( $raw_tpl ) ) {
 				if ( strlen( $raw_tpl ) > 65536 ) {
-					return new \WP_Error( 'mds_rm_invalid_template_defaults', __( 'The default template settings are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
+					return new WP_Error( 'mds_rm_invalid_template_defaults', __( 'The default template settings are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
 				}
 				$raw_tpl = json_decode( wp_unslash( $raw_tpl ), true );
 			}
@@ -312,7 +319,7 @@ final class RestApi {
 		}
 
 		if ( array_key_exists( 'mds_rm_providers', $params ) && ! is_array( $params['mds_rm_providers'] ) ) {
-			return new \WP_Error( 'mds_rm_invalid_providers', __( 'The streaming providers are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
+			return new WP_Error( 'mds_rm_invalid_providers', __( 'The streaming providers are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
 		}
 
 		$audio_player_settings = null;
@@ -320,7 +327,7 @@ final class RestApi {
 			$raw_audio_settings = $params['mds_rm_audio_player_settings'];
 			if ( is_string( $raw_audio_settings ) ) {
 				if ( strlen( $raw_audio_settings ) > 65536 ) {
-					return new \WP_Error( 'mds_rm_invalid_audio_player_settings', __( 'The audio player settings are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
+					return new WP_Error( 'mds_rm_invalid_audio_player_settings', __( 'The audio player settings are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
 				}
 				$raw_audio_settings = json_decode( wp_unslash( $raw_audio_settings ), true );
 			}
@@ -421,7 +428,7 @@ final class RestApi {
 	 * @since 1.1.0
 	 * @return WP_REST_Response
 	 */
-	public static function purge_cache_api(): \WP_REST_Response {
+	public static function purge_cache_api(): WP_REST_Response {
 		$result = \MDS\ReleaseManager\Core\Cache::purge(
 			'manual',
 			array(
@@ -457,7 +464,7 @@ final class RestApi {
 	 * @param WP_REST_Request $request The request.
 	 * @return WP_REST_Response The response indicating whether network settings were saved.
 	 */
-	public static function save_network_settings_api( $request ): \WP_REST_Response {
+	public static function save_network_settings_api( $request ): WP_REST_Response {
 		$params = $request->get_body_params();
 
 		if ( isset( $params['mds_rm_master_blog_id'] ) ) {
@@ -477,9 +484,10 @@ final class RestApi {
 	 * Synchronizes release and artist data across the network.
 	 *
 	 * @since 0.9.0
+	 * @param WP_REST_Request $request The REST request.
 	 * @return WP_REST_Response|WP_Error The response or error from the network sync.
 	 */
-	public static function sync_network_api( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+	public static function sync_network_api( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$job_id = $request->get_param( 'job_id' );
 		$result = \MDS\ReleaseManager\Core\Sync::run_network_sync_batch( is_string( $job_id ) ? sanitize_text_field( $job_id ) : '' );
 		if ( is_wp_error( $result ) ) {
@@ -497,11 +505,11 @@ final class RestApi {
 	 * @param WP_REST_Request $request REST request.
 	 * @return WP_REST_Response|WP_Error Updated destination previews or an error.
 	 */
-	public static function save_artist_release_routing_api( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+	public static function save_artist_release_routing_api( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$artist_id = absint( $request->get_param( 'id' ) );
 		$artist    = get_post( $artist_id );
-		if ( ! $artist instanceof \WP_Post || 'artist' !== $artist->post_type ) {
-			return new \WP_Error( 'mds_artist_not_found', __( 'Artist not found.', 'mds-release-manager' ), array( 'status' => 404 ) );
+		if ( ! $artist instanceof WP_Post || 'artist' !== $artist->post_type ) {
+			return new WP_Error( 'mds_artist_not_found', __( 'Artist not found.', 'mds-release-manager' ), array( 'status' => 404 ) );
 		}
 
 		$artist_uuid = (string) get_post_meta( $artist_id, '_mds_artist_uuid', true );
@@ -533,7 +541,7 @@ final class RestApi {
 			}
 			$release_id = absint( $row['id'] );
 			$release    = get_post( $release_id );
-			if ( ! $release instanceof \WP_Post || 'release' !== $release->post_type || ! current_user_can( 'edit_post', $release_id ) ) {
+			if ( ! $release instanceof WP_Post || 'release' !== $release->post_type || ! current_user_can( 'edit_post', $release_id ) ) {
 				continue;
 			}
 			// Verify the release belongs to this Artist.

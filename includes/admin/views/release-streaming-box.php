@@ -11,20 +11,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-ob_start();
-?>
+( static function ( array $args ): void {
+	ob_start();
+	?>
 <option value=""><?php esc_html_e( 'Select Provider', 'mds-release-manager' ); ?></option>
-<?php foreach ( $args['providers'] as $provider_name ) : ?>
+	<?php foreach ( $args['providers'] as $provider_name ) : ?>
 	<option value="<?php echo esc_attr( $provider_name ); ?>"><?php echo esc_html( $provider_name ); ?></option>
 <?php endforeach; ?>
-<?php
-$global_provider_options = ob_get_clean();
-wp_add_inline_script(
-	'mds-meta-boxes-js',
-	'var mds_global_providers_html = ' . wp_json_encode( $global_provider_options, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) . ';',
-	'before'
-);
-?>
+	<?php
+	$global_provider_options = ob_get_clean();
+	wp_add_inline_script(
+		'mds-meta-boxes-js',
+		'var mds_global_providers_html = ' . wp_json_encode( $global_provider_options, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) . ';',
+		'before'
+	);
+	?>
 <div class="mds-meta-section">
 	<div id="mds_streaming_links_wrapper">
 		<?php foreach ( $args['streaming_links'] as $provider => $url ) : ?>
@@ -55,3 +56,5 @@ wp_add_inline_script(
 		</tr>
 	</table>
 </div>
+	<?php
+} )( is_array( $args ?? null ) ? $args : array() );

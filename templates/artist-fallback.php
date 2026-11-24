@@ -11,46 +11,47 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$layout              = (string) ( $args['layout'] ?? 'stacked' );
-$section_order       = (string) ( $args['section_order'] ?? 'discography_first' );
-$has_image           = ! empty( $args['image'] );
-$discography_html    = (string) ( $args['discography'] ?? '' );
-$discography_heading = trim( (string) ( $args['discography_heading'] ?? '' ) );
-$contact_html        = (string) ( $args['contact'] ?? '' );
-$contact_heading     = trim( (string) ( $args['contact_heading'] ?? __( 'Contact Information', 'mds-release-manager' ) ) );
+( static function ( array $args ): void {
+	$layout              = (string) ( $args['layout'] ?? 'stacked' );
+	$section_order       = (string) ( $args['section_order'] ?? 'discography_first' );
+	$has_image           = ! empty( $args['image'] );
+	$discography_html    = (string) ( $args['discography'] ?? '' );
+	$discography_heading = trim( (string) ( $args['discography_heading'] ?? '' ) );
+	$contact_html        = (string) ( $args['contact'] ?? '' );
+	$contact_heading     = trim( (string) ( $args['contact_heading'] ?? __( 'Contact Information', 'mds-release-manager' ) ) );
 
-$classes = array(
-	'mds-artist-fallback',
-	'mds-artist-fallback--' . ( 'split' === $layout ? 'split' : 'stacked' ),
-	$has_image ? 'has-portrait' : 'no-portrait',
-);
+	$classes = array(
+		'mds-artist-fallback',
+		'mds-artist-fallback--' . ( 'split' === $layout ? 'split' : 'stacked' ),
+		$has_image ? 'has-portrait' : 'no-portrait',
+	);
 
-$render_discography = static function () use ( $discography_html, $discography_heading ): void {
-	if ( '' === $discography_html ) {
-		return;
-	}
-	if ( '' !== $discography_heading ) {
-		echo '<section class="mds-artist-fallback__discography">';
-		echo '<h2>' . esc_html( $discography_heading ) . '</h2>';
+	$render_discography = static function () use ( $discography_html, $discography_heading ): void {
+		if ( '' === $discography_html ) {
+			return;
+		}
+		if ( '' !== $discography_heading ) {
+			echo '<section class="mds-artist-fallback__discography">';
+			echo '<h2>' . esc_html( $discography_heading ) . '</h2>';
+			echo $discography_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Generated and escaped by the discography renderer.
+			echo '</section>';
+			return;
+		}
 		echo $discography_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Generated and escaped by the discography renderer.
-		echo '</section>';
-		return;
-	}
-	echo $discography_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Generated and escaped by the discography renderer.
-};
+	};
 
-$render_contact = static function () use ( $contact_html, $contact_heading ): void {
-	if ( '' === $contact_html ) {
-		return;
-	}
-	echo '<section class="mds-artist-fallback__contact">';
-	if ( '' !== $contact_heading ) {
-		echo '<h2>' . esc_html( $contact_heading ) . '</h2>';
-	}
-	echo wp_kses_post( wpautop( $contact_html ) );
-	echo '</section>';
-};
-?>
+	$render_contact = static function () use ( $contact_html, $contact_heading ): void {
+		if ( '' === $contact_html ) {
+			return;
+		}
+		echo '<section class="mds-artist-fallback__contact">';
+		if ( '' !== $contact_heading ) {
+			echo '<h2>' . esc_html( $contact_heading ) . '</h2>';
+		}
+		echo wp_kses_post( wpautop( $contact_html ) );
+		echo '</section>';
+	};
+	?>
 <div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo esc_attr( $args['style'] ); ?>">
 	<?php if ( 'split' === $layout && $has_image ) : ?>
 		<div class="mds-artist-fallback__hero">
@@ -74,3 +75,5 @@ $render_contact = static function () use ( $contact_html, $contact_heading ): vo
 	}
 	?>
 </div>
+	<?php
+} )( is_array( $args ?? null ) ? $args : array() );

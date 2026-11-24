@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 ( static function ( array $args ): void {
-?>
+	?>
 <div class="wrap mds-settings-wrap">
 	<h1><?php esc_html_e( 'MDS Release Manager - Network Settings', 'mds-release-manager' ); ?></h1>
 	<?php if ( $args['settings_saved'] ) : ?>

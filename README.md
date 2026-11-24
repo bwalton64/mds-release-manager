@@ -117,8 +117,11 @@ using the former tab names continue to open the corresponding core tab.
    php --ini  # Confirm debugging configuration
    ```
 
-3. **No Build Step Required**
-   The plugin has no Composer or npm runtime dependencies. npm dependencies are used only for development smoke tests.
+3. **Install Composer Autoloader**
+   ```powershell
+   composer install   # Generates vendor/autoload.php (PSR-4: MDS\ReleaseManager\ → src/) and WPCS dev tools
+   ```
+   There are no npm runtime dependencies; npm is used only for development smoke tests.
 
 4. **Activate in WordPress**
    - WordPress Admin → Plugins → Find "MDS Release Manager"
@@ -408,32 +411,23 @@ mds-release-manager/
 ├── mds-release-manager.php             # Main plugin file (entry point)
 ├── uninstall.php                       # Plugin cleanup on uninstall
 │
-├── includes/                           # Core plugin classes (SPL-autoloaded)
-│   ├── class-mds-rm-plugin.php                     # Plugin bootstrap
-│   ├── admin/
-│   │   ├── class-mds-rm-admin-interface.php        # Settings and admin UI
-│   │   ├── class-mds-rm-csv-handler.php             # CSV import/export
-│   │   ├── class-mds-rm-network-admin.php           # Multisite network settings
-│   │   └── views/                                  # Bundled admin screens and meta boxes
-│   ├── core/
-│   │   ├── class-mds-rm-builder-detection.php      # Page-builder detection
-│   │   ├── class-mds-rm-logger.php                 # Debug logging
-│   │   ├── class-mds-rm-post-types.php             # Release/Artist post type registration
-│   │   ├── class-mds-rm-providers.php              # Streaming provider defaults
-│   │   ├── class-mds-rm-release-model.php          # Release data model, validation, and sync
-│   │   ├── class-mds-rm-sync.php                   # Network synchronization and cache purge
-│   │   └── class-mds-rm-template-loader.php        # Templates and editable assets
-│   ├── frontend/
-│   │   ├── class-mds-rm-artist-routing.php          # Artist homepage routing
-│   │   ├── class-mds-rm-assets.php                  # CSS/JS enqueuing
-│   │   ├── class-mds-rm-customizer.php              # WordPress Customizer integration
-│   │   ├── class-mds-rm-discography.php             # Artist discography logic
-│   │   ├── class-mds-rm-frontend-templates.php      # Content fallback rendering
-│   │   └── class-mds-rm-shortcodes.php              # Shortcode registration
-│   ├── blocks/                         # Block registration and Release renderers
-│   ├── api/                            # REST, Abilities, and virtual media
-│   └── integrations/
-│       └── elementor/                   # Widgets and dynamic tags
+├── composer.json / phpcs.xml.dist      # PSR-4 autoloading and WPCS/PHPCompatibilityWP rules
+│
+├── src/                                # PSR-4 classes (MDS\ReleaseManager\*, Composer-autoloaded)
+│   ├── Plugin.php                      # Plugin bootstrap and text domain
+│   ├── Config.php                      # Centralized option/meta/REST constants
+│   ├── Admin/                          # AdminInterface, CsvHandler, Editor, NetworkAdmin
+│   ├── Core/                           # AudioPlayers, BuilderDetection, Cache, Logger, PostTypes,
+│   │                                   # Providers, ReleaseModel, ReleaseSearch, Sync, TemplateLoader
+│   ├── Frontend/                       # ArtistRouting, Assets, Customizer, Discography,
+│   │                                   # FrontendTemplates, Shortcodes, TemplateDefaults
+│   ├── Blocks/                         # BlockDefaults, GutenbergBlocks, ReleaseLinks(Block), ReleaseMeta
+│   ├── Api/                            # Abilities, RestApi, VirtualMedia
+│   └── Integrations/Elementor/         # Tags, Widget, LinksWidget, ReleaseMetaTag
+│
+├── includes/
+│   ├── legacy-class-aliases.php        # Lazy MDS_RM_* → MDS\ReleaseManager\* class_alias() bridge
+│   └── admin/views/                    # Bundled admin screens and meta boxes
 │
 ├── templates/                          # Theme-overridable frontend templates
 │   ├── artist-fallback.php             # Artist page fallback template
@@ -472,7 +466,8 @@ mds-release-manager/
 
 ### Key Directory Descriptions
 
-- **includes/**: PHP classes using the `class-mds-rm-*.php` naming convention and WordPress PHP coding style
+- **src/**: PSR-4 namespaced classes (`MDS\ReleaseManager\*`) with `declare(strict_types=1);` and WPCS formatting
+- **includes/**: The legacy `MDS_RM_*` class-alias bridge (companion plugins and themes keep working) and bundled admin views
 - **templates/**: Frontend fallbacks that can be overridden in a theme's `mds-release-manager/templates/` directory. Theme copies of admin views are no longer loaded.
 - **css/**: Responsive stylesheets with mobile-first design
 - **blocks/**: Gutenberg metadata and editor scripts; no build step required
@@ -505,7 +500,7 @@ We welcome contributions! Follow these guidelines to maintain code quality and c
    - Follow the existing WordPress PHP formatting conventions (tabs and nearby code style)
    - Maintain strict type declarations (`declare(strict_types=1)`)
    - Add inline comments only when clarification is needed
-   - Use the `MDS_RM_` class prefix for all new classes
+   - Add new classes under `src/` in the `MDS\ReleaseManager\*` namespace (PSR-4); legacy `MDS_RM_*` names are aliases only
 
 ### Code Standards
 
@@ -514,20 +509,24 @@ We welcome contributions! Follow these guidelines to maintain code quality and c
 <?php
 declare(strict_types=1);
 
+namespace MDS\ReleaseManager\Core;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-final class MDS_RM_Feature_Name {
+final class FeatureName {
 	public static function register_hooks(): void {
-		add_action( 'hook_name', array( static::class, 'method_name' ) );
+		add_action( 'hook_name', array( self::class, 'method_name' ) );
 	}
 }
 ```
 
 #### Naming Conventions
-- **Classes:** `MDS_RM_Feature_Name` (PascalCase with `MDS_RM_` prefix)
-- **Files:** `class-mds-rm-feature-name.php` (lowercase with hyphens)
+- **Classes:** `MDS\ReleaseManager\Area\FeatureName` (PascalCase, PSR-4 namespace)
+- **Files:** `src/Area/FeatureName.php` (matches the class name)
+- **Legacy aliases:** `MDS_RM_Feature_Name` (registered in `includes/legacy-class-aliases.php`; do not add new ones)
+- **Constants:** `MDS_RM_VERSION`, `MDS_RM_FILE`, `MDS_RM_PATH`, `MDS_RM_URL`, `MDS_RM_BASENAME` (`MDS_RELEASE_MANAGER_VERSION` and `MDS_RM_MAIN_FILE` remain as aliases)
 - **Functions:** `mds_rm_function_name()` (snake_case with prefix)
 - **Hooks:** `mds_rm_hook_name` or `mds_rm_filter_name` (snake_case with prefix)
 
@@ -565,8 +564,9 @@ final class MDS_RM_Feature_Name {
 
 3. **Code Quality**
    ```bash
-   # Verify PHP syntax
-   php -l includes/class-mds-rm-*.php
+   composer phpcs                      # WPCS 3 + PHPCompatibilityWP (PHP 8.0+, WP 7.0+)
+   composer phpcbf                     # Auto-fix formatting
+   for f in tests/*.php; do php "$f"; done   # Standalone PHP test harnesses
    ```
 
 ### Commit Messages

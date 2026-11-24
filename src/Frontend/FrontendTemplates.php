@@ -9,6 +9,9 @@ declare(strict_types=1);
 
 namespace MDS\ReleaseManager\Frontend;
 
+use WP_Block;
+use WP_Post;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -75,12 +78,12 @@ final class FrontendTemplates {
 	 *
 	 * @return WP_Post|false The eligible Artist, or false.
 	 */
-	private static function get_fallback_artist_post(): \WP_Post|false {
+	private static function get_fallback_artist_post(): WP_Post|false {
 		if ( is_admin() || is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ! is_singular( 'artist' ) || ! in_the_loop() || ! is_main_query() ) {
 			return false;
 		}
 		$post = get_post();
-		if ( ! $post instanceof \WP_Post || 'artist' !== $post->post_type || \MDS\ReleaseManager\Core\BuilderDetection::detect_builder( $post->ID ) ) {
+		if ( ! $post instanceof WP_Post || 'artist' !== $post->post_type || \MDS\ReleaseManager\Core\BuilderDetection::detect_builder( $post->ID ) ) {
 			return false;
 		}
 		return $post;
@@ -115,7 +118,7 @@ final class FrontendTemplates {
 	 */
 	public static function filter_release_content( $content ) {
 		$post = self::get_fallback_release_post();
-		if ( ! $post instanceof \WP_Post ) {
+		if ( ! $post instanceof WP_Post ) {
 			return $content;
 		}
 
@@ -145,7 +148,13 @@ final class FrontendTemplates {
 		return \MDS\ReleaseManager\Core\TemplateLoader::render( 'templates/release-fallback.php', $args );
 	}
 
-	/** Renders an automatic component with the same defaults and block supports as an inserted block. */
+	/**
+	 * Renders an automatic component with the same defaults and block supports as an inserted block.
+	 *
+	 * @param string               $name       Registered block name.
+	 * @param array<string, mixed> $attributes Block attributes.
+	 * @return string Rendered block HTML.
+	 */
 	private static function render_fallback_block( string $name, array $attributes ): string {
 		return render_block(
 			array(
@@ -187,7 +196,7 @@ final class FrontendTemplates {
 		if (
 			\MDS\ReleaseManager\Core\BuilderDetection::detect_builder( $post_id )
 			|| (
-				$instance instanceof \WP_Block
+				$instance instanceof WP_Block
 				&& isset( $instance->context['postId'] )
 				&& absint( $instance->context['postId'] ) !== $post_id
 			)
@@ -248,7 +257,7 @@ final class FrontendTemplates {
 			return $html;
 		}
 		$post = self::get_fallback_release_post( $post_id );
-		if ( ! $post instanceof \WP_Post || '' === $html ) {
+		if ( ! $post instanceof WP_Post || '' === $html ) {
 			return $html;
 		}
 		$release_tpl = TemplateDefaults::get( 'release' );
@@ -265,7 +274,7 @@ final class FrontendTemplates {
 	 * @param int $post_id Optional post ID being filtered.
 	 * @return WP_Post|false The eligible Release, or false.
 	 */
-	private static function get_fallback_release_post( $post_id = 0 ): \WP_Post|false {
+	private static function get_fallback_release_post( $post_id = 0 ): WP_Post|false {
 		if (
 			is_admin()
 			|| is_feed()
@@ -279,7 +288,7 @@ final class FrontendTemplates {
 
 		$post = get_post();
 		if (
-			! $post instanceof \WP_Post
+			! $post instanceof WP_Post
 			|| 'release' !== $post->post_type
 			|| ( $post_id && absint( $post_id ) !== $post->ID )
 			|| '' !== ArtistRouting::resolve_release_redirect( $post->ID )
@@ -342,7 +351,7 @@ final class FrontendTemplates {
 				$visited_blocks[ $reference ] = true;
 				$reusable_block               = get_post( $reference );
 				if (
-					$reusable_block instanceof \WP_Post
+					$reusable_block instanceof WP_Post
 					&& 'wp_block' === $reusable_block->post_type
 					&& self::content_has_component( $reusable_block->post_content, $block_name, $shortcode_name, $visited_blocks )
 				) {
@@ -367,7 +376,7 @@ final class FrontendTemplates {
 	 * @param WP_Post $post The Release post.
 	 * @return string The image markup, or an empty string.
 	 */
-	private static function get_release_image( \WP_Post $post ): string {
+	private static function get_release_image( WP_Post $post ): string {
 		$image_url = get_post_meta( $post->ID, 'featured_image_url', true );
 		if ( ! is_string( $image_url ) || '' === esc_url( $image_url ) ) {
 			$image_url = '';
