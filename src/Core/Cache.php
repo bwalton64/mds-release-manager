@@ -85,7 +85,7 @@ final class Cache {
 	 * Validates and sanitizes submitted cache settings.
 	 *
 	 * @param mixed $raw Submitted settings array.
-	 * @return array{purge_on_post_save: bool, plugins: array<string, string>}|WP_Error
+	 * @return array{purge_on_post_save: bool, plugins: array<string, string>}|\WP_Error
 	 */
 	public static function validate_settings( mixed $raw ): array|\WP_Error {
 		if ( ! is_array( $raw ) ) {

@@ -77,6 +77,9 @@ final class GutenbergBlocks {
 			true
 		);
 		wp_enqueue_script( 'mds-rm-blocks-js' );
+		$admin_css = 'css/admin-styles.css';
+		wp_enqueue_style( 'mds-admin-view-styles', MDS_RM_URL . $admin_css, array(), filemtime( MDS_RM_PATH . $admin_css ) );
+		\MDS\ReleaseManager\Frontend\Assets::enqueue_font_awesome();
 		wp_add_inline_script(
 			'mds-rm-release-meta-editor',
 			'var mdsReleaseMeta = ' . wp_json_encode(
@@ -207,11 +210,23 @@ final class GutenbergBlocks {
 		$controls    = "blocks/{$slug}/controls.js";
 		$style       = "css/{$slug}.css";
 		wp_register_style( "mds-rm-{$slug}-editor-style", MDS_RM_URL . $style, array( 'dashicons' ), filemtime( MDS_RM_PATH . $style ) );
+		$icon_picker_script = 'js/icon-picker.js';
+		if ( ! wp_script_is( 'mds-rm-icon-picker', 'registered' ) ) {
+			wp_register_script(
+				'mds-rm-icon-picker',
+				MDS_RM_URL . $icon_picker_script,
+				array( 'wp-element', 'wp-components', 'wp-i18n', 'wp-a11y' ),
+				filemtime( MDS_RM_PATH . $icon_picker_script ),
+				true
+			);
+			wp_set_script_translations( 'mds-rm-icon-picker', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+		}
+
 		wp_register_script( "mds-rm-{$slug}-controls", MDS_RM_URL . $controls, array( 'mds-rm-native-release-styles' ), filemtime( MDS_RM_PATH . $controls ), true );
 		wp_register_script(
 			"mds-rm-{$slug}-editor",
 			MDS_RM_URL . $edit_script,
-			array( 'wp-blocks', 'wp-server-side-render', 'mds-rm-release-picker', 'mds-rm-release-items', "mds-rm-{$slug}-controls" ),
+			array( 'wp-blocks', 'wp-server-side-render', 'mds-rm-icon-picker', 'mds-rm-release-picker', 'mds-rm-release-items', "mds-rm-{$slug}-controls" ),
 			filemtime( MDS_RM_PATH . $edit_script ),
 			true
 		);
@@ -241,9 +256,9 @@ final class GutenbergBlocks {
 	/**
 	 * Renders the Release Links block in its post context.
 	 *
-	 * @param array    $attributes Block attributes.
-	 * @param string   $_content   Block content required by the render callback.
-	 * @param WP_Block $block      The parsed block.
+	 * @param array     $attributes Block attributes.
+	 * @param string    $_content   Block content required by the render callback.
+	 * @param \WP_Block $block      The parsed block.
 	 * @return string The rendered release links.
 	 */
 	public static function render_gutenberg_release_links( $attributes, $_content, $block ): string {
@@ -254,9 +269,9 @@ final class GutenbergBlocks {
 	 * Renders the Release Meta Block.
 	 *
 	 * @since 0.9.0
-	 * @param array    $attributes Block attributes.
-	 * @param string   $_content   Block content required by the render callback.
-	 * @param WP_Block $block      The parsed block.
+	 * @param array     $attributes Block attributes.
+	 * @param string    $_content   Block content required by the render callback.
+	 * @param \WP_Block $block      The parsed block.
 	 * @return string The rendered metadata.
 	 */
 	public static function render_gutenberg_release_meta( $attributes, $_content, $block ): string {

@@ -263,9 +263,9 @@ final class VirtualMedia {
 	 * Adds virtual media details to the attachment REST response.
 	 *
 	 * @since 0.9.0
-	 * @param WP_REST_Response $response The attachment REST response.
-	 * @param WP_Post          $post     The attachment post.
-	 * @return WP_REST_Response The updated attachment REST response.
+	 * @param \WP_REST_Response $response The attachment REST response.
+	 * @param \WP_Post          $post     The attachment post.
+	 * @return \WP_REST_Response The updated attachment REST response.
 	 */
 	public static function force_rest_virtual_attachment( $response, $post ) {
 		$hub_url = get_post_meta( $post->ID, '_mds_is_hub_media', true );

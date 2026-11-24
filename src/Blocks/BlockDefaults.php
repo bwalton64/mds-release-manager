@@ -37,7 +37,7 @@ final class BlockDefaults {
 	 * Validates defaults submitted by the settings screen.
 	 *
 	 * @param mixed $all Submitted defaults.
-	 * @return true|WP_Error True when valid, otherwise an error.
+	 * @return true|\WP_Error True when valid, otherwise an error.
 	 */
 	public static function validate( $all ) {
 		if ( ! is_array( $all ) ) {
@@ -181,7 +181,7 @@ final class BlockDefaults {
 	/**
 	 * Returns a validation error suitable for the settings REST endpoint.
 	 *
-	 * @return WP_Error Validation error.
+	 * @return \WP_Error Validation error.
 	 */
 	private static function invalid(): \WP_Error {
 		return new \WP_Error( 'mds_rm_invalid_block_defaults', __( 'The block defaults contain an unsupported value. Review the settings and try again.', 'mds-release-manager' ), array( 'status' => 400 ) );

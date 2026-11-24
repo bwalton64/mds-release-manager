@@ -210,7 +210,7 @@ final class TemplateDefaults {
 	 * Validates and sanitizes submitted template defaults.
 	 *
 	 * @param mixed $raw Decoded JSON payload.
-	 * @return array{release: array<string, mixed>, artist: array<string, mixed>}|WP_Error
+	 * @return array{release: array<string, mixed>, artist: array<string, mixed>}|\WP_Error
 	 */
 	public static function validate( mixed $raw ): array|\WP_Error {
 		if ( ! is_array( $raw ) ) {
@@ -308,7 +308,7 @@ final class TemplateDefaults {
 	 * @param mixed                $input    Submitted section array.
 	 * @param array<string, mixed> $defaults Section defaults.
 	 * @param array<string, array> $schema   Field schemas.
-	 * @return array<string, mixed>|WP_Error
+	 * @return array<string, mixed>|\WP_Error
 	 */
 	private static function validate_section( mixed $input, array $defaults, array $schema ): array|\WP_Error {
 		if ( ! is_array( $input ) ) {
@@ -396,7 +396,7 @@ final class TemplateDefaults {
 	/**
 	 * Builds a standard validation WP_Error.
 	 *
-	 * @return WP_Error
+	 * @return \WP_Error
 	 */
 	private static function invalid_error(): \WP_Error {
 		return new \WP_Error(

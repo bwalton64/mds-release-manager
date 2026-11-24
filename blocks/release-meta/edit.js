@@ -55,20 +55,19 @@
                                 onChange: function(value) { updateItem(index, { enabled: value }); }
                             }),
                             resetProperty(item, 'enabled', __('Use site visibility', 'mds-release-manager')),
-                            el(SelectControl, {
-                                label: 'Choose icon',
-                                value: '',
-                                options: iconPresets,
-                                onChange: function(value) {
-                                    if (value) updateItem(index, { icon: value === '__none' ? '' : value });
-                                }
-                            }),
-                            el(TextControl, {
-                                label: 'Icon classes',
-                                help: 'Use Dashicons (dashicons dashicons-album) or Font Awesome (fas fa-calendar). Leave blank for no icon.',
-                                value: item.icon,
-                                onChange: function(value) { updateItem(index, { icon: value }); }
-                            }),
+                            window.mdsRmIconPicker && window.mdsRmIconPicker.IconPickerControl
+                                ? el(window.mdsRmIconPicker.IconPickerControl, {
+                                    label: __('Field icon', 'mds-release-manager'),
+                                    help: __('Choose a Font Awesome or Dashicons icon, or clear for no icon.', 'mds-release-manager'),
+                                    value: item.icon || '',
+                                    defaultCategory: 'meta',
+                                    onChange: function(value) { updateItem(index, { icon: value }); }
+                                })
+                                : el(TextControl, {
+                                    label: 'Icon classes',
+                                    value: item.icon,
+                                    onChange: function(value) { updateItem(index, { icon: value }); }
+                                }),
                             resetProperty(item, 'icon', __('Use site icon', 'mds-release-manager')),
                             el(TextControl, {
                                 label: 'Tooltip title',

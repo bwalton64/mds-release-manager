@@ -191,26 +191,19 @@
 						onMoveUp: () => move(index, -1),
 						onMoveDown: () => move(index, 1),
 					},
-						el('div', { className: 'mds-style-grid-2col' },
-							el(SelectControl, {
-								label: __('Choose Icon Preset', 'mds-release-manager'),
-								value: '',
-								options: ICON_PRESETS,
-								__next40pxDefaultSize: true,
-								__nextHasNoMarginBottom: true,
-								onChange: (preset) => {
-									if (preset) update(index, { icon: preset === '__none' ? '' : preset });
-								},
-							}),
-							el(TextControl, {
-								label: __('Icon CSS Classes', 'mds-release-manager'),
-								help: __('Use Dashicons (dashicons dashicons-album) or Font Awesome (fas fa-calendar). Leave blank for no icon.', 'mds-release-manager'),
+						window.mdsRmIconPicker && window.mdsRmIconPicker.IconPickerControl
+							? el(window.mdsRmIconPicker.IconPickerControl, {
+								label: __('Field Icon', 'mds-release-manager'),
+								help: __('Choose a Font Awesome or Dashicons icon, or leave empty for no icon.', 'mds-release-manager'),
 								value: item.icon || '',
-								__next40pxDefaultSize: true,
-								__nextHasNoMarginBottom: true,
+								defaultCategory: 'meta',
 								onChange: (icon) => update(index, { icon }),
 							})
-						),
+							: el(TextControl, {
+								label: __('Icon CSS Classes', 'mds-release-manager'),
+								value: item.icon || '',
+								onChange: (icon) => update(index, { icon }),
+							}),
 						el(TextControl, {
 							label: __('Field Tooltip Label', 'mds-release-manager'),
 							help: __('Changes the hover text and accessible description for this field, not the displayed metadata value.', 'mds-release-manager'),
@@ -290,38 +283,27 @@
 						onMoveDown: () => move(index, 1),
 					},
 						!isBuy && !provider && el(Notice, { status: 'info', isDismissible: false }, __('This saved block override has no configured provider. Existing release URLs and this override are retained.', 'mds-release-manager')),
-						el('div', { className: 'mds-style-grid-2col' },
-							el(SelectControl, {
-								label: __('Choose Icon Preset', 'mds-release-manager'),
-								value: '',
-								options: ICON_PRESETS,
-								__next40pxDefaultSize: true,
-								__nextHasNoMarginBottom: true,
-								onChange: (preset) => {
-									if (!preset) return;
-									const nextIcon = preset === '__none' ? '' : preset;
-									if (provider) updateProvider(providerIndex, { icon: nextIcon });
-									else updateItem(index, { icon: nextIcon });
+						window.mdsRmIconPicker && window.mdsRmIconPicker.IconPickerControl
+							? el(window.mdsRmIconPicker.IconPickerControl, {
+								label: provider ? __('Provider Icon', 'mds-release-manager') : __('Block Icon', 'mds-release-manager'),
+								help: provider
+									? __('Used across the release editor, shortcodes, Elementor, and blocks unless overridden.', 'mds-release-manager')
+									: __('Changes the icon for this link in blocks.', 'mds-release-manager'),
+								value: provider ? (provider.icon || '') : (item.icon || ''),
+								defaultCategory: isBuy ? 'commerce' : 'brands',
+								onChange: (icon) => {
+									if (provider) updateProvider(providerIndex, { icon });
+									else updateItem(index, { icon });
+								},
+							})
+							: el(TextControl, {
+								label: __('Icon CSS Classes', 'mds-release-manager'),
+								value: provider ? (provider.icon || '') : (item.icon || ''),
+								onChange: (icon) => {
+									if (provider) updateProvider(providerIndex, { icon });
+									else updateItem(index, { icon });
 								},
 							}),
-							provider
-								? el(TextControl, {
-									label: __('Provider Icon CSS Classes', 'mds-release-manager'),
-									help: __('Used across the release editor, shortcodes, Elementor, and blocks unless overridden.', 'mds-release-manager'),
-									value: provider.icon || '',
-									__next40pxDefaultSize: true,
-									__nextHasNoMarginBottom: true,
-									onChange: (icon) => updateProvider(providerIndex, { icon }),
-								})
-								: el(TextControl, {
-									label: __('Block Icon CSS Classes', 'mds-release-manager'),
-									help: __('Changes the icon for this link in blocks.', 'mds-release-manager'),
-									value: item.icon || '',
-									__next40pxDefaultSize: true,
-									__nextHasNoMarginBottom: true,
-									onChange: (icon) => updateItem(index, { icon }),
-								})
-						),
 						!!conflict && el(Notice, { status: 'warning', isDismissible: false },
 							el('p', null, sprintf(__('The saved block icon override is "%s"; it takes precedence over the provider icon in blocks. Other outputs continue to use the provider icon.', 'mds-release-manager'), item.icon)),
 							el(Button, { variant: 'secondary', onClick: () => removeIconOverride(index) }, __('Use provider icon in blocks', 'mds-release-manager')),

@@ -97,7 +97,7 @@ final class Sync {
 	 * returned job ID can be passed to subsequent calls after an interruption.
 	 *
 	 * @param string $job_id Existing job ID, or an empty string to start/resume.
-	 * @return array<string, mixed>|WP_Error Current job progress or an error.
+	 * @return array<string, mixed>|\WP_Error Current job progress or an error.
 	 */
 	public static function run_network_sync_batch( string $job_id = '' ): array|\WP_Error {
 		if ( ! self::is_hub() ) {
@@ -333,7 +333,7 @@ final class Sync {
 	 * @since 0.9.0
 	 * @param int    $post_id   The source post ID.
 	 * @param string $post_type The source post type.
-	 * @return true|WP_Error|null True on success, an error on failure, or null when synchronization is not applicable.
+	 * @return true|\WP_Error|null True on success, an error on failure, or null when synchronization is not applicable.
 	 */
 	public static function broadcast_to_spokes( $post_id, $post_type ): bool|\WP_Error|null {
 		$results = self::broadcast_batch_to_spokes(
@@ -352,7 +352,7 @@ final class Sync {
 	 * Synchronizes a batch of Hub posts to their configured spoke sites, switching to each spoke once per batch.
 	 *
 	 * @param array<int, array{id:int,post_type:string}> $items List of Hub post IDs and post types.
-	 * @return array<string, bool|WP_Error|null> Per-record results keyed by `"{post_type}:{id}"`.
+	 * @return array<string, bool|\WP_Error|null> Per-record results keyed by `"{post_type}:{id}"`.
 	 */
 	public static function broadcast_batch_to_spokes( array $items ): array {
 		$results = array();
@@ -455,7 +455,7 @@ final class Sync {
 	 * @param int    $post_id       Hub post ID.
 	 * @param string $post_type     Post type (`release` or `artist`).
 	 * @param int    $master_hub_id Hub blog ID.
-	 * @return array<string, mixed>|WP_Error|null Payload array, WP_Error on validation failure, or null if not applicable.
+	 * @return array<string, mixed>|\WP_Error|null Payload array, \WP_Error on validation failure, or null if not applicable.
 	 */
 	private static function collect_hub_payload( int $post_id, string $post_type, int $master_hub_id ): array|\WP_Error|null {
 		$post = get_post( $post_id );

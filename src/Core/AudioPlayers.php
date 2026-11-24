@@ -283,7 +283,7 @@ final class AudioPlayers {
 	 *
 	 * @since 1.1.0
 	 * @param mixed $submitted Decoded array of per-player settings.
-	 * @return array<string, array<string, mixed>>|WP_Error Validated settings or error.
+	 * @return array<string, array<string, mixed>>|\WP_Error Validated settings or error.
 	 */
 	public static function validate_settings( mixed $submitted ): array|\WP_Error {
 		if ( ! is_array( $submitted ) ) {
@@ -476,7 +476,7 @@ final class AudioPlayers {
 	 *
 	 * @param array<string, mixed> $field Field schema.
 	 * @param mixed                $value Submitted value.
-	 * @return mixed|WP_Error Sanitized value or error.
+	 * @return mixed|\WP_Error Sanitized value or error.
 	 */
 	private static function validate_field_value( array $field, mixed $value ): mixed {
 		$type = $field['type'];
@@ -547,7 +547,7 @@ final class AudioPlayers {
 	/**
 	 * Builds the validation error for invalid audio player settings.
 	 *
-	 * @return WP_Error Validation error.
+	 * @return \WP_Error Validation error.
 	 */
 	private static function invalid_settings_error(): \WP_Error {
 		return new \WP_Error(

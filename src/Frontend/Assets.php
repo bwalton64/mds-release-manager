@@ -271,6 +271,30 @@ final class Assets {
 		$is_csv_screen      = $screen && 'release_page_mds-release-csv' === $screen->id;
 		$is_network_screen  = $screen && 'settings_page_mds-release-network-settings-network' === $screen->id;
 
+		$icon_picker_script = 'js/icon-picker.js';
+		if ( ! wp_script_is( 'mds-rm-icon-picker', 'registered' ) ) {
+			wp_register_script(
+				'mds-rm-icon-picker',
+				MDS_RM_URL . $icon_picker_script,
+				array( 'wp-element', 'wp-components', 'wp-i18n', 'wp-a11y' ),
+				filemtime( MDS_RM_PATH . $icon_picker_script ),
+				true
+			);
+			wp_set_script_translations( 'mds-rm-icon-picker', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+		}
+
+		$is_taxonomy_screen = $screen
+			&& in_array( $screen->base, array( 'edit-tags', 'term' ), true )
+			&& in_array( $screen->taxonomy, array( 'release_type', 'release_media_format' ), true );
+
+		if ( $is_taxonomy_screen ) {
+			wp_enqueue_style( 'wp-components' );
+			$stylesheet = 'css/admin-styles.css';
+			wp_enqueue_style( 'mds-admin-view-styles', MDS_RM_URL . $stylesheet, array(), filemtime( MDS_RM_PATH . $stylesheet ) );
+			wp_enqueue_script( 'mds-rm-icon-picker' );
+			self::enqueue_font_awesome();
+		}
+
 		if ( $is_content_screen || $is_settings_screen || $is_csv_screen || $is_network_screen ) {
 			$stylesheet = 'css/admin-styles.css';
 			wp_enqueue_style( 'mds-admin-view-styles', MDS_RM_URL . $stylesheet, array(), filemtime( MDS_RM_PATH . $stylesheet ) );
@@ -342,6 +366,7 @@ final class Assets {
 		}
 
 		if ( $is_settings_screen ) {
+			self::enqueue_font_awesome();
 			wp_enqueue_style( 'wp-color-picker' );
 			wp_enqueue_style( 'wp-components' );
 			wp_enqueue_style( 'wp-block-editor' );
@@ -349,7 +374,7 @@ final class Assets {
 			wp_enqueue_script(
 				'mds-settings-defaults',
 				MDS_RM_URL . $defaults_script,
-				array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-release-meta-controls', 'mds-rm-release-links-controls', 'mds-rm-discography-table-controls' ),
+				array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-icon-picker', 'mds-rm-release-meta-controls', 'mds-rm-release-links-controls', 'mds-rm-discography-table-controls' ),
 				filemtime( MDS_RM_PATH . $defaults_script ),
 				true
 			);

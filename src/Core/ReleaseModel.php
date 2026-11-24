@@ -18,6 +18,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class ReleaseModel {
 	public const MDS_RM_FORMATS                   = array( 'Single', 'EP', 'Album', 'Digital' );
+	public const DEFAULT_RELEASE_TYPE_ICONS       = array(
+		'Single'  => 'fas fa-music',
+		'EP'      => 'fas fa-compact-disc',
+		'Album'   => 'fas fa-record-vinyl',
+		'Digital' => 'fas fa-cloud-arrow-down',
+	);
+	public const RELEASE_TYPE_ICON_META_KEY       = '_mds_release_type_icon';
 	public const DEFAULT_MEDIA_FORMATS            = array(
 		'Digital Download' => 'fas fa-download',
 		'CD'               => 'fas fa-compact-disc',
@@ -51,7 +58,7 @@ final class ReleaseModel {
 	/**
 	 * Sync errors to return to the REST client, keyed by request object ID.
 	 *
-	 * @var array<int, WP_Error>
+	 * @var array<int, \WP_Error>
 	 */
 	private static $rest_sync_errors = array();
 
@@ -67,6 +74,13 @@ final class ReleaseModel {
 		add_action( 'init', array( self::class, 'migrate_release_format_taxonomy' ), 15 );
 		add_action( 'init', array( self::class, 'register_fields_and_formats' ), 20 );
 		add_action( 'admin_init', array( self::class, 'migrate_normalized_upcs' ) );
+		add_action( 'release_type_add_form_fields', array( self::class, 'render_release_type_add_icon_field' ) );
+		add_action( 'release_type_edit_form_fields', array( self::class, 'render_release_type_edit_icon_field' ) );
+		add_action( 'created_release_type', array( self::class, 'save_release_type_icon_meta' ) );
+		add_action( 'edited_release_type', array( self::class, 'save_release_type_icon_meta' ) );
+		add_filter( 'manage_edit-release_type_columns', array( self::class, 'add_release_type_icon_column' ) );
+		add_filter( 'manage_release_type_custom_column', array( self::class, 'render_release_type_icon_column' ), 10, 3 );
+		add_filter( 'wp_update_term_data', array( self::class, 'protect_canonical_release_type_name' ), 10, 4 );
 		add_action( 'release_media_format_add_form_fields', array( self::class, 'render_media_format_add_icon_field' ) );
 		add_action( 'release_media_format_edit_form_fields', array( self::class, 'render_media_format_edit_icon_field' ) );
 		add_action( 'created_release_media_format', array( self::class, 'save_media_format_icon_meta' ) );
@@ -184,9 +198,15 @@ final class ReleaseModel {
 	public static function render_media_format_add_icon_field(): void {
 		?>
 		<div class="form-field term-mds-icon-wrap">
-			<label for="mds_media_format_icon"><?php esc_html_e( 'Icon CSS Classes', 'mds-release-manager' ); ?></label>
-			<input type="text" name="mds_media_format_icon" id="mds_media_format_icon" value="fas fa-compact-disc" />
-			<p class="description"><?php esc_html_e( 'Font Awesome or Dashicons classes shown in the Buy Now format picker (e.g. fas fa-record-vinyl, fas fa-compact-disc, fas fa-download).', 'mds-release-manager' ); ?></p>
+			<label for="mds_media_format_icon"><?php esc_html_e( 'Icon', 'mds-release-manager' ); ?></label>
+			<div
+				data-mds-icon-picker
+				data-input-name="mds_media_format_icon"
+				data-input-id="mds_media_format_icon"
+				data-initial-value="fas fa-compact-disc"
+				data-default-category="music"
+				data-help="<?php esc_attr_e( 'Font Awesome or Dashicons icon shown in the Buy Now format picker.', 'mds-release-manager' ); ?>"
+			></div>
 		</div>
 		<?php
 	}
@@ -194,17 +214,23 @@ final class ReleaseModel {
 	/**
 	 * Renders the icon CSS class input on the Edit Media Format term screen.
 	 *
-	 * @param WP_Term $term Term being edited.
+	 * @param \WP_Term $term Term being edited.
 	 * @return void
 	 */
 	public static function render_media_format_edit_icon_field( $term ): void {
 		$icon = self::get_media_format_icon( (int) $term->term_id, $term->name );
 		?>
 		<tr class="form-field term-mds-icon-wrap">
-			<th scope="row"><label for="mds_media_format_icon"><?php esc_html_e( 'Icon CSS Classes', 'mds-release-manager' ); ?></label></th>
+			<th scope="row"><label for="mds_media_format_icon"><?php esc_html_e( 'Icon', 'mds-release-manager' ); ?></label></th>
 			<td>
-				<input type="text" name="mds_media_format_icon" id="mds_media_format_icon" value="<?php echo esc_attr( $icon ); ?>" class="regular-text" />
-				<p class="description"><?php esc_html_e( 'Font Awesome or Dashicons classes shown in the Buy Now format picker (e.g. fas fa-record-vinyl, fas fa-compact-disc, fas fa-download).', 'mds-release-manager' ); ?></p>
+				<div
+					data-mds-icon-picker
+					data-input-name="mds_media_format_icon"
+					data-input-id="mds_media_format_icon"
+					data-initial-value="<?php echo esc_attr( $icon ); ?>"
+					data-default-category="music"
+					data-help="<?php esc_attr_e( 'Font Awesome or Dashicons icon shown in the Buy Now format picker.', 'mds-release-manager' ); ?>"
+				></div>
 			</td>
 		</tr>
 		<?php
@@ -265,7 +291,155 @@ final class ReleaseModel {
 		}
 		$term = get_term( $term_id, 'release_media_format' );
 		$icon = self::get_media_format_icon( $term_id, $term && ! is_wp_error( $term ) ? $term->name : '' );
-		return '<code>' . esc_html( $icon ) . '</code>';
+		return '<span class="mds-term-icon-cell"><i class="' . esc_attr( $icon ) . '" aria-hidden="true" style="margin-right:6px;"></i><code>' . esc_html( $icon ) . '</code></span>';
+	}
+
+	/**
+	 * Renders the icon CSS class input on the Add Release Type term screen.
+	 *
+	 * @since 1.1.0
+	 * @return void
+	 */
+	public static function render_release_type_add_icon_field(): void {
+		?>
+		<div class="form-field term-mds-icon-wrap">
+			<label for="mds_release_type_icon"><?php esc_html_e( 'Icon', 'mds-release-manager' ); ?></label>
+			<div
+				data-mds-icon-picker
+				data-input-name="mds_release_type_icon"
+				data-input-id="mds_release_type_icon"
+				data-initial-value="fas fa-compact-disc"
+				data-default-category="music"
+				data-help="<?php esc_attr_e( 'Font Awesome or Dashicons icon shown alongside this Release Type in the Release Meta block and shortcode.', 'mds-release-manager' ); ?>"
+			></div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Renders the icon CSS class input on the Edit Release Type term screen.
+	 *
+	 * @since 1.1.0
+	 * @param \WP_Term $term Term being edited.
+	 * @return void
+	 */
+	public static function render_release_type_edit_icon_field( $term ): void {
+		$icon = self::get_release_type_icon( (int) $term->term_id, (string) $term->name );
+		?>
+		<tr class="form-field term-mds-icon-wrap">
+			<th scope="row"><label for="mds_release_type_icon"><?php esc_html_e( 'Icon', 'mds-release-manager' ); ?></label></th>
+			<td>
+				<div
+					data-mds-icon-picker
+					data-input-name="mds_release_type_icon"
+					data-input-id="mds_release_type_icon"
+					data-initial-value="<?php echo esc_attr( $icon ); ?>"
+					data-default-category="music"
+					data-help="<?php esc_attr_e( 'Font Awesome or Dashicons icon shown alongside this Release Type in the Release Meta block and shortcode.', 'mds-release-manager' ); ?>"
+				></div>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Persists the icon CSS classes for a `release_type` term.
+	 *
+	 * @since 1.1.0
+	 * @param int $term_id Term ID.
+	 * @return void
+	 */
+	public static function save_release_type_icon_meta( int $term_id ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress verifies term add/edit nonces before firing created_/edited_ hooks.
+		if ( ! isset( $_POST['mds_release_type_icon'] ) || ! is_string( $_POST['mds_release_type_icon'] ) ) {
+			return;
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$icon = sanitize_text_field( wp_unslash( $_POST['mds_release_type_icon'] ) );
+		if ( '' !== $icon ) {
+			update_term_meta( $term_id, self::RELEASE_TYPE_ICON_META_KEY, $icon );
+		} else {
+			delete_term_meta( $term_id, self::RELEASE_TYPE_ICON_META_KEY );
+		}
+
+		if ( class_exists( 'MDS\ReleaseManager\Core\Cache' ) ) {
+			Cache::purge( 'release_type' );
+		}
+	}
+
+	/**
+	 * Adds an Icon column to the Release Types taxonomy table.
+	 *
+	 * @since 1.1.0
+	 * @param array<string, string> $columns Existing columns.
+	 * @return array<string, string> Updated columns.
+	 */
+	public static function add_release_type_icon_column( array $columns ): array {
+		$updated = array();
+		foreach ( $columns as $key => $label ) {
+			$updated[ $key ] = $label;
+			if ( 'name' === $key ) {
+				$updated['mds_release_type_icon'] = __( 'Icon', 'mds-release-manager' );
+			}
+		}
+		return $updated;
+	}
+
+	/**
+	 * Renders the Icon column cell for a Release Type term.
+	 *
+	 * @since 1.1.0
+	 * @param string $content     Existing cell content.
+	 * @param string $column_name Column slug.
+	 * @param int    $term_id     Term ID.
+	 * @return string Cell markup.
+	 */
+	public static function render_release_type_icon_column( string $content, string $column_name, int $term_id ): string {
+		if ( 'mds_release_type_icon' !== $column_name ) {
+			return $content;
+		}
+		$term = get_term( $term_id, 'release_type' );
+		$icon = self::get_release_type_icon( $term_id, $term && ! is_wp_error( $term ) ? $term->name : '' );
+		return '<span class="mds-term-icon-cell"><i class="' . esc_attr( $icon ) . '" aria-hidden="true" style="margin-right:6px;"></i><code>' . esc_html( $icon ) . '</code></span>';
+	}
+
+	/**
+	 * Resolves the icon CSS classes for a Release Type term.
+	 *
+	 * @since 1.1.0
+	 * @param int    $term_id   Term ID.
+	 * @param string $term_name Optional term name for default fallback.
+	 * @return string Icon CSS classes.
+	 */
+	public static function get_release_type_icon( int $term_id, string $term_name = '' ): string {
+		$stored = $term_id > 0 ? get_term_meta( $term_id, self::RELEASE_TYPE_ICON_META_KEY, true ) : '';
+		if ( is_string( $stored ) && '' !== trim( $stored ) ) {
+			return trim( $stored );
+		}
+		if ( '' !== $term_name ) {
+			foreach ( self::DEFAULT_RELEASE_TYPE_ICONS as $default_name => $default_icon ) {
+				if ( 0 === strcasecmp( $default_name, $term_name ) ) {
+					return $default_icon;
+				}
+			}
+		}
+		return 'fas fa-compact-disc';
+	}
+
+	/**
+	 * Resolves the Release Type icon CSS classes for a Release post.
+	 *
+	 * @since 1.1.0
+	 * @param int $post_id Release post ID.
+	 * @return string Icon CSS classes, or empty string if no Release Type is assigned.
+	 */
+	public static function get_release_type_icon_for_post( int $post_id ): string {
+		$terms = wp_get_post_terms( $post_id, 'release_type' );
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return '';
+		}
+		$term = $terms[0];
+		return $term instanceof \WP_Term ? self::get_release_type_icon( (int) $term->term_id, (string) $term->name ) : '';
 	}
 
 	/**
@@ -510,10 +684,10 @@ final class ReleaseModel {
 	/**
 	 * Rejects unsupported or nested release format terms.
 	 *
-	 * @param string|WP_Error $term Term name or previous error.
-	 * @param string          $taxonomy Taxonomy name.
-	 * @param array           $args Term arguments.
-	 * @return string|WP_Error Term name or validation error.
+	 * @param string|\WP_Error $term Term name or previous error.
+	 * @param string           $taxonomy Taxonomy name.
+	 * @param array            $args Term arguments.
+	 * @return string|\WP_Error Term name or validation error.
 	 */
 	public static function validate_format_term( $term, $taxonomy, $args ) {
 		if ( 'release_type' !== $taxonomy || is_wp_error( $term ) ) {
@@ -526,7 +700,7 @@ final class ReleaseModel {
 	}
 
 	/**
-	 * Prevents edits or deletion of canonical release types.
+	 * Prevents deletion of canonical release types while allowing icon/description edits.
 	 *
 	 * @param array  $caps Required capabilities.
 	 * @param string $cap Requested meta capability.
@@ -535,11 +709,7 @@ final class ReleaseModel {
 	 * @return array Required capabilities.
 	 */
 	public static function protect_format_terms( $caps, $cap, $user_id, $args ) {
-		if ( ! in_array( $cap, array( 'edit_term', 'delete_term' ), true ) || empty( $args[0] ) ) {
-			return $caps;
-		}
-		// REST's edit context uses edit_term for reading as well as writing.
-		if ( 'edit_term' === $cap && self::$rest_requests && 'GET' === end( self::$rest_requests ) ) {
+		if ( 'delete_term' !== $cap || empty( $args[0] ) ) {
 			return $caps;
 		}
 		$term = get_term( (int) $args[0], 'release_type' );
@@ -550,11 +720,33 @@ final class ReleaseModel {
 	}
 
 	/**
+	 * Keeps canonical Release Type names and root hierarchy intact when editing term metadata (such as icons).
+	 *
+	 * @since 1.1.0
+	 * @param array  $data     Term data to be updated.
+	 * @param int    $term_id  Term ID.
+	 * @param string $taxonomy Taxonomy slug.
+	 * @param array  $args     Arguments passed to wp_update_term().
+	 * @return array Filtered term data.
+	 */
+	public static function protect_canonical_release_type_name( array $data, int $term_id, string $taxonomy, array $args ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by wp_update_term_data filter signature.
+		if ( 'release_type' !== $taxonomy ) {
+			return $data;
+		}
+		$existing = get_term( $term_id, 'release_type' );
+		if ( $existing instanceof \WP_Term && 0 === (int) $existing->parent && in_array( $existing->name, self::MDS_RM_FORMATS, true ) ) {
+			$data['name'] = $existing->name;
+			$data['slug'] = $existing->slug;
+		}
+		return $data;
+	}
+
+	/**
 	 * Tracks REST reads while capability checks are performed.
 	 *
-	 * @param mixed           $response Existing response.
-	 * @param array           $handler Route handler.
-	 * @param WP_REST_Request $request Current request.
+	 * @param mixed            $response Existing response.
+	 * @param array            $handler Route handler.
+	 * @param \WP_REST_Request $request Current request.
 	 * @return mixed Existing response.
 	 */
 	public static function before_rest_request( mixed $response, $handler, $request ): mixed {
@@ -566,7 +758,7 @@ final class ReleaseModel {
 	 * Returns the authoritative release type for a release.
 	 *
 	 * @param int $post_id Release ID.
-	 * @return string|WP_Error Release type name or validation error.
+	 * @return string|\WP_Error Release type name or validation error.
 	 */
 	public static function format_name( $post_id ): string|\WP_Error {
 		$terms = wp_get_post_terms( $post_id, 'release_type' );
@@ -749,7 +941,7 @@ final class ReleaseModel {
 	 * @param int   $post_id Existing release ID, or zero.
 	 * @param mixed $upc Submitted identifier.
 	 * @param array $format_ids Selected term IDs.
-	 * @return true|WP_Error True when valid, otherwise an error.
+	 * @return true|\WP_Error True when valid, otherwise an error.
 	 */
 	public static function validate( $post_id, $upc, $format_ids ): bool|\WP_Error {
 		$upc = self::normalize_upc( $upc );
@@ -844,7 +1036,7 @@ final class ReleaseModel {
 	 * Acquires a site-scoped database lock for a UPC.
 	 *
 	 * @param string $upc Normalized UPC.
-	 * @return true|WP_Error True when locked, otherwise an error.
+	 * @return true|\WP_Error True when locked, otherwise an error.
 	 */
 	private static function lock_upc( string $upc ): bool|\WP_Error {
 		global $wpdb;
@@ -993,9 +1185,9 @@ final class ReleaseModel {
 	/**
 	 * Validates a release REST write before the post is saved.
 	 *
-	 * @param stdClass        $prepared Prepared post.
-	 * @param WP_REST_Request $request REST request.
-	 * @return stdClass|WP_Error Prepared post or validation error.
+	 * @param stdClass         $prepared Prepared post.
+	 * @param \WP_REST_Request $request REST request.
+	 * @return stdClass|\WP_Error Prepared post or validation error.
 	 */
 	public static function validate_rest_save( $prepared, $request ) {
 		$post_id = (int) $request['id'];
@@ -1048,9 +1240,9 @@ final class ReleaseModel {
 	/**
 	 * Synchronizes a release after its REST metadata and terms are saved.
 	 *
-	 * @param WP_Post         $post Saved post.
-	 * @param WP_REST_Request $request REST request.
-	 * @param bool            $creating Whether the post was created; both paths use the same synchronization.
+	 * @param \WP_Post         $post Saved post.
+	 * @param \WP_REST_Request $request REST request.
+	 * @param bool             $creating Whether the post was created; both paths use the same synchronization.
 	 */
 	public static function after_rest_save( $post, $request, $creating ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Preserve the registered REST callback signature.
 		if ( 'auto-draft' === $post->post_status ) {
@@ -1070,9 +1262,9 @@ final class ReleaseModel {
 	/**
 	 * Reports a synchronization failure after a successful REST save.
 	 *
-	 * @param mixed           $response Existing response.
-	 * @param array           $handler Route handler.
-	 * @param WP_REST_Request $request REST request.
+	 * @param mixed            $response Existing response.
+	 * @param array            $handler Route handler.
+	 * @param \WP_REST_Request $request REST request.
 	 * @return mixed Existing response or synchronization error.
 	 */
 	public static function report_rest_sync_error( mixed $response, $handler, $request ): mixed {

@@ -49,7 +49,7 @@ final class ReleaseSearch {
 	 * @since 1.1.0
 	 *
 	 * @param string $term Raw picker search term.
-	 * @return WP_Post[] Matching Releases ordered by title.
+	 * @return \WP_Post[] Matching Releases ordered by title.
 	 */
 	public static function query( string $term ): array {
 		$term     = trim( $term );
@@ -101,10 +101,10 @@ final class ReleaseSearch {
 	 *
 	 * @since 1.1.0
 	 *
-	 * @param WP_Post[] $posts    Matching Releases.
-	 * @param int       $page     Requested page, starting at 1.
-	 * @param int       $per_page Page size.
-	 * @return array{posts: WP_Post[], pages: int} The page of posts and the page count.
+	 * @param \WP_Post[] $posts    Matching Releases.
+	 * @param int        $page     Requested page, starting at 1.
+	 * @param int        $per_page Page size.
+	 * @return array{posts: \WP_Post[], pages: int} The page of posts and the page count.
 	 */
 	public static function paginate( array $posts, int $page, int $per_page = self::PER_PAGE ): array {
 		$per_page = max( 1, $per_page );
@@ -120,7 +120,7 @@ final class ReleaseSearch {
 	 *
 	 * @since 1.1.0
 	 *
-	 * @param WP_Post[] $posts Releases.
+	 * @param \WP_Post[] $posts Releases.
 	 * @return array[] Records with id, title, artist, and upc keys.
 	 */
 	public static function describe( array $posts ): array {
@@ -139,7 +139,7 @@ final class ReleaseSearch {
 					 *
 					 * @since 1.1.0
 					 * @param array   $item Picker record with id, title, artist, and upc.
-					 * @param WP_Post $post Release post object.
+					 * @param \WP_Post $post Release post object.
 					 */
 					$filtered = apply_filters( 'mds_rm_release_picker_item', $item, $post );
 					if ( is_array( $filtered ) ) {
@@ -157,7 +157,7 @@ final class ReleaseSearch {
 	 *
 	 * @since 1.1.0
 	 * @param string $term Raw picker search term.
-	 * @return WP_Post[] Matching Artists ordered by title.
+	 * @return \WP_Post[] Matching Artists ordered by title.
 	 */
 	public static function query_artists( string $term = '' ): array {
 		$term    = trim( $term );
@@ -189,7 +189,7 @@ final class ReleaseSearch {
 	 * Converts Artist posts to picker records and applies the extension enrichment filter.
 	 *
 	 * @since 1.1.0
-	 * @param WP_Post[] $artists Artist posts.
+	 * @param \WP_Post[] $artists Artist posts.
 	 * @return array<int, array<string, mixed>> Artist records with id, title, and uuid keys.
 	 */
 	public static function describe_artists( array $artists ): array {
@@ -206,7 +206,7 @@ final class ReleaseSearch {
 					 *
 					 * @since 1.1.0
 					 * @param array   $item   Picker record with id, title, and uuid.
-					 * @param WP_Post $artist Artist post object.
+					 * @param \WP_Post $artist Artist post object.
 					 */
 					$filtered = apply_filters( 'mds_rm_artist_picker_item', $item, $artist );
 					if ( is_array( $filtered ) ) {
@@ -244,7 +244,7 @@ final class ReleaseSearch {
 	/**
 	 * Resolves Artist display names for a set of Releases in one lookup.
 	 *
-	 * @param WP_Post[] $posts Releases.
+	 * @param \WP_Post[] $posts Releases.
 	 * @return array<int, string> Artist name keyed by Release post ID.
 	 */
 	private static function artist_names( array $posts ): array {

@@ -313,9 +313,9 @@ final class ReleaseMeta {
 	 * or contextual post ID (including Artist latest-release context and WooCommerce SKU context).
 	 *
 	 * @since 1.1.0
-	 * @param array         $attributes      Block or shortcode attributes.
-	 * @param WP_Block|null $block           Optional Gutenberg block context.
-	 * @param int|string    $context_post_id Fallback context post ID.
+	 * @param array          $attributes      Block or shortcode attributes.
+	 * @param \WP_Block|null $block           Optional Gutenberg block context.
+	 * @param int|string     $context_post_id Fallback context post ID.
 	 * @return WP_Post|null The readable Release, if found.
 	 */
 	public static function resolve_release( array $attributes = array(), ?\WP_Block $block = null, int|string $context_post_id = 0 ): ?WP_Post {
@@ -570,6 +570,12 @@ final class ReleaseMeta {
 			}
 			$title = isset( $item['title'] ) && is_string( $item['title'] ) ? $item['title'] : $fields[ $key ]['label'];
 			$icon  = isset( $item['icon'] ) && is_string( $item['icon'] ) ? trim( $item['icon'] ) : $fields[ $key ]['icon'];
+			if ( in_array( $key, array( 'release_type', 'release_format' ), true ) && $icon === $fields[ $key ]['icon'] ) {
+				$term_icon = \MDS\ReleaseManager\Core\ReleaseModel::get_release_type_icon_for_post( $post->ID );
+				if ( '' !== $term_icon ) {
+					$icon = $term_icon;
+				}
+			}
 			if ( '' !== $icon && ! preg_match( '/^(?:dashicons dashicons-[a-z0-9-]+|(?:fa[srbl]|fa-(?:solid|regular|brands|light)) fa-[a-z0-9-]+)$/D', $icon ) ) {
 				\MDS\ReleaseManager\Core\Logger::diagnostic( 'Invalid Release Meta icon for ' . $key );
 				$icon = '';

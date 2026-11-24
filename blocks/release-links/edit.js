@@ -99,18 +99,19 @@
                                 onChange: function(value) { updateItem(index, { enabled: value }); }
                             }),
                             resetProperty(item, 'enabled', __('Use site visibility', 'mds-release-manager')),
-                            el(wp.components.SelectControl, {
-                                label: __('Choose icon preset', 'mds-release-manager'),
-                                value: '',
-                                options: (window.mdsRmStylePrimitives && window.mdsRmStylePrimitives.ICON_PRESETS) || [],
-                                onChange: function(value) {
-                                    if (value) updateItem(index, { icon: value === '__none' ? '' : value });
-                                }
-                            }),
-                            el(TextControl, {
-                                label: 'Icon classes', help: 'Leave blank to use the provider default. Dashicons and Font Awesome are supported.',
-                                value: item.icon || '', onChange: function(value) { updateItem(index, { icon: value }); }
-                            }),
+                            window.mdsRmIconPicker && window.mdsRmIconPicker.IconPickerControl
+                                ? el(window.mdsRmIconPicker.IconPickerControl, {
+                                    label: __('Link icon', 'mds-release-manager'),
+                                    help: __('Leave empty to use the provider default.', 'mds-release-manager'),
+                                    value: item.icon || '',
+                                    defaultCategory: item.name === '__buy_now' ? 'commerce' : 'brands',
+                                    onChange: function(value) { updateItem(index, { icon: value }); }
+                                })
+                                : el(TextControl, {
+                                    label: 'Icon classes',
+                                    value: item.icon || '',
+                                    onChange: function(value) { updateItem(index, { icon: value }); }
+                                }),
                             resetProperty(item, 'icon', __('Use site icon', 'mds-release-manager')),
                             el(TextControl, {
                                 label: 'Tooltip title', help: 'Leave blank to use the provider name.',

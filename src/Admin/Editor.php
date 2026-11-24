@@ -147,8 +147,8 @@ final class Editor {
 	 * Provides post-type-specific title placeholders.
 	 *
 	 * @since 1.0.0
-	 * @param string  $placeholder The default placeholder.
-	 * @param WP_Post $post        The post being edited.
+	 * @param string   $placeholder The default placeholder.
+	 * @param \WP_Post $post        The post being edited.
 	 * @return string The filtered placeholder.
 	 */
 	public static function title_placeholder( $placeholder, $post ) {
@@ -208,8 +208,8 @@ final class Editor {
 	 * Screen Options; the catalog types treat the excerpt as a primary field.
 	 *
 	 * @since 1.0.0
-	 * @param string[]  $hidden Meta box IDs hidden by default.
-	 * @param WP_Screen $screen The current screen.
+	 * @param string[]   $hidden Meta box IDs hidden by default.
+	 * @param \WP_Screen $screen The current screen.
 	 * @return string[] The filtered hidden meta box IDs.
 	 */
 	public static function show_excerpt_by_default( $hidden, $screen ) {

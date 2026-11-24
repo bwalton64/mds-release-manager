@@ -965,3 +965,118 @@ dialog.mds-preview-dialog::backdrop {
 	margin-left: 6px !important;
 	cursor: pointer;
 }
+
+
+/* ==========================================================================
+   Shared Font Awesome & Dashicons Visual Icon Picker Control
+   ========================================================================== */
+.mds-icon-picker-control {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.mds-icon-picker-control__label {
+	font-size: 11px;
+	font-weight: 500;
+	text-transform: uppercase;
+	color: #1e1e1e;
+}
+.mds-icon-picker-control__bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+.mds-icon-picker-control__preview {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+	font-size: 16px;
+	color: #1e1e1e;
+	flex-shrink: 0;
+}
+.mds-icon-picker-control__preview.is-empty {
+	background: #f6f7f7;
+	color: #8c8f94;
+}
+.mds-icon-picker-control__code {
+	font-size: 12px;
+	padding: 3px 7px;
+	background: #f0f0f1;
+	border-radius: 3px;
+}
+.mds-icon-picker-modal {
+	width: min(720px, 94vw);
+	max-width: 720px;
+}
+.mds-icon-picker-modal__top {
+	margin-bottom: 12px;
+}
+.mds-icon-picker-modal__tabs .components-tab-panel__tabs {
+	border-bottom: 1px solid #dcdcde;
+	margin-bottom: 12px;
+}
+.mds-icon-picker-modal__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+	gap: 8px;
+	max-height: 340px;
+	overflow-y: auto;
+	padding: 4px 2px;
+}
+.mds-icon-picker-tile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 10px 6px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+	color: #1e1e1e;
+	cursor: pointer;
+	text-align: center;
+	transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+.mds-icon-picker-tile i {
+	font-size: 20px;
+	line-height: 1;
+}
+.mds-icon-picker-tile__label {
+	font-size: 11px;
+	line-height: 1.2;
+	word-break: break-word;
+}
+.mds-icon-picker-tile:hover,
+.mds-icon-picker-tile:focus-visible {
+	border-color: var(--wp-admin-theme-color, #2271b1);
+	background: #f0f6fc;
+	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
+	outline-offset: -2px;
+}
+.mds-icon-picker-tile.is-selected {
+	border-color: var(--wp-admin-theme-color, #2271b1);
+	background: #e7f3fe;
+	color: var(--wp-admin-theme-color, #2271b1);
+	font-weight: 600;
+}
+.mds-icon-picker-modal__empty {
+	grid-column: 1 / -1;
+	margin: 12px 0;
+	color: #646970;
+}
+.mds-icon-picker-modal__custom {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 10px;
+	margin-top: 16px;
+	padding-top: 14px;
+	border-top: 1px solid #dcdcde;
+}
