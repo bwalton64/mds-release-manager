@@ -40,6 +40,7 @@ final class Plugin {
 	public static function init(): void {
 		\MDS\ReleaseManager\Frontend\Assets::register_hooks();
 		\MDS\ReleaseManager\Core\Cache::register_hooks();
+		\MDS\ReleaseManager\Core\Audio\AudioApi::register_hooks();
 		\MDS\ReleaseManager\Core\Sync::register_hooks();
 		\MDS\ReleaseManager\Core\PostTypes::register_hooks();
 		\MDS\ReleaseManager\Core\ReleaseModel::register_hooks();

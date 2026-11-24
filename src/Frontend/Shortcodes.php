@@ -28,6 +28,7 @@ final class Shortcodes {
 	public static function register_hooks(): void {
 		add_shortcode( 'release-meta', array( \MDS\ReleaseManager\Blocks\ReleaseMeta::class, 'shortcode' ) );
 		add_shortcode( 'release-links', array( \MDS\ReleaseManager\Blocks\ReleaseLinks::class, 'shortcode' ) );
+		add_shortcode( 'release-player', array( \MDS\ReleaseManager\Blocks\ReleasePlayer::class, 'shortcode' ) );
 		add_shortcode( 'artist-discography', array( Discography::class, 'shortcode' ) );
 	}
 

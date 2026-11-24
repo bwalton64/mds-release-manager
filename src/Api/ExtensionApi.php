@@ -16,6 +16,7 @@ namespace MDS\ReleaseManager\Api;
 
 use MDS\ReleaseManager\Blocks\ReleaseLinks;
 use MDS\ReleaseManager\Blocks\ReleaseMeta;
+use MDS\ReleaseManager\Core\Audio\AudioApi;
 use MDS\ReleaseManager\Core\AudioPlayers;
 use MDS\ReleaseManager\Core\Cache;
 use MDS\ReleaseManager\Core\ReleaseModel;
@@ -261,6 +262,19 @@ final class ExtensionApi {
 	}
 
 	/**
+	 * Renders the mobile-first Unified Release Player for a given context post ID.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array<string, mixed> $attributes      Optional player attributes.
+	 * @param int                  $context_post_id Current post ID.
+	 * @return string Rendered HTML.
+	 */
+	public static function render_release_player( array $attributes = array(), int $context_post_id = 0 ): string {
+		return \MDS\ReleaseManager\Blocks\ReleasePlayer::render( $attributes, null, $context_post_id );
+	}
+
+	/**
 	 * Returns validated site-wide settings for a registered audio player slug.
 	 *
 	 * @since 2.0.0
@@ -270,6 +284,55 @@ final class ExtensionApi {
 	 */
 	public static function get_audio_player_settings( string $slug ): array {
 		return AudioPlayers::get_player_settings( $slug );
+	}
+
+	/**
+	 * Resolves a normalized audio preview manifest for a release via the unified Audio API.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param int                  $post_id Release post ID.
+	 * @param array<string, mixed> $args    Optional resolution args (`provider`, `fresh`, `allow_fallback`).
+	 * @return array<string, mixed>|null Normalized AudioManifest, or null if unavailable.
+	 */
+	public static function resolve_audio( int $post_id, array $args = array() ): ?array {
+		return AudioApi::resolve( $post_id, $args );
+	}
+
+	/**
+	 * Performs a fast local check (no HTTP calls) for whether a release has playable audio.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param int    $post_id  Release post ID.
+	 * @param string $provider Optional explicit provider slug.
+	 * @return bool True when at least one enabled provider supports the release.
+	 */
+	public static function has_audio( int $post_id, string $provider = '' ): bool {
+		return AudioApi::has_audio( $post_id, $provider );
+	}
+
+	/**
+	 * Returns serializable descriptors for all registered audio preview providers.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return array<int, array{slug: string, label: string, priority: int, enabled: bool}> Provider descriptors.
+	 */
+	public static function get_audio_providers(): array {
+		return AudioApi::get_provider_descriptors();
+	}
+
+	/**
+	 * Invalidates cached audio manifests for a release across all providers.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param int $post_id Release post ID.
+	 * @return void
+	 */
+	public static function invalidate_audio_cache( int $post_id ): void {
+		AudioApi::invalidate_release( $post_id );
 	}
 
 	/**

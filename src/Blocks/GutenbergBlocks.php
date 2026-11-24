@@ -106,6 +106,15 @@ final class GutenbergBlocks {
 			'var mdsDiscography = ' . wp_json_encode( BlockDefaults::get( 'artist-discography' ) ) . ';',
 			'before'
 		);
+		wp_add_inline_script(
+			'mds-rm-release-player-editor',
+			'window.mdsReleasePlayer = ' . wp_json_encode(
+				array(
+					'providers' => \MDS\ReleaseManager\Core\Audio\AudioApi::get_provider_descriptors(),
+				)
+			) . ';',
+			'before'
+		);
 
 		wp_add_inline_style(
 			'wp-block-editor',
@@ -196,6 +205,42 @@ final class GutenbergBlocks {
 		);
 		self::register_release_block( 'release-meta', 'render_gutenberg_release_meta' );
 		self::register_release_block( 'release-links', 'render_gutenberg_release_links' );
+
+		$player_script = 'blocks/release-player/edit.js';
+		if ( file_exists( MDS_RM_PATH . $player_script ) ) {
+			wp_register_script(
+				'mds-rm-release-player-editor',
+				MDS_RM_URL . $player_script,
+				array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'wp-i18n' ),
+				filemtime( MDS_RM_PATH . $player_script ),
+				true
+			);
+			wp_set_script_translations( 'mds-rm-release-player-editor', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+		}
+		$player_style = 'css/release-player.css';
+		if ( file_exists( MDS_RM_PATH . $player_style ) ) {
+			wp_register_style( 'mds-rm-release-player', MDS_RM_URL . $player_style, array(), filemtime( MDS_RM_PATH . $player_style ) );
+		}
+		register_block_type(
+			MDS_RM_PATH . 'blocks/release-player',
+			array(
+				'render_callback' => array( self::class, 'render_gutenberg_release_player' ),
+			)
+		);
+	}
+
+	/**
+	 * Renders the Release Player block in its post context.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array<string, mixed> $attributes Block attributes.
+	 * @param string               $_content   Block content required by the render callback.
+	 * @param \WP_Block|null       $block      Current block instance.
+	 * @return string Rendered HTML.
+	 */
+	public static function render_gutenberg_release_player( array $attributes, string $_content = '', ?\WP_Block $block = null ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundInExtendedClassAfterLastUsed, Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- WordPress render_callback signature.
+		return ReleasePlayer::render( $attributes, $block );
 	}
 
 	/**

@@ -92,6 +92,42 @@ final class AudioPlayers {
 				'render_callback' => array( self::class, 'render_html5' ),
 				'fields'          => array(),
 			),
+			'unified'            => array(
+				'label'           => __( 'Unified Release Player (Mobile-First)', 'mds-release-manager' ),
+				'description'     => __( 'Responsive mobile-first audio player powered by the Unified Audio API (Local previews plus active MDS Audio Providers such as Apple Music, Deezer, Bandcamp, SoundCloud, and Spotify).', 'mds-release-manager' ),
+				'icon'            => 'dashicons dashicons-album',
+				'render_callback' => array( self::class, 'render_unified' ),
+				'fields'          => array(
+					'showArtwork'    => array(
+						'type'    => 'toggle',
+						'label'   => __( 'Show Artwork', 'mds-release-manager' ),
+						'default' => true,
+					),
+					'showTracklist'  => array(
+						'type'    => 'toggle',
+						'label'   => __( 'Show Expandable Tracklist', 'mds-release-manager' ),
+						'default' => false,
+					),
+					'samplerMode'    => array(
+						'type'    => 'toggle',
+						'label'   => __( 'Sequential Sampler Crossfade', 'mds-release-manager' ),
+						'default' => true,
+					),
+					'previewSeconds' => array(
+						'type'    => 'range',
+						'label'   => __( 'Fallback Preview Length (seconds)', 'mds-release-manager' ),
+						'min'     => 10,
+						'max'     => 60,
+						'step'    => 5,
+						'default' => 20,
+					),
+					'accentColor'    => array(
+						'type'    => 'color',
+						'label'   => __( 'Accent Color', 'mds-release-manager' ),
+						'default' => '#2271b1',
+					),
+				),
+			),
 		);
 
 		/**
@@ -407,6 +443,27 @@ final class AudioPlayers {
 			return '<audio controls src="' . esc_url( $url ) . '"></audio>';
 		}
 		return '';
+	}
+
+	/**
+	 * Renders the built-in mobile-first Unified Release Player for a release.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param int                  $post_id    Release post ID.
+	 * @param array<string, mixed> $settings   Player settings from Audio Player Manager.
+	 * @param array<string, mixed> $attributes Optional block/shortcode attributes.
+	 * @return string Rendered HTML or empty string.
+	 */
+	public static function render_unified( int $post_id, array $settings = array(), array $attributes = array() ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Callback signature.
+		$merged = array_merge(
+			array(
+				'releaseId' => $post_id,
+				'compact'   => true,
+			),
+			$settings
+		);
+		return \MDS\ReleaseManager\Blocks\ReleasePlayer::render( $merged, null, $post_id );
 	}
 
 	/**

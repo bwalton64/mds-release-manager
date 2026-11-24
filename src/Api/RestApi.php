@@ -237,6 +237,47 @@ final class RestApi {
 				},
 			)
 		);
+
+		register_rest_route(
+			'mds/v1',
+			'/releases/(?P<id>\d+)/audio',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( self::class, 'get_release_audio_api' ),
+				'permission_callback' => static function ( WP_REST_Request $request ): bool {
+					$release_id = absint( $request->get_param( 'id' ) );
+					if ( $release_id <= 0 || 'release' !== get_post_type( $release_id ) ) {
+						return false;
+					}
+					if ( 'publish' === get_post_status( $release_id ) ) {
+						return true;
+					}
+					return current_user_can( 'edit_post', $release_id );
+				},
+				'args'                => array(
+					'provider' => array(
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'fresh'    => array(
+						'default'           => false,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			'mds/v1',
+			'/audio-providers',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( self::class, 'get_audio_providers_api' ),
+				'permission_callback' => static function (): bool {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
 	}
 
 	/**
@@ -966,6 +1007,67 @@ final class RestApi {
 					)
 					: __( 'Routing saved, but some spoke synchronizations reported errors.', 'mds-release-manager' ),
 			)
+		);
+	}
+
+	/**
+	 * Resolves a normalized audio preview manifest for a release (Just-in-Time endpoint).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param WP_REST_Request $request The REST request.
+	 * @return WP_REST_Response|WP_Error Normalized manifest response or 404 error.
+	 */
+	public static function get_release_audio_api( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$release_id = absint( $request->get_param( 'id' ) );
+		$provider   = sanitize_key( (string) $request->get_param( 'provider' ) );
+		$fresh      = (bool) $request->get_param( 'fresh' ) && current_user_can( 'edit_post', $release_id );
+
+		$manifest = \MDS\ReleaseManager\Core\Audio\AudioApi::resolve(
+			$release_id,
+			array(
+				'provider' => $provider,
+				'fresh'    => $fresh,
+			)
+		);
+
+		if ( null === $manifest ) {
+			return new WP_Error(
+				'mds_rm_audio_unavailable',
+				__( 'No audio preview is available for this release.', 'mds-release-manager' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$response = new WP_REST_Response( $manifest, 200 );
+		if ( 'publish' === get_post_status( $release_id ) && ! $fresh ) {
+			$remaining = max( 0, (int) ( $manifest['expiresAt'] ?? 0 ) - time() );
+			$max_age   = min( 300, $remaining );
+			if ( $max_age > 0 ) {
+				$response->header( 'Cache-Control', 'public, max-age=' . $max_age );
+			} else {
+				$response->header( 'Cache-Control', 'no-store' );
+			}
+		} else {
+			$response->header( 'Cache-Control', 'no-store' );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Returns serializable metadata for all registered audio preview providers.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return WP_REST_Response Provider list response.
+	 */
+	public static function get_audio_providers_api(): WP_REST_Response {
+		return new WP_REST_Response(
+			array(
+				'providers' => \MDS\ReleaseManager\Core\Audio\AudioApi::get_provider_descriptors(),
+			),
+			200
 		);
 	}
 }
