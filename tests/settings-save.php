@@ -53,10 +53,13 @@ function is_wp_error( $value ) { return $value instanceof WP_Error; }
 function get_option( $key, $default = false ) { return $GLOBALS['updates'][ $key ] ?? $default; }
 function update_option( $key, $value ) { $GLOBALS['updates'][ $key ] = $value; }
 function apply_filters( $hook, $value ) { return $GLOBALS['filters'][ $hook ] ?? $value; }
+function esc_attr( $value ) { return (string) $value; }
 function rest_ensure_response( $value ) { return new WP_REST_Response( $value ); }
 
 require __DIR__ . '/../includes/core/class-mds-rm-audio-players.php';
 require __DIR__ . '/../includes/blocks/class-mds-rm-block-defaults.php';
+require __DIR__ . '/../includes/frontend/class-mds-rm-template-defaults.php';
+require __DIR__ . '/../includes/frontend/class-mds-rm-assets.php';
 require __DIR__ . '/../includes/api/class-mds-rm-rest-api.php';
 
 $GLOBALS['updates'] = array();
@@ -108,5 +111,55 @@ $result = MDS_RM_REST_API::save_settings_api(
 );
 if ( ! $result instanceof WP_REST_Response || array( 'bandcamp' ) !== $GLOBALS['updates']['mds_rm_audio_players'] ) {
 	throw new RuntimeException( 'Only one active audio player may be saved at a time.' );
+}
+$GLOBALS['updates'] = array();
+$result = MDS_RM_REST_API::save_settings_api(
+	new Fake_Request(
+		array(
+			'mds_rm_template_defaults' => '{"release":{"layout":"invalid"}}',
+		)
+	)
+);
+if ( ! $result instanceof WP_Error || 'mds_rm_invalid_template_defaults' !== $result->code || $GLOBALS['updates'] ) {
+	throw new RuntimeException( 'Invalid template defaults must be rejected before any option is changed.' );
+}
+$GLOBALS['updates'] = array();
+$result = MDS_RM_REST_API::save_settings_api(
+	new Fake_Request(
+		array(
+			'mds_rm_template_defaults' => json_encode( array( 'release' => array( 'layout' => 'stacked', 'sticky_image' => true ), 'artist' => array( 'layout' => 'split' ) ) ),
+		)
+	)
+);
+if ( ! $result instanceof WP_REST_Response || 'stacked' !== ( $GLOBALS['updates']['mds_rm_template_defaults']['release']['layout'] ?? '' ) || 'split' !== ( $GLOBALS['updates']['mds_rm_template_defaults']['artist']['layout'] ?? '' ) ) {
+	throw new RuntimeException( 'Valid template defaults were not saved.' );
+}
+$GLOBALS['updates'] = array();
+$result = MDS_RM_REST_API::save_settings_api(
+	new Fake_Request(
+		array(
+			'mds_rm_fa_support' => 'internal',
+		)
+	)
+);
+if ( ! $result instanceof WP_REST_Response || 'cdn' !== ( $GLOBALS['updates']['mds_rm_fa_support'] ?? '' ) ) {
+	throw new RuntimeException( 'Legacy internal FA source must normalize to cdn.' );
+}
+if ( 'cdn' !== MDS_RM_Assets::resolve_font_awesome_source( 'auto' ) ) {
+	throw new RuntimeException( 'Auto FA mode must resolve to cdn when no FA plugin is detected.' );
+}
+$GLOBALS['filters']['mds_rm_detected_font_awesome_plugin'] = 'Font Awesome (Official)';
+if ( 'plugin' !== MDS_RM_Assets::resolve_font_awesome_source( 'auto' ) ) {
+	throw new RuntimeException( 'Auto FA mode must defer to plugin when a FA plugin is detected.' );
+}
+unset( $GLOBALS['filters']['mds_rm_detected_font_awesome_plugin'] );
+$tag = MDS_RM_Assets::filter_font_awesome_tag(
+	'<link rel="stylesheet" id="mds-font-awesome-css" href="' . MDS_RM_Assets::FA_CDN_URL . '" media="all" />',
+	'mds-font-awesome',
+	MDS_RM_Assets::FA_CDN_URL,
+	'all'
+);
+if ( ! str_contains( $tag, 'integrity="' . MDS_RM_Assets::FA_CDN_INTEGRITY . '"' ) || ! str_contains( $tag, 'crossorigin="anonymous"' ) ) {
+	throw new RuntimeException( 'Default cdnjs Font Awesome link tag must include SRI integrity and crossorigin attributes.' );
 }
 echo "Settings save checks passed.\n";

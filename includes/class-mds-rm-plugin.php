@@ -32,7 +32,6 @@ final class MDS_RM_Plugin {
 		MDS_RM_Admin_Interface::register_hooks();
 		MDS_RM_Editor::register_hooks();
 		MDS_RM_Network_Admin::register_hooks();
-		MDS_RM_Customizer::register_hooks();
 		MDS_RM_Frontend_Templates::register_hooks();
 		MDS_RM_Artist_Routing::register_hooks();
 		MDS_RM_REST_API::register_hooks();

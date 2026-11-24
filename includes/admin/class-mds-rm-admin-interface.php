@@ -834,11 +834,13 @@ final class MDS_RM_Admin_Interface {
 		$active_players = '' !== $active_player ? array( $active_player ) : array();
 
 		$fa_sources = array(
-			'cdn'    => __( 'Load bundled Font Awesome Free 6', 'mds-release-manager' ),
-			'plugin' => __( 'Use existing plugin (Font Awesome Official)', 'mds-release-manager' ),
-			'theme'  => __( 'Use theme provided Font-Awesome', 'mds-release-manager' ),
-			'none'   => __( 'Do not load Font-Awesome', 'mds-release-manager' ),
+			'auto'   => __( 'Auto (Recommended — use active Font Awesome plugin if detected, otherwise Public CDN)', 'mds-release-manager' ),
+			'cdn'    => __( 'Load Font Awesome Free 6.7.2 via Public CDN (cdnjs)', 'mds-release-manager' ),
+			'plugin' => __( 'Use existing Font Awesome plugin', 'mds-release-manager' ),
+			'theme'  => __( 'Use theme-provided Font Awesome', 'mds-release-manager' ),
+			'none'   => __( 'Do not load Font Awesome', 'mds-release-manager' ),
 		);
+		$detected_fa = MDS_RM_Assets::detect_font_awesome_plugin();
 
 		$args = array(
 			'providers'                  => $global_providers,
@@ -847,10 +849,12 @@ final class MDS_RM_Admin_Interface {
 			'active_audio_player'        => $active_player,
 			'audio_player_settings'      => MDS_RM_Audio_Players::get_all_settings(),
 			'fa_sources'                 => $fa_sources,
-			'active_fa_source'           => get_option( 'mds_rm_fa_support', 'cdn' ),
+			'active_fa_source'           => MDS_RM_Assets::sanitize_font_awesome_source( get_option( 'mds_rm_fa_support', 'auto' ) ),
+			'detected_fa_plugin'         => $detected_fa,
 			'audio_player_custom_fields' => apply_filters( 'mds_rm_settings_audio_fields', '' ),
-			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'audio-player-manager', 'release-meta-block', 'release-links-block', 'artist-discography-block', 'release-meta', 'release-links', 'artist-discography', 'integrations', 'shortcode' ) ),
+			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'default-templates', 'audio-player-manager', 'release-meta-block', 'release-links-block', 'artist-discography-block', 'release-meta', 'release-links', 'artist-discography', 'integrations', 'shortcode' ) ),
 			'block_defaults'             => get_option( 'mds_rm_block_defaults', array() ),
+			'template_defaults'          => MDS_RM_Template_Defaults::get_all(),
 			'settings'                   => array(
 				'global_redirect'   => '1' === (string) get_option( 'mds_rm_global_redirect', '0' ),
 			),

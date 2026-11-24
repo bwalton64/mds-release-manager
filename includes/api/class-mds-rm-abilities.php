@@ -181,8 +181,8 @@ final class MDS_RM_Abilities {
 						),
 						'fa_support'      => array(
 							'type'        => 'string',
-							'description' => __( 'Font Awesome support setting', 'mds-release-manager' ),
-							'enum'        => array( 'enabled', 'disabled' ),
+							'description' => __( 'Font Awesome source setting', 'mds-release-manager' ),
+							'enum'        => array( 'auto', 'cdn', 'plugin', 'theme', 'none' ),
 						),
 					),
 				),
@@ -452,7 +452,7 @@ final class MDS_RM_Abilities {
 			}
 
 			if ( isset( $input['fa_support'] ) ) {
-				update_option( 'mds_rm_fa_support', sanitize_text_field( wp_unslash( $input['fa_support'] ) ) );
+				update_option( 'mds_rm_fa_support', MDS_RM_Assets::sanitize_font_awesome_source( wp_unslash( $input['fa_support'] ) ) );
 			}
 
 			MDS_RM_Sync::purge_cache();

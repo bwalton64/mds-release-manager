@@ -16,9 +16,9 @@ MDS Release Manager adds Release and Artist post types. Organize releases by for
 
 Release and Artist pages include default layouts when applicable. Use the Release Meta, Release Links, and Artist Discography blocks or shortcodes to place the same components in your own layouts. CSV import and export help manage larger catalogs.
 
-Without a builder such as Elementor, style the automatic page layouts under Appearance > Customize > MDS Release Manager > Release Fallback Template or Artist Fallback Template. The automatic Release Meta, Release Links, and Artist Discography blocks use the defaults under Releases > Settings. Builder-authored pages and Releases with site-wide routing enabled do not use the corresponding fallback. Existing blocks and shortcodes suppress duplicate automatic components.
+Without a builder such as Elementor, style the automatic page layouts under Releases > Settings > Default Templates. The automatic Release Meta, Release Links, and Artist Discography blocks use the defaults under Releases > Settings. Builder-authored pages and Releases with active routing redirects do not use the corresponding fallback. Existing blocks and shortcodes suppress duplicate automatic components.
 
-The default icon source is Font Awesome Free 6.4.0, bundled locally with its [upstream license](https://fontawesome.com/license/free). The [upstream source](https://github.com/FortAwesome/Font-Awesome/tree/6.4.0) is available on GitHub.
+The default icon source is Auto mode: if an active Font Awesome plugin is detected, MDS Release Manager defers to it; otherwise it loads Font Awesome Free 6.7.2 from cdnjs with Subresource Integrity (SRI). You can also switch to a theme-provided source or disable Font Awesome entirely under Releases > Settings.
 
 == Installation ==
 

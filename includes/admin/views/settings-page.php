@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<h2 class="nav-tab-wrapper" id="mds-settings-tabs">
 		<a href="#tab-general-settings" class="nav-tab nav-tab-active" aria-current="page"><?php esc_html_e( 'General Settings', 'mds-release-manager' ); ?></a>
+		<a href="#tab-default-templates" class="nav-tab"><?php esc_html_e( 'Default Templates', 'mds-release-manager' ); ?></a>
 		<a href="#tab-audio-player-manager" class="nav-tab"><?php esc_html_e( 'Audio Player Manager', 'mds-release-manager' ); ?></a>
 		<a href="#tab-release-meta-block" class="nav-tab"><?php esc_html_e( 'Release Meta Block', 'mds-release-manager' ); ?></a>
 		<a href="#tab-release-links-block" class="nav-tab"><?php esc_html_e( 'Release Links Block', 'mds-release-manager' ); ?></a>
@@ -27,6 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<form id="mds-settings-form">
 		<input type="hidden" name="mds_rm_block_defaults" id="mds-rm-block-defaults" value="<?php echo esc_attr( wp_json_encode( $args['block_defaults'] ) ); ?>" />
+		<input type="hidden" name="mds_rm_template_defaults" id="mds-rm-template-defaults" value="<?php echo esc_attr( wp_json_encode( $args['template_defaults'] ) ); ?>" />
 		<input type="hidden" name="mds_rm_audio_player_settings" id="mds-rm-audio-player-settings" value="<?php echo esc_attr( wp_json_encode( $args['audio_player_settings'] ?? array() ) ); ?>" />
 		<div id="mds-audio-player-fields">
 			<?php foreach ( $args['active_players'] as $active_slug ) : ?>
@@ -88,18 +90,44 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<button type="button" class="button button-secondary" id="mds-run-manual-sync-btn"><?php esc_html_e( 'Run Manual Sync', 'mds-release-manager' ); ?></button>
 				<span id="mds-manual-sync-status"></span>
 				<hr />
-				<h2><?php esc_html_e( 'Font-Awesome Integration', 'mds-release-manager' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Select which Font-Awesome source to use for the shortcode widgets.', 'mds-release-manager' ); ?></p>
-				<select name="mds_rm_fa_support">
+				<h2><?php esc_html_e( 'Font Awesome Integration', 'mds-release-manager' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Choose how Font Awesome icons are loaded for Release Meta and Release Links. Auto mode defers to an installed Font Awesome plugin when detected, and otherwise loads Font Awesome Free 6.7.2 from cdnjs with Subresource Integrity (SRI).', 'mds-release-manager' ); ?></p>
+				<label for="mds-rm-fa-support" class="screen-reader-text"><?php esc_html_e( 'Font Awesome source', 'mds-release-manager' ); ?></label>
+				<select id="mds-rm-fa-support" name="mds_rm_fa_support">
 					<?php foreach ( $args['fa_sources'] as $value => $label ) : ?>
 						<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $args['active_fa_source'], $value ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
 				</select>
+				<p class="description">
+					<?php if ( ! empty( $args['detected_fa_plugin'] ) ) : ?>
+						<?php
+						printf(
+							/* translators: %s: Detected Font Awesome plugin or stylesheet name. */
+							esc_html__( 'Status: Detected %s. Auto mode will use this provider and skip the public CDN.', 'mds-release-manager' ),
+							'<strong>' . esc_html( $args['detected_fa_plugin'] ) . '</strong>'
+						);
+						?>
+					<?php else : ?>
+						<?php esc_html_e( 'Status: No Font Awesome plugin detected. Auto mode will load Font Awesome Free 6.7.2 from cdnjs.', 'mds-release-manager' ); ?>
+					<?php endif; ?>
+				</p>
 			</div>
 
 			<div class="mds-admin-save-actions">
 				<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
 				<span class="mds-save-status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
+			</div>
+		</div>
+
+		<div id="tab-default-templates" class="mds-tab-pane">
+			<div class="mds-panel mds-panel--wide">
+				<h2><?php esc_html_e( 'Default Fallback Templates', 'mds-release-manager' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Customize the automatic page layouts rendered for Release and Artist pages when no page builder or custom redirect is active. Settings here are theme-independent and survive theme switches.', 'mds-release-manager' ); ?></p>
+				<div id="mds-default-templates-root"></div>
+			</div>
+			<div class="mds-admin-save-actions">
+				<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
+				<span class="mds-save-status" role="status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
 			</div>
 		</div>
 

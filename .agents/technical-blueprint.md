@@ -269,7 +269,7 @@ read-only outside the hub.
 - `_wp_attached_file` (string) — Attached file path.
 
 ### wp_options Keys (Site-Level)
-- `mds_rm_fa_support` — Font Awesome source: `cdn` and legacy `internal` load bundled Font Awesome Free 6.4.0; `plugin`, `theme`, and `none` do not enqueue the bundled library. Assets and upstream license are in `assets/fontawesome/`, from the official `@fortawesome/fontawesome-free@6.4.0` npm package.
+- `mds_rm_fa_support` — Font Awesome source (`auto`, `cdn`, `plugin`, `theme`, `none`; legacy `internal` maps to `cdn`). Defaults to `auto`, which defers to an active Font Awesome plugin or registered FA stylesheet when detected (`MDS_RM_Assets::detect_font_awesome_plugin()`) and otherwise loads Font Awesome Free 6.7.2 from cdnjs with SHA-512 Subresource Integrity (`integrity`, `crossorigin="anonymous"`, `referrerpolicy="no-referrer"`). Filterable via `mds_rm_detected_font_awesome_plugin` and `mds_rm_font_awesome_cdn_url`.
 - Legacy widget options remain stored for review but do not style the Release Meta Block:
 - `mds_rm_widget_bg_color` — Widget background color.
 - `mds_rm_shortcode_gap` — Gap between shortcode elements.
@@ -296,7 +296,8 @@ read-only outside the hub.
 - `mds_rm_woo_meta_align` — WooCommerce product meta alignment.
 - `mds_rm_audio_players` (array) — Active audio player types: 'html5' (legacy 'native' is accepted).
 - `mds_rm_providers` (array) — Global provider configuration (name, icon, color).
-- `mds_rm_block_defaults` (array) — Site-local block presentation defaults keyed by block slug. Native style values, table styles, field/link lists, and link/audio switches are validated before storage. Block rendering, including automatic fallback blocks, resolves these against saved attributes; legacy lists remain complete overrides and explicit field/style overrides take precedence. Shortcodes and Elementor do not consume these defaults.
+- **`mds_rm_block_defaults`** (array) — Site-local block presentation defaults keyed by block slug. Native style values, table styles, field/link lists, and link/audio switches are validated before storage. Block rendering, including automatic fallback blocks, resolves these against saved attributes; legacy lists remain complete overrides and explicit field/style overrides take precedence. Shortcodes and Elementor do not consume these defaults.
+- **`mds_rm_template_defaults`** (array) — Site-local, theme-independent settings for the Release and Artist fallback templates (`MDS_RM_Template_Defaults`), managed under **Releases → Settings → Default Templates** (with automatic read-fallback to legacy Customizer `theme_mod` keys until saved). Replaces the retired `MDS Release Manager` Customizer panel.
 - `mds_rm_global_redirect` — Retired legacy option (no longer read or written by core; routing is governed per Artist and per Release via `MDS_RM_Artist_Routing`).
 - `mds_rm_artist_image_cleanup_complete` — Per-site marker for the deprecated Artist image URL cleanup.
 - `mds_rm_normalized_upc_migration_complete` — Per-site marker set after all existing Release UPC lookup keys have been backfilled in bounded batches.

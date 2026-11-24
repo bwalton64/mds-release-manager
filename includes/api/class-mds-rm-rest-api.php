@@ -281,6 +281,22 @@ final class MDS_RM_REST_API {
 			}
 		}
 
+		$template_defaults = null;
+		if ( isset( $params['mds_rm_template_defaults'] ) ) {
+			$raw_tpl = $params['mds_rm_template_defaults'];
+			if ( is_string( $raw_tpl ) ) {
+				if ( strlen( $raw_tpl ) > 65536 ) {
+					return new WP_Error( 'mds_rm_invalid_template_defaults', __( 'The default template settings are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
+				}
+				$raw_tpl = json_decode( wp_unslash( $raw_tpl ), true );
+			}
+			$valid_tpl = MDS_RM_Template_Defaults::validate( $raw_tpl );
+			if ( is_wp_error( $valid_tpl ) ) {
+				return $valid_tpl;
+			}
+			$template_defaults = $valid_tpl;
+		}
+
 		if ( array_key_exists( 'mds_rm_providers', $params ) && ! is_array( $params['mds_rm_providers'] ) ) {
 			return new WP_Error( 'mds_rm_invalid_providers', __( 'The streaming providers are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
 		}
@@ -335,11 +351,15 @@ final class MDS_RM_REST_API {
 		}
 
 		if ( isset( $params['mds_rm_fa_support'] ) ) {
-			update_option( 'mds_rm_fa_support', sanitize_text_field( wp_unslash( $params['mds_rm_fa_support'] ) ) );
+			update_option( 'mds_rm_fa_support', MDS_RM_Assets::sanitize_font_awesome_source( wp_unslash( $params['mds_rm_fa_support'] ) ) );
 		}
 
 		if ( null !== $block_defaults ) {
 			update_option( 'mds_rm_block_defaults', $block_defaults );
+		}
+
+		if ( null !== $template_defaults ) {
+			update_option( MDS_RM_Template_Defaults::OPTION_NAME, $template_defaults );
 		}
 
 		if ( function_exists( 'do_action' ) ) {

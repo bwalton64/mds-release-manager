@@ -56,6 +56,7 @@ spl_autoload_register(
 			'MDS_RM_CSV_HANDLER'                => 'admin/class-mds-rm-csv-handler.php',
 			'MDS_RM_ASSETS'                     => 'frontend/class-mds-rm-assets.php',
 			'MDS_RM_FRONTEND_TEMPLATES'         => 'frontend/class-mds-rm-frontend-templates.php',
+			'MDS_RM_TEMPLATE_DEFAULTS'          => 'frontend/class-mds-rm-template-defaults.php',
 			'MDS_RM_CUSTOMIZER'                 => 'frontend/class-mds-rm-customizer.php',
 			'MDS_RM_ARTIST_ROUTING'             => 'frontend/class-mds-rm-artist-routing.php',
 			'MDS_RM_DISCOGRAPHY'                => 'frontend/class-mds-rm-discography.php',

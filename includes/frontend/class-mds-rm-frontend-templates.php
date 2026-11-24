@@ -48,14 +48,22 @@ final class MDS_RM_Frontend_Templates {
 		if ( ! $post ) {
 			return $content;
 		}
+		$tpl             = MDS_RM_Template_Defaults::get( 'artist' );
 		$visited_blocks  = array();
 		$has_discography = self::content_has_component( $post->post_content, 'mds-rm/artist-discography', 'artist-discography', $visited_blocks );
+		$show_portrait   = ! empty( $tpl['show_portrait'] );
+		$show_discog     = ! empty( $tpl['show_discography'] );
+		$show_contact    = ! empty( $tpl['show_contact'] );
 		$args            = array(
-			'content'     => $content,
-			'image'       => wp_get_attachment_image( get_post_thumbnail_id( $post->ID ), 'large', false, array( 'class' => 'mds-artist-fallback__image' ) ),
-			'discography' => $has_discography ? '' : self::render_fallback_block( 'mds-rm/artist-discography', array( 'artistId' => $post->ID ) ),
-			'contact'     => get_post_meta( $post->ID, 'artist_contact', true ),
-			'style'       => MDS_RM_Customizer::get_artist_fallback_style_attribute(),
+			'content'             => $content,
+			'image'               => $show_portrait ? wp_get_attachment_image( get_post_thumbnail_id( $post->ID ), 'large', false, array( 'class' => 'mds-artist-fallback__image' ) ) : '',
+			'discography'         => ( $show_discog && ! $has_discography ) ? self::render_fallback_block( 'mds-rm/artist-discography', array( 'artistId' => $post->ID ) ) : '',
+			'discography_heading' => (string) ( $tpl['discography_heading'] ?? '' ),
+			'contact'             => $show_contact ? get_post_meta( $post->ID, 'artist_contact', true ) : '',
+			'contact_heading'     => (string) ( $tpl['contact_heading'] ?? __( 'Contact Information', 'mds-release-manager' ) ),
+			'layout'              => (string) ( $tpl['layout'] ?? 'stacked' ),
+			'section_order'       => (string) ( $tpl['section_order'] ?? 'discography_first' ),
+			'style'               => MDS_RM_Template_Defaults::get_artist_style_attribute(),
 		);
 		return MDS_RM_Template_Loader::render( 'templates/artist-fallback.php', $args );
 	}
@@ -109,22 +117,27 @@ final class MDS_RM_Frontend_Templates {
 			return $content;
 		}
 
+		$tpl            = MDS_RM_Template_Defaults::get( 'release' );
 		$visited_blocks = array();
 		$has_meta       = self::content_has_component( $post->post_content, 'mds-rm/release-meta', 'release-meta', $visited_blocks );
 		$visited_blocks = array();
 		$has_links      = self::content_has_component( $post->post_content, 'mds-rm/release-links', 'release-links', $visited_blocks );
-		$layout         = get_theme_mod( 'mds_rm_layout_style', 'split' );
+		$layout         = (string) ( $tpl['layout'] ?? 'split' );
 		if ( ! in_array( $layout, array( 'split', 'stacked' ), true ) ) {
 			$layout = 'split';
 		}
 
 		$args = array(
-			'content'    => $content,
-			'image'      => self::get_release_image( $post ),
-			'layout'     => $layout,
-			'style'      => MDS_RM_Customizer::get_release_fallback_style_attribute(),
-			'meta_html'  => $has_meta ? '' : self::render_fallback_block( 'mds-rm/release-meta', array( 'releaseId' => $post->ID ) ),
-			'links_html' => $has_links ? '' : self::render_fallback_block( 'mds-rm/release-links', array( 'releaseId' => $post->ID ) ),
+			'content'         => $content,
+			'image'           => ! empty( $tpl['show_image'] ) ? self::get_release_image( $post ) : '',
+			'layout'          => $layout,
+			'image_position'  => (string) ( $tpl['image_position'] ?? 'left' ),
+			'sticky_image'    => ! empty( $tpl['sticky_image'] ),
+			'mobile_order'    => (string) ( $tpl['mobile_order'] ?? 'image_first' ),
+			'component_order' => (string) ( $tpl['component_order'] ?? 'meta_body_links' ),
+			'style'           => MDS_RM_Template_Defaults::get_release_style_attribute(),
+			'meta_html'       => ( ! empty( $tpl['show_meta'] ) && ! $has_meta ) ? self::render_fallback_block( 'mds-rm/release-meta', array( 'releaseId' => $post->ID ) ) : '',
+			'links_html'      => ( ! empty( $tpl['show_links'] ) && ! $has_links ) ? self::render_fallback_block( 'mds-rm/release-links', array( 'releaseId' => $post->ID ) ) : '',
 		);
 
 		return MDS_RM_Template_Loader::render( 'templates/release-fallback.php', $args );
@@ -225,11 +238,19 @@ final class MDS_RM_Frontend_Templates {
 	 */
 	public static function filter_release_featured_image( $html, $post_id ) {
 		$artist = self::get_fallback_artist_post();
-		if ( $artist && absint( $post_id ) === $artist->ID && wp_get_attachment_image( get_post_thumbnail_id( $post_id ), 'large' ) ) {
-			return '';
+		if ( $artist && absint( $post_id ) === $artist->ID ) {
+			$artist_tpl = MDS_RM_Template_Defaults::get( 'artist' );
+			if ( ! empty( $artist_tpl['show_portrait'] ) && wp_get_attachment_image( get_post_thumbnail_id( $post_id ), 'large' ) ) {
+				return '';
+			}
+			return $html;
 		}
 		$post = self::get_fallback_release_post( $post_id );
-		if ( ! $post instanceof WP_Post || '' === $html || '' === self::get_release_image( $post ) ) {
+		if ( ! $post instanceof WP_Post || '' === $html ) {
+			return $html;
+		}
+		$release_tpl = MDS_RM_Template_Defaults::get( 'release' );
+		if ( empty( $release_tpl['show_image'] ) || '' === self::get_release_image( $post ) ) {
 			return $html;
 		}
 
