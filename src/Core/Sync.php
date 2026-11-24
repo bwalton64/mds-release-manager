@@ -483,10 +483,32 @@ final class Sync {
 			return new \WP_Error( 'mds_sync_invalid_format', __( 'Cannot synchronize a release with an invalid or conflicting format.', 'mds-release-manager' ) );
 		}
 
-		$raw_meta = get_post_meta( $post_id );
-		$meta     = array();
+		$raw_meta      = get_post_meta( $post_id );
+		$excluded_keys = self::EXCLUDED_SYNC_META_KEYS;
+		/**
+		 * Filters post meta keys excluded from Hub-to-Spoke shadow synchronization.
+		 *
+		 * Extensions can add local-only or transient meta keys here to prevent unnecessary
+		 * replication to Spoke sites.
+		 *
+		 * @since 2.0.0
+		 * @param string[] $excluded_keys Meta keys to skip during sync.
+		 * @param string   $post_type     Post type (`release` or `artist`).
+		 */
+		$filtered_excluded = apply_filters( 'mds_rm_sync_excluded_meta_keys', $excluded_keys, $post_type );
+		if ( is_array( $filtered_excluded ) ) {
+			$excluded_keys = array_values(
+				array_unique(
+					array_merge(
+						self::EXCLUDED_SYNC_META_KEYS,
+						array_filter( $filtered_excluded, 'is_string' )
+					)
+				)
+			);
+		}
+		$meta = array();
 		foreach ( $raw_meta as $key => $values ) {
-			if ( in_array( $key, self::EXCLUDED_SYNC_META_KEYS, true ) ) {
+			if ( in_array( $key, $excluded_keys, true ) ) {
 				continue;
 			}
 			if ( 'artist' === $post_type && 'artist_featured_image' === $key ) {
@@ -733,8 +755,6 @@ final class Sync {
 			delete_post_thumbnail( $shadow_post_id );
 		}
 
-		do_action( 'mds_rm_after_shadow_meta_sync', $shadow_post_id, $spoke_id, $post_id, $meta );
-
 		// Sync taxonomies only when terms differ.
 		$errors      = array();
 		$media_icons = is_array( $payload['media_icons'] ?? null ) ? $payload['media_icons'] : array();
@@ -784,6 +804,20 @@ final class Sync {
 				}
 			}
 		}
+
+		/**
+		 * Fires after a shadow Release or Artist record's post, meta, thumbnail, and taxonomies
+		 * have all been synchronized to a Spoke site.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param int                         $shadow_post_id Spoke shadow post ID.
+		 * @param int                         $spoke_id       Spoke blog ID.
+		 * @param int                         $post_id        Hub source post ID.
+		 * @param string                      $post_type      Post type (`release` or `artist`).
+		 * @param array<string, array<mixed>> $meta           Synchronized Hub meta array.
+		 */
+		do_action( 'mds_rm_after_shadow_sync', $shadow_post_id, $spoke_id, $post_id, $post_type, $meta );
 
 		return $errors ? implode( ' ', $errors ) : null;
 	}

@@ -57,7 +57,8 @@ function esc_attr( $value ) { return (string) $value; }
 function rest_ensure_response( $value ) { return new WP_REST_Response( $value ); }
 
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../includes/legacy-class-aliases.php';
+use MDS\ReleaseManager\Api\RestApi;
+use MDS\ReleaseManager\Frontend\Assets;
 class_alias( 'MDS_RM_Sync', 'MDS\\ReleaseManager\\Core\\Sync' );
 class_alias( 'MDS_RM_Release_Meta', 'MDS\\ReleaseManager\\Blocks\\ReleaseMeta' );
 class_alias( 'MDS_RM_Release_Links', 'MDS\\ReleaseManager\\Blocks\\ReleaseLinks' );
@@ -67,7 +68,7 @@ class_alias( 'MDS_RM_Logger', 'MDS\\ReleaseManager\\Core\\Logger' );
 
 $GLOBALS['updates'] = array();
 $defaults = array( 'release-links' => array( 'newTab' => false, 'showAudio' => true ) );
-$result = MDS_RM_REST_API::save_settings_api(
+$result = RestApi::save_settings_api(
 	new Fake_Request(
 		array(
 			'mds_rm_block_defaults' => json_encode( $defaults ),
@@ -78,22 +79,22 @@ if ( ! $result instanceof WP_REST_Response || $GLOBALS['updates']['mds_rm_block_
 	throw new RuntimeException( 'Valid block defaults were not saved.' );
 }
 $GLOBALS['updates'] = array();
-$result = MDS_RM_REST_API::save_settings_api( new Fake_Request( array( 'mds_rm_block_defaults' => '{"release-links":{"newTab":"false"}}' ) ) );
+$result = RestApi::save_settings_api( new Fake_Request( array( 'mds_rm_block_defaults' => '{"release-links":{"newTab":"false"}}' ) ) );
 if ( ! $result instanceof WP_Error || 'mds_rm_invalid_block_defaults' !== $result->code || $GLOBALS['updates'] ) {
 	throw new RuntimeException( 'Invalid defaults must be rejected before any option is changed.' );
 }
 $GLOBALS['updates'] = array();
-$result = MDS_RM_REST_API::save_settings_api( new Fake_Request( array() ) );
+$result = RestApi::save_settings_api( new Fake_Request( array() ) );
 if ( ! $result instanceof WP_REST_Response || isset( $GLOBALS['updates']['mds_rm_block_defaults'] ) || isset( $GLOBALS['updates']['mds_rm_bandcamp_template'] ) || isset( $GLOBALS['updates']['mds_rm_providers'] ) ) {
 	throw new RuntimeException( 'Omitted defaults and providers must not be overwritten.' );
 }
 $GLOBALS['updates'] = array();
-$result = MDS_RM_REST_API::save_settings_api( new Fake_Request( array( 'mds_rm_providers' => 'invalid' ) ) );
+$result = RestApi::save_settings_api( new Fake_Request( array( 'mds_rm_providers' => 'invalid' ) ) );
 if ( ! $result instanceof WP_Error || 'mds_rm_invalid_providers' !== $result->code || $GLOBALS['updates'] ) {
 	throw new RuntimeException( 'Invalid providers must be rejected before any option is changed.' );
 }
 $GLOBALS['updates'] = array();
-$result = MDS_RM_REST_API::save_settings_api(
+$result = RestApi::save_settings_api(
 	new Fake_Request(
 		array(
 			'mds_rm_audio_players'         => array( 'bandcamp', 'html5' ),
@@ -105,7 +106,7 @@ if ( ! $result instanceof WP_Error || 'mds_rm_invalid_audio_player_settings' !==
 	throw new RuntimeException( 'Invalid audio player settings must be rejected before any option is changed.' );
 }
 $GLOBALS['updates'] = array();
-$result = MDS_RM_REST_API::save_settings_api(
+$result = RestApi::save_settings_api(
 	new Fake_Request(
 		array(
 			'mds_rm_audio_players' => array( 'bandcamp', 'html5' ),
@@ -116,7 +117,7 @@ if ( ! $result instanceof WP_REST_Response || array( 'bandcamp' ) !== $GLOBALS['
 	throw new RuntimeException( 'Only one active audio player may be saved at a time.' );
 }
 $GLOBALS['updates'] = array();
-$result = MDS_RM_REST_API::save_settings_api(
+$result = RestApi::save_settings_api(
 	new Fake_Request(
 		array(
 			'mds_rm_template_defaults' => '{"release":{"layout":"invalid"}}',
@@ -127,7 +128,7 @@ if ( ! $result instanceof WP_Error || 'mds_rm_invalid_template_defaults' !== $re
 	throw new RuntimeException( 'Invalid template defaults must be rejected before any option is changed.' );
 }
 $GLOBALS['updates'] = array();
-$result = MDS_RM_REST_API::save_settings_api(
+$result = RestApi::save_settings_api(
 	new Fake_Request(
 		array(
 			'mds_rm_template_defaults' => json_encode( array( 'release' => array( 'layout' => 'stacked', 'sticky_image' => true ), 'artist' => array( 'layout' => 'split' ) ) ),
@@ -138,7 +139,7 @@ if ( ! $result instanceof WP_REST_Response || 'stacked' !== ( $GLOBALS['updates'
 	throw new RuntimeException( 'Valid template defaults were not saved.' );
 }
 $GLOBALS['updates'] = array();
-$result = MDS_RM_REST_API::save_settings_api(
+$result = RestApi::save_settings_api(
 	new Fake_Request(
 		array(
 			'mds_rm_fa_support' => 'internal',
@@ -148,21 +149,21 @@ $result = MDS_RM_REST_API::save_settings_api(
 if ( ! $result instanceof WP_REST_Response || 'cdn' !== ( $GLOBALS['updates']['mds_rm_fa_support'] ?? '' ) ) {
 	throw new RuntimeException( 'Legacy internal FA source must normalize to cdn.' );
 }
-if ( 'cdn' !== MDS_RM_Assets::resolve_font_awesome_source( 'auto' ) ) {
+if ( 'cdn' !== Assets::resolve_font_awesome_source( 'auto' ) ) {
 	throw new RuntimeException( 'Auto FA mode must resolve to cdn when no FA plugin is detected.' );
 }
 $GLOBALS['filters']['mds_rm_detected_font_awesome_plugin'] = 'Font Awesome (Official)';
-if ( 'plugin' !== MDS_RM_Assets::resolve_font_awesome_source( 'auto' ) ) {
+if ( 'plugin' !== Assets::resolve_font_awesome_source( 'auto' ) ) {
 	throw new RuntimeException( 'Auto FA mode must defer to plugin when a FA plugin is detected.' );
 }
 unset( $GLOBALS['filters']['mds_rm_detected_font_awesome_plugin'] );
-$tag = MDS_RM_Assets::filter_font_awesome_tag(
-	'<link rel="stylesheet" id="mds-font-awesome-css" href="' . MDS_RM_Assets::FA_CDN_URL . '" media="all" />',
+$tag = Assets::filter_font_awesome_tag(
+	'<link rel="stylesheet" id="mds-font-awesome-css" href="' . Assets::FA_CDN_URL . '" media="all" />',
 	'mds-font-awesome',
-	MDS_RM_Assets::FA_CDN_URL,
+	Assets::FA_CDN_URL,
 	'all'
 );
-if ( ! str_contains( $tag, 'integrity="' . MDS_RM_Assets::FA_CDN_INTEGRITY . '"' ) || ! str_contains( $tag, 'crossorigin="anonymous"' ) ) {
+if ( ! str_contains( $tag, 'integrity="' . Assets::FA_CDN_INTEGRITY . '"' ) || ! str_contains( $tag, 'crossorigin="anonymous"' ) ) {
 	throw new RuntimeException( 'Default cdnjs Font Awesome link tag must include SRI integrity and crossorigin attributes.' );
 }
 echo "Settings save checks passed.\n";

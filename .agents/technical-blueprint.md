@@ -12,9 +12,9 @@
 - WordPress 7.0+.
 - Composer PSR-4 autoloading (`vendor/autoload.php`) mapping `MDS\ReleaseManager\` → `src/`.
 
-**Build Tools:**
-- Composer (`composer.json`, `phpcs.xml.dist`) for PSR-4 autoloading and WPCS/PHPCompatibilityWP linting.
-- Lazy backward-compatibility alias bridge (`includes/legacy-class-aliases.php`) mapping legacy `MDS_RM_*` global class names to `MDS\ReleaseManager\*` for companion plugins.
+- **Build Tools:**
+  - Composer (`composer.json`, `phpcs.xml.dist`) for PSR-4 autoloading (`MDS\ReleaseManager\` → `src/`) and WPCS/PHPCompatibilityWP linting.
+  - Versioned public **`MDS\ReleaseManager\Api\ExtensionApi`** facade (`MDS_RM_API_VERSION = '2.0.0'`, `do_action( 'mds_rm_loaded' )`) for companion plugins (`mds-bandcamp-integration`, `mds-woocommerce-integration`) with zero legacy `MDS_RM_*` global class aliases.
 - Assets: `package.json` configured for `@wordpress/scripts` and Playwright E2E tests; admin/block scripts use `wp_add_inline_script()` and `wp_set_script_translations()`.
 - Multilingual: `wpml-config.xml` and `init`-hooked `load_plugin_textdomain()`.
 

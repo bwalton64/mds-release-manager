@@ -229,6 +229,24 @@ final class ReleaseMeta {
 	}
 
 	/**
+	 * Per-request memoized Release resolutions keyed by `"{upc}|{context_post_id}"`.
+	 *
+	 * @var array<string, WP_Post|null>
+	 */
+	private static array $resolved_cache = array();
+
+	/**
+	 * Clears the per-request Release resolution memoization cache.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return void
+	 */
+	public static function reset_request_cache(): void {
+		self::$resolved_cache = array();
+	}
+
+	/**
 	 * Resolve explicit UPCs first; extensions may provide a UPC for other contexts.
 	 *
 	 * @param mixed      $upc             Explicit UPC/EAN, if supplied.
@@ -242,9 +260,19 @@ final class ReleaseMeta {
 		}
 		$upc             = (string) $upc;
 		$context_post_id = absint( $context_post_id );
+		$cache_key       = $upc . '|' . $context_post_id;
+		$use_cache       = function_exists( 'did_action' ) && did_action( 'init' ) > 0;
+		if ( $use_cache && array_key_exists( $cache_key, self::$resolved_cache ) ) {
+			return self::$resolved_cache[ $cache_key ];
+		}
+
 		if ( '' === $upc && $context_post_id && 'release' === get_post_type( $context_post_id ) ) {
-			$post = get_post( $context_post_id );
-			return self::can_display( $post ) ? $post : null;
+			$post     = get_post( $context_post_id );
+			$resolved = self::can_display( $post ) ? $post : null;
+			if ( $use_cache ) {
+				self::$resolved_cache[ $cache_key ] = $resolved;
+			}
+			return $resolved;
 		}
 		if ( '' === $upc ) {
 			$upc = apply_filters( 'mds_rm_release_meta_context_upc', '', $context_post_id );
@@ -255,26 +283,56 @@ final class ReleaseMeta {
 		}
 		$upc = (string) $upc;
 		if ( '' === $upc ) {
+			if ( $use_cache ) {
+				self::$resolved_cache[ $cache_key ] = null;
+			}
 			return null;
 		}
 		if ( ! preg_match( '/^\d+$/D', $upc ) ) {
 			\MDS\ReleaseManager\Core\Logger::diagnostic( 'Invalid Release Meta UPC/EAN.' );
+			if ( $use_cache ) {
+				self::$resolved_cache[ $cache_key ] = null;
+			}
 			return null;
 		}
+
+		// Prefer the indexed normalized UPC key, falling back to raw `upc_ean` for unmigrated rows.
 		$posts = get_posts(
 			array(
-				'post_type'      => 'release',
-				'post_status'    => 'any',
-				'posts_per_page' => 2,
-				'meta_key'       => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Resolve an explicit UPC and detect ambiguous matches.
-				'meta_value'     => (string) $upc, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'post_type'              => 'release',
+				'post_status'            => 'any',
+				'posts_per_page'         => 2,
+				'meta_key'               => '_mds_normalized_upc', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Exact normalized UPC lookup.
+				'meta_value'             => (string) $upc, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
 			)
 		);
+		if ( empty( $posts ) ) {
+			$posts = get_posts(
+				array(
+					'post_type'              => 'release',
+					'post_status'            => 'any',
+					'posts_per_page'         => 2,
+					'meta_key'               => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Legacy fallback for unmigrated releases.
+					'meta_value'             => (string) $upc, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'no_found_rows'          => true,
+					'update_post_term_cache' => false,
+				)
+			);
+		}
 		if ( count( $posts ) > 1 ) {
 			\MDS\ReleaseManager\Core\Logger::report_failure( 'Cannot render metadata: duplicate UPC/EAN ' . $upc );
+			if ( $use_cache ) {
+				self::$resolved_cache[ $cache_key ] = null;
+			}
 			return null;
 		}
-		return isset( $posts[0] ) && self::can_display( $posts[0] ) ? $posts[0] : null;
+		$resolved = isset( $posts[0] ) && self::can_display( $posts[0] ) ? $posts[0] : null;
+		if ( $use_cache ) {
+			self::$resolved_cache[ $cache_key ] = $resolved;
+		}
+		return $resolved;
 	}
 
 	/**

@@ -36,8 +36,7 @@ final class Config {
 	 * Multisite network-level option keys.
 	 */
 	public const SITE_OPTION_MASTER_BLOG_ID    = 'mds_rm_master_blog_id';
-	public const SITE_OPTION_SPOKE_SITES       = 'spoke_sites';
-	public const SITE_OPTION_WOO_SITES         = 'mds_rm_woo_sites';
+	public const SITE_OPTION_SPOKE_SITES       = 'mds_rm_spoke_sites';
 	public const SITE_OPTION_DB_TEMPLATES      = 'mds_rm_db_templates';
 	public const SITE_OPTION_WIPE_ON_UNINSTALL = 'mds_rm_wipe_on_uninstall';
 

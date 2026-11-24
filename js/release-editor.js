@@ -5,14 +5,27 @@
 		Card,
 		CardBody,
 		ComboboxControl,
+		Fill,
 		FormTokenField,
 		Modal,
 		Notice,
 		PanelBody,
 		SelectControl,
+		Slot,
+		SlotFillProvider,
 		TabPanel,
 		TextControl,
 	} = wp.components;
+
+	const BUY_NOW_ACTIONS_SLOT = 'mds-rm/release-editor/buy-now-actions';
+	if (Fill && Slot) {
+		window.mdsRmEditorSlots = Object.freeze({
+			BUY_NOW_ACTIONS_SLOT,
+			BuyNowActionsFill: function BuyNowActionsFill(props) {
+				return el(Fill, { name: BUY_NOW_ACTIONS_SLOT }, props.children);
+			},
+		});
+	}
 	const { __, sprintf } = wp.i18n;
 	const speak = wp.a11y && typeof wp.a11y.speak === 'function' ? wp.a11y.speak : () => {};
 
@@ -676,7 +689,15 @@
 										speak(__('Purchase format row added.', 'mds-release-manager'), 'polite');
 									},
 								}, __('+ Add Media Format', 'mds-release-manager')),
-								el(ExtensionSlot, { active: tab.name === 'commerce' })
+								el(ExtensionSlot, { active: tab.name === 'commerce' }),
+								Slot && el(Slot, {
+									name: BUY_NOW_ACTIONS_SLOT,
+									fillProps: {
+										postId: data.postId,
+										buyNowLinks,
+										setBuyNowLinks,
+									},
+								})
 							),
 							el('div', { style: { marginTop: '16px', maxWidth: '460px' } },
 								el(SelectControl, {
@@ -780,7 +801,9 @@
 		);
 	}
 
-	const app = el(ReleaseWorkspace);
+	const app = SlotFillProvider
+		? el(SlotFillProvider, null, el(ReleaseWorkspace))
+		: el(ReleaseWorkspace);
 	if (wp.element.createRoot) {
 		wp.element.createRoot(mountTarget).render(app);
 	} else {

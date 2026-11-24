@@ -88,6 +88,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 		return;
 	}
 
+	delete_site_option( 'mds_rm_spoke_sites' );
 	delete_site_option( 'spoke_sites' );
 	$delete_plugin_posts();
 

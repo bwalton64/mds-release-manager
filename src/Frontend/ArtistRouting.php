@@ -37,7 +37,35 @@ final class ArtistRouting {
 	 *
 	 * @return array<string, string> Map of mode slug to human-readable label.
 	 */
+	/**
+	 * Per-request memoized routing mode registries keyed by context (`artist` or `release`).
+	 *
+	 * @var array<string, array<string, string>>
+	 */
+	private static array $modes_cache = array();
+
+	/**
+	 * Clears the per-request routing mode registry cache.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return void
+	 */
+	public static function reset_cache(): void {
+		self::$modes_cache = array();
+	}
+
+	/**
+	 * Returns supported Artist-level default release routing modes.
+	 *
+	 * @return array<string, string> Map of mode slug to human-readable label.
+	 */
 	public static function artist_release_modes(): array {
+		$use_cache = function_exists( 'did_action' ) && did_action( 'init' ) > 0;
+		if ( $use_cache && isset( self::$modes_cache['artist'] ) ) {
+			return self::$modes_cache['artist'];
+		}
+
 		$modes = array(
 			'fallback'            => __( 'Fallback Page (Default)', 'mds-release-manager' ),
 			'artist_website'      => __( 'Forward All Releases to Artist Website', 'mds-release-manager' ),
@@ -62,6 +90,10 @@ final class ArtistRouting {
 			}
 		}
 
+		if ( $use_cache ) {
+			self::$modes_cache['artist'] = $modes;
+		}
+
 		return $modes;
 	}
 
@@ -71,6 +103,11 @@ final class ArtistRouting {
 	 * @return array<string, string> Map of mode slug to human-readable label.
 	 */
 	public static function release_modes(): array {
+		$use_cache = function_exists( 'did_action' ) && did_action( 'init' ) > 0;
+		if ( $use_cache && isset( self::$modes_cache['release'] ) ) {
+			return self::$modes_cache['release'];
+		}
+
 		$modes = array(
 			'inherit'        => __( 'Inherit Artist Default', 'mds-release-manager' ),
 			'fallback'       => __( 'Fallback Page (No Redirect)', 'mds-release-manager' ),
@@ -87,6 +124,10 @@ final class ArtistRouting {
 					$modes[ $clean_slug ] = $label;
 				}
 			}
+		}
+
+		if ( $use_cache ) {
+			self::$modes_cache['release'] = $modes;
 		}
 
 		return $modes;
@@ -273,13 +314,24 @@ final class ArtistRouting {
 		/**
 		 * Filters the admin routing table destination preview for a Release.
 		 *
+		 * Extensions may customize display fields (`label`, `is_warning`), while core
+		 * retains authoritative control over `url`, `own_mode`, and `effective_mode`.
+		 *
 		 * @since 1.1.0
 		 * @param array  $result         Destination summary array.
 		 * @param int    $release_id     Release post ID.
 		 * @param string $effective_mode Effective routing mode slug.
 		 */
 		$filtered = apply_filters( 'mds_rm_routing_destination_preview', $result, $release_id, $effective_mode );
-		return is_array( $filtered ) ? $filtered : $result;
+		if ( is_array( $filtered ) ) {
+			if ( isset( $filtered['label'] ) && is_string( $filtered['label'] ) && '' !== trim( $filtered['label'] ) ) {
+				$result['label'] = $filtered['label'];
+			}
+			if ( isset( $filtered['is_warning'] ) && is_bool( $filtered['is_warning'] ) ) {
+				$result['is_warning'] = $filtered['is_warning'];
+			}
+		}
+		return $result;
 	}
 
 	/**

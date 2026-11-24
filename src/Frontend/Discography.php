@@ -327,6 +327,18 @@ final class Discography {
 			return '';
 		}
 
+		if ( ! empty( $query->posts ) ) {
+			$discography_release_ids = array_values( array_map( static fn( WP_Post $r ): int => (int) $r->ID, $query->posts ) );
+			/**
+			 * Fires before Discography rows are rendered so extensions can batch-prime custom column lookups.
+			 *
+			 * @since 2.0.0
+			 * @param int[]   $release_ids Release post IDs on the current Discography page.
+			 * @param WP_Post $artist      Artist post object.
+			 */
+			do_action( 'mds_rm_before_discography_render', $discography_release_ids, $artist );
+		}
+
 		ob_start();
 		?>
 		<section class="mds-discography" aria-label="<?php esc_attr_e( 'Discography', 'mds-release-manager' ); ?>">

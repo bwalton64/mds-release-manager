@@ -53,7 +53,7 @@ function is_multisite(): bool {
 }
 
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../includes/legacy-class-aliases.php';
+use MDS\ReleaseManager\Core\Cache;
 
 function assert_cache( bool $cond, string $msg ): void {
 	if ( ! $cond ) {
@@ -88,7 +88,7 @@ $GLOBALS['filters']['mds_rm_cache_adapters'] = static function ( array $adapters
 };
 
 // 1. Validation accepts valid modes and rejects invalid modes.
-$valid = MDS_RM_Cache::validate_settings(
+$valid = Cache::validate_settings(
 	array(
 		'purge_on_post_save' => false,
 		'plugins'            => array( 'mock_cache' => 'assets' ),
@@ -96,7 +96,7 @@ $valid = MDS_RM_Cache::validate_settings(
 );
 assert_cache( ! is_wp_error( $valid ) && false === $valid['purge_on_post_save'] && 'assets' === $valid['plugins']['mock_cache'], 'Valid cache settings must pass validation.' );
 
-$invalid = MDS_RM_Cache::validate_settings(
+$invalid = Cache::validate_settings(
 	array(
 		'purge_on_post_save' => true,
 		'plugins'            => array( 'mock_cache' => 'nuclear' ),
@@ -105,31 +105,31 @@ $invalid = MDS_RM_Cache::validate_settings(
 assert_cache( is_wp_error( $invalid ) && 'mds_rm_invalid_cache_settings' === $invalid->code, 'Invalid purge mode must be rejected.' );
 
 // 2. Respects purge_on_post_save = false while still purging settings/companion contexts.
-$GLOBALS['options'][ MDS_RM_Cache::OPTION_NAME ] = $valid;
-$res = MDS_RM_Cache::purge( 'post_save', array( 'immediate' => true ) );
+$GLOBALS['options'][ Cache::OPTION_NAME ] = $valid;
+$res = Cache::purge( 'post_save', array( 'immediate' => true ) );
 assert_cache( empty( $res['purged'] ) && in_array( 'post_save_disabled', $res['skipped'], true ), 'post_save must skip when purge_on_post_save is disabled.' );
 
-$res = MDS_RM_Cache::purge( 'settings', array( 'immediate' => true ) );
+$res = Cache::purge( 'settings', array( 'immediate' => true ) );
 assert_cache( array( 'Mock Cache Pro' ) === $res['purged'], 'settings context must purge using configured mode.' );
 assert_cache( array( array( 'assets', 1 ) ) === $purge_calls, 'Adapter must receive configured assets mode.' );
 
 // 3. Coalescing: 5 queued purges in one request execute only once at shutdown.
 $purge_calls = array();
-MDS_RM_Cache::register_hooks();
+Cache::register_hooks();
 for ( $i = 0; $i < 5; $i++ ) {
 	do_action( 'mds_rm_purge_cache', 'bandcamp_sync' );
 }
 assert_cache( empty( $purge_calls ), 'Queued purges must wait until shutdown.' );
-MDS_RM_Cache::flush_queued();
+Cache::flush_queued();
 assert_cache( 1 === count( $purge_calls ), 'Five queued purges for the same site must coalesce into one flush.' );
 
 // 4. Disabled adapter is skipped cleanly.
 $purge_calls = array();
-$GLOBALS['options'][ MDS_RM_Cache::OPTION_NAME ] = array(
+$GLOBALS['options'][ Cache::OPTION_NAME ] = array(
 	'purge_on_post_save' => true,
 	'plugins'            => array( 'mock_cache' => 'disabled' ),
 );
-$res = MDS_RM_Cache::purge( 'manual', array( 'immediate' => true, 'force' => true ) );
+$res = Cache::purge( 'manual', array( 'immediate' => true, 'force' => true ) );
 assert_cache( empty( $res['purged'] ) && in_array( 'mock_cache', $res['skipped'], true ), 'Disabled adapter must be skipped.' );
 
 echo "Cache manager checks passed.\n";

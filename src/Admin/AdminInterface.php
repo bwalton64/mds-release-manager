@@ -293,19 +293,32 @@ final class AdminInterface {
 					'no_found_rows'  => true,
 				)
 			);
+			if ( ! empty( $release_posts ) ) {
+				$release_ids = array_values( array_map( static fn( WP_Post $r ): int => (int) $r->ID, $release_posts ) );
+				/**
+				 * Fires before per-release routing destinations are resolved for the Artist editor table.
+				 *
+				 * Extensions can batch-prime SKU/product or external URL lookups here to avoid N+1 queries.
+				 *
+				 * @since 2.0.0
+				 * @param int[] $release_ids Release post IDs in the Artist routing table.
+				 * @param int   $artist_id   Artist post ID.
+				 */
+				do_action( 'mds_rm_prime_routing_destinations', $release_ids, (int) $post->ID );
+			}
 			foreach ( $release_posts as $release ) {
 				$own_mode   = \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( get_post_meta( $release->ID, 'release_routing_mode', true ) );
 				$custom_url = (string) get_post_meta( $release->ID, 'release_routing_url', true );
 				$thumb_url  = (string) get_the_post_thumbnail_url( $release->ID, 'thumbnail' );
 				$releases[] = array(
-					'id'         => (int) $release->ID,
-					'title'      => get_the_title( $release ) ? get_the_title( $release ) : __( '(no title)', 'mds-release-manager' ),
-					'editUrl'    => (string) get_edit_post_link( $release->ID, 'raw' ),
-					'upc'        => (string) get_post_meta( $release->ID, 'upc_ean', true ),
-					'thumbUrl'   => $thumb_url,
-					'ownMode'    => $own_mode,
-					'customUrl'  => $custom_url,
-					'preview'    => \MDS\ReleaseManager\Frontend\ArtistRouting::describe_release_destination( $release->ID, $post->ID ),
+					'id'        => (int) $release->ID,
+					'title'     => get_the_title( $release ) ? get_the_title( $release ) : __( '(no title)', 'mds-release-manager' ),
+					'editUrl'   => (string) get_edit_post_link( $release->ID, 'raw' ),
+					'upc'       => (string) get_post_meta( $release->ID, 'upc_ean', true ),
+					'thumbUrl'  => $thumb_url,
+					'ownMode'   => $own_mode,
+					'customUrl' => $custom_url,
+					'preview'   => \MDS\ReleaseManager\Frontend\ArtistRouting::describe_release_destination( $release->ID, $post->ID ),
 				);
 			}
 		}
@@ -693,14 +706,19 @@ final class AdminInterface {
 		}
 		delete_post_meta( $post_id, 'artist_featured_image' );
 
-		/**
-		 * Hook: mds_rm_save_custom_meta
-		 * Fires after core artist meta is saved and before spoke synchronization.
-		 *
-		 * @param int   $post_id Post ID.
-		 * @param array $_POST   Sanitized POST data.
-		 */
-		do_action( 'mds_rm_save_custom_meta', $post_id, $_POST );
+		$artist_post = get_post( $post_id );
+		if ( $artist_post instanceof WP_Post ) {
+			/**
+			 * Fires after core Artist meta is saved and before spoke synchronization.
+			 *
+			 * Extensions must verify their own nonce and sanitize their own POST fields.
+			 *
+			 * @since 2.0.0
+			 * @param int     $post_id     Artist post ID.
+			 * @param WP_Post $artist_post Artist post object.
+			 */
+			do_action( 'mds_rm_save_artist_meta', $post_id, $artist_post );
+		}
 
 		$sync_result = \MDS\ReleaseManager\Core\Sync::broadcast_to_spokes( $post_id, 'artist' );
 
@@ -757,130 +775,143 @@ final class AdminInterface {
 			return;
 		}
 
-		if ( isset( $_POST['upc_ean'] ) && is_string( $_POST['upc_ean'] ) ) {
-			$previous_upc = get_post_meta( $post_id, 'upc_ean', true );
-			$upc_clean    = preg_replace( '/[^0-9]/', '', sanitize_text_field( wp_unslash( $_POST['upc_ean'] ) ) );
-			update_post_meta( $post_id, 'upc_ean', $upc_clean );
-			\MDS\ReleaseManager\Core\ReleaseModel::remember_previous_upc( $post_id, $previous_upc, $upc_clean );
-		}
-
-		if ( isset( $_POST['artist_id'] ) && is_string( $_POST['artist_id'] ) ) {
-			update_post_meta( $post_id, 'artist_id', sanitize_text_field( wp_unslash( $_POST['artist_id'] ) ) );
-		}
-
-		if ( isset( $_POST['record_label'] ) && is_string( $_POST['record_label'] ) ) {
-			update_post_meta( $post_id, 'record_label', sanitize_text_field( wp_unslash( $_POST['record_label'] ) ) );
-		}
-
-		if ( isset( $_POST['distributor'] ) && is_string( $_POST['distributor'] ) ) {
-			update_post_meta( $post_id, 'distributor', sanitize_text_field( wp_unslash( $_POST['distributor'] ) ) );
-		}
-
-		if ( isset( $_POST['mds_buy_now_url'] ) && is_array( $_POST['mds_buy_now_url'] ) ) {
-			$bn_formats   = isset( $_POST['mds_buy_now_format'] ) && is_array( $_POST['mds_buy_now_format'] ) ? array_map( 'sanitize_title', wp_unslash( $_POST['mds_buy_now_format'] ) ) : array();
-			$bn_stores    = isset( $_POST['mds_buy_now_store'] ) && is_array( $_POST['mds_buy_now_store'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['mds_buy_now_store'] ) ) : array();
-			$bn_urls      = array_map( 'esc_url_raw', wp_unslash( $_POST['mds_buy_now_url'] ) );
-			$primary_idx  = isset( $_POST['mds_buy_now_primary'] ) && is_scalar( $_POST['mds_buy_now_primary'] ) ? (int) $_POST['mds_buy_now_primary'] : 0;
-			$raw_buy_rows = array();
-			$bn_count     = count( $bn_urls );
-			for ( $i = 0; $i < $bn_count; $i++ ) {
-				$raw_buy_rows[] = array(
-					'format'  => $bn_formats[ $i ] ?? '',
-					'store'   => $bn_stores[ $i ] ?? '',
-					'url'     => $bn_urls[ $i ] ?? '',
-					'primary' => ( $i === $primary_idx ),
-				);
+		$locked_upc = '';
+		try {
+			if ( isset( $_POST['upc_ean'] ) && is_string( $_POST['upc_ean'] ) ) {
+				$previous_upc = get_post_meta( $post_id, 'upc_ean', true );
+				$upc_clean    = preg_replace( '/[^0-9]/', '', sanitize_text_field( wp_unslash( $_POST['upc_ean'] ) ) );
+				$locked_upc   = (string) $upc_clean;
+				update_post_meta( $post_id, 'upc_ean', $upc_clean );
+				\MDS\ReleaseManager\Core\ReleaseModel::remember_previous_upc( $post_id, $previous_upc, $upc_clean );
+			} else {
+				$locked_upc = (string) get_post_meta( $post_id, 'upc_ean', true );
 			}
-			$sanitized_buy_links = \MDS\ReleaseManager\Core\ReleaseModel::sanitize_buy_now_links( $raw_buy_rows );
-			if ( $sanitized_buy_links ) {
-				update_post_meta( $post_id, 'buy_now_links', wp_slash( wp_json_encode( $sanitized_buy_links ) ) );
-				$primary_url = '';
-				$media_slugs = array();
-				foreach ( $sanitized_buy_links as $row ) {
-					if ( ! empty( $row['primary'] ) && '' === $primary_url ) {
-						$primary_url = $row['url'];
-					}
-					if ( ! empty( $row['format'] ) ) {
-						$media_slugs[] = $row['format'];
-					}
+
+			if ( isset( $_POST['artist_id'] ) && is_string( $_POST['artist_id'] ) ) {
+				update_post_meta( $post_id, 'artist_id', sanitize_text_field( wp_unslash( $_POST['artist_id'] ) ) );
+			}
+
+			if ( isset( $_POST['record_label'] ) && is_string( $_POST['record_label'] ) ) {
+				update_post_meta( $post_id, 'record_label', sanitize_text_field( wp_unslash( $_POST['record_label'] ) ) );
+			}
+
+			if ( isset( $_POST['distributor'] ) && is_string( $_POST['distributor'] ) ) {
+				update_post_meta( $post_id, 'distributor', sanitize_text_field( wp_unslash( $_POST['distributor'] ) ) );
+			}
+
+			if ( isset( $_POST['mds_buy_now_url'] ) && is_array( $_POST['mds_buy_now_url'] ) ) {
+				$bn_formats   = isset( $_POST['mds_buy_now_format'] ) && is_array( $_POST['mds_buy_now_format'] ) ? array_map( 'sanitize_title', wp_unslash( $_POST['mds_buy_now_format'] ) ) : array();
+				$bn_stores    = isset( $_POST['mds_buy_now_store'] ) && is_array( $_POST['mds_buy_now_store'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['mds_buy_now_store'] ) ) : array();
+				$bn_urls      = array_map( 'esc_url_raw', wp_unslash( $_POST['mds_buy_now_url'] ) );
+				$primary_idx  = isset( $_POST['mds_buy_now_primary'] ) && is_scalar( $_POST['mds_buy_now_primary'] ) ? (int) $_POST['mds_buy_now_primary'] : 0;
+				$raw_buy_rows = array();
+				$bn_count     = count( $bn_urls );
+				for ( $i = 0; $i < $bn_count; $i++ ) {
+					$raw_buy_rows[] = array(
+						'format'  => $bn_formats[ $i ] ?? '',
+						'store'   => $bn_stores[ $i ] ?? '',
+						'url'     => $bn_urls[ $i ] ?? '',
+						'primary' => ( $i === $primary_idx ),
+					);
 				}
-				update_post_meta( $post_id, 'buy_now_link', $primary_url ? $primary_url : $sanitized_buy_links[0]['url'] );
-				wp_set_object_terms( $post_id, array_values( array_unique( $media_slugs ) ), 'release_media_format', false );
-			} else {
-				delete_post_meta( $post_id, 'buy_now_links' );
-				delete_post_meta( $post_id, 'buy_now_link' );
-				wp_set_object_terms( $post_id, array(), 'release_media_format', false );
+				$sanitized_buy_links = \MDS\ReleaseManager\Core\ReleaseModel::sanitize_buy_now_links( $raw_buy_rows );
+				if ( $sanitized_buy_links ) {
+					update_post_meta( $post_id, 'buy_now_links', wp_slash( wp_json_encode( $sanitized_buy_links ) ) );
+					$primary_url = '';
+					$media_slugs = array();
+					foreach ( $sanitized_buy_links as $row ) {
+						if ( ! empty( $row['primary'] ) && '' === $primary_url ) {
+							$primary_url = $row['url'];
+						}
+						if ( ! empty( $row['format'] ) ) {
+							$media_slugs[] = $row['format'];
+						}
+					}
+					update_post_meta( $post_id, 'buy_now_link', $primary_url ? $primary_url : $sanitized_buy_links[0]['url'] );
+					wp_set_object_terms( $post_id, array_values( array_unique( $media_slugs ) ), 'release_media_format', false );
+				} else {
+					delete_post_meta( $post_id, 'buy_now_links' );
+					delete_post_meta( $post_id, 'buy_now_link' );
+					wp_set_object_terms( $post_id, array(), 'release_media_format', false );
+				}
+			} elseif ( isset( $_POST['buy_now_link'] ) && is_string( $_POST['buy_now_link'] ) ) {
+				update_post_meta( $post_id, 'buy_now_link', esc_url_raw( wp_unslash( $_POST['buy_now_link'] ) ) );
 			}
-		} elseif ( isset( $_POST['buy_now_link'] ) && is_string( $_POST['buy_now_link'] ) ) {
-			update_post_meta( $post_id, 'buy_now_link', esc_url_raw( wp_unslash( $_POST['buy_now_link'] ) ) );
-		}
 
-		if ( isset( $_POST['mds_buy_now_mode'] ) && is_string( $_POST['mds_buy_now_mode'] ) ) {
-			$submitted_mode = sanitize_key( wp_unslash( $_POST['mds_buy_now_mode'] ) );
-			if ( in_array( $submitted_mode, array( 'direct', 'picker' ), true ) ) {
-				update_post_meta( $post_id, 'buy_now_mode', $submitted_mode );
-			} else {
-				delete_post_meta( $post_id, 'buy_now_mode' );
+			if ( isset( $_POST['mds_buy_now_mode'] ) && is_string( $_POST['mds_buy_now_mode'] ) ) {
+				$submitted_mode = sanitize_key( wp_unslash( $_POST['mds_buy_now_mode'] ) );
+				if ( in_array( $submitted_mode, array( 'direct', 'picker' ), true ) ) {
+					update_post_meta( $post_id, 'buy_now_mode', $submitted_mode );
+				} else {
+					delete_post_meta( $post_id, 'buy_now_mode' );
+				}
 			}
-		}
 
-		if ( isset( $_POST['mds_release_routing_mode'] ) && is_string( $_POST['mds_release_routing_mode'] ) ) {
-			$routing_mode = \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( sanitize_text_field( wp_unslash( $_POST['mds_release_routing_mode'] ) ) );
-			$routing_url  = isset( $_POST['mds_release_routing_url'] ) && is_string( $_POST['mds_release_routing_url'] )
+			if ( isset( $_POST['mds_release_routing_mode'] ) && is_string( $_POST['mds_release_routing_mode'] ) ) {
+				$routing_mode = \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( sanitize_text_field( wp_unslash( $_POST['mds_release_routing_mode'] ) ) );
+				$routing_url  = isset( $_POST['mds_release_routing_url'] ) && is_string( $_POST['mds_release_routing_url'] )
 				? esc_url_raw( trim( wp_unslash( $_POST['mds_release_routing_url'] ) ) ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- esc_url_raw() sanitizes; sanitize_text_field() would strip percent-encoded octets.
 				: '';
-			if ( 'inherit' === $routing_mode ) {
-				delete_post_meta( $post_id, 'release_routing_mode' );
-				delete_post_meta( $post_id, 'release_routing_url' );
-			} else {
-				update_post_meta( $post_id, 'release_routing_mode', $routing_mode );
-				if ( 'custom_url' === $routing_mode && '' !== $routing_url ) {
-					update_post_meta( $post_id, 'release_routing_url', $routing_url );
-				} else {
+				if ( 'inherit' === $routing_mode ) {
+					delete_post_meta( $post_id, 'release_routing_mode' );
 					delete_post_meta( $post_id, 'release_routing_url' );
+				} else {
+					update_post_meta( $post_id, 'release_routing_mode', $routing_mode );
+					if ( 'custom_url' === $routing_mode && '' !== $routing_url ) {
+						update_post_meta( $post_id, 'release_routing_url', $routing_url );
+					} else {
+						delete_post_meta( $post_id, 'release_routing_url' );
+					}
 				}
 			}
-		}
 
-		if ( isset( $_POST['audio_preview_url'] ) && is_string( $_POST['audio_preview_url'] ) ) {
-			$audio_preview_url = sanitize_text_field( wp_unslash( $_POST['audio_preview_url'] ) );
-			update_post_meta( $post_id, 'audio_preview_url', esc_url_raw( $audio_preview_url ) );
-		}
-
-		$providers           = isset( $_POST['mds_streaming_provider'] ) && is_array( $_POST['mds_streaming_provider'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['mds_streaming_provider'] ) ) : array();
-		$urls                = isset( $_POST['mds_streaming_url'] ) && is_array( $_POST['mds_streaming_url'] ) ? array_map( 'esc_url_raw', wp_unslash( $_POST['mds_streaming_url'] ) ) : array();
-		$streaming_links_arr = array();
-
-		$count = count( $providers );
-		for ( $i = 0; $i < $count; $i++ ) {
-			$p = $providers[ $i ] ?? '';
-			$u = $urls[ $i ] ?? '';
-			if ( ! empty( $p ) && ! empty( $u ) ) {
-				$streaming_links_arr[ $p ] = $u;
+			if ( isset( $_POST['audio_preview_url'] ) && is_string( $_POST['audio_preview_url'] ) ) {
+				$audio_preview_url = sanitize_text_field( wp_unslash( $_POST['audio_preview_url'] ) );
+				update_post_meta( $post_id, 'audio_preview_url', esc_url_raw( $audio_preview_url ) );
 			}
-		}
-		update_post_meta( $post_id, 'streaming_links', wp_slash( wp_json_encode( $streaming_links_arr ) ) );
 
-		$format_taxonomy = get_taxonomy( 'release_type' );
-		if ( $format_taxonomy && current_user_can( $format_taxonomy->cap->assign_terms ) && isset( $_POST['release_type'] ) && is_scalar( $_POST['release_type'] ) ) {
-			$result = wp_set_post_terms( $post_id, array( absint( wp_unslash( $_POST['release_type'] ) ) ), 'release_type' );
-			if ( is_wp_error( $result ) ) {
-				wp_die( esc_html( $result->get_error_message() ) );
+			$providers           = isset( $_POST['mds_streaming_provider'] ) && is_array( $_POST['mds_streaming_provider'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['mds_streaming_provider'] ) ) : array();
+			$urls                = isset( $_POST['mds_streaming_url'] ) && is_array( $_POST['mds_streaming_url'] ) ? array_map( 'esc_url_raw', wp_unslash( $_POST['mds_streaming_url'] ) ) : array();
+			$streaming_links_arr = array();
+
+			$count = count( $providers );
+			for ( $i = 0; $i < $count; $i++ ) {
+				$p = $providers[ $i ] ?? '';
+				$u = $urls[ $i ] ?? '';
+				if ( ! empty( $p ) && ! empty( $u ) ) {
+					$streaming_links_arr[ $p ] = $u;
+				}
 			}
-			delete_post_meta( $post_id, 'release_format' );
+			update_post_meta( $post_id, 'streaming_links', wp_slash( wp_json_encode( $streaming_links_arr ) ) );
+
+			$format_taxonomy = get_taxonomy( 'release_type' );
+			if ( $format_taxonomy && current_user_can( $format_taxonomy->cap->assign_terms ) && isset( $_POST['release_type'] ) && is_scalar( $_POST['release_type'] ) ) {
+				$result = wp_set_post_terms( $post_id, array( absint( wp_unslash( $_POST['release_type'] ) ) ), 'release_type' );
+				if ( is_wp_error( $result ) ) {
+					wp_die( esc_html( $result->get_error_message() ) );
+				}
+				delete_post_meta( $post_id, 'release_format' );
+			}
+		} finally {
+			\MDS\ReleaseManager\Core\ReleaseModel::release_upc_lock( $locked_upc );
 		}
 
-		/**
-		 * Hook: mds_rm_save_custom_meta
-		 * Fires after core release meta is saved and before spoke synchronization.
-		 *
-		 * @param int   $post_id Post ID.
-		 * @param array $_POST   Sanitized POST data.
-		 */
-		do_action( 'mds_rm_save_custom_meta', $post_id, $_POST );
+		$release_post = get_post( $post_id );
+		if ( $release_post instanceof WP_Post ) {
+			/**
+			 * Fires after core Release meta is saved and the UPC lock is released,
+			 * before spoke synchronization runs.
+			 *
+			 * Extensions must verify their own nonce and sanitize their own POST fields.
+			 *
+			 * @since 2.0.0
+			 * @param int     $post_id      Release post ID.
+			 * @param WP_Post $release_post Release post object.
+			 */
+			do_action( 'mds_rm_save_release_meta', $post_id, $release_post );
+		}
 
 		$sync_result = \MDS\ReleaseManager\Core\Sync::broadcast_to_spokes( $post_id, 'release' );
-		\MDS\ReleaseManager\Core\ReleaseModel::release_upc_lock( get_post_meta( $post_id, 'upc_ean', true ) );
 
 		\MDS\ReleaseManager\Core\Sync::purge_cache( 'post_save' );
 		if ( is_wp_error( $sync_result ) ) {
@@ -948,21 +979,20 @@ final class AdminInterface {
 		$detected_fa = \MDS\ReleaseManager\Frontend\Assets::detect_font_awesome_plugin();
 
 		$args = array(
-			'providers'                  => $global_providers,
-			'audio_players'              => $audio_players,
-			'active_players'             => $active_players,
-			'active_audio_player'        => $active_player,
-			'audio_player_settings'      => \MDS\ReleaseManager\Core\AudioPlayers::get_all_settings(),
-			'fa_sources'                 => $fa_sources,
-			'active_fa_source'           => \MDS\ReleaseManager\Frontend\Assets::sanitize_font_awesome_source( get_option( 'mds_rm_fa_support', 'auto' ) ),
-			'detected_fa_plugin'         => $detected_fa,
-			'cache_settings'             => \MDS\ReleaseManager\Core\Cache::get_settings(),
-			'detected_cache_adapters'    => \MDS\ReleaseManager\Core\Cache::detected_adapters(),
-			'audio_player_custom_fields' => apply_filters( 'mds_rm_settings_audio_fields', '' ),
-			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'default-templates', 'audio-player-manager', 'block-defaults', 'integrations' ) ),
-			'block_defaults'             => get_option( 'mds_rm_block_defaults', array() ),
-			'template_defaults'          => \MDS\ReleaseManager\Frontend\TemplateDefaults::get_all(),
-			'settings'                   => array(
+			'providers'               => $global_providers,
+			'audio_players'           => $audio_players,
+			'active_players'          => $active_players,
+			'active_audio_player'     => $active_player,
+			'audio_player_settings'   => \MDS\ReleaseManager\Core\AudioPlayers::get_all_settings(),
+			'fa_sources'              => $fa_sources,
+			'active_fa_source'        => \MDS\ReleaseManager\Frontend\Assets::sanitize_font_awesome_source( get_option( 'mds_rm_fa_support', 'auto' ) ),
+			'detected_fa_plugin'      => $detected_fa,
+			'cache_settings'          => \MDS\ReleaseManager\Core\Cache::get_settings(),
+			'detected_cache_adapters' => \MDS\ReleaseManager\Core\Cache::detected_adapters(),
+			'extension_tabs'          => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'default-templates', 'audio-player-manager', 'block-defaults', 'integrations' ) ),
+			'block_defaults'          => get_option( 'mds_rm_block_defaults', array() ),
+			'template_defaults'       => \MDS\ReleaseManager\Frontend\TemplateDefaults::get_all(),
+			'settings'                => array(
 				'global_redirect' => '1' === (string) get_option( 'mds_rm_global_redirect', '0' ),
 			),
 		);
@@ -982,7 +1012,14 @@ final class AdminInterface {
 	 * @return array Valid tab definitions.
 	 */
 	public static function extension_tabs( string $hook, array $reserved ): array {
-		$tabs = apply_filters( $hook, array() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Callers pass mds_rm_* hook names.
+		if ( 'mds_rm_site_settings_tabs' === $hook ) {
+			$tabs = apply_filters( 'mds_rm_site_settings_tabs', array() );
+		} elseif ( 'mds_rm_network_settings_tabs' === $hook ) {
+			$tabs = apply_filters( 'mds_rm_network_settings_tabs', array() );
+		} else {
+			\MDS\ReleaseManager\Core\Logger::report_failure( 'Unsupported settings tab hook: ' . $hook );
+			return array();
+		}
 		if ( ! is_array( $tabs ) ) {
 			\MDS\ReleaseManager\Core\Logger::report_failure( 'Invalid Release Manager settings tabs supplied to ' . $hook );
 			return array();

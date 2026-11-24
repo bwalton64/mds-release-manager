@@ -25,6 +25,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! defined( 'MDS_RM_VERSION' ) ) {
 	define( 'MDS_RM_VERSION', '1.0.0' );
 }
+if ( ! defined( 'MDS_RM_API_VERSION' ) ) {
+	define( 'MDS_RM_API_VERSION', '2.0.0' );
+}
 if ( ! defined( 'MDS_RM_FILE' ) ) {
 	define( 'MDS_RM_FILE', __FILE__ );
 }
@@ -51,8 +54,6 @@ $mds_rm_autoload = MDS_RM_PATH . 'vendor/autoload.php';
 if ( is_readable( $mds_rm_autoload ) ) {
 	require_once $mds_rm_autoload;
 }
-
-require_once MDS_RM_PATH . 'includes/legacy-class-aliases.php';
 
 if ( class_exists( \MDS\ReleaseManager\Plugin::class ) ) {
 	\MDS\ReleaseManager\Plugin::register_hooks();

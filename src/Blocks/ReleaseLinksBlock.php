@@ -81,11 +81,15 @@ final class ReleaseLinksBlock {
 	 * @return array Paginated results.
 	 */
 	public static function choices( WP_REST_Request $request ): array {
-		$found = \MDS\ReleaseManager\Core\ReleaseSearch::query( (string) $request['search'] );
-		$paged = \MDS\ReleaseManager\Core\ReleaseSearch::paginate( $found, (int) $request['page'] );
+		$result = \MDS\ReleaseManager\Core\ReleaseSearch::search_paginated(
+			array(
+				'search' => (string) $request['search'],
+				'page'   => (int) $request['page'],
+			)
+		);
 		return array(
-			'items' => \MDS\ReleaseManager\Core\ReleaseSearch::describe( $paged['posts'] ),
-			'pages' => $paged['pages'],
+			'items' => $result['items'],
+			'pages' => $result['pages'],
 		);
 	}
 

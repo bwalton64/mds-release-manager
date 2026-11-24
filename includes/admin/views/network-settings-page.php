@@ -64,10 +64,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</table>
 
 			<hr />
-            <?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The extension filter provides trusted settings markup. ?>
-			<?php echo $args['hooks_html']; ?>
-
-			<hr />
 			<h2><?php esc_html_e( 'Data Management', 'mds-release-manager' ); ?></h2>
 			<table class="form-table mds-admin-spaced-table">
 				<tr>
@@ -91,7 +87,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</div>
 	<?php foreach ( $args['extension_tabs'] as $slug => $tab ) : ?>
 		<div id="tab-<?php echo esc_attr( $slug ); ?>" class="mds-tab-pane">
-			<?php call_user_func( $tab['render'] ); ?>
+			<?php
+			try {
+				call_user_func( $tab['render'] );
+			} catch ( \Throwable $e ) {
+				\MDS\ReleaseManager\Core\Logger::report_failure(
+					sprintf( 'Network settings tab "%s" failed to render: %s', $slug, $e->getMessage() )
+				);
+				echo '<div class="notice notice-error inline"><p>' . esc_html__( 'This extension network settings tab encountered an error and could not be rendered. Check the error log for details.', 'mds-release-manager' ) . '</p></div>';
+			}
+			?>
 		</div>
 	<?php endforeach; ?>
 </div>

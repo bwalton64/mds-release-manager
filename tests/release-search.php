@@ -42,7 +42,7 @@ function get_the_title( $post ) {
 }
 
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../includes/legacy-class-aliases.php';
+use MDS\ReleaseManager\Core\ReleaseSearch;
 
 function check_search( $condition, $message ) {
 	if ( ! $condition ) {
@@ -70,19 +70,19 @@ $GLOBALS['meta'] = array(
 	71 => array( '_mds_artist_uuid' => 'uuid-b' ),
 );
 
-check_search( array( 94, 50, 92 ) === ids( MDS_RM_Release_Search::query( '' ) ), 'An empty term must return the catalog.' );
-check_search( array( 92 ) === ids( MDS_RM_Release_Search::query( 'What the' ) ), 'Title terms must match releases.' );
-check_search( array( 94, 92 ) === ids( MDS_RM_Release_Search::query( 'brian walton' ) ), 'Artist-name terms must match that Artist\'s releases case-insensitively.' );
-check_search( array( 92 ) === ids( MDS_RM_Release_Search::query( '198712394852' ) ), 'An all-digit term must match the exact UPC/EAN.' );
-check_search( array( 94 ) === ids( MDS_RM_Release_Search::query( '00123' ) ), 'Leading zeroes must stay significant in UPC/EAN matching.' );
-check_search( array() === ids( MDS_RM_Release_Search::query( '123' ) ), 'Digits without a UPC or text match must return nothing.' );
+check_search( array( 94, 50, 92 ) === ids( ReleaseSearch::query( '' ) ), 'An empty term must return the catalog.' );
+check_search( array( 92 ) === ids( ReleaseSearch::query( 'What the' ) ), 'Title terms must match releases.' );
+check_search( array( 94, 92 ) === ids( ReleaseSearch::query( 'brian walton' ) ), 'Artist-name terms must match that Artist\'s releases case-insensitively.' );
+check_search( array( 92 ) === ids( ReleaseSearch::query( '198712394852' ) ), 'An all-digit term must match the exact UPC/EAN.' );
+check_search( array( 94 ) === ids( ReleaseSearch::query( '00123' ) ), 'Leading zeroes must stay significant in UPC/EAN matching.' );
+check_search( array() === ids( ReleaseSearch::query( '123' ) ), 'Digits without a UPC or text match must return nothing.' );
 
-$page_one = MDS_RM_Release_Search::paginate( $GLOBALS['releases'], 1, 2 );
-$page_two = MDS_RM_Release_Search::paginate( $GLOBALS['releases'], 2, 2 );
+$page_one = ReleaseSearch::paginate( $GLOBALS['releases'], 1, 2 );
+$page_two = ReleaseSearch::paginate( $GLOBALS['releases'], 2, 2 );
 check_search( 2 === count( $page_one['posts'] ) && 2 === $page_one['pages'], 'Page one must hold the page size and total pages.' );
 check_search( array( 92 ) === ids( $page_two['posts'] ) && 2 === $page_two['pages'], 'Page two must hold the remainder.' );
 
-$described = MDS_RM_Release_Search::describe( array( $GLOBALS['releases'][2], $GLOBALS['releases'][1] ) );
+$described = ReleaseSearch::describe( array( $GLOBALS['releases'][2], $GLOBALS['releases'][1] ) );
 check_search(
 	array( 'id' => 92, 'title' => 'What the .... (Gold)', 'artist' => 'Brian Walton', 'upc' => '198712394852' ) === $described[0],
 	'Described records must resolve the Artist name and UPC.'
@@ -103,11 +103,11 @@ function apply_filters( $hook, $item, $post ) {
 }
 
 $GLOBALS['enable_picker_filter'] = true;
-$catalog                         = MDS_RM_Release_Search::editor_catalog();
+$catalog                         = ReleaseSearch::editor_catalog();
 check_search( false === $catalog['truncated'] && 3 === count( $catalog['items'] ), 'Editor catalog must include all non-truncated items.' );
 check_search( 'bc-94' === $catalog['items'][0]['bandcamp_album_id'] && 94 === $catalog['items'][0]['id'], 'Extension picker filter must enrich items without overwriting core identity keys.' );
 check_search( false === $catalog['artistsTruncated'] && 2 === count( $catalog['artists'] ), 'Editor catalog must include published Artists.' );
 check_search( 'https://artist-70.bandcamp.com' === $catalog['artists'][0]['artist_url'] && 70 === $catalog['artists'][0]['id'], 'Artist picker filter must enrich artists without overwriting core identity keys.' );
-check_search( array( 70 ) === ids( MDS_RM_Release_Search::query_artists( 'brian' ) ), 'Artist search must match Artist titles case-insensitively.' );
+check_search( array( 70 ) === ids( ReleaseSearch::query_artists( 'brian' ) ), 'Artist search must match Artist titles case-insensitively.' );
 
 echo "Release search checks passed.\n";

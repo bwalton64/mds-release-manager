@@ -84,7 +84,11 @@ final class NetworkAdmin {
 	 * @return array Template arguments.
 	 */
 	private static function get_settings_template_args( array $sites, int $master_hub_id ): array {
-		$spoke_site_ids = array_map( 'intval', (array) get_site_option( 'spoke_sites', array() ) );
+		$stored_spokes = get_site_option( 'mds_rm_spoke_sites', null );
+		if ( null === $stored_spokes ) {
+			$stored_spokes = get_site_option( 'spoke_sites', array() );
+		}
+		$spoke_site_ids = array_map( 'intval', (array) $stored_spokes );
 		$site_data      = array();
 
 		foreach ( $sites as $site ) {
@@ -105,7 +109,6 @@ final class NetworkAdmin {
 			'master_hub_id'     => $master_hub_id,
 			'spoke_site_ids'    => $spoke_site_ids,
 			'wipe_on_uninstall' => '1' === (string) get_site_option( 'mds_rm_wipe_on_uninstall', '0' ),
-			'hooks_html'        => apply_filters( 'mds_rm_network_settings_fields', '' ),
 			'extension_tabs'    => self::extension_tabs(),
 		);
 	}
@@ -192,7 +195,8 @@ final class NetworkAdmin {
 		check_admin_referer( 'mds_rm_save_network_settings' );
 
 		update_site_option( 'mds_rm_master_blog_id', $master_hub_id );
-		update_site_option( 'spoke_sites', $spoke_site_ids );
+		update_site_option( 'mds_rm_spoke_sites', $spoke_site_ids );
+		delete_site_option( 'spoke_sites' );
 		update_site_option(
 			'mds_rm_wipe_on_uninstall',
 			isset( $_POST['mds_rm_wipe_on_uninstall'] ) ? '1' : '0'

@@ -38,7 +38,8 @@ function get_theme_mod( $name, $default = false ) {
 }
 
 require MDS_RM_PATH . 'vendor/autoload.php';
-require MDS_RM_PATH . 'includes/legacy-class-aliases.php';
+use MDS\ReleaseManager\Frontend\Customizer;
+use MDS\ReleaseManager\Frontend\TemplateDefaults;
 
 function check_tpl( bool $condition, string $message ): void {
 	if ( ! $condition ) {
@@ -57,16 +58,16 @@ $GLOBALS['theme_mods'] = array(
 	'mds_rm_release_fallback_image_shadow'        => 'none',
 	'mds_rm_artist_fallback_image_radius'         => 10,
 );
-$release_css = MDS_RM_Template_Defaults::get_release_style_attribute();
-$artist_css  = MDS_RM_Template_Defaults::get_artist_style_attribute();
-check_tpl( 'stacked' === MDS_RM_Template_Defaults::get( 'release' )['layout'], 'Legacy layout theme_mod must be inherited.' );
+$release_css = TemplateDefaults::get_release_style_attribute();
+$artist_css  = TemplateDefaults::get_artist_style_attribute();
+check_tpl( 'stacked' === TemplateDefaults::get( 'release' )['layout'], 'Legacy layout theme_mod must be inherited.' );
 check_tpl( str_contains( $release_css, '--mds-fallback-content-color:rgba(12,34,56,0.5)' ), 'Release content color must retain alpha.' );
 check_tpl( str_contains( $release_css, '--mds-fallback-content-line-height:1.8' ), 'Release line height must convert to CSS number.' );
 check_tpl( str_contains( $release_css, '--mds-fallback-image-shadow:none' ), 'Release shadow none must emit CSS override.' );
 check_tpl( str_contains( $artist_css, '--mds-artist-image-radius:10%' ), 'Artist image radius must use percentages.' );
 
 // 2. Option overrides theme_mod and supports new settings.
-$GLOBALS['options'][ MDS_RM_Template_Defaults::OPTION_NAME ] = array(
+$GLOBALS['options'][ TemplateDefaults::OPTION_NAME ] = array(
 	'release' => array(
 		'layout'         => 'split',
 		'split_ratio'    => '35_65',
@@ -81,8 +82,8 @@ $GLOBALS['options'][ MDS_RM_Template_Defaults::OPTION_NAME ] = array(
 		'body_font_size'       => 18,
 	),
 );
-$release_css = MDS_RM_Customizer::get_release_fallback_style_attribute();
-$artist_css  = MDS_RM_Customizer::get_artist_fallback_style_attribute();
+$release_css = Customizer::get_release_fallback_style_attribute();
+$artist_css  = Customizer::get_artist_fallback_style_attribute();
 check_tpl( str_contains( $release_css, '--mds-fallback-split-columns:minmax(0, 1.85fr) minmax(0, 1fr)' ), 'Right-side 35/65 split must flip column tracks.' );
 check_tpl( str_contains( $release_css, '--mds-fallback-image-aspect:1/1' ), 'Release image aspect ratio must be emitted.' );
 check_tpl( str_contains( $release_css, '--mds-fallback-image-shadow:0 12px 28px rgba(0, 0, 0, .18)' ), 'Elevated shadow preset must map cleanly.' );
@@ -90,12 +91,12 @@ check_tpl( str_contains( $artist_css, '--mds-artist-contact-border:2px solid #33
 check_tpl( str_contains( $artist_css, '--mds-artist-body-font-size:18px' ), 'Artist biography font size must emit when > 0.' );
 
 // 3. Validation rejects unsafe or invalid payloads.
-check_tpl( is_wp_error( MDS_RM_Template_Defaults::validate( 'bad' ) ), 'Non-array payload must fail validation.' );
-check_tpl( is_wp_error( MDS_RM_Template_Defaults::validate( array( 'release' => array( 'content_color' => 'red;display:none' ), 'artist' => array() ) ) ), 'Unsafe CSS color must fail validation.' );
-check_tpl( is_wp_error( MDS_RM_Template_Defaults::validate( array( 'release' => array( 'layout' => 'diagonal' ), 'artist' => array() ) ) ), 'Invalid enum must fail validation.' );
-check_tpl( is_wp_error( MDS_RM_Template_Defaults::validate( array( 'release' => array( 'content_font_family' => 'Arial;color:red' ), 'artist' => array() ) ) ), 'Unsafe font family must fail validation.' );
+check_tpl( is_wp_error( TemplateDefaults::validate( 'bad' ) ), 'Non-array payload must fail validation.' );
+check_tpl( is_wp_error( TemplateDefaults::validate( array( 'release' => array( 'content_color' => 'red;display:none' ), 'artist' => array() ) ) ), 'Unsafe CSS color must fail validation.' );
+check_tpl( is_wp_error( TemplateDefaults::validate( array( 'release' => array( 'layout' => 'diagonal' ), 'artist' => array() ) ) ), 'Invalid enum must fail validation.' );
+check_tpl( is_wp_error( TemplateDefaults::validate( array( 'release' => array( 'content_font_family' => 'Arial;color:red' ), 'artist' => array() ) ) ), 'Unsafe font family must fail validation.' );
 
-$valid = MDS_RM_Template_Defaults::validate(
+$valid = TemplateDefaults::validate(
 	array(
 		'release' => array(
 			'layout'              => 'split',

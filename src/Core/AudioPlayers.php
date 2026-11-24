@@ -48,6 +48,24 @@ final class AudioPlayers {
 	private const FIELD_TYPES = array( 'select', 'color', 'toggle', 'range', 'number', 'text' );
 
 	/**
+	 * Per-request memoized player registry.
+	 *
+	 * @var array<string, array<string, mixed>>|null
+	 */
+	private static ?array $registered_cache = null;
+
+	/**
+	 * Clears the per-request player registry cache.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return void
+	 */
+	public static function reset_cache(): void {
+		self::$registered_cache = null;
+	}
+
+	/**
 	 * Returns all valid registered audio players, always including the core HTML5 player first.
 	 *
 	 * Extensions register players via the `mds_rm_register_audio_players` filter.
@@ -62,6 +80,10 @@ final class AudioPlayers {
 	 * }> Registered player definitions keyed by slug.
 	 */
 	public static function get_registered_players(): array {
+		$use_cache = function_exists( 'did_action' ) && did_action( 'init' ) > 0;
+		if ( $use_cache && null !== self::$registered_cache ) {
+			return self::$registered_cache;
+		}
 		$builtin = array(
 			self::DEFAULT_PLAYER => array(
 				'label'           => __( 'HTML5 Player (.mp3)', 'mds-release-manager' ),
@@ -121,6 +143,10 @@ final class AudioPlayers {
 				'render_callback' => $callback,
 				'fields'          => $fields,
 			);
+		}
+
+		if ( $use_cache ) {
+			self::$registered_cache = $valid;
 		}
 
 		return $valid;
@@ -347,35 +373,19 @@ final class AudioPlayers {
 		// 1. If a registered third-party player is selected as the active player, try it first.
 		if ( '' !== $active && self::DEFAULT_PLAYER !== $active && isset( $registered[ $active ] ) ) {
 			$settings = self::get_player_settings( $active );
-			$html     = call_user_func( $registered[ $active ]['render_callback'], $post_id, $settings, $attributes );
-			if ( is_string( $html ) && '' !== trim( $html ) ) {
-				return TemplateLoader::kses_shortcode_html( $html );
+			try {
+				$html = call_user_func( $registered[ $active ]['render_callback'], $post_id, $settings, $attributes );
+				if ( is_string( $html ) && '' !== trim( $html ) ) {
+					return TemplateLoader::kses_shortcode_html( $html );
+				}
+			} catch ( \Throwable $e ) {
+				Logger::report_failure(
+					sprintf( 'Audio player "%s" render callback failed for release %d: %s', $active, $post_id, $e->getMessage() )
+				);
 			}
 		}
 
-		// 2. Legacy filter bridge: invoked when a third-party player is active or when
-		// an older extension hooks `mds_rm_release_links_audio_html` without registering.
-		if ( count( $registered ) === 1 || ( '' !== $active && self::DEFAULT_PLAYER !== $active ) ) {
-			/**
-			 * Filters the audio player markup for the Release Links block.
-			 *
-			 * The first extension returning non-empty markup supplies the audio
-			 * player and skips the built-in HTML5 player. The result is
-			 * sanitized with the plugin's iframe-aware allowlist.
-			 *
-			 * @since 1.1.0
-			 *
-			 * @param string $html       Audio player markup. Default empty string.
-			 * @param int    $post_id    Release post ID.
-			 * @param array  $attributes Release Links block attributes.
-			 */
-			$extension_html = apply_filters( 'mds_rm_release_links_audio_html', '', $post_id, $attributes );
-			if ( is_string( $extension_html ) && '' !== trim( $extension_html ) ) {
-				return TemplateLoader::kses_shortcode_html( $extension_html );
-			}
-		}
-
-		// 3. Core HTML5 Player: renders when active or as the automatic fallback when a
+		// 2. Core HTML5 Player: renders when active or as the automatic fallback when a
 		// selected third-party player is not configured for this release.
 		if ( '' !== $active ) {
 			return self::render_html5( $post_id );

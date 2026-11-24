@@ -22,7 +22,8 @@ function sanitize_key( $value ) {
 }
 
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../includes/legacy-class-aliases.php';
+use MDS\ReleaseManager\Admin\AdminInterface;
+use MDS\ReleaseManager\Admin\NetworkAdmin;
 class_alias( 'MDS_RM_Logger', 'MDS\\ReleaseManager\\Core\\Logger' );
 
 $render = static function () {};
@@ -38,8 +39,8 @@ $GLOBALS['tabs'] = array(
 		'network' => array( 'label' => 'Collision', 'render' => $render ),
 	),
 );
-$site = MDS_RM_Admin_Interface::extension_tabs( 'mds_rm_site_settings_tabs', array( 'release-meta' ) );
-$network = MDS_RM_Network_Admin::extension_tabs();
+$site = AdminInterface::extension_tabs( 'mds_rm_site_settings_tabs', array( 'release-meta' ) );
+$network = NetworkAdmin::extension_tabs();
 if ( array( 'example' ) !== array_keys( $site ) || array( 'store' ) !== array_keys( $network ) || 4 !== count( MDS_RM_Logger::$failures ) ) {
 	throw new RuntimeException( 'Invalid or reserved extension tabs were not rejected.' );
 }

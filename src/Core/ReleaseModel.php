@@ -173,20 +173,71 @@ final class ReleaseModel {
 			}
 		}
 
-		if ( '1' !== get_option( self::MEDIA_FORMATS_SEEDED_OPTION, '0' ) && taxonomy_exists( 'release_media_format' ) ) {
+		if ( taxonomy_exists( 'release_media_format' ) && Sync::is_hub() ) {
+			$default_formats = array();
 			foreach ( self::DEFAULT_MEDIA_FORMATS as $label => $icon ) {
-				$existing = term_exists( $label, 'release_media_format' );
-				if ( ! $existing ) {
-					$existing = wp_insert_term( $label, 'release_media_format' );
-				}
-				if ( ! is_wp_error( $existing ) && $existing ) {
-					$term_id = is_array( $existing ) ? (int) $existing['term_id'] : (int) $existing;
-					if ( $term_id > 0 && '' === (string) get_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY, true ) ) {
-						update_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY, $icon );
+				$default_formats[ sanitize_title( $label ) ] = array(
+					'label' => $label,
+					'icon'  => $icon,
+				);
+			}
+
+			/**
+			 * Filters the default `release_media_format` terms seeded on the Hub.
+			 *
+			 * Extensions declare their required media formats here (e.g. `digital-download` or `all`)
+			 * instead of querying/inserting terms on every admin `init`. Core hashes the resolved map
+			 * and only writes terms when the registered set changes.
+			 *
+			 * @since 2.0.0
+			 * @param array<string, array{label: string, icon: string}> $formats Keyed by term slug.
+			 */
+			$filtered_formats = apply_filters( 'mds_rm_default_media_formats', $default_formats );
+			if ( is_array( $filtered_formats ) ) {
+				$normalized_formats = array();
+				foreach ( $filtered_formats as $slug => $entry ) {
+					$clean_slug = sanitize_title( (string) $slug );
+					if ( '' === $clean_slug || ! is_array( $entry ) ) {
+						continue;
 					}
+					$label = isset( $entry['label'] ) && is_string( $entry['label'] ) ? trim( $entry['label'] ) : '';
+					$icon  = isset( $entry['icon'] ) && is_string( $entry['icon'] ) ? trim( $entry['icon'] ) : '';
+					if ( '' === $label ) {
+						continue;
+					}
+					$normalized_formats[ $clean_slug ] = array(
+						'label' => $label,
+						'icon'  => $icon,
+					);
+				}
+				ksort( $normalized_formats );
+				$formats_hash = md5( (string) wp_json_encode( $normalized_formats ) );
+				if ( get_option( 'mds_rm_seeded_media_formats_hash', '' ) !== $formats_hash ) {
+					foreach ( $normalized_formats as $slug => $entry ) {
+						$existing = get_term_by( 'slug', $slug, 'release_media_format' );
+						$term_id  = 0;
+						if ( $existing && ! is_wp_error( $existing ) ) {
+							$term_id = (int) $existing->term_id;
+						} else {
+							$inserted = wp_insert_term(
+								$entry['label'],
+								'release_media_format',
+								array( 'slug' => $slug )
+							);
+							if ( ! is_wp_error( $inserted ) && ! empty( $inserted['term_id'] ) ) {
+								$term_id = (int) $inserted['term_id'];
+							} elseif ( is_wp_error( $inserted ) && 'term_exists' === $inserted->get_error_code() ) {
+								$term_id = (int) $inserted->get_error_data();
+							}
+						}
+						if ( $term_id > 0 && '' !== $entry['icon'] && '' === (string) get_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY, true ) ) {
+							update_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY, $entry['icon'] );
+						}
+					}
+					update_option( 'mds_rm_seeded_media_formats_hash', $formats_hash, false );
+					update_option( self::MEDIA_FORMATS_SEEDED_OPTION, '1', false );
 				}
 			}
-			update_option( self::MEDIA_FORMATS_SEEDED_OPTION, '1', false );
 		}
 	}
 

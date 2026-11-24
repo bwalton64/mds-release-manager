@@ -55,5 +55,17 @@ final class Plugin {
 		\MDS\ReleaseManager\Blocks\BlockDefaults::register_hooks();
 		\MDS\ReleaseManager\Api\VirtualMedia::register_hooks();
 		\MDS\ReleaseManager\Api\Abilities::register_hooks();
+
+		/**
+		 * Fires once MDS Release Manager core components are bootstrapped.
+		 *
+		 * Companion plugins should hook `mds_rm_loaded` (or check `MDS_RM_API_VERSION`)
+		 * to register their integration hooks safely after Core is initialized.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $api_version Core Extension API semantic version.
+		 */
+		do_action( 'mds_rm_loaded', defined( 'MDS_RM_API_VERSION' ) ? MDS_RM_API_VERSION : \MDS\ReleaseManager\Api\ExtensionApi::API_VERSION );
 	}
 }

@@ -158,12 +158,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<h2><?php esc_html_e( 'Audio Player Manager', 'mds-release-manager' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Select the active audio preview player displayed in the Release Links Block and [release-links] shortcode, and configure each registered player’s site-wide styling and options. When a third-party player is active, releases without third-party audio configured automatically fall back to the built-in HTML5 Player (.mp3).', 'mds-release-manager' ); ?></p>
 				<div id="mds-audio-player-manager"></div>
-				<?php if ( $args['audio_player_custom_fields'] ) : ?>
-					<table class="form-table">
-						<?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The extension filter provides trusted settings markup. ?>
-						<?php echo $args['audio_player_custom_fields']; ?>
-					</table>
-				<?php endif; ?>
 			</div>
 
 			<div class="mds-admin-save-actions">
@@ -174,7 +168,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</form>
 	<?php foreach ( $args['extension_tabs'] as $slug => $tab ) : ?>
 		<div id="tab-<?php echo esc_attr( $slug ); ?>" class="mds-tab-pane">
-			<?php call_user_func( $tab['render'] ); ?>
+			<?php
+			try {
+				call_user_func( $tab['render'] );
+			} catch ( \Throwable $e ) {
+				\MDS\ReleaseManager\Core\Logger::report_failure(
+					sprintf( 'Settings tab "%s" failed to render: %s', $slug, $e->getMessage() )
+				);
+				echo '<div class="notice notice-error inline"><p>' . esc_html__( 'This extension settings tab encountered an error and could not be rendered. Check the error log for details.', 'mds-release-manager' ) . '</p></div>';
+			}
+			?>
 		</div>
 	<?php endforeach; ?>
 </div>
