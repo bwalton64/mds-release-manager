@@ -401,13 +401,15 @@ final class CsvHandler {
 			}
 
 			static $broadcasted_artists = array();
+			if ( ! isset( $pending_sync_items ) ) {
+				$pending_sync_items = array();
+			}
 			if ( ! empty( $artist_post_id ) && ! isset( $broadcasted_artists[ $artist_post_id ] ) ) {
-				$artist_sync = \MDS\ReleaseManager\Core\Sync::broadcast_to_spokes( $artist_post_id, 'artist' );
-				if ( is_wp_error( $artist_sync ) ) {
-					/* translators: %1$d: CSV row number. %2$s: Error message. */
-					$errors[] = sprintf( __( 'Row %1$d: artist synchronization failed: %2$s', 'mds-release-manager' ), $row_number, $artist_sync->get_error_message() );
-				}
-				$broadcasted_artists[ $artist_post_id ] = true;
+				$pending_sync_items[ 'artist:' . $artist_post_id ] = array(
+					'id'        => (int) $artist_post_id,
+					'post_type' => 'artist',
+				);
+				$broadcasted_artists[ $artist_post_id ]            = true;
 			}
 
 			// 2. Collect Streaming Provider Links.
@@ -488,17 +490,37 @@ final class CsvHandler {
 				wp_set_post_terms( $release_post_id, array(), 'release_tag', false );
 			}
 
-			$release_sync = \MDS\ReleaseManager\Core\Sync::broadcast_to_spokes( $release_post_id, 'release' );
 			\MDS\ReleaseManager\Core\ReleaseModel::release_upc_lock( $upc );
-			if ( is_wp_error( $release_sync ) ) {
-				/* translators: %1$d: CSV row number. %2$s: Error message. */
-				$errors[] = sprintf( __( 'Row %1$d: release saved but synchronization failed: %2$s', 'mds-release-manager' ), $row_number, $release_sync->get_error_message() );
+			$pending_sync_items[ 'release:' . $release_post_id ] = array(
+				'id'        => (int) $release_post_id,
+				'post_type' => 'release',
+			);
+
+			if ( count( $pending_sync_items ) >= 25 ) {
+				$batch_results = \MDS\ReleaseManager\Core\Sync::broadcast_batch_to_spokes( array_values( $pending_sync_items ) );
+				foreach ( $batch_results as $sync_key => $sync_res ) {
+					if ( is_wp_error( $sync_res ) ) {
+						/* translators: %1$s: Record key. %2$s: Error message. */
+						$errors[] = sprintf( __( '%1$s saved but synchronization failed: %2$s', 'mds-release-manager' ), $sync_key, $sync_res->get_error_message() );
+					}
+				}
+				$pending_sync_items = array();
 			}
 
 			if ( $is_update ) {
 				++$updated;
 			} else {
 				++$imported;
+			}
+		}
+
+		if ( ! empty( $pending_sync_items ) ) {
+			$batch_results = \MDS\ReleaseManager\Core\Sync::broadcast_batch_to_spokes( array_values( $pending_sync_items ) );
+			foreach ( $batch_results as $sync_key => $sync_res ) {
+				if ( is_wp_error( $sync_res ) ) {
+					/* translators: %1$s: Record key. %2$s: Error message. */
+					$errors[] = sprintf( __( '%1$s saved but synchronization failed: %2$s', 'mds-release-manager' ), $sync_key, $sync_res->get_error_message() );
+				}
 			}
 		}
 

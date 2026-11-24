@@ -26,6 +26,11 @@ final class VirtualMedia {
 	 * @since 0.9.0
 	 */
 	public static function register_hooks(): void {
+		// Virtual attachments only exist on Spoke sites; skip runtime filters on the Hub.
+		if ( \MDS\ReleaseManager\Core\Sync::is_hub() ) {
+			return;
+		}
+
 		add_filter( 'wp_get_attachment_url', array( self::class, 'virtual_attachment_url' ), 10, 2 );
 		add_filter( 'image_downsize', array( self::class, 'virtual_image_downsize' ), 10, 2 );
 		add_filter( 'get_post_metadata', array( self::class, 'virtual_media_meta_fallback' ), 10, 3 );
@@ -163,7 +168,7 @@ final class VirtualMedia {
 		if ( '' !== $hub_media_id ) {
 			$by_key = get_posts(
 				array(
-					'post_type'              => 'any',
+					'post_type'              => 'attachment',
 					'post_status'            => 'any',
 					'meta_key'               => '_mds_hub_media_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Reuse virtual attachment by stable hub blog:attachment key.
 					'meta_value'             => $hub_media_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
@@ -182,7 +187,7 @@ final class VirtualMedia {
 			// Fall back to legacy URL lookup for previously synced virtual attachments.
 			$by_url = get_posts(
 				array(
-					'post_type'              => 'any',
+					'post_type'              => 'attachment',
 					'post_status'            => 'any',
 					'meta_key'               => '_mds_is_hub_media', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Reuse the virtual attachment identified by its stored hub URL.
 					'meta_value'             => $hub_image_url, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value

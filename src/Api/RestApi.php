@@ -195,6 +195,10 @@ final class RestApi {
 							return is_string( $value );
 						},
 					),
+					'mode'   => array(
+						'default'           => 'step',
+						'sanitize_callback' => 'sanitize_key',
+					),
 				),
 				'permission_callback' =>
 					/**
@@ -206,6 +210,18 @@ final class RestApi {
 					function () {
 						return current_user_can( 'manage_network_options' );
 					},
+			)
+		);
+
+		register_rest_route(
+			'mds/v1',
+			'/sync-network/status',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( self::class, 'sync_network_status_api' ),
+				'permission_callback' => static function (): bool {
+					return current_user_can( 'manage_network_options' );
+				},
 			)
 		);
 
@@ -533,8 +549,8 @@ final class RestApi {
 				}
 			}
 			if ( '' === $primary && ! empty( $clean_buy[0]['url'] ) ) {
-				$primary                   = $clean_buy[0]['url'];
-				$clean_buy[0]['primary']   = true;
+				$primary                 = $clean_buy[0]['url'];
+				$clean_buy[0]['primary'] = true;
 			}
 			$meta_overrides['buy_now_links'] = wp_json_encode( $clean_buy );
 			$meta_overrides['buy_now_link']  = $primary;
@@ -779,10 +795,25 @@ final class RestApi {
 	 * @return WP_REST_Response The response indicating whether network settings were saved.
 	 */
 	public static function save_network_settings_api( $request ): WP_REST_Response {
-		$params = $request->get_body_params();
+		$params        = $request->get_body_params();
+		$master_hub_id = isset( $params['mds_rm_master_blog_id'] )
+			? absint( $params['mds_rm_master_blog_id'] )
+			: (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() );
 
 		if ( isset( $params['mds_rm_master_blog_id'] ) ) {
-			update_site_option( 'mds_rm_master_blog_id', absint( $params['mds_rm_master_blog_id'] ) );
+			update_site_option( 'mds_rm_master_blog_id', $master_hub_id );
+		}
+
+		$raw_spokes = $params['mds_rm_spoke_sites'] ?? ( $params['spoke_sites'] ?? null );
+		if ( is_array( $raw_spokes ) ) {
+			$spoke_ids = array_values(
+				array_diff(
+					array_unique( array_filter( array_map( 'absint', $raw_spokes ) ) ),
+					array( $master_hub_id )
+				)
+			);
+			update_site_option( 'mds_rm_spoke_sites', $spoke_ids );
+			delete_site_option( 'spoke_sites' );
 		}
 
 		if ( isset( $params['mds_rm_wipe_on_uninstall'] ) ) {
@@ -795,7 +826,7 @@ final class RestApi {
 	}
 
 	/**
-	 * Synchronizes release and artist data across the network.
+	 * Synchronizes release and artist data across the network (interactive step or background queue).
 	 *
 	 * @since 0.9.0
 	 * @param WP_REST_Request $request The REST request.
@@ -803,12 +834,35 @@ final class RestApi {
 	 */
 	public static function sync_network_api( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$job_id = $request->get_param( 'job_id' );
-		$result = \MDS\ReleaseManager\Core\Sync::run_network_sync_batch( is_string( $job_id ) ? sanitize_text_field( $job_id ) : '' );
+		$clean  = is_string( $job_id ) ? sanitize_text_field( $job_id ) : '';
+		$mode   = sanitize_key( (string) ( $request->get_param( 'mode' ) ?? 'step' ) );
+
+		if ( 'async' === $mode ) {
+			$queued = \MDS\ReleaseManager\Core\Sync\SyncQueue::enqueue( $clean );
+			return rest_ensure_response(
+				array_merge(
+					\MDS\ReleaseManager\Core\Sync::get_network_sync_status(),
+					$queued
+				)
+			);
+		}
+
+		$result = \MDS\ReleaseManager\Core\Sync::run_network_sync_batch( $clean );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
 		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Returns current network synchronization progress for background UI polling.
+	 *
+	 * @since 2.1.0
+	 * @return WP_REST_Response Current sync status.
+	 */
+	public static function sync_network_status_api(): WP_REST_Response {
+		return rest_ensure_response( \MDS\ReleaseManager\Core\Sync::get_network_sync_status() );
 	}
 
 	/**

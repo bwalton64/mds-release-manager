@@ -78,28 +78,43 @@ final class Editor {
 	}
 
 	/**
-	 * Denies editing and deleting catalog items on spoke sites.
+	 * Taxonomies managed exclusively on the Hub (read-only on Spokes).
 	 *
-	 * Catalog items on spokes are read-only shadows that the hub overwrites
-	 * on every broadcast. Denying the meta capabilities removes the editing
-	 * UI (row actions, Quick Edit, bulk actions) and blocks REST writes, so
-	 * spoke-local changes can no longer drift from the hub.
+	 * @var string[]
+	 */
+	private const SPOKE_READONLY_TAXONOMIES = array( 'release_type', 'release_media_format', 'release_tag' );
+
+	/**
+	 * Denies editing and deleting catalog items and managed taxonomies on spoke sites.
+	 *
+	 * Catalog items and taxonomies on spokes are read-only shadows that the hub overwrites
+	 * on every broadcast. Denying the meta capabilities removes the editing UI and blocks
+	 * REST writes so spoke-local changes can no longer drift from the hub.
 	 *
 	 * @since 1.0.0
 	 * @param string[] $caps    Primitive capabilities required.
 	 * @param string   $cap     The meta capability being checked.
 	 * @param int      $user_id The user ID.
-	 * @param mixed[]  $args    Additional context, with the post ID first.
+	 * @param mixed[]  $args    Additional context, with the post/term ID first.
 	 * @return string[] The filtered primitive capabilities.
 	 */
 	public static function deny_editing_on_spokes( $caps, $cap, $user_id, $args ) {
-		if ( ! in_array( $cap, array( 'edit_post', 'delete_post', 'publish_post' ), true ) || \MDS\ReleaseManager\Core\Sync::is_hub() ) {
+		if ( \MDS\ReleaseManager\Core\Sync::is_hub() ) {
 			return $caps;
 		}
 
-		$post = isset( $args[0] ) ? get_post( $args[0] ) : null;
-		if ( $post && in_array( $post->post_type, self::POST_TYPES, true ) ) {
-			return array( 'do_not_allow' );
+		if ( in_array( $cap, array( 'edit_post', 'delete_post', 'publish_post' ), true ) ) {
+			$post = isset( $args[0] ) ? get_post( $args[0] ) : null;
+			if ( $post && in_array( $post->post_type, self::POST_TYPES, true ) ) {
+				return array( 'do_not_allow' );
+			}
+		}
+
+		if ( in_array( $cap, array( 'edit_term', 'delete_term', 'assign_term' ), true ) && isset( $args[0] ) ) {
+			$term = get_term( (int) $args[0] );
+			if ( $term && ! is_wp_error( $term ) && in_array( $term->taxonomy, self::SPOKE_READONLY_TAXONOMIES, true ) ) {
+				return array( 'do_not_allow' );
+			}
 		}
 
 		return $caps;
