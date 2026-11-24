@@ -72,11 +72,17 @@ final class MDS_RM_Sync {
 	}
 
 	/**
-	 * Purges the LiteSpeed cache when its purge hook is available.
+	 * Requests a cache purge through the centralized cache manager.
 	 *
 	 * @since 0.9.0
+	 * @param string               $context Trigger context ('general', 'post_save', 'settings', 'sync', 'manual').
+	 * @param array<string, mixed> $args    Optional purge arguments (`immediate`, `force`, `blog_id`).
 	 */
-	public static function purge_cache(): void {
+	public static function purge_cache( string $context = 'general', array $args = array() ): void {
+		if ( class_exists( 'MDS_RM_Cache' ) ) {
+			MDS_RM_Cache::purge( $context, $args );
+			return;
+		}
 		if ( defined( 'LSCWP_V' ) || has_action( 'litespeed_purge_all' ) ) {
 			do_action( 'litespeed_purge_all' );
 		}
@@ -414,9 +420,15 @@ final class MDS_RM_Sync {
 							$record_errors[ $entry['key'] ][] = $err;
 						}
 					}
+					if ( class_exists( 'MDS_RM_Cache' ) ) {
+						MDS_RM_Cache::queue_blog( (int) $spoke_id );
+					}
 				} finally {
 					restore_current_blog();
 				}
+			}
+			if ( class_exists( 'MDS_RM_Cache' ) ) {
+				MDS_RM_Cache::queue_blog( $master_hub_id );
 			}
 		} finally {
 			$is_broadcasting = false;

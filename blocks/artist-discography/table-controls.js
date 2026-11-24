@@ -37,6 +37,8 @@
 					value: value[key] || '',
 					options: [{ label: __('Theme / default', 'mds-release-manager'), value: '' }, ...options],
 					onChange: (setting) => update({ [key]: setting }),
+					__next40pxDefaultSize: true,
+					__nextHasNoMarginBottom: true,
 				}),
 				showSiteDefault && siteDefault(key)
 			);
@@ -60,6 +62,8 @@
 					allowReset: true,
 					value: value[key] !== undefined && value[key] !== null && !String(value[key]).startsWith('var(') ? parseFloat(value[key]) : undefined,
 					onChange: (setting) => update({ [key]: setting === undefined ? undefined : `${setting}${unit}` }),
+					__next40pxDefaultSize: true,
+					__nextHasNoMarginBottom: true,
 				}),
 				siteDefault(key)
 			);
@@ -118,6 +122,8 @@
 					label: sprintf(__('%s (Theme Preset)', 'mds-release-manager'), label),
 					value: uniformPreset,
 					options: [{ label: __('Custom / theme default', 'mds-release-manager'), value: '' }, ...presets],
+					__next40pxDefaultSize: true,
+					__nextHasNoMarginBottom: true,
 					onChange: (setting) => {
 						const patch = Object.fromEntries(sides.map((side) => [`${prefix}-${side}`, setting || undefined]));
 						update(patch);
@@ -127,6 +133,7 @@
 					label,
 					values: sideValues,
 					inputProps: { min: 0 },
+					__next40pxDefaultSize: true,
 					onChange: (settings) => update(Object.fromEntries(sides.filter((side) =>
 						(settings?.[side] || '') !== (value[`${prefix}-${side}`] || '')
 					).map((side) => [`${prefix}-${side}`, settings?.[side]]))),

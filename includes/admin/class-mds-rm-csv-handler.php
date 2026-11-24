@@ -499,7 +499,7 @@ final class MDS_RM_CSV_Handler {
 		if ( ! $headers ) {
 			self::csv_redirect_with_message( 'mds_csv_missing_header', __( 'The CSV must include UPC/EAN and Release Format columns.', 'mds-release-manager' ), 'error' );
 		}
-		MDS_RM_Sync::purge_cache();
+		MDS_RM_Sync::purge_cache( 'csv_import' );
 		self::csv_redirect_with_message(
 			'mds_csv_import_complete',
 			sprintf( 'CSV import complete: %1$d created, %2$d updated.', $imported, $updated ) . ( $errors ? ' ' . implode( ' ', $errors ) : '' ),

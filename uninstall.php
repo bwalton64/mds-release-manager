@@ -46,6 +46,7 @@ $options = array(
 	'mds_rm_global_redirect',
 	'mds_rm_block_defaults',
 	'mds_rm_template_defaults',
+	'mds_rm_cache_settings',
 	'mds_rm_artist_image_cleanup_complete',
 );
 

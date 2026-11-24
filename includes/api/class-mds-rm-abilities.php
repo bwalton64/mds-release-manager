@@ -455,7 +455,7 @@ final class MDS_RM_Abilities {
 				update_option( 'mds_rm_fa_support', MDS_RM_Assets::sanitize_font_awesome_source( wp_unslash( $input['fa_support'] ) ) );
 			}
 
-			MDS_RM_Sync::purge_cache();
+			MDS_RM_Sync::purge_cache( 'settings' );
 
 			return array(
 				'success' => true,

@@ -720,10 +720,9 @@ add_filter( 'mds_rm_site_settings_tabs', function( array $tabs ): array {
 For network settings, use `mds_rm_network_settings_tabs` with the same
 slug/label/render structure. Tab callbacks are rendered outside the core
 settings forms and must handle their own capability checks, nonces, validation,
-and saving. Site extension tabs appear after the five pinned core tabs. The core
-slugs `general-settings`, `audio-player-manager`, `release-meta-block`, `release-links-block`, and
-`artist-discography-block`, plus their legacy aliases `integrations`,
-`release-meta`, `release-links`, `artist-discography`, and `shortcode`, are reserved.
+and saving. Site extension tabs appear after the four pinned core tabs. The core
+slugs `general-settings`, `default-templates`, `audio-player-manager`, and
+`block-defaults`, plus the legacy alias `integrations`, are reserved.
 Existing `mds_rm_settings_audio_fields`, `mds_rm_release_links_audio_html`, and
 `mds_rm_network_settings_fields` filters remain available.
 

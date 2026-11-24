@@ -41,6 +41,36 @@ jQuery(document).ready(function($) {
 
     
 
+    // Manual Purge Cache Now Handler
+    $('#mds-purge-cache-now-btn').on('click', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var $status = $('#mds-purge-cache-status');
+        var originalText = $btn.text();
+        $btn.prop('disabled', true).text('Purging...');
+        $status.text('').hide();
+
+        var purgeUrl = mds_rm_data.rest_url.replace('/settings', '/purge-cache');
+        $.ajax({
+            url: purgeUrl,
+            method: 'POST',
+            beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', mds_rm_data.nonce); },
+            success: function(res) {
+                $btn.prop('disabled', false).text(originalText);
+                var msg = res && res.message ? res.message : 'Cache purge completed.';
+                $status.css('color', '#007017').text(msg).fadeIn();
+                if (window.wp && window.wp.a11y && typeof window.wp.a11y.speak === 'function') {
+                    window.wp.a11y.speak(msg, 'polite');
+                }
+            },
+            error: function(xhr) {
+                $btn.prop('disabled', false).text(originalText);
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Failed to purge cache.';
+                $status.css('color', '#d63638').text(msg).fadeIn();
+            }
+        });
+    });
+
     // Manual Sync Handler
     $('#mds-run-manual-sync-btn').on('click', function(e) {
         e.preventDefault();

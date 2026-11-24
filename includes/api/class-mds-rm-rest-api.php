@@ -116,6 +116,18 @@ final class MDS_RM_REST_API {
 
 		register_rest_route(
 			'mds/v1',
+			'/purge-cache',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( self::class, 'purge_cache_api' ),
+				'permission_callback' => static function () {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+
+		register_rest_route(
+			'mds/v1',
 			'/network-settings',
 			array(
 				'methods'             => 'POST',
@@ -317,6 +329,24 @@ final class MDS_RM_REST_API {
 			$audio_player_settings = $validated_audio_settings;
 		}
 
+		$cache_settings = null;
+		if ( isset( $params['mds_rm_cache_present'] ) || isset( $params['mds_rm_cache_plugins'] ) || isset( $params['mds_rm_cache_purge_on_post_save'] ) ) {
+			$existing_cache = class_exists( 'MDS_RM_Cache' ) ? MDS_RM_Cache::get_settings() : array( 'plugins' => array() );
+			$raw_plugins    = isset( $params['mds_rm_cache_plugins'] ) && is_array( $params['mds_rm_cache_plugins'] )
+				? array_merge( $existing_cache['plugins'] ?? array(), wp_unslash( $params['mds_rm_cache_plugins'] ) )
+				: ( $existing_cache['plugins'] ?? array() );
+			$validated_cache = MDS_RM_Cache::validate_settings(
+				array(
+					'purge_on_post_save' => ! empty( $params['mds_rm_cache_purge_on_post_save'] ),
+					'plugins'            => $raw_plugins,
+				)
+			);
+			if ( is_wp_error( $validated_cache ) ) {
+				return $validated_cache;
+			}
+			$cache_settings = $validated_cache;
+		}
+
 		if ( isset( $params['mds_rm_providers'] ) ) {
 			$providers = array();
 			$names  = isset( $params['mds_rm_providers']['name'] ) ? (array) $params['mds_rm_providers']['name'] : array();
@@ -362,6 +392,10 @@ final class MDS_RM_REST_API {
 			update_option( MDS_RM_Template_Defaults::OPTION_NAME, $template_defaults );
 		}
 
+		if ( null !== $cache_settings ) {
+			update_option( MDS_RM_Cache::OPTION_NAME, $cache_settings );
+		}
+
 		if ( function_exists( 'do_action' ) ) {
 			/**
 			 * Fires after Audio Player Manager settings are saved.
@@ -374,9 +408,44 @@ final class MDS_RM_REST_API {
 			do_action( 'mds_rm_save_audio_player_settings', $players[0] ?? '', $audio_player_settings ?? array(), $params );
 		}
 
-		MDS_RM_Sync::purge_cache();
+		MDS_RM_Sync::purge_cache( 'settings' );
 
 		return rest_ensure_response( array( 'success' => true ) );
+	}
+
+	/**
+	 * Immediately executes the configured cache purge strategy for testing/manual clearing.
+	 *
+	 * @since 1.1.0
+	 * @return WP_REST_Response
+	 */
+	public static function purge_cache_api(): WP_REST_Response {
+		$result = MDS_RM_Cache::purge(
+			'manual',
+			array(
+				'immediate' => true,
+				'force'     => true,
+			)
+		);
+
+		if ( ! empty( $result['purged'] ) ) {
+			$message = sprintf(
+				/* translators: %s: Comma-separated list of purged cache plugins. */
+				__( 'Cache purged: %s.', 'mds-release-manager' ),
+				implode( ', ', $result['purged'] )
+			);
+		} else {
+			$message = __( 'No active cache plugin was purged (none detected or all set to Disabled).', 'mds-release-manager' );
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'purged'  => $result['purged'],
+				'skipped' => $result['skipped'],
+				'message' => $message,
+			)
+		);
 	}
 
 	/**

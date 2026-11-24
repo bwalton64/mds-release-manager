@@ -45,6 +45,7 @@ spl_autoload_register(
 			'MDS_RM_RELEASE_MODEL'              => 'core/class-mds-rm-release-model.php',
 			'MDS_RM_BUILDER_DETECTION'          => 'core/class-mds-rm-builder-detection.php',
 			'MDS_RM_LOGGER'                     => 'core/class-mds-rm-logger.php',
+			'MDS_RM_CACHE'                      => 'core/class-mds-rm-cache.php',
 			'MDS_RM_SYNC'                       => 'core/class-mds-rm-sync.php',
 			'MDS_RM_PROVIDERS'                  => 'core/class-mds-rm-providers.php',
 			'MDS_RM_AUDIO_PLAYERS'              => 'core/class-mds-rm-audio-players.php',

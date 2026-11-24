@@ -94,6 +94,8 @@
 					onToggleEnabled && el('div', { className: 'mds-repeater-card__toggle' },
 						el(ToggleControl, {
 							label: __('Show', 'mds-release-manager'),
+							// translators: %s: Item name.
+							'aria-label': sprintf(__('Show %s', 'mds-release-manager'), title),
 							checked: Boolean(enabled),
 							onChange: onToggleEnabled,
 							__nextHasNoMarginBottom: true,
@@ -183,6 +185,8 @@
 					options: [{ label: inherited, value: '' }, ...options],
 					value: options.some((option) => option.value === value[key]) ? value[key] : '',
 					onChange: (setting) => update(key, setting),
+					__next40pxDefaultSize: true,
+					__nextHasNoMarginBottom: true,
 				}),
 				showSiteDefault && siteDefault(key)
 			);
@@ -200,6 +204,8 @@
 					allowReset: true,
 					value: matches ? parseFloat(current) : undefined,
 					onChange: (setting) => update(key, setting === undefined ? undefined : `${setting}${unit}`),
+					__next40pxDefaultSize: true,
+					__nextHasNoMarginBottom: true,
 				}),
 				showSiteDefault && siteDefault(key)
 			);
@@ -224,6 +230,7 @@
 				customSpacing !== false && el(BoxControl, {
 					label,
 					values,
+					__next40pxDefaultSize: true,
 					onChange: (next) => {
 						const overrides = own[key] && typeof own[key] === 'object' ? { ...own[key] }
 							: own[key] ? Object.fromEntries(sides.map((side) => [side, own[key]])) : {};

@@ -226,6 +226,10 @@ final class MDS_RM_Release_Model {
 		} else {
 			delete_term_meta( $term_id, self::MEDIA_FORMAT_ICON_META_KEY );
 		}
+
+		if ( class_exists( 'MDS_RM_Cache' ) ) {
+			MDS_RM_Cache::purge( 'media_format' );
+		}
 	}
 
 	/**
@@ -1055,7 +1059,7 @@ final class MDS_RM_Release_Model {
 		if ( is_wp_error( $result ) ) {
 			self::$rest_sync_errors[ spl_object_id( $request ) ] = $result;
 		}
-		MDS_RM_Sync::purge_cache();
+		MDS_RM_Sync::purge_cache( 'post_save' );
 		self::release_upc_lock( get_post_meta( $post->ID, 'upc_ean', true ) );
 	}
 

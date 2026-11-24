@@ -27,6 +27,7 @@ final class MDS_RM_Plugin {
 	/** Registers the hooks for each plugin component. */
 	public static function init(): void {
 		MDS_RM_Assets::register_hooks();
+		MDS_RM_Cache::register_hooks();
 		MDS_RM_Post_Types::register_hooks();
 		MDS_RM_Release_Model::register_hooks();
 		MDS_RM_Admin_Interface::register_hooks();

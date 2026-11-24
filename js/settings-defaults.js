@@ -1,7 +1,7 @@
 (function (wp) {
 	const { createElement: el, Fragment, useState } = wp.element;
 	const { BlockEditorProvider, useSettings } = wp.blockEditor;
-	const { BoxControl, Button, Notice, PanelBody, RangeControl, SelectControl, TextControl, ToggleControl } = wp.components;
+	const { BoxControl, Button, Notice, PanelBody, RangeControl, SelectControl, TabPanel, TextControl, ToggleControl } = wp.components;
 	const { __, sprintf } = wp.i18n;
 	const config = window.mdsRmDefaultsSettings;
 	const input = document.getElementById('mds-rm-block-defaults');
@@ -53,6 +53,8 @@
 					value: options.some((option) => option.value === current) ? current : '',
 					options: [{ label: __('Theme / default', 'mds-release-manager'), value: '' }, ...options],
 					onChange: (setting) => set(path, setting),
+					__next40pxDefaultSize: true,
+					__nextHasNoMarginBottom: true,
 				})
 			);
 		}
@@ -81,6 +83,8 @@
 					allowReset: true,
 					value: typeof current === 'string' && !current.startsWith('var(') ? parseFloat(current) : undefined,
 					onChange: (setting) => set(path, setting === undefined ? undefined : `${setting}${unit}`),
+					__next40pxDefaultSize: true,
+					__nextHasNoMarginBottom: true,
 				})
 			);
 		}
@@ -97,6 +101,7 @@
 					label,
 					values,
 					onChange: (next) => set(path, Object.fromEntries(sides.filter((side) => next?.[side]).map((side) => [side, next[side]]))),
+					__next40pxDefaultSize: true,
 				})
 			);
 		}
@@ -191,6 +196,8 @@
 								label: __('Choose Icon Preset', 'mds-release-manager'),
 								value: '',
 								options: ICON_PRESETS,
+								__next40pxDefaultSize: true,
+								__nextHasNoMarginBottom: true,
 								onChange: (preset) => {
 									if (preset) update(index, { icon: preset === '__none' ? '' : preset });
 								},
@@ -199,6 +206,8 @@
 								label: __('Icon CSS Classes', 'mds-release-manager'),
 								help: __('Use Dashicons (dashicons dashicons-album) or Font Awesome (fas fa-calendar). Leave blank for no icon.', 'mds-release-manager'),
 								value: item.icon || '',
+								__next40pxDefaultSize: true,
+								__nextHasNoMarginBottom: true,
 								onChange: (icon) => update(index, { icon }),
 							})
 						),
@@ -206,6 +215,8 @@
 							label: __('Field Tooltip Label', 'mds-release-manager'),
 							help: __('Changes the hover text and accessible description for this field, not the displayed metadata value.', 'mds-release-manager'),
 							value: item.title || '',
+							__next40pxDefaultSize: true,
+							__nextHasNoMarginBottom: true,
 							onChange: (title) => update(index, { title }),
 						})
 					);
@@ -284,6 +295,8 @@
 								label: __('Choose Icon Preset', 'mds-release-manager'),
 								value: '',
 								options: ICON_PRESETS,
+								__next40pxDefaultSize: true,
+								__nextHasNoMarginBottom: true,
 								onChange: (preset) => {
 									if (!preset) return;
 									const nextIcon = preset === '__none' ? '' : preset;
@@ -296,12 +309,16 @@
 									label: __('Provider Icon CSS Classes', 'mds-release-manager'),
 									help: __('Used across the release editor, shortcodes, Elementor, and blocks unless overridden.', 'mds-release-manager'),
 									value: provider.icon || '',
+									__next40pxDefaultSize: true,
+									__nextHasNoMarginBottom: true,
 									onChange: (icon) => updateProvider(providerIndex, { icon }),
 								})
 								: el(TextControl, {
 									label: __('Block Icon CSS Classes', 'mds-release-manager'),
 									help: __('Changes the icon for this link in blocks.', 'mds-release-manager'),
 									value: item.icon || '',
+									__next40pxDefaultSize: true,
+									__nextHasNoMarginBottom: true,
 									onChange: (icon) => updateItem(index, { icon }),
 								})
 						),
@@ -325,6 +342,8 @@
 							label: __('Accessible Label & Tooltip', 'mds-release-manager'),
 							help: __('Changes the hover text and screen-reader label in blocks, not the destination URL.', 'mds-release-manager'),
 							value: item.title || '',
+							__next40pxDefaultSize: true,
+							__nextHasNoMarginBottom: true,
 							onChange: (title) => updateItem(index, { title }),
 						}),
 						provider && el('div', { className: 'mds-reset-row' },
@@ -349,6 +368,8 @@
 				el(TextControl, {
 					label: __('Provider Name', 'mds-release-manager'),
 					value: newName,
+					__next40pxDefaultSize: true,
+					__nextHasNoMarginBottom: true,
 					onChange: setNewName,
 					help: invalidName
 						? __('Enter a unique provider name without markup or encoded characters (maximum 200 characters).', 'mds-release-manager')
@@ -433,18 +454,22 @@
 						label: __('Open Links in a New Tab', 'mds-release-manager'),
 						help: __('Adds target="_blank" and rel="noopener noreferrer" to streaming and Buy Now links.', 'mds-release-manager'),
 						checked: value.newTab !== false,
+						__nextHasNoMarginBottom: true,
 						onChange: (newTab) => change({ newTab }),
 					}),
 					el(ToggleControl, {
 						label: __('Show Audio Preview Player', 'mds-release-manager'),
 						help: __('Displays the active audio preview player whenever the Release has audio configured.', 'mds-release-manager'),
 						checked: value.showAudio !== false,
+						__nextHasNoMarginBottom: true,
 						onChange: (showAudio) => change({ showAudio }),
 					}),
 					el(SelectControl, {
 						label: __('Multi-Format Buy Now Behavior', 'mds-release-manager'),
 						help: __('When a release has multiple Media Formats and no WooCommerce White-Label override is active, choose whether clicking Buy Now opens a format picker modal or links directly to the Primary format.', 'mds-release-manager'),
 						value: value.buyNowMode || 'picker',
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
 						options: [
 							{ label: __('Choose Format Modal (Recommended)', 'mds-release-manager'), value: 'picker' },
 							{ label: __('Primary Direct Link', 'mds-release-manager'), value: 'direct' },
@@ -466,13 +491,28 @@
 		);
 	}
 
-	['release-meta', 'release-links', 'artist-discography'].forEach((slug) => {
-		const target = document.getElementById(`mds-defaults-${slug}`);
-		if (!target) return;
-		const element = el(Defaults, { slug });
-		if (wp.element.createRoot) wp.element.createRoot(target).render(element);
-		else wp.element.render(element, target);
-	});
+	function BlockDefaultsTabs() {
+		const tabs = [
+			{ name: 'release-meta', title: __('Release Meta', 'mds-release-manager') },
+			{ name: 'release-links', title: __('Release Links', 'mds-release-manager') },
+			{ name: 'artist-discography', title: __('Artist Discography', 'mds-release-manager') },
+		];
+		return el(TabPanel, {
+			className: 'mds-block-defaults-tabs',
+			activeClass: 'is-active',
+			tabs,
+		}, (tab) => el('div', {
+			className: 'mds-block-defaults-tab-content',
+			'data-block-tab': tab.name,
+		}, el(Defaults, { key: tab.name, slug: tab.name })));
+	}
+
+	const blockDefaultsTarget = document.getElementById('mds-block-defaults-root');
+	if (blockDefaultsTarget) {
+		const element = el(BlockDefaultsTabs);
+		if (wp.element.createRoot) wp.element.createRoot(blockDefaultsTarget).render(element);
+		else wp.element.render(element, blockDefaultsTarget);
+	}
 
 	function AudioPlayerFields({ player, values, onChange }) {
 		const [palette, customColor] = useSettings('color.palette', 'color.custom');
@@ -665,7 +705,7 @@
 							)
 						)
 						: el('p', { className: 'mds-style-field__help' },
-							__('This player uses the release’s Audio Preview URL (.mp3) and requires no additional player parameters. To resize the audio slot width inside the Release Links block, use Audio Player Sizing under the Release Links Block tab.', 'mds-release-manager')
+							__('This player uses the release’s Audio Preview URL (.mp3) and requires no additional player parameters. To resize the audio slot width inside the Release Links block, use Audio Player Sizing under Block Defaults → Release Links.', 'mds-release-manager')
 						)
 				);
 			})

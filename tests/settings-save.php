@@ -57,6 +57,7 @@ function esc_attr( $value ) { return (string) $value; }
 function rest_ensure_response( $value ) { return new WP_REST_Response( $value ); }
 
 require __DIR__ . '/../includes/core/class-mds-rm-audio-players.php';
+require __DIR__ . '/../includes/core/class-mds-rm-cache.php';
 require __DIR__ . '/../includes/blocks/class-mds-rm-block-defaults.php';
 require __DIR__ . '/../includes/frontend/class-mds-rm-template-defaults.php';
 require __DIR__ . '/../includes/frontend/class-mds-rm-assets.php';

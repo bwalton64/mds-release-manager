@@ -550,7 +550,7 @@ final class MDS_RM_Admin_Interface {
 				&& current_user_can( 'edit_post', $post_id )
 			) {
 				MDS_RM_Sync::broadcast_to_spokes( $post_id, 'artist' );
-				MDS_RM_Sync::purge_cache();
+				MDS_RM_Sync::purge_cache( 'post_save' );
 			}
 			return;
 		}
@@ -599,7 +599,7 @@ final class MDS_RM_Admin_Interface {
 
 		$sync_result = MDS_RM_Sync::broadcast_to_spokes( $post_id, 'artist' );
 
-		MDS_RM_Sync::purge_cache();
+		MDS_RM_Sync::purge_cache( 'post_save' );
 		if ( is_wp_error( $sync_result ) ) {
 			wp_die(
 				esc_html(
@@ -639,7 +639,7 @@ final class MDS_RM_Admin_Interface {
 				&& current_user_can( 'edit_post', $post_id )
 			) {
 				MDS_RM_Sync::broadcast_to_spokes( $post_id, 'release' );
-				MDS_RM_Sync::purge_cache();
+				MDS_RM_Sync::purge_cache( 'post_save' );
 			}
 			return;
 		}
@@ -777,7 +777,7 @@ final class MDS_RM_Admin_Interface {
 		$sync_result = MDS_RM_Sync::broadcast_to_spokes( $post_id, 'release' );
 		MDS_RM_Release_Model::release_upc_lock( get_post_meta( $post_id, 'upc_ean', true ) );
 
-		MDS_RM_Sync::purge_cache();
+		MDS_RM_Sync::purge_cache( 'post_save' );
 		if ( is_wp_error( $sync_result ) ) {
 			wp_die(
 				esc_html(
@@ -851,8 +851,10 @@ final class MDS_RM_Admin_Interface {
 			'fa_sources'                 => $fa_sources,
 			'active_fa_source'           => MDS_RM_Assets::sanitize_font_awesome_source( get_option( 'mds_rm_fa_support', 'auto' ) ),
 			'detected_fa_plugin'         => $detected_fa,
+			'cache_settings'             => MDS_RM_Cache::get_settings(),
+			'detected_cache_adapters'    => MDS_RM_Cache::detected_adapters(),
 			'audio_player_custom_fields' => apply_filters( 'mds_rm_settings_audio_fields', '' ),
-			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'default-templates', 'audio-player-manager', 'release-meta-block', 'release-links-block', 'artist-discography-block', 'release-meta', 'release-links', 'artist-discography', 'integrations', 'shortcode' ) ),
+			'extension_tabs'             => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'default-templates', 'audio-player-manager', 'block-defaults', 'integrations' ) ),
 			'block_defaults'             => get_option( 'mds_rm_block_defaults', array() ),
 			'template_defaults'          => MDS_RM_Template_Defaults::get_all(),
 			'settings'                   => array(
