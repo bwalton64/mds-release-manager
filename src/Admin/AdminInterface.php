@@ -253,15 +253,11 @@ final class AdminInterface {
 	 */
 	public static function add_meta_boxes( string $post_type, WP_Post $post ): void {
 		if ( 'release' === $post_type ) {
-			add_meta_box( 'mds_release_identity', __( 'Release Identity', 'mds-release-manager' ), array( self::class, 'render_release_identity_box' ), 'release', 'normal', 'high' );
-			add_meta_box( 'mds_release_details', __( 'Release Details', 'mds-release-manager' ), array( self::class, 'render_release_details_box' ), 'release', 'normal' );
-			add_meta_box( 'mds_release_streaming', __( 'Streaming & Audio', 'mds-release-manager' ), array( self::class, 'render_release_streaming_box' ), 'release', 'normal' );
-			add_meta_box( 'mds_release_commerce', __( 'Commerce', 'mds-release-manager' ), array( self::class, 'render_release_commerce_box' ), 'release', 'normal' );
+			add_meta_box( 'mds_release_identity', __( 'Release Manager', 'mds-release-manager' ), array( self::class, 'render_release_workspace_box' ), 'release', 'normal', 'high' );
 		}
 
 		if ( 'artist' === $post_type ) {
-			add_meta_box( 'mds_artist_settings', __( 'Artist Profile', 'mds-release-manager' ), array( self::class, 'render_artist_settings_box' ), 'artist', 'normal', 'high' );
-			add_meta_box( 'mds_artist_release_routing', __( 'Release Routing', 'mds-release-manager' ), array( self::class, 'render_artist_release_routing_box' ), 'artist', 'normal', 'default' );
+			add_meta_box( 'mds_artist_settings', __( 'Artist Manager', 'mds-release-manager' ), array( self::class, 'render_artist_settings_box' ), 'artist', 'normal', 'high' );
 		}
 
 		/**
@@ -272,13 +268,13 @@ final class AdminInterface {
 	}
 
 	/**
-	 * Renders the Artist Release Routing table meta box.
+	 * Returns serialized client payload for the native React Artist Editor.
 	 *
 	 * @since 1.1.0
 	 * @param WP_Post $post Artist post object.
-	 * @return void
+	 * @return array<string, mixed>
 	 */
-	public static function render_artist_release_routing_box( WP_Post $post ): void {
+	public static function get_artist_editor_client_data( WP_Post $post ): array {
 		$uuid     = (string) get_post_meta( $post->ID, '_mds_artist_uuid', true );
 		$releases = array();
 
@@ -300,32 +296,53 @@ final class AdminInterface {
 			foreach ( $release_posts as $release ) {
 				$own_mode   = \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( get_post_meta( $release->ID, 'release_routing_mode', true ) );
 				$custom_url = (string) get_post_meta( $release->ID, 'release_routing_url', true );
+				$thumb_url  = (string) get_the_post_thumbnail_url( $release->ID, 'thumbnail' );
 				$releases[] = array(
-					'id'         => $release->ID,
+					'id'         => (int) $release->ID,
 					'title'      => get_the_title( $release ) ? get_the_title( $release ) : __( '(no title)', 'mds-release-manager' ),
-					'edit_url'   => (string) get_edit_post_link( $release->ID, 'raw' ),
+					'editUrl'    => (string) get_edit_post_link( $release->ID, 'raw' ),
 					'upc'        => (string) get_post_meta( $release->ID, 'upc_ean', true ),
-					'thumb'      => get_the_post_thumbnail( $release->ID, array( 40, 40 ) ),
-					'own_mode'   => $own_mode,
-					'custom_url' => $custom_url,
+					'thumbUrl'   => $thumb_url,
+					'ownMode'    => $own_mode,
+					'customUrl'  => $custom_url,
 					'preview'    => \MDS\ReleaseManager\Frontend\ArtistRouting::describe_release_destination( $release->ID, $post->ID ),
 				);
 			}
 		}
 
-		$args = array(
-			'artist_id'                    => $post->ID,
-			'artist_releases_routing_mode' => \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_artist_release_mode( get_post_meta( $post->ID, 'artist_releases_routing_mode', true ) ),
-			'artist_modes'                 => \MDS\ReleaseManager\Frontend\ArtistRouting::artist_release_modes(),
-			'release_modes'                => \MDS\ReleaseManager\Frontend\ArtistRouting::release_modes(),
-			'releases'                     => $releases,
-		);
+		$artist_modes = array();
+		foreach ( \MDS\ReleaseManager\Frontend\ArtistRouting::artist_release_modes() as $slug => $label ) {
+			$artist_modes[] = array(
+				'value' => (string) $slug,
+				'label' => (string) $label,
+			);
+		}
 
-		include MDS_RM_PATH . 'includes/admin/views/artist-release-routing-box.php';
+		$release_modes = array();
+		foreach ( \MDS\ReleaseManager\Frontend\ArtistRouting::release_modes() as $slug => $label ) {
+			$release_modes[] = array(
+				'value' => (string) $slug,
+				'label' => (string) $label,
+			);
+		}
+
+		return array(
+			'postId'                    => (int) $post->ID,
+			'restBase'                  => esc_url_raw( rest_url( 'mds/v1/' ) ),
+			'nonce'                     => wp_create_nonce( 'wp_rest' ),
+			'permalink'                 => (string) get_permalink( $post->ID ),
+			'homepageUrl'               => (string) get_post_meta( $post->ID, 'artist_homepage_url', true ),
+			'homepageRouting'           => '1' === (string) get_post_meta( $post->ID, 'artist_homepage_routing', true ),
+			'artistReleasesRoutingMode' => \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_artist_release_mode( get_post_meta( $post->ID, 'artist_releases_routing_mode', true ) ),
+			'artistModes'               => $artist_modes,
+			'releaseModes'              => $release_modes,
+			'releases'                  => $releases,
+			'settingsUrl'               => admin_url( 'edit.php?post_type=release&page=mds-release-settings' ),
+		);
 	}
 
 	/**
-	 * Renders the artist settings meta box.
+	 * Renders the unified native React Artist Manager meta box.
 	 *
 	 * @since 0.9.0
 	 * @param WP_Post $post The post object.
@@ -346,62 +363,126 @@ final class AdminInterface {
 		$editor_html = ob_get_clean();
 
 		$args = array(
-			'nonce_field'      => wp_nonce_field( 'mds_save_artist_data', 'mds_artist_meta_nonce', true, false ),
-			'editor_html'      => $editor_html,
-			'homepage_url'     => get_post_meta( $post->ID, 'artist_homepage_url', true ),
-			'homepage_routing' => '1' === get_post_meta( $post->ID, 'artist_homepage_routing', true ),
-			'post_id'          => $post->ID,
+			'nonce_field' => wp_nonce_field( 'mds_save_artist_data', 'mds_artist_meta_nonce', true, false ),
+			'editor_html' => $editor_html,
+			'post_id'     => $post->ID,
 		);
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'artist-meta-box.php', $args );
+		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'artist-workspace-box.php', $args );
 	}
 
 	/**
-	 * Renders the release identity meta box.
+	 * Renders the unified React Release Manager meta box.
 	 *
-	 * @since 1.0.0
+	 * @since 1.1.0
 	 * @param WP_Post $post The post object.
 	 * @return void
 	 */
-	public static function render_release_identity_box( WP_Post $post ): void {
+	public static function render_release_workspace_box( WP_Post $post ): void {
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'release-identity-box.php', self::release_box_args( $post ) );
+		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'release-workspace-box.php', self::release_box_args( $post ) );
 	}
 
 	/**
-	 * Renders the release details meta box.
+	 * Returns serialized client payload for the native React Release Editor.
 	 *
-	 * @since 1.0.0
-	 * @param WP_Post $post The post object.
-	 * @return void
+	 * @since 1.1.0
+	 * @param WP_Post $post The release post being edited.
+	 * @return array<string, mixed>
 	 */
-	public static function render_release_details_box( WP_Post $post ): void {
-    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'release-details-box.php', self::release_box_args( $post ) );
-	}
+	public static function get_release_editor_client_data( WP_Post $post ): array {
+		$args = self::release_box_args( $post );
 
-	/**
-	 * Renders the streaming and audio meta box.
-	 *
-	 * @since 1.0.0
-	 * @param WP_Post $post The post object.
-	 * @return void
-	 */
-	public static function render_release_streaming_box( WP_Post $post ): void {
-    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'release-streaming-box.php', self::release_box_args( $post ) );
-	}
+		$release_types = array();
+		if ( is_array( $args['all_formats'] ) ) {
+			foreach ( $args['all_formats'] as $term ) {
+				if ( 0 !== (int) $term->parent || ! in_array( $term->name, \MDS\ReleaseManager\Core\ReleaseModel::MDS_RM_FORMATS, true ) ) {
+					continue;
+				}
+				$release_types[] = array(
+					'id'   => (int) $term->term_id,
+					'name' => (string) $term->name,
+				);
+			}
+		}
 
-	/**
-	 * Renders the commerce meta box.
-	 *
-	 * @since 1.0.0
-	 * @param WP_Post $post The post object.
-	 * @return void
-	 */
-	public static function render_release_commerce_box( WP_Post $post ): void {
-    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes values and emits WordPress-generated HTML.
-		echo \MDS\ReleaseManager\Core\TemplateLoader::render_admin_view( 'release-commerce-box.php', self::release_box_args( $post ) );
+		$selected_type = 0;
+		if ( empty( $args['format_conflict'] ) && is_array( $args['release_formats'] ) && 1 === count( $args['release_formats'] ) ) {
+			$selected_type = (int) $args['release_formats'][0];
+		}
+
+		$media_formats = array();
+		foreach ( (array) $args['all_media_formats'] as $term ) {
+			$media_formats[] = array(
+				'slug' => (string) $term->slug,
+				'name' => (string) $term->name,
+			);
+		}
+
+		$streaming_rows = array();
+		foreach ( (array) $args['streaming_links'] as $provider => $url ) {
+			$streaming_rows[] = array(
+				'provider' => (string) $provider,
+				'url'      => (string) $url,
+			);
+		}
+
+		$current_tags = wp_get_post_terms( $post->ID, 'release_tag', array( 'fields' => 'names' ) );
+		if ( is_wp_error( $current_tags ) ) {
+			$current_tags = array();
+		}
+		$all_tags = get_terms(
+			array(
+				'taxonomy'   => 'release_tag',
+				'hide_empty' => false,
+				'fields'     => 'names',
+				'number'     => 200,
+			)
+		);
+		if ( is_wp_error( $all_tags ) ) {
+			$all_tags = array();
+		}
+
+		$routing_modes = array();
+		foreach ( (array) $args['release_routing_modes'] as $slug => $label ) {
+			$routing_modes[] = array(
+				'value' => (string) $slug,
+				'label' => (string) $label,
+			);
+		}
+
+		return array(
+			'postId'                 => (int) $post->ID,
+			'restBase'               => esc_url_raw( rest_url( 'mds/v1/' ) ),
+			'nonce'                  => wp_create_nonce( 'wp_rest' ),
+			'upcEan'                 => (string) $args['upc_ean'],
+			'releaseType'            => $selected_type,
+			'releaseTypes'           => $release_types,
+			'canAssignTypes'         => current_user_can( get_taxonomy( 'release_type' )->cap->assign_terms ),
+			'formatConflict'         => ! empty( $args['format_conflict'] ),
+			'artistId'               => (string) $args['artist_id'],
+			'artistTitle'            => (string) $args['selected_artist_title'],
+			'artistEditUrl'          => (string) $args['selected_artist_edit_url'],
+			'artistHomepage'         => (string) $args['artist_homepage_url'],
+			'recordLabel'            => (string) $args['record_label'],
+			'distributor'            => (string) $args['distributor'],
+			'tags'                   => array_values( array_map( 'strval', (array) $current_tags ) ),
+			'tagSuggestions'         => array_values( array_map( 'strval', (array) $all_tags ) ),
+			'providers'              => array_values( array_map( 'strval', (array) $args['providers'] ) ),
+			'streamingLinks'         => $streaming_rows,
+			'audioPreviewUrl'        => (string) $args['audio_preview_url'],
+			'activeAudioPlayerSlug'  => (string) $args['active_audio_player_slug'],
+			'activeAudioPlayerLabel' => (string) $args['active_audio_player_label'],
+			'mediaFormats'           => $media_formats,
+			'buyNowLinks'            => array_values( (array) $args['buy_now_links'] ),
+			'buyNowMode'             => (string) $args['buy_now_mode'],
+			'routingMode'            => (string) $args['release_routing_mode'],
+			'routingUrl'             => (string) $args['release_routing_url'],
+			'routingModes'           => $routing_modes,
+			'routingPreviewLabel'    => (string) ( $args['release_routing_preview']['label'] ?? __( 'Release Fallback Page', 'mds-release-manager' ) ),
+			'settingsUrl'            => (string) $args['settings_url'],
+			'mediaFormatsUrl'        => (string) $args['media_formats_url'],
+		);
 	}
 
 	/**
@@ -424,7 +505,10 @@ final class AdminInterface {
 			$artist_id = '';
 		}
 
-		$selected_artist_title = '';
+		$selected_artist_title    = '';
+		$selected_artist_post_id  = 0;
+		$selected_artist_edit_url = '';
+		$artist_homepage_url      = '';
 		if ( $artist_id ) {
 			$selected_artists = get_posts(
 				array(
@@ -438,7 +522,10 @@ final class AdminInterface {
 				)
 			);
 			if ( $selected_artists ) {
-				$selected_artist_title = get_the_title( $selected_artists[0] );
+				$selected_artist_post_id  = (int) $selected_artists[0];
+				$selected_artist_title    = get_the_title( $selected_artist_post_id );
+				$selected_artist_edit_url = (string) get_edit_post_link( $selected_artist_post_id, 'raw' );
+				$artist_homepage_url      = (string) get_post_meta( $selected_artist_post_id, 'artist_homepage_url', true );
 			}
 		}
 
@@ -505,28 +592,41 @@ final class AdminInterface {
 
 		$buy_now_links = \MDS\ReleaseManager\Core\ReleaseModel::get_buy_now_links( $post->ID );
 
+		$active_audio_slug  = \MDS\ReleaseManager\Core\AudioPlayers::get_active_player();
+		$registered_players = \MDS\ReleaseManager\Core\AudioPlayers::get_registered_players();
+		$active_audio_label = isset( $registered_players[ $active_audio_slug ]['label'] )
+			? (string) $registered_players[ $active_audio_slug ]['label']
+			: '';
+
 		$args = array(
-			'nonce_field'             => wp_nonce_field( 'mds_save_release_data', 'mds_release_meta_nonce', true, false ),
-			'post'                    => $post,
-			'artist_id'               => $artist_id,
-			'selected_artist_title'   => $selected_artist_title,
-			'providers'               => $provider_names,
-			'streaming_links'         => $streaming_links,
-			'upc_ean'                 => $upc_ean,
-			'record_label'            => $record_label,
-			'distributor'             => $distributor,
-			'buy_now_link'            => $buy_now_link,
-			'buy_now_links'           => $buy_now_links,
-			'buy_now_mode'            => (string) get_post_meta( $post->ID, 'buy_now_mode', true ),
-			'release_routing_mode'    => \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( get_post_meta( $post->ID, 'release_routing_mode', true ) ),
-			'release_routing_url'     => (string) get_post_meta( $post->ID, 'release_routing_url', true ),
-			'release_routing_modes'   => \MDS\ReleaseManager\Frontend\ArtistRouting::release_modes(),
-			'release_routing_preview' => \MDS\ReleaseManager\Frontend\ArtistRouting::describe_release_destination( $post->ID ),
-			'audio_preview_url'       => $audio_preview_url,
-			'release_formats'         => $release_formats,
-			'all_formats'             => $all_formats,
-			'all_media_formats'       => $all_media_formats,
-			'format_conflict'         => \MDS\ReleaseManager\Core\ReleaseModel::has_legacy_format_conflict( $post->ID ),
+			'nonce_field'               => wp_nonce_field( 'mds_save_release_data', 'mds_release_meta_nonce', true, false ),
+			'post'                      => $post,
+			'artist_id'                 => $artist_id,
+			'selected_artist_title'     => $selected_artist_title,
+			'selected_artist_post_id'   => $selected_artist_post_id,
+			'selected_artist_edit_url'  => $selected_artist_edit_url,
+			'artist_homepage_url'       => $artist_homepage_url,
+			'providers'                 => $provider_names,
+			'streaming_links'           => $streaming_links,
+			'upc_ean'                   => $upc_ean,
+			'record_label'              => $record_label,
+			'distributor'               => $distributor,
+			'buy_now_link'              => $buy_now_link,
+			'buy_now_links'             => $buy_now_links,
+			'buy_now_mode'              => (string) get_post_meta( $post->ID, 'buy_now_mode', true ),
+			'release_routing_mode'      => \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( get_post_meta( $post->ID, 'release_routing_mode', true ) ),
+			'release_routing_url'       => (string) get_post_meta( $post->ID, 'release_routing_url', true ),
+			'release_routing_modes'     => \MDS\ReleaseManager\Frontend\ArtistRouting::release_modes(),
+			'release_routing_preview'   => \MDS\ReleaseManager\Frontend\ArtistRouting::describe_release_destination( $post->ID ),
+			'audio_preview_url'         => $audio_preview_url,
+			'active_audio_player_slug'  => $active_audio_slug,
+			'active_audio_player_label' => $active_audio_label,
+			'settings_url'              => admin_url( 'edit.php?post_type=release&page=mds-release-settings' ),
+			'media_formats_url'         => admin_url( 'edit-tags.php?taxonomy=release_media_format&post_type=release' ),
+			'release_formats'           => $release_formats,
+			'all_formats'               => $all_formats,
+			'all_media_formats'         => $all_media_formats,
+			'format_conflict'           => \MDS\ReleaseManager\Core\ReleaseModel::has_legacy_format_conflict( $post->ID ),
 		);
 
 		$cache[ $post->ID ] = $args;

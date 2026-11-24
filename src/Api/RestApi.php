@@ -105,6 +105,30 @@ final class RestApi {
 
 		register_rest_route(
 			'mds/v1',
+			'/releases/(?P<id>\d+)/preview',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( self::class, 'preview_release_api' ),
+				'permission_callback' => static function ( \WP_REST_Request $request ): bool {
+					return current_user_can( 'edit_post', (int) $request->get_param( 'id' ) );
+				},
+			)
+		);
+
+		register_rest_route(
+			'mds/v1',
+			'/artists/(?P<id>\d+)/preview',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( self::class, 'preview_artist_api' ),
+				'permission_callback' => static function ( \WP_REST_Request $request ): bool {
+					return current_user_can( 'edit_post', (int) $request->get_param( 'id' ) );
+				},
+			)
+		);
+
+		register_rest_route(
+			'mds/v1',
 			'/settings',
 			array(
 				'methods'             => 'POST',
@@ -420,6 +444,296 @@ final class RestApi {
 		\MDS\ReleaseManager\Core\Sync::purge_cache( 'settings' );
 
 		return rest_ensure_response( array( 'success' => true ) );
+	}
+
+	/**
+	 * Renders a non-destructive live preview of a Release using unsaved editor values.
+	 *
+	 * @since 1.1.0
+	 * @param \WP_REST_Request $request The REST request carrying unsaved draft fields.
+	 * @return \WP_REST_Response|\WP_Error Rendered preview HTML, stylesheet URLs, and routing notice.
+	 */
+	public static function preview_release_api( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		$post_id = absint( $request->get_param( 'id' ) );
+		$post    = get_post( $post_id );
+		if ( ! $post instanceof \WP_Post || 'release' !== $post->post_type ) {
+			return new \WP_Error( 'mds_rm_invalid_release', __( 'Release not found.', 'mds-release-manager' ), array( 'status' => 404 ) );
+		}
+
+		$data = $request->get_json_params();
+		if ( ! is_array( $data ) ) {
+			$data = $request->get_body_params();
+		}
+
+		$title        = isset( $data['title'] ) && is_string( $data['title'] ) ? sanitize_text_field( $data['title'] ) : $post->post_title;
+		$raw_content  = isset( $data['content'] ) && is_string( $data['content'] ) ? wp_kses_post( $data['content'] ) : $post->post_content;
+		$thumbnail_id = isset( $data['thumbnail_id'] ) ? absint( $data['thumbnail_id'] ) : (int) get_post_thumbnail_id( $post_id );
+
+		// Build in-memory meta overrides without modifying the database.
+		$meta_overrides = array();
+		if ( array_key_exists( 'upc_ean', $data ) ) {
+			$meta_overrides['upc_ean'] = sanitize_text_field( (string) $data['upc_ean'] );
+		}
+		if ( array_key_exists( 'artist_id', $data ) ) {
+			$meta_overrides['artist_id'] = sanitize_text_field( (string) $data['artist_id'] );
+		}
+		if ( array_key_exists( 'record_label', $data ) ) {
+			$meta_overrides['record_label'] = sanitize_text_field( (string) $data['record_label'] );
+		}
+		if ( array_key_exists( 'distributor', $data ) ) {
+			$meta_overrides['distributor'] = sanitize_text_field( (string) $data['distributor'] );
+		}
+		if ( array_key_exists( 'audio_preview_url', $data ) ) {
+			$meta_overrides['audio_preview_url'] = esc_url_raw( (string) $data['audio_preview_url'] );
+		}
+		if ( array_key_exists( 'buy_now_mode', $data ) ) {
+			$mode                           = sanitize_key( (string) $data['buy_now_mode'] );
+			$meta_overrides['buy_now_mode'] = in_array( $mode, array( 'direct', 'picker' ), true ) ? $mode : '';
+		}
+		if ( array_key_exists( 'release_routing_mode', $data ) ) {
+			$meta_overrides['release_routing_mode'] = \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( $data['release_routing_mode'] );
+		}
+		if ( array_key_exists( 'release_routing_url', $data ) ) {
+			$meta_overrides['release_routing_url'] = esc_url_raw( (string) $data['release_routing_url'] );
+		}
+		if ( isset( $data['streaming_links'] ) && is_array( $data['streaming_links'] ) ) {
+			$clean_streaming = array();
+			foreach ( $data['streaming_links'] as $row ) {
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+				$prov = sanitize_text_field( (string) ( $row['provider'] ?? '' ) );
+				$url  = esc_url_raw( (string) ( $row['url'] ?? '' ) );
+				if ( '' !== $prov && '' !== $url ) {
+					$clean_streaming[ $prov ] = $url;
+				}
+			}
+			$meta_overrides['streaming_links'] = wp_json_encode( $clean_streaming );
+		}
+		if ( isset( $data['buy_now_links'] ) && is_array( $data['buy_now_links'] ) ) {
+			$clean_buy = array();
+			$primary   = '';
+			foreach ( $data['buy_now_links'] as $row ) {
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+				$url = esc_url_raw( (string) ( $row['url'] ?? '' ) );
+				if ( '' === $url ) {
+					continue;
+				}
+				$is_primary  = ! empty( $row['primary'] );
+				$clean_buy[] = array(
+					'format'  => sanitize_key( (string) ( $row['format'] ?? '' ) ),
+					'store'   => sanitize_text_field( (string) ( $row['store'] ?? '' ) ),
+					'url'     => $url,
+					'primary' => $is_primary,
+				);
+				if ( $is_primary && '' === $primary ) {
+					$primary = $url;
+				}
+			}
+			if ( '' === $primary && ! empty( $clean_buy[0]['url'] ) ) {
+				$primary                   = $clean_buy[0]['url'];
+				$clean_buy[0]['primary']   = true;
+			}
+			$meta_overrides['buy_now_links'] = wp_json_encode( $clean_buy );
+			$meta_overrides['buy_now_link']  = $primary;
+		}
+
+		$draft_type_id = isset( $data['release_type'] ) ? absint( $data['release_type'] ) : 0;
+
+		$meta_filter = static function ( $value, $object_id, $meta_key, $single ) use ( $post_id, $meta_overrides ) {
+			if ( (int) $object_id !== $post_id || ! is_string( $meta_key ) || ! array_key_exists( $meta_key, $meta_overrides ) ) {
+				return $value;
+			}
+			return $single ? $meta_overrides[ $meta_key ] : array( $meta_overrides[ $meta_key ] );
+		};
+
+		$terms_filter = static function ( $terms, $object_id, $taxonomy ) use ( $post_id, $draft_type_id ) {
+			if ( (int) $object_id === $post_id && 'release_type' === $taxonomy && $draft_type_id > 0 ) {
+				$term = get_term( $draft_type_id, 'release_type' );
+				if ( $term instanceof \WP_Term ) {
+					return array( $term );
+				}
+			}
+			return $terms;
+		};
+
+		add_filter( 'get_post_metadata', $meta_filter, 99, 4 );
+		add_filter( 'get_the_terms', $terms_filter, 99, 3 );
+
+		try {
+			$tpl          = \MDS\ReleaseManager\Frontend\TemplateDefaults::get( 'release' );
+			$redirect_url = \MDS\ReleaseManager\Frontend\ArtistRouting::resolve_release_redirect( $post_id );
+			$image_html   = '';
+			if ( ! empty( $tpl['show_image'] ) && $thumbnail_id > 0 ) {
+				$image_html = (string) wp_get_attachment_image(
+					$thumbnail_id,
+					'large',
+					false,
+					array( 'class' => 'mds-release-fallback__image' )
+				);
+			}
+
+			$meta_html = ! empty( $tpl['show_meta'] ) ? render_block(
+				array(
+					'blockName'    => 'mds-rm/release-meta',
+					'attrs'        => array( 'releaseId' => $post_id ),
+					'innerBlocks'  => array(),
+					'innerHTML'    => '',
+					'innerContent' => array(),
+				)
+			) : '';
+
+			$links_html = ! empty( $tpl['show_links'] ) ? render_block(
+				array(
+					'blockName'    => 'mds-rm/release-links',
+					'attrs'        => array( 'releaseId' => $post_id ),
+					'innerBlocks'  => array(),
+					'innerHTML'    => '',
+					'innerContent' => array(),
+				)
+			) : '';
+
+			$rendered = \MDS\ReleaseManager\Core\TemplateLoader::render(
+				'templates/release-fallback.php',
+				array(
+					'content'         => wpautop( $raw_content ),
+					'image'           => $image_html,
+					'layout'          => (string) ( $tpl['layout'] ?? 'split' ),
+					'image_position'  => (string) ( $tpl['image_position'] ?? 'left' ),
+					'sticky_image'    => ! empty( $tpl['sticky_image'] ),
+					'mobile_order'    => (string) ( $tpl['mobile_order'] ?? 'image_first' ),
+					'component_order' => (string) ( $tpl['component_order'] ?? 'meta_body_links' ),
+					'style'           => \MDS\ReleaseManager\Frontend\TemplateDefaults::get_release_style_attribute(),
+					'meta_html'       => $meta_html,
+					'links_html'      => $links_html,
+				)
+			);
+		} finally {
+			remove_filter( 'get_post_metadata', $meta_filter, 99 );
+			remove_filter( 'get_the_terms', $terms_filter, 99 );
+		}
+
+		$css_urls = array(
+			includes_url( 'css/dashicons.min.css' ),
+			MDS_RM_URL . 'css/release-fallback.css?ver=' . filemtime( MDS_RM_PATH . 'css/release-fallback.css' ),
+			MDS_RM_URL . 'css/release-meta.css?ver=' . filemtime( MDS_RM_PATH . 'css/release-meta.css' ),
+			MDS_RM_URL . 'css/release-links.css?ver=' . filemtime( MDS_RM_PATH . 'css/release-links.css' ),
+		);
+		if ( 'none' !== \MDS\ReleaseManager\Frontend\Assets::resolve_font_awesome_source() ) {
+			$css_urls[] = (string) apply_filters( 'mds_rm_font_awesome_cdn_url', \MDS\ReleaseManager\Frontend\Assets::FA_CDN_URL );
+		}
+
+		$routing_notice = '';
+		if ( '' !== $redirect_url ) {
+			$routing_notice = sprintf(
+				/* translators: %s: Active redirect URL. */
+				__( 'Page Routing active: visitors will be redirected (302) to %s instead of seeing this fallback layout.', 'mds-release-manager' ),
+				$redirect_url
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'title'            => $title,
+				'html'             => $rendered,
+				'css_urls'         => $css_urls,
+				'buy_now_modal_js' => MDS_RM_URL . 'js/buy-now-modal.js?ver=' . filemtime( MDS_RM_PATH . 'js/buy-now-modal.js' ),
+				'routing_notice'   => $routing_notice,
+			)
+		);
+	}
+
+	/**
+	 * Renders a non-destructive live preview of an Artist using unsaved editor values.
+	 *
+	 * @since 1.1.0
+	 * @param \WP_REST_Request $request The REST request carrying unsaved draft fields.
+	 * @return \WP_REST_Response|\WP_Error Rendered preview HTML, stylesheet URLs, and routing notice.
+	 */
+	public static function preview_artist_api( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+		$post_id = absint( $request->get_param( 'id' ) );
+		$post    = get_post( $post_id );
+		if ( ! $post instanceof \WP_Post || 'artist' !== $post->post_type ) {
+			return new \WP_Error( 'mds_rm_invalid_artist', __( 'Artist not found.', 'mds-release-manager' ), array( 'status' => 404 ) );
+		}
+
+		$data = $request->get_json_params();
+		if ( ! is_array( $data ) ) {
+			$data = $request->get_body_params();
+		}
+
+		$title            = isset( $data['title'] ) && is_string( $data['title'] ) ? sanitize_text_field( $data['title'] ) : $post->post_title;
+		$raw_content      = isset( $data['content'] ) && is_string( $data['content'] ) ? wp_kses_post( $data['content'] ) : $post->post_content;
+		$thumbnail_id     = isset( $data['thumbnail_id'] ) ? absint( $data['thumbnail_id'] ) : (int) get_post_thumbnail_id( $post_id );
+		$contact_html     = isset( $data['artist_contact'] ) && is_string( $data['artist_contact'] )
+			? wp_kses_post( $data['artist_contact'] )
+			: (string) get_post_meta( $post_id, 'artist_contact', true );
+		$homepage_url     = isset( $data['artist_homepage_url'] ) && is_string( $data['artist_homepage_url'] )
+			? esc_url_raw( $data['artist_homepage_url'] )
+			: (string) get_post_meta( $post_id, 'artist_homepage_url', true );
+		$homepage_routing = array_key_exists( 'artist_homepage_routing', $data )
+			? ! empty( $data['artist_homepage_routing'] )
+			: '1' === (string) get_post_meta( $post_id, 'artist_homepage_routing', true );
+
+		$tpl          = \MDS\ReleaseManager\Frontend\TemplateDefaults::get( 'artist' );
+		$show_image   = ! empty( $tpl['show_portrait'] );
+		$show_discog  = ! empty( $tpl['show_discography'] );
+		$show_contact = ! empty( $tpl['show_contact'] );
+
+		$image_html = ( $show_image && $thumbnail_id > 0 )
+			? (string) wp_get_attachment_image( $thumbnail_id, 'large', false, array( 'class' => 'mds-artist-fallback__image' ) )
+			: '';
+
+		$discography_html = $show_discog ? render_block(
+			array(
+				'blockName'    => 'mds-rm/artist-discography',
+				'attrs'        => array( 'artistId' => $post_id ),
+				'innerBlocks'  => array(),
+				'innerHTML'    => '',
+				'innerContent' => array(),
+			)
+		) : '';
+
+		$rendered = \MDS\ReleaseManager\Core\TemplateLoader::render(
+			'templates/artist-fallback.php',
+			array(
+				'content'             => wpautop( $raw_content ),
+				'image'               => $image_html,
+				'discography'         => $discography_html,
+				'discography_heading' => (string) ( $tpl['discography_heading'] ?? '' ),
+				'contact'             => $show_contact ? $contact_html : '',
+				'contact_heading'     => (string) ( $tpl['contact_heading'] ?? __( 'Contact Information', 'mds-release-manager' ) ),
+				'layout'              => (string) ( $tpl['layout'] ?? 'stacked' ),
+				'section_order'       => (string) ( $tpl['section_order'] ?? 'discography_first' ),
+				'style'               => \MDS\ReleaseManager\Frontend\TemplateDefaults::get_artist_style_attribute(),
+			)
+		);
+
+		$css_urls = array(
+			includes_url( 'css/dashicons.min.css' ),
+			MDS_RM_URL . 'css/artist-fallback.css?ver=' . filemtime( MDS_RM_PATH . 'css/artist-fallback.css' ),
+			MDS_RM_URL . 'blocks/artist-discography/style.css?ver=' . filemtime( MDS_RM_PATH . 'blocks/artist-discography/style.css' ),
+		);
+
+		$routing_notice = '';
+		if ( $homepage_routing && \MDS\ReleaseManager\Frontend\ArtistRouting::valid_url( $homepage_url, $post_id ) ) {
+			$routing_notice = sprintf(
+				/* translators: %s: Active artist homepage redirect URL. */
+				__( 'Homepage Redirect active: visitors will be redirected (302) to %s instead of seeing this fallback profile.', 'mds-release-manager' ),
+				$homepage_url
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'title'          => $title,
+				'html'           => $rendered,
+				'css_urls'       => $css_urls,
+				'routing_notice' => $routing_notice,
+			)
+		);
 	}
 
 	/**

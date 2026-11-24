@@ -310,6 +310,16 @@ read-only outside the hub.
 - **Query params:** Required `search` term and optional `page`.
 - **Response:** Up to 20 Artist UUID/title choices and a page count for the Release editor picker.
 
+**POST `/wp-json/mds/v1/releases/{id}/preview`**
+- **Permission:** `edit_post` for the target Release ID.
+- **Body params:** Unsaved Release editor fields (`title`, `content`, `thumbnail_id`, `upc_ean`, `release_type`, `artist_id`, `record_label`, `distributor`, `streaming_links`, `buy_now_links`, `buy_now_mode`, `audio_preview_url`, `release_routing_mode`, `release_routing_url`).
+- **Response:** Non-destructive server-rendered Release Fallback HTML, stylesheet URLs, Buy Now modal script URL, and active Page Routing redirect notice for the Release editor Live Preview `<dialog>` modal (`js/release-preview-modal.js`).
+
+**POST `/wp-json/mds/v1/artists/{id}/preview`**
+- **Permission:** `edit_post` for the target Artist ID.
+- **Body params:** Unsaved Artist editor fields (`title`, `content`, `thumbnail_id`, `artist_contact`, `artist_homepage_url`, `artist_homepage_routing`).
+- **Response:** Non-destructive server-rendered Artist Fallback HTML (with live Discography block), stylesheet URLs, and active Homepage Redirect notice for the Artist editor Live Preview modal (`js/artist-editor.js`).
+
 **POST `/wp-json/mds/v1/artists/{id}/release-routing`**
 - **Permission:** `edit_post` for the target Artist ID.
 - **Body params:** `artist_releases_routing_mode` and `releases` array (`id`, `mode`, `url`).

@@ -285,78 +285,54 @@ final class Assets {
 			\MDS\ReleaseManager\Core\TemplateLoader::enqueue_editable_script(
 				'mds-meta-boxes-js',
 				'js/meta-boxes.js',
-				array( 'jquery' ),
+				array( 'jquery', 'wp-a11y' ),
 				true
 			);
 
 			if ( 'post' === $screen->base && 'release' === $screen->post_type ) {
-				$is_block_editor = $screen->is_block_editor();
-				$dependencies    = array( 'jquery', 'tags-box' );
-				$dependencies    = array_merge( $dependencies, $is_block_editor ? array( 'wp-data', 'wp-dom-ready', 'wp-edit-post', 'wp-hooks' ) : array( 'post' ) );
-				\MDS\ReleaseManager\Core\TemplateLoader::enqueue_editable_script(
-					'mds-release-taxonomies',
-					'js/release-taxonomies.js',
-					$dependencies,
+				wp_enqueue_style( 'wp-components' );
+				$editor_script = 'js/release-editor.js';
+				wp_enqueue_script(
+					'mds-rm-release-editor',
+					MDS_RM_URL . $editor_script,
+					array( 'wp-element', 'wp-components', 'wp-i18n', 'wp-a11y' ),
+					filemtime( MDS_RM_PATH . $editor_script ),
 					true
 				);
+				$post_id     = isset( $_GET['post'] ) ? absint( wp_unslash( $_GET['post'] ) ) : (int) get_the_ID(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only post ID on edit screen.
+				$editor_post = $post_id ? get_post( $post_id ) : null;
+				if ( ! $editor_post instanceof \WP_Post ) {
+					$editor_post = get_default_post_to_edit( 'release', false );
+				}
 				wp_add_inline_script(
-					'mds-release-taxonomies',
-					'var mdsReleaseBlockEditor = ' . wp_json_encode( $is_block_editor ) . ';',
+					'mds-rm-release-editor',
+					'var mdsReleaseEditorData = ' . wp_json_encode( \MDS\ReleaseManager\Admin\AdminInterface::get_release_editor_client_data( $editor_post ) ) . ';',
 					'before'
 				);
-				\MDS\ReleaseManager\Core\TemplateLoader::enqueue_editable_script(
-					'mds-release-artist-picker',
-					'js/release-artist-picker.js',
-					array(),
-					true
-				);
-				wp_add_inline_script(
-					'mds-release-artist-picker',
-					'var mdsReleaseArtistPickerData = ' . wp_json_encode(
-						array(
-							'rest_url'       => esc_url_raw( rest_url( 'mds/v1/artists' ) ),
-							'nonce'          => wp_create_nonce( 'wp_rest' ),
-							'loading'        => __( 'Searching Artists...', 'mds-release-manager' ),
-							'search_failed'  => __( 'Could not load Artists. Please try again.', 'mds-release-manager' ),
-							'no_results'     => __( 'No matching Artists found.', 'mds-release-manager' ),
-							'previous'       => __( 'Previous', 'mds-release-manager' ),
-							'next'           => __( 'Next', 'mds-release-manager' ),
-							/* translators: %s: Selected artist title. */
-							'selected'       => __( 'Selected: %s', 'mds-release-manager' ),
-							'cleared'        => __( 'No Artist selected.', 'mds-release-manager' ),
-							'type_to_search' => __( 'Type an Artist name to search.', 'mds-release-manager' ),
-							'minimum_length' => __( 'Enter at least two characters to search.', 'mds-release-manager' ),
-						)
-					) . ';',
-					'before'
-				);
-				wp_set_script_translations( 'mds-release-artist-picker', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+				wp_set_script_translations( 'mds-rm-release-editor', 'mds-release-manager', MDS_RM_PATH . 'languages' );
 			}
 
 			if ( 'post' === $screen->base && 'artist' === $screen->post_type ) {
-				$routing_script = 'js/artist-routing.js';
+				wp_enqueue_style( 'wp-components' );
+				$artist_script = 'js/artist-editor.js';
 				wp_enqueue_script(
-					'mds-artist-routing',
-					MDS_RM_URL . $routing_script,
-					array(),
-					filemtime( MDS_RM_PATH . $routing_script ),
+					'mds-rm-artist-editor',
+					MDS_RM_URL . $artist_script,
+					array( 'wp-element', 'wp-components', 'wp-i18n', 'wp-a11y' ),
+					filemtime( MDS_RM_PATH . $artist_script ),
 					true
 				);
+				$post_id     = isset( $_GET['post'] ) ? absint( wp_unslash( $_GET['post'] ) ) : (int) get_the_ID(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only post ID on edit screen.
+				$editor_post = $post_id ? get_post( $post_id ) : null;
+				if ( ! $editor_post instanceof \WP_Post ) {
+					$editor_post = get_default_post_to_edit( 'artist', false );
+				}
 				wp_add_inline_script(
-					'mds-artist-routing',
-					'var mdsArtistRoutingData = ' . wp_json_encode(
-						array(
-							'rest_base' => esc_url_raw( rest_url( 'mds/v1/artists/' ) ),
-							'nonce'     => wp_create_nonce( 'wp_rest' ),
-							'saving'    => __( 'Saving & syncing…', 'mds-release-manager' ),
-							'save_btn'  => __( 'Save Routing Changes', 'mds-release-manager' ),
-							'saved'     => __( 'Routing saved.', 'mds-release-manager' ),
-							'error'     => __( 'Could not save routing changes.', 'mds-release-manager' ),
-							'no_select' => __( 'Select at least one release to apply a bulk action.', 'mds-release-manager' ),
-						)
-					) . ';',
+					'mds-rm-artist-editor',
+					'var mdsArtistEditorData = ' . wp_json_encode( \MDS\ReleaseManager\Admin\AdminInterface::get_artist_editor_client_data( $editor_post ) ) . ';',
 					'before'
 				);
+				wp_set_script_translations( 'mds-rm-artist-editor', 'mds-release-manager', MDS_RM_PATH . 'languages' );
 			}
 		}
 

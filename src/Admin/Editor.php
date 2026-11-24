@@ -180,7 +180,7 @@ final class Editor {
 		}
 
 		return array(
-			'normal' => 'mds_release_identity,mds_release_details,mds_release_streaming,mds_release_commerce,postexcerpt',
+			'normal' => 'mds_release_identity,postexcerpt',
 		);
 	}
 
