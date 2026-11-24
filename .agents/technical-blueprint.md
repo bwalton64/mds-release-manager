@@ -9,14 +9,14 @@
 
 **Requirements:**
 - PHP 8.0+.
-- WordPress 6.9+.
-- No Composer or npm runtime dependencies. npm is used for development smoke tests only.
+- WordPress 7.0+.
+- Composer PSR-4 autoloading (`vendor/autoload.php`) mapping `MDS\ReleaseManager\` → `src/`.
 
 **Build Tools:**
-- None. Direct PHP class autoloading via SPL (not PSR-4 composer).
-- Assets: Vanilla JS. Block editor scripts live in `/blocks/`; `/js/meta-boxes.js`, `/js/release-taxonomies.js`, and `/js/settings.js` are for admin screens (using the jQuery bundled with WordPress).
-- Styles: Vanilla CSS in `/css/`. Admin view layout is bundled in `admin-styles.css`; `admin-defaults.css` is the fallback for the existing stored `css/admin-styles.css` override key.
-- No build pipeline; all code is interpreted live.
+- Composer (`composer.json`, `phpcs.xml.dist`) for PSR-4 autoloading and WPCS/PHPCompatibilityWP linting.
+- Lazy backward-compatibility alias bridge (`includes/legacy-class-aliases.php`) mapping legacy `MDS_RM_*` global class names to `MDS\ReleaseManager\*` for companion plugins.
+- Assets: `package.json` configured for `@wordpress/scripts` and Playwright E2E tests; admin/block scripts use `wp_add_inline_script()` and `wp_set_script_translations()`.
+- Multilingual: `wpml-config.xml` and `init`-hooked `load_plugin_textdomain()`.
 
 ---
 

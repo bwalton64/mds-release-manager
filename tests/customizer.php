@@ -37,9 +37,8 @@ function get_theme_mod( $name, $default = false ) {
 	return array_key_exists( $name, $GLOBALS['theme_mods'] ) ? $GLOBALS['theme_mods'][ $name ] : $default;
 }
 
-require MDS_RM_PATH . 'includes/blocks/class-mds-rm-release-meta.php';
-require MDS_RM_PATH . 'includes/frontend/class-mds-rm-template-defaults.php';
-require MDS_RM_PATH . 'includes/frontend/class-mds-rm-customizer.php';
+require MDS_RM_PATH . 'vendor/autoload.php';
+require MDS_RM_PATH . 'includes/legacy-class-aliases.php';
 
 function check_tpl( bool $condition, string $message ): void {
 	if ( ! $condition ) {

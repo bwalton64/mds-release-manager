@@ -1,11 +1,26 @@
 {
   "name": "mds-release-manager",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "lint:js": "wp-scripts lint-js",
+    "lint:css": "wp-scripts lint-style",
+    "format": "wp-scripts format",
     "test:e2e": "playwright test"
   },
+  "dependencies": {
+    "@wordpress/a11y": "^4.0.0",
+    "@wordpress/admin-ui": "^0.1.0",
+    "@wordpress/commands": "^1.0.0",
+    "@wordpress/components": "^29.0.0",
+    "@wordpress/dataviews": "^4.0.0",
+    "@wordpress/theme": "^0.1.0"
+  },
   "devDependencies": {
-    "@playwright/test": "1.65.1"
+    "@playwright/test": "1.65.1",
+    "@wordpress/scripts": "^30.0.0"
   },
   "engines": {
     "node": ">=22"

@@ -41,7 +41,8 @@ function get_the_title( $post ) {
 	return $post->post_title;
 }
 
-require __DIR__ . '/../includes/core/class-mds-rm-release-search.php';
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../includes/legacy-class-aliases.php';
 
 function check_search( $condition, $message ) {
 	if ( ! $condition ) {

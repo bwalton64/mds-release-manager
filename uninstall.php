@@ -11,7 +11,8 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	die;
 }
 
-$wipe_all = get_site_option( 'mds_rm_wipe_on_uninstall', '0' ) === '1';
+( static function (): void {
+	$wipe_all = get_site_option( 'mds_rm_wipe_on_uninstall', '0' ) === '1';
 
 // We clear out localized plugin settings to clean up the options table.
 $options = array(
@@ -111,3 +112,4 @@ foreach ( $site_ids as $site_id ) {
 		restore_current_blog();
 	}
 }
+} )();

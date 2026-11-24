@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+( static function ( array $args ): void {
 $buy_now_links = is_array( $args['buy_now_links'] ?? null ) ? $args['buy_now_links'] : array();
 $media_formats = is_array( $args['all_media_formats'] ?? null ) ? $args['all_media_formats'] : array();
 if ( empty( $buy_now_links ) ) {
@@ -150,3 +151,5 @@ if ( empty( $buy_now_links ) ) {
 		</div>
 	</template>
 </div>
+	<?php
+} )( is_array( $args ?? null ) ? $args : array() );

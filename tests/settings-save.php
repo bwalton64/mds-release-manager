@@ -56,12 +56,14 @@ function apply_filters( $hook, $value ) { return $GLOBALS['filters'][ $hook ] ??
 function esc_attr( $value ) { return (string) $value; }
 function rest_ensure_response( $value ) { return new WP_REST_Response( $value ); }
 
-require __DIR__ . '/../includes/core/class-mds-rm-audio-players.php';
-require __DIR__ . '/../includes/core/class-mds-rm-cache.php';
-require __DIR__ . '/../includes/blocks/class-mds-rm-block-defaults.php';
-require __DIR__ . '/../includes/frontend/class-mds-rm-template-defaults.php';
-require __DIR__ . '/../includes/frontend/class-mds-rm-assets.php';
-require __DIR__ . '/../includes/api/class-mds-rm-rest-api.php';
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../includes/legacy-class-aliases.php';
+class_alias( 'MDS_RM_Sync', 'MDS\\ReleaseManager\\Core\\Sync' );
+class_alias( 'MDS_RM_Release_Meta', 'MDS\\ReleaseManager\\Blocks\\ReleaseMeta' );
+class_alias( 'MDS_RM_Release_Links', 'MDS\\ReleaseManager\\Blocks\\ReleaseLinks' );
+class_alias( 'MDS_RM_Release_Links_Block', 'MDS\\ReleaseManager\\Blocks\\ReleaseLinksBlock' );
+class_alias( 'MDS_RM_Discography', 'MDS\\ReleaseManager\\Frontend\\Discography' );
+class_alias( 'MDS_RM_Logger', 'MDS\\ReleaseManager\\Core\\Logger' );
 
 $GLOBALS['updates'] = array();
 $defaults = array( 'release-links' => array( 'newTab' => false, 'showAudio' => true ) );

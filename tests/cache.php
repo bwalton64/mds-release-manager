@@ -52,7 +52,8 @@ function is_multisite(): bool {
 	return false;
 }
 
-require __DIR__ . '/../includes/core/class-mds-rm-cache.php';
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../includes/legacy-class-aliases.php';
 
 function assert_cache( bool $cond, string $msg ): void {
 	if ( ! $cond ) {

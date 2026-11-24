@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+( static function ( array $args ): void {
 $artist_id     = (int) ( $args['artist_id'] ?? 0 );
 $artist_mode   = (string) ( $args['artist_releases_routing_mode'] ?? 'fallback' );
 $artist_modes  = is_array( $args['artist_modes'] ?? null ) ? $args['artist_modes'] : array();
@@ -102,7 +103,11 @@ $releases      = is_array( $args['releases'] ?? null ) ? $args['releases'] : arr
 							data-search="<?php echo esc_attr( strtolower( $row['title'] . ' ' . $row['upc'] ) ); ?>"
 						>
 							<th scope="row" class="check-column">
-								<input type="checkbox" class="mds-routing-row-cb" value="<?php echo esc_attr( (string) $rid ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Select %s', 'mds-release-manager' ), $row['title'] ) ); ?>" />
+								<?php
+								/* translators: %s: Release title. */
+								$select_label = sprintf( __( 'Select %s', 'mds-release-manager' ), $row['title'] );
+								?>
+								<input type="checkbox" class="mds-routing-row-cb" value="<?php echo esc_attr( (string) $rid ); ?>" aria-label="<?php echo esc_attr( $select_label ); ?>" />
 							</th>
 							<td>
 								<?php if ( ! empty( $row['thumb'] ) ) : ?>
@@ -116,7 +121,11 @@ $releases      = is_array( $args['releases'] ?? null ) ? $args['releases'] : arr
 							</td>
 							<td><code><?php echo esc_html( $row['upc'] ? $row['upc'] : '—' ); ?></code></td>
 							<td>
-								<select class="mds-routing-mode-select" aria-label="<?php echo esc_attr( sprintf( __( 'Routing mode for %s', 'mds-release-manager' ), $row['title'] ) ); ?>">
+								<?php
+								/* translators: %s: Release title. */
+								$mode_label = sprintf( __( 'Routing mode for %s', 'mds-release-manager' ), $row['title'] );
+								?>
+								<select class="mds-routing-mode-select" aria-label="<?php echo esc_attr( $mode_label ); ?>">
 									<?php foreach ( $release_modes as $slug => $label ) : ?>
 										<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $own_mode, $slug ); ?>>
 											<?php echo esc_html( $label ); ?>
@@ -125,12 +134,16 @@ $releases      = is_array( $args['releases'] ?? null ) ? $args['releases'] : arr
 								</select>
 							</td>
 							<td>
+								<?php
+								/* translators: %s: Release title. */
+								$url_label = sprintf( __( 'Custom redirect URL for %s', 'mds-release-manager' ), $row['title'] );
+								?>
 								<input
 									type="url"
 									class="mds-routing-custom-url regular-text"
 									value="<?php echo esc_url( $custom_url ); ?>"
 									placeholder="https://..."
-									aria-label="<?php echo esc_attr( sprintf( __( 'Custom redirect URL for %s', 'mds-release-manager' ), $row['title'] ) ); ?>"
+									aria-label="<?php echo esc_attr( $url_label ); ?>"
 									<?php echo $is_custom ? '' : 'hidden'; ?>
 								/>
 								<span class="mds-routing-preview <?php echo ! empty( $preview['is_warning'] ) ? 'is-warning' : ''; ?>" <?php echo $is_custom ? 'hidden' : ''; ?>>
@@ -149,3 +162,5 @@ $releases      = is_array( $args['releases'] ?? null ) ? $args['releases'] : arr
 		</div>
 	<?php endif; ?>
 </div>
+	<?php
+} )( is_array( $args ?? null ) ? $args : array() );

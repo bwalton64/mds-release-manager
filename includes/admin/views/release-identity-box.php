@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<option value=""><?php esc_html_e( 'Select a release type', 'mds-release-manager' ); ?></option>
 						<?php foreach ( $args['all_formats'] as $format ) : ?>
 							<?php
-							if ( 0 !== (int) $format->parent || ! in_array( $format->name, MDS_RM_Release_Model::MDS_RM_FORMATS, true ) ) {
+							if ( 0 !== (int) $format->parent || ! in_array( $format->name, \MDS\ReleaseManager\Core\ReleaseModel::MDS_RM_FORMATS, true ) ) {
 								continue;
 							}
 							?>

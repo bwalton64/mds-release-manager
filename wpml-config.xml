@@ -1,0 +1,40 @@
+<wpml-config>
+	<custom-types>
+		<custom-type translate="1">release</custom-type>
+		<custom-type translate="1">artist</custom-type>
+	</custom-types>
+	<taxonomies>
+		<taxonomy translate="1">release_type</taxonomy>
+		<taxonomy translate="1">release_media_format</taxonomy>
+		<taxonomy translate="1">release_tag</taxonomy>
+	</taxonomies>
+	<custom-fields>
+		<custom-field action="translate">record_label</custom-field>
+		<custom-field action="translate">distributor</custom-field>
+		<custom-field action="translate">release_tags</custom-field>
+		<custom-field action="translate">artist_contact</custom-field>
+		<custom-field action="copy">upc_ean</custom-field>
+		<custom-field action="copy">_mds_normalized_upc</custom-field>
+		<custom-field action="copy">_mds_artist_uuid</custom-field>
+		<custom-field action="copy">artist_id</custom-field>
+		<custom-field action="copy">streaming_links</custom-field>
+		<custom-field action="copy">buy_now_link</custom-field>
+		<custom-field action="copy">buy_now_links</custom-field>
+		<custom-field action="copy">buy_now_mode</custom-field>
+		<custom-field action="copy">release_routing_mode</custom-field>
+		<custom-field action="copy">release_routing_url</custom-field>
+		<custom-field action="copy">artist_homepage_url</custom-field>
+		<custom-field action="copy">artist_homepage_routing</custom-field>
+		<custom-field action="copy">artist_releases_routing_mode</custom-field>
+	</custom-fields>
+	<admin-texts>
+		<key name="mds_rm_template_defaults">
+			<key name="artist">
+				<key name="discography_heading" />
+				<key name="contact_heading" />
+			</key>
+		</key>
+		<key name="mds_rm_providers" />
+		<key name="mds_rm_block_defaults" />
+	</admin-texts>
+</wpml-config>

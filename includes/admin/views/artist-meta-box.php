@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<td>
 				<input type="url" id="artist_homepage_url" name="artist_homepage_url" value="<?php echo esc_attr( $args['homepage_url'] ); ?>" class="regular-text" />
 				<p><label><input type="checkbox" name="artist_homepage_routing" value="1" <?php checked( $args['homepage_routing'] ); ?> /> <?php esc_html_e( 'Redirect visitors to this homepage', 'mds-release-manager' ); ?></label></p>
-				<?php if ( $args['homepage_routing'] && ! MDS_RM_Artist_Routing::valid_url( $args['homepage_url'], $args['post_id'] ) ) : ?>
+				<?php if ( $args['homepage_routing'] && ! \MDS\ReleaseManager\Frontend\ArtistRouting::valid_url( $args['homepage_url'], $args['post_id'] ) ) : ?>
 					<p class="notice notice-warning inline"><?php esc_html_e( 'Routing is enabled, but the homepage URL is invalid or points to this artist page. Visitors will see the artist page instead.', 'mds-release-manager' ); ?></p>
 				<?php endif; ?>
 			</td>

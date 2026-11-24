@@ -71,8 +71,11 @@ function esc_url( $value ) {
 	return $value;
 }
 
-require __DIR__ . '/../includes/core/class-mds-rm-audio-players.php';
-require __DIR__ . '/../includes/blocks/class-mds-rm-release-links.php';
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../includes/legacy-class-aliases.php';
+class_alias( 'MDS_RM_Logger', 'MDS\\ReleaseManager\\Core\\Logger' );
+class_alias( 'MDS_RM_Template_Loader', 'MDS\\ReleaseManager\\Core\\TemplateLoader' );
+class_alias( 'MDS_RM_Release_Links_Block', 'MDS\\ReleaseManager\\Blocks\\ReleaseLinksBlock' );
 
 function check_audio( $condition, $message ) {
 	if ( ! $condition ) {

@@ -21,8 +21,9 @@ function sanitize_key( $value ) {
 	return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( $value ) );
 }
 
-require __DIR__ . '/../includes/admin/class-mds-rm-admin-interface.php';
-require __DIR__ . '/../includes/admin/class-mds-rm-network-admin.php';
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../includes/legacy-class-aliases.php';
+class_alias( 'MDS_RM_Logger', 'MDS\\ReleaseManager\\Core\\Logger' );
 
 $render = static function () {};
 $GLOBALS['tabs'] = array(

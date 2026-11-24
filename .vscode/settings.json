@@ -1,0 +1,11 @@
+{
+	"intelephense.environment.phpVersion": "8.0.0",
+	"intelephense.environment.includePaths": [
+		"C:\\Users\\Brian\\Local Sites\\bgw-dev\\app\\public\\wp-includes",
+		"C:\\Users\\Brian\\Local Sites\\bgw-dev\\app\\public\\wp-admin"
+	],
+	"intelephense.files.exclude": [
+		"**/node_modules/**",
+		"**/build/**"
+	]
+}

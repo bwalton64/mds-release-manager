@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	name="{{PLUGIN_NAME}} Coding Standards"
+	name="MDS Release Manager Coding Standards"
 	xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/squizlabs/PHP_CodeSniffer/master/phpcs.xsd">
 
 	<description>WordPress Coding Standards (WPCS) with PHP 8.0 compatibility and Composer PSR-4 support.</description>
@@ -8,10 +8,13 @@
 	<!-- Scan all PHP files in the repository -->
 	<file>.</file>
 
-	<!-- Exclude third-party dependencies, compiled assets, and generated manifests -->
+	<!-- Exclude third-party dependencies, compiled assets, tests, agent docs, and generated manifests -->
 	<exclude-pattern>/vendor/*</exclude-pattern>
 	<exclude-pattern>/node_modules/*</exclude-pattern>
 	<exclude-pattern>/build/*</exclude-pattern>
+	<exclude-pattern>/tests/*</exclude-pattern>
+	<exclude-pattern>/.agents/*</exclude-pattern>
+	<exclude-pattern>/tests/*</exclude-pattern>
 	<exclude-pattern>*.asset.php</exclude-pattern>
 
 	<!-- CLI flags: show progress, sniff codes, and colors -->
@@ -44,7 +47,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="{{TEXT_DOMAIN}}"/>
+				<element value="mds-release-manager"/>
 			</property>
 		</properties>
 	</rule>
@@ -53,9 +56,9 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">
-				<element value="{{FUNC_PREFIX}}"/>
-				<element value="{{CLASS_PREFIX}}"/>
-				<element value="{{PHP_NAMESPACE}}"/>
+				<element value="mds_rm_"/>
+				<element value="MDS_RM_"/>
+				<element value="MDS\ReleaseManager"/>
 			</property>
 		</properties>
 	</rule>

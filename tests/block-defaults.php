@@ -29,11 +29,8 @@ function get_option( $name, $fallback = false ) {
 	return 'mds_rm_block_defaults' === $name ? $GLOBALS['defaults'] : $fallback;
 }
 
-require __DIR__ . '/../includes/blocks/class-mds-rm-release-meta.php';
-require __DIR__ . '/../includes/blocks/class-mds-rm-release-links.php';
-require __DIR__ . '/../includes/blocks/class-mds-rm-release-links-block.php';
-require __DIR__ . '/../includes/frontend/class-mds-rm-discography.php';
-require __DIR__ . '/../includes/blocks/class-mds-rm-block-defaults.php';
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../includes/legacy-class-aliases.php';
 
 function check_defaults( $condition, $message ) {
 	if ( ! $condition ) {
