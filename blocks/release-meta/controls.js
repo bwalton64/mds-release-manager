@@ -40,24 +40,21 @@
 					select('direction', __('Layout Direction', 'mds-release-manager'), choices([
 						['row', __('Horizontal (Row)', 'mds-release-manager')],
 						['column', __('Vertical (Column)', 'mds-release-manager')],
-						['row-reverse', __('Reverse Horizontal', 'mds-release-manager')],
-						['column-reverse', __('Reverse Vertical', 'mds-release-manager')],
 					])),
 					select('wrap', __('Line Wrapping', 'mds-release-manager'), choices([
 						['wrap', __('Wrap to Multiple Lines', 'mds-release-manager')],
 						['nowrap', __('Single Line (No Wrap)', 'mds-release-manager')],
-						['wrap-reverse', __('Reverse Wrap', 'mds-release-manager')],
 					])),
-					select('align', __('Justify Items', 'mds-release-manager'), choices([
-						['flex-start', __('Start / Left', 'mds-release-manager')],
+					select('align', __('Horizontal Alignment', 'mds-release-manager'), choices([
+						['flex-start', __('Left / Start', 'mds-release-manager')],
 						['center', __('Center', 'mds-release-manager')],
-						['flex-end', __('End / Right', 'mds-release-manager')],
-						['space-between', __('Space Between', 'mds-release-manager')],
+						['flex-end', __('Right / End', 'mds-release-manager')],
+						['space-between', __('Spread Evenly', 'mds-release-manager')],
 					])),
-					select('vertical_align', __('Align Items', 'mds-release-manager'), choices([
-						['flex-start', __('Top / Start', 'mds-release-manager')],
-						['center', __('Center', 'mds-release-manager')],
-						['flex-end', __('Bottom / End', 'mds-release-manager')],
+					select('vertical_align', __('Vertical Alignment', 'mds-release-manager'), choices([
+						['flex-start', __('Top', 'mds-release-manager')],
+						['center', __('Middle', 'mds-release-manager')],
+						['flex-end', __('Bottom', 'mds-release-manager')],
 						['stretch', __('Stretch to Fill', 'mds-release-manager')],
 					]))
 				),

@@ -17,9 +17,43 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Resolves site defaults without changing the saved block markup.
  */
 final class BlockDefaults {
-	/** Registers the block-render filter. */
+	/** Registers the block-render filter and Settings API schema. */
 	public static function register_hooks(): void {
 		add_filter( 'render_block_data', array( self::class, 'apply_to_block' ) );
+		add_action( 'init', array( self::class, 'register_option' ) );
+	}
+
+	/**
+	 * Registers the `mds_rm_block_defaults` option with the WordPress Settings API.
+	 *
+	 * @return void
+	 */
+	public static function register_option(): void {
+		register_setting(
+			'mds_rm_settings',
+			'mds_rm_block_defaults',
+			array(
+				'type'              => 'object',
+				'description'       => __( 'Site-wide presentation and behavior defaults for MDS Release Manager blocks.', 'mds-release-manager' ),
+				'sanitize_callback' => array( self::class, 'sanitize_option' ),
+				'default'           => array(),
+				'show_in_rest'      => false,
+			)
+		);
+	}
+
+	/**
+	 * Sanitizes `mds_rm_block_defaults` when saved through the Settings API.
+	 *
+	 * @param mixed $value Submitted option value.
+	 * @return array<string, mixed> Validated defaults or previously saved value.
+	 */
+	public static function sanitize_option( $value ): array {
+		if ( true === self::validate( $value ) ) {
+			return is_array( $value ) ? $value : array();
+		}
+		$existing = get_option( 'mds_rm_block_defaults', array() );
+		return is_array( $existing ) ? $existing : array();
 	}
 
 	/**
@@ -43,10 +77,43 @@ final class BlockDefaults {
 		if ( ! is_array( $all ) ) {
 			return self::invalid();
 		}
-		$keys = array(
+		$keys              = array(
 			'release-meta'       => array( 'metaStyles', 'items' ),
-			'release-links'      => array( 'linkStyles', 'items', 'newTab', 'showAudio', 'buyNowMode' ),
+			'release-links'      => array( 'linkStyles', 'items', 'newTab', 'buyNowMode' ),
+			'release-player'     => array(
+				'provider',
+				'showArtwork',
+				'showMeta',
+				'showProgress',
+				'showTime',
+				'showTracklist',
+				'showProviderBadge',
+				'samplerMode',
+				'previewSeconds',
+				'crossfadeMs',
+				'compact',
+				'backgroundColor',
+				'textColor',
+				'mutedColor',
+				'accentColor',
+				'playIconColor',
+				'borderColor',
+				'borderRadius',
+				'borderWidth',
+				'padding',
+				'maxWidth',
+				'shadow',
+			),
 			'artist-discography' => array( 'tableStyles', 'style' ),
+		);
+		$player_bool_keys  = array( 'showArtwork', 'showMeta', 'showProgress', 'showTime', 'showTracklist', 'showProviderBadge', 'samplerMode', 'compact' );
+		$player_color_keys = array( 'backgroundColor', 'textColor', 'mutedColor', 'accentColor', 'playIconColor', 'borderColor' );
+		$player_int_ranges = array(
+			'previewSeconds' => array( 10, 60 ),
+			'crossfadeMs'    => array( 0, 4000 ),
+			'borderRadius'   => array( 0, 32 ),
+			'borderWidth'    => array( 0, 6 ),
+			'padding'        => array( 0, 32 ),
 		);
 		foreach ( $all as $slug => $settings ) {
 			if ( ! isset( $keys[ $slug ] ) || ! is_array( $settings ) ) {
@@ -56,7 +123,45 @@ final class BlockDefaults {
 				if ( ! in_array( $key, $keys[ $slug ], true ) ) {
 					return self::invalid();
 				}
-				if ( in_array( $key, array( 'newTab', 'showAudio' ), true ) ) {
+				if ( 'release-player' === $slug ) {
+					if ( in_array( $key, $player_bool_keys, true ) ) {
+						if ( ! is_bool( $value ) ) {
+							return self::invalid();
+						}
+						continue;
+					}
+					if ( isset( $player_int_ranges[ $key ] ) ) {
+						if ( ! is_int( $value ) || $value < $player_int_ranges[ $key ][0] || $value > $player_int_ranges[ $key ][1] ) {
+							return self::invalid();
+						}
+						continue;
+					}
+					if ( in_array( $key, $player_color_keys, true ) ) {
+						if ( ! is_string( $value ) || ( '' !== trim( $value ) && '' === ReleaseLinksBlock::style_value( trim( $value ), 'color' ) ) ) {
+							return self::invalid();
+						}
+						continue;
+					}
+					if ( 'maxWidth' === $key ) {
+						if ( ! is_string( $value ) || ( '' !== trim( $value ) && '' === ReleaseLinksBlock::style_value( trim( $value ), 'width' ) ) ) {
+							return self::invalid();
+						}
+						continue;
+					}
+					if ( 'shadow' === $key ) {
+						if ( ! is_string( $value ) || ! in_array( $value, array( 'none', 'subtle', 'elevated' ), true ) ) {
+							return self::invalid();
+						}
+						continue;
+					}
+					if ( 'provider' === $key ) {
+						if ( ! is_string( $value ) || ( '' !== $value && sanitize_key( $value ) !== $value ) ) {
+							return self::invalid();
+						}
+						continue;
+					}
+				}
+				if ( 'newTab' === $key ) {
 					if ( ! is_bool( $value ) ) {
 						return self::invalid();
 					}
@@ -219,7 +324,7 @@ final class BlockDefaults {
 	}
 
 	/**
-	 * Resolves defaults only for the three dynamic blocks.
+	 * Resolves defaults only for the four dynamic blocks.
 	 *
 	 * @param array $block Parsed block.
 	 * @return array Block with effective attributes.
@@ -228,6 +333,7 @@ final class BlockDefaults {
 		$names = array(
 			'mds-rm/release-meta'       => 'release-meta',
 			'mds-rm/release-links'      => 'release-links',
+			'mds-rm/release-player'     => 'release-player',
 			'mds-rm/artist-discography' => 'artist-discography',
 		);
 		$name  = $block['blockName'] ?? '';
@@ -246,7 +352,18 @@ final class BlockDefaults {
 	 * @return array Effective attributes.
 	 */
 	public static function resolve( string $slug, array $attributes ): array {
-		$defaults  = self::get( $slug );
+		$defaults = self::get( $slug );
+		if ( 'release-player' === $slug ) {
+			$merged = $defaults;
+			foreach ( $attributes as $key => $val ) {
+				if ( null !== $val && '' !== $val ) {
+					$merged[ $key ] = $val;
+				} elseif ( ! array_key_exists( $key, $merged ) ) {
+					$merged[ $key ] = $val;
+				}
+			}
+			return $merged;
+		}
 		$style_key = array(
 			'release-meta'       => 'metaStyles',
 			'release-links'      => 'linkStyles',
@@ -303,10 +420,8 @@ final class BlockDefaults {
 		}
 
 		if ( 'release-links' === $slug ) {
-			foreach ( array( 'newTab', 'showAudio' ) as $key ) {
-				if ( ! array_key_exists( $key, $attributes ) && isset( $defaults[ $key ] ) && is_bool( $defaults[ $key ] ) ) {
-					$attributes[ $key ] = $defaults[ $key ];
-				}
+			if ( ! array_key_exists( 'newTab', $attributes ) && isset( $defaults['newTab'] ) && is_bool( $defaults['newTab'] ) ) {
+				$attributes['newTab'] = $defaults['newTab'];
 			}
 			if ( ! array_key_exists( 'buyNowMode', $attributes ) && isset( $defaults['buyNowMode'] ) && in_array( $defaults['buyNowMode'], array( 'picker', 'direct' ), true ) ) {
 				$attributes['buyNowMode'] = $defaults['buyNowMode'];

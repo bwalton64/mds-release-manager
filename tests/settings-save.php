@@ -67,7 +67,7 @@ class_alias( 'MDS_RM_Discography', 'MDS\\ReleaseManager\\Frontend\\Discography' 
 class_alias( 'MDS_RM_Logger', 'MDS\\ReleaseManager\\Core\\Logger' );
 
 $GLOBALS['updates'] = array();
-$defaults = array( 'release-links' => array( 'newTab' => false, 'showAudio' => true ) );
+$defaults = array( 'release-links' => array( 'newTab' => false ) );
 $result = RestApi::save_settings_api(
 	new Fake_Request(
 		array(
@@ -92,29 +92,6 @@ $GLOBALS['updates'] = array();
 $result = RestApi::save_settings_api( new Fake_Request( array( 'mds_rm_providers' => 'invalid' ) ) );
 if ( ! $result instanceof WP_Error || 'mds_rm_invalid_providers' !== $result->code || $GLOBALS['updates'] ) {
 	throw new RuntimeException( 'Invalid providers must be rejected before any option is changed.' );
-}
-$GLOBALS['updates'] = array();
-$result = RestApi::save_settings_api(
-	new Fake_Request(
-		array(
-			'mds_rm_audio_players'         => array( 'bandcamp', 'html5' ),
-			'mds_rm_audio_player_settings' => 'not-json',
-		)
-	)
-);
-if ( ! $result instanceof WP_Error || 'mds_rm_invalid_audio_player_settings' !== $result->code || $GLOBALS['updates'] ) {
-	throw new RuntimeException( 'Invalid audio player settings must be rejected before any option is changed.' );
-}
-$GLOBALS['updates'] = array();
-$result = RestApi::save_settings_api(
-	new Fake_Request(
-		array(
-			'mds_rm_audio_players' => array( 'bandcamp', 'html5' ),
-		)
-	)
-);
-if ( ! $result instanceof WP_REST_Response || array( 'bandcamp' ) !== $GLOBALS['updates']['mds_rm_audio_players'] ) {
-	throw new RuntimeException( 'Only one active audio player may be saved at a time.' );
 }
 $GLOBALS['updates'] = array();
 $result = RestApi::save_settings_api(

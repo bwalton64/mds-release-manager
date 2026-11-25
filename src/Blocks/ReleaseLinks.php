@@ -118,10 +118,6 @@ final class ReleaseLinks {
 				'label' => 'Hover Opacity',
 				'type'  => 'opacity',
 			),
-			'audio_width'         => array(
-				'label' => 'Audio Player Width',
-				'type'  => 'width',
-			),
 		);
 	}
 
@@ -147,16 +143,12 @@ final class ReleaseLinks {
 	 * @param array      $attributes Release Links block attributes.
 	 * @return string Audio markup, or an empty string when unavailable.
 	 */
-	private static function audio( int|string $post_id, array $attributes = array() ): string {
-		return \MDS\ReleaseManager\Core\AudioPlayers::render( (int) $post_id, $attributes );
-	}
-
 	/**
-	 * Renders streaming links and the optional audio preview for a release.
+	 * Renders streaming links and Buy Now buttons for a release.
 	 *
-	 * @param array      $attributes      Link, audio, and style overrides.
+	 * @param array      $attributes      Link and style overrides.
 	 * @param int|string $context_post_id Post ID to use when no UPC is supplied.
-	 * @return string The release links and audio markup, or an empty string.
+	 * @return string The release links markup, or an empty string.
 	 */
 	public static function render( $attributes = array(), $context_post_id = 0 ): string {
 		$release_id = isset( $attributes['release_id'] ) ? $attributes['release_id'] : ( isset( $attributes['releaseId'] ) ? $attributes['releaseId'] : 0 );
@@ -321,15 +313,13 @@ final class ReleaseLinks {
 				'<ul class="mds-buy-now-dialog__list">' . $items_html . '</ul>' .
 				'</dialog>';
 		}
-		$audio = ! isset( $attributes['showAudio'] ) || $attributes['showAudio'] ? self::audio( $post->ID, $attributes ) : '';
-		if ( '' === $output && '' === $audio ) {
+		if ( '' === $output ) {
 			return '';
 		}
 		self::enqueue_assets();
 		$style = ReleaseMeta::style_attribute( isset( $attributes['styles'] ) ? $attributes['styles'] : array(), self::style_fields(), 'links' );
 		return '<div class="mds-release-links"' . ( $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>' .
-			( $output ? '<div class="mds-release-links__buttons">' . $output . '</div>' : '' ) .
-			( $audio ? '<div class="mds-release-links__audio">' . $audio . '</div>' : '' ) .
+			'<div class="mds-release-links__buttons">' . $output . '</div>' .
 			$modal_html . '</div>';
 	}
 
@@ -399,7 +389,6 @@ final class ReleaseLinks {
 				'release_id' => isset( $atts['release_id'] ) ? $atts['release_id'] : '',
 				'items'      => $items,
 				'newTab'     => self::shortcode_toggle( $atts, 'new_tab' ),
-				'showAudio'  => self::shortcode_toggle( $atts, 'show_audio' ),
 				'buyNowMode' => $buy_now_mode,
 				'styles'     => $styles,
 			),

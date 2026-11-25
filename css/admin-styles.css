@@ -509,6 +509,214 @@
 	}
 }
 
+/* Block Defaults Live Preview */
+.mds-bd-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 12px;
+}
+.mds-bd-toolbar .mds-accordion-toolbar {
+	margin-bottom: 0;
+}
+.mds-bd-toolbar__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+.mds-bd-workspace.has-preview {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 420px;
+	gap: 20px;
+	align-items: start;
+}
+.mds-bd-preview-stage {
+	background: #ffffff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 18px;
+	overflow-x: auto;
+	transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.mds-bd-preview-stage.is-dark {
+	background: #111827;
+	border-color: #374151;
+	color: #f9fafb;
+}
+.mds-bd-preview-stage .mds-release-meta {
+	margin-bottom: 0;
+}
+.mds-bd-preview-art {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(135deg, #2271b1 0%, #6366f1 100%);
+	color: #ffffff;
+}
+.mds-bd-preview-art .dashicons {
+	font-size: 22px;
+	width: 22px;
+	height: 22px;
+}
+.mds-bd-preview-caption {
+	margin: 10px 0 0;
+	font-size: 11px;
+	color: #646970;
+	line-height: 1.45;
+}
+.mds-bd-preview-empty {
+	margin: 0;
+	font-size: 12px;
+	color: #646970;
+	font-style: italic;
+}
+.mds-bd-preview-stage.is-dark .mds-bd-preview-empty {
+	color: #9ca3af;
+}
+.mds-bd-preview-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+.mds-bd-preview-table th,
+.mds-bd-preview-table td {
+	text-align: left;
+	padding: 8px 10px;
+	border-bottom: 1px solid #e2e4e7;
+}
+.mds-bd-preview-stage.is-dark .mds-bd-preview-table th,
+.mds-bd-preview-stage.is-dark .mds-bd-preview-table td {
+	border-bottom-color: #374151;
+}
+@media (max-width: 1180px) {
+	.mds-bd-workspace.has-preview {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Unified Color Control (Theme Swatches + Custom Picker) */
+.mds-color-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	max-width: 100%;
+}
+.mds-color-trigger__swatch {
+	display: inline-block;
+	flex: 0 0 18px;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	border: 1px solid rgba(0, 0, 0, 0.22);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.mds-color-trigger__swatch.is-empty {
+	background: repeating-conic-gradient(#dcdcde 0% 25%, #ffffff 0% 50%) 50% / 8px 8px;
+}
+.mds-color-trigger__text {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.mds-color-popover {
+	padding: 12px;
+	width: 248px;
+}
+.mds-color-popover__palette {
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #e2e4e7;
+}
+.mds-color-popover__heading {
+	display: block;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #50575e;
+	margin-bottom: 6px;
+}
+.mds-color-popover__swatches {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.mds-color-popover__swatch {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	border: 1px solid rgba(0, 0, 0, 0.22);
+	padding: 0;
+	cursor: pointer;
+	transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.mds-color-popover__swatch:hover {
+	transform: scale(1.1);
+}
+.mds-color-popover__swatch.is-selected {
+	box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #2271b1;
+}
+.mds-color-popover__footer {
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px solid #e2e4e7;
+	display: flex;
+	justify-content: flex-end;
+}
+
+/* Block Defaults Theme Scheme & Preset Bar */
+.mds-theme-preset-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 12px 14px;
+	margin: 14px 0 16px;
+}
+.mds-theme-preset-bar__status {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+.mds-theme-preset-bar__swatches {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+}
+.mds-theme-preset-bar__dot {
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	border: 1px solid rgba(0, 0, 0, 0.22);
+}
+.mds-theme-preset-bar__title {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+}
+.mds-theme-preset-bar__sub {
+	display: block;
+	font-size: 11px;
+	color: #646970;
+}
+.mds-theme-preset-bar__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+
 
 /* ==========================================================================
    Release CPT Editor — Semantic Grid, Info Callouts & Live Preview Modal

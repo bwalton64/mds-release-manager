@@ -19,7 +19,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<h2 class="nav-tab-wrapper" id="mds-settings-tabs">
 		<a href="#tab-general-settings" class="nav-tab nav-tab-active" aria-current="page"><?php esc_html_e( 'General Settings', 'mds-release-manager' ); ?></a>
 		<a href="#tab-default-templates" class="nav-tab"><?php esc_html_e( 'Default Templates', 'mds-release-manager' ); ?></a>
-		<a href="#tab-audio-player-manager" class="nav-tab"><?php esc_html_e( 'Audio Player Manager', 'mds-release-manager' ); ?></a>
 		<a href="#tab-block-defaults" class="nav-tab"><?php esc_html_e( 'Block Defaults', 'mds-release-manager' ); ?></a>
 		<?php foreach ( $args['extension_tabs'] as $slug => $tab ) : ?>
 			<a href="#tab-<?php echo esc_attr( $slug ); ?>" class="nav-tab"><?php echo esc_html( $tab['label'] ); ?></a>
@@ -29,12 +28,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<form id="mds-settings-form">
 		<input type="hidden" name="mds_rm_block_defaults" id="mds-rm-block-defaults" value="<?php echo esc_attr( wp_json_encode( $args['block_defaults'] ) ); ?>" />
 		<input type="hidden" name="mds_rm_template_defaults" id="mds-rm-template-defaults" value="<?php echo esc_attr( wp_json_encode( $args['template_defaults'] ) ); ?>" />
-		<input type="hidden" name="mds_rm_audio_player_settings" id="mds-rm-audio-player-settings" value="<?php echo esc_attr( wp_json_encode( $args['audio_player_settings'] ?? array() ) ); ?>" />
-		<div id="mds-audio-player-fields">
-			<?php foreach ( $args['active_players'] as $active_slug ) : ?>
-				<input type="hidden" name="mds_rm_audio_players[]" value="<?php echo esc_attr( $active_slug ); ?>" />
-			<?php endforeach; ?>
-		</div>
 		<div id="mds-provider-fields">
 			<?php foreach ( $args['providers'] as $provider ) : ?>
 				<?php if ( isset( $provider['name'] ) && is_string( $provider['name'] ) && '' !== $provider['name'] ) : ?>
@@ -45,9 +38,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php endforeach; ?>
 		</div>
 		<div id="tab-block-defaults" class="mds-tab-pane">
-			<div class="mds-panel">
+			<div class="mds-panel mds-panel--wide">
 				<h2><?php esc_html_e( 'Block Defaults', 'mds-release-manager' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Configure site-wide presentation and behavior defaults for Release Meta, Release Links, and Artist Discography. These defaults apply to automatic fallback blocks and to inserted blocks that do not override them.', 'mds-release-manager' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Configure site-wide presentation and behavior defaults for Release Meta, Release Links, Release Player, and Artist Discography. These defaults apply to automatic fallback blocks and to inserted blocks that do not override them.', 'mds-release-manager' ); ?></p>
 				<div id="mds-block-defaults-root"></div>
 			</div>
 			<div class="mds-admin-save-actions">
@@ -147,19 +140,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<p class="description"><?php esc_html_e( 'Customize the automatic page layouts rendered for Release and Artist pages when no page builder or custom redirect is active. Settings here are theme-independent and survive theme switches.', 'mds-release-manager' ); ?></p>
 				<div id="mds-default-templates-root"></div>
 			</div>
-			<div class="mds-admin-save-actions">
-				<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
-				<span class="mds-save-status" role="status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>
-			</div>
-		</div>
-
-		<div id="tab-audio-player-manager" class="mds-tab-pane">
-			<div class="mds-panel">
-				<h2><?php esc_html_e( 'Audio Player Manager', 'mds-release-manager' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Select the active audio preview player displayed in the Release Links Block and [release-links] shortcode, and configure each registered player’s site-wide styling and options. When a third-party player is active, releases without third-party audio configured automatically fall back to the built-in HTML5 Player (.mp3).', 'mds-release-manager' ); ?></p>
-				<div id="mds-audio-player-manager"></div>
-			</div>
-
 			<div class="mds-admin-save-actions">
 				<button type="submit" class="button button-primary mds-save-settings-btn"><?php esc_html_e( 'Save Settings', 'mds-release-manager' ); ?></button>
 				<span class="mds-save-status" role="status"><?php esc_html_e( 'Settings saved! Cache purged.', 'mds-release-manager' ); ?></span>

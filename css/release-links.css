@@ -39,8 +39,6 @@
 	box-shadow: 0 0 0 3px CanvasText;
 	opacity: 1;
 }
-.mds-release-links__audio { flex: 0 1 auto; min-width: 0; max-width: 100%; width: var(--mds-links-audio-width-desktop, 300px); }
-.mds-release-links__audio iframe, .mds-release-links__audio audio { display: block; width: 100%; max-width: 100%; }
 @media (max-width: 1024px) {
 	.mds-release-links {
 		background: var(--mds-links-background-tablet, var(--mds-links-background-desktop, transparent));
@@ -70,7 +68,6 @@
 	}
 	.mds-release-links__link i { font-size: var(--mds-links-icon-size-tablet, var(--mds-links-icon-size-desktop, 22px)); }
 	.mds-release-links__link:hover { opacity: var(--mds-links-hover-opacity-tablet, var(--mds-links-hover-opacity-desktop, .9)); }
-	.mds-release-links__audio { width: var(--mds-links-audio-width-tablet, var(--mds-links-audio-width-desktop, 300px)); }
 }
 @media (max-width: 767px) {
 	.mds-release-links {
@@ -101,7 +98,6 @@
 	}
 	.mds-release-links__link i { font-size: var(--mds-links-icon-size-mobile, var(--mds-links-icon-size-tablet, var(--mds-links-icon-size-desktop, 22px))); }
 	.mds-release-links__link:hover { opacity: var(--mds-links-hover-opacity-mobile, var(--mds-links-hover-opacity-tablet, var(--mds-links-hover-opacity-desktop, .9))); }
-	.mds-release-links__audio { width: var(--mds-links-audio-width-mobile, var(--mds-links-audio-width-tablet, var(--mds-links-audio-width-desktop, 300px))); }
 }
 
 /* Multi-Format Buy Now Choose Format Modal */

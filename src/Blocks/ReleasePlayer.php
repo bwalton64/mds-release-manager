@@ -32,6 +32,7 @@ final class ReleasePlayer {
 	public static function defaults(): array {
 		return array(
 			'releaseId'         => 0,
+			'upcOverride'       => '',
 			'upc'               => '',
 			'provider'          => '',
 			'showArtwork'       => true,
@@ -44,7 +45,17 @@ final class ReleasePlayer {
 			'previewSeconds'    => 20,
 			'crossfadeMs'       => 1500,
 			'compact'           => false,
+			'backgroundColor'   => '',
+			'textColor'         => '',
+			'mutedColor'        => '',
 			'accentColor'       => '',
+			'playIconColor'     => '',
+			'borderColor'       => '',
+			'borderRadius'      => 10,
+			'borderWidth'       => 1,
+			'padding'           => 12,
+			'maxWidth'          => '',
+			'shadow'            => 'none',
 		);
 	}
 
@@ -121,7 +132,17 @@ final class ReleasePlayer {
 			'preview_seconds'     => 'previewSeconds',
 			'crossfade_ms'        => 'crossfadeMs',
 			'compact'             => 'compact',
+			'background_color'    => 'backgroundColor',
+			'text_color'          => 'textColor',
+			'muted_color'         => 'mutedColor',
 			'accent_color'        => 'accentColor',
+			'play_icon_color'     => 'playIconColor',
+			'border_color'        => 'borderColor',
+			'border_radius'       => 'borderRadius',
+			'border_width'        => 'borderWidth',
+			'padding'             => 'padding',
+			'max_width'           => 'maxWidth',
+			'shadow'              => 'shadow',
 		);
 
 		$normalized = array();
@@ -152,8 +173,9 @@ final class ReleasePlayer {
 	 * @return string Rendered HTML, or empty string when no audio provider supports the release.
 	 */
 	public static function render( array $attributes = array(), ?\WP_Block $block = null, int $context_post_id = 0 ): string {
-		$attrs   = array_merge( self::defaults(), $attributes );
-		$release = ReleaseMeta::resolve_release( $attrs, $block, $context_post_id );
+		$resolved = BlockDefaults::resolve( 'release-player', $attributes );
+		$attrs    = array_merge( self::defaults(), $resolved );
+		$release  = ReleaseMeta::resolve_release( $attrs, $block, $context_post_id );
 
 		if ( ! $release instanceof \WP_Post ) {
 			return '';
@@ -179,9 +201,44 @@ final class ReleasePlayer {
 		$preview_secs   = max( 10, min( 60, (int) $attrs['previewSeconds'] ) );
 		$crossfade_ms   = max( 0, min( 4000, (int) $attrs['crossfadeMs'] ) );
 
-		$accent = '';
-		if ( is_string( $attrs['accentColor'] ) && '' !== trim( $attrs['accentColor'] ) ) {
-			$accent = ReleaseLinksBlock::style_value( trim( $attrs['accentColor'] ), 'color' );
+		$style_vars = array();
+		$color_map  = array(
+			'backgroundColor' => '--mds-player-bg',
+			'textColor'       => '--mds-player-text',
+			'mutedColor'      => '--mds-player-muted',
+			'accentColor'     => '--mds-player-accent',
+			'playIconColor'   => '--mds-player-play-icon',
+			'borderColor'     => '--mds-player-border',
+		);
+		foreach ( $color_map as $attr_key => $css_var ) {
+			if ( is_string( $attrs[ $attr_key ] ) && '' !== trim( $attrs[ $attr_key ] ) ) {
+				$valid = ReleaseMeta::valid_style( trim( $attrs[ $attr_key ] ), 'color' );
+				if ( '' !== $valid ) {
+					$style_vars[] = $css_var . ':' . $valid;
+				}
+			}
+		}
+
+		$radius = max( 0, min( 32, (int) $attrs['borderRadius'] ) );
+		if ( 10 !== $radius ) {
+			$style_vars[] = '--mds-player-radius:' . $radius . 'px';
+		}
+
+		$border_width = max( 0, min( 6, (int) $attrs['borderWidth'] ) );
+		if ( 1 !== $border_width ) {
+			$style_vars[] = '--mds-player-border-width:' . $border_width . 'px';
+		}
+
+		$padding = max( 0, min( 32, (int) $attrs['padding'] ) );
+		if ( 12 !== $padding ) {
+			$style_vars[] = '--mds-player-padding:' . $padding . 'px';
+		}
+
+		if ( is_string( $attrs['maxWidth'] ) && '' !== trim( $attrs['maxWidth'] ) ) {
+			$valid_width = ReleaseMeta::valid_style( trim( $attrs['maxWidth'] ), 'width' );
+			if ( '' !== $valid_width ) {
+				$style_vars[] = '--mds-player-max-width:' . $valid_width;
+			}
 		}
 
 		$title   = get_the_title( $release_id );
@@ -193,8 +250,12 @@ final class ReleasePlayer {
 		if ( $compact ) {
 			$classes[] = 'mds-rm-player--compact';
 		}
+		$shadow = is_string( $attrs['shadow'] ) ? sanitize_key( $attrs['shadow'] ) : 'none';
+		if ( in_array( $shadow, array( 'subtle', 'elevated' ), true ) ) {
+			$classes[] = 'mds-rm-player--shadow-' . $shadow;
+		}
 
-		$style_attr = '' !== $accent ? ' style="--mds-player-accent:' . esc_attr( $accent ) . ';"' : '';
+		$style_attr = ! empty( $style_vars ) ? ' style="' . esc_attr( implode( ';', $style_vars ) . ';' ) . '"' : '';
 
 		ob_start();
 		?>

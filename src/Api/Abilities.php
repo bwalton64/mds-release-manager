@@ -172,11 +172,6 @@ final class Abilities {
 								),
 							),
 						),
-						'audio_players'   => array(
-							'type'        => 'array',
-							'items'       => array( 'type' => 'string' ),
-							'description' => __( 'Enabled audio player slugs', 'mds-release-manager' ),
-						),
 						'global_redirect' => array(
 							'type'        => 'boolean',
 							'description' => __( 'Enable global artist homepage redirect', 'mds-release-manager' ),
@@ -428,24 +423,6 @@ final class Abilities {
 				}
 			}
 			update_option( 'mds_rm_providers', $providers );
-
-			if ( isset( $input['audio_players'] ) && is_array( $input['audio_players'] ) ) {
-				$players = \MDS\ReleaseManager\Core\AudioPlayers::sanitize_active_players( wp_unslash( $input['audio_players'] ) );
-				update_option( 'mds_rm_audio_players', $players );
-			} else {
-				update_option( 'mds_rm_audio_players', array() );
-			}
-
-			if ( isset( $input['audio_player_settings'] ) && is_array( $input['audio_player_settings'] ) ) {
-				$validated_audio_settings = \MDS\ReleaseManager\Core\AudioPlayers::validate_settings( $input['audio_player_settings'] );
-				if ( is_wp_error( $validated_audio_settings ) ) {
-					return array(
-						'success' => false,
-						'message' => $validated_audio_settings->get_error_message(),
-					);
-				}
-				update_option( 'mds_rm_audio_player_settings', $validated_audio_settings );
-			}
 
 			if ( isset( $input['global_redirect'] ) && $input['global_redirect'] ) {
 				update_option( 'mds_rm_global_redirect', '1' );

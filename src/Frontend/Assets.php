@@ -64,6 +64,7 @@ final class Assets {
 		\MDS\ReleaseManager\Blocks\ReleaseMeta::enqueue_assets();
 
 		\MDS\ReleaseManager\Core\TemplateLoader::enqueue_editable_style( 'mds-release-links-css', 'css/frontend.css' );
+		wp_add_inline_style( 'mds-release-links-css', ThemeScheme::css_variables() );
 		if ( is_singular( 'release' ) ) {
 			wp_add_inline_style(
 				'mds-release-links-css',
@@ -367,6 +368,27 @@ final class Assets {
 
 		if ( $is_settings_screen ) {
 			self::enqueue_font_awesome();
+			\MDS\ReleaseManager\Blocks\ReleaseMeta::enqueue_assets();
+			\MDS\ReleaseManager\Blocks\ReleaseLinks::enqueue_assets();
+			$player_css = 'css/release-player.css';
+			if ( file_exists( MDS_RM_PATH . $player_css ) ) {
+				wp_enqueue_style(
+					'mds-rm-release-player',
+					MDS_RM_URL . $player_css,
+					array(),
+					(string) filemtime( MDS_RM_PATH . $player_css )
+				);
+				wp_add_inline_style( 'mds-rm-release-player', ThemeScheme::css_variables() );
+			}
+			$discography_css = 'blocks/artist-discography/style.css';
+			if ( file_exists( MDS_RM_PATH . $discography_css ) ) {
+				wp_enqueue_style(
+					'mds-rm-artist-discography-preview',
+					MDS_RM_URL . $discography_css,
+					array(),
+					(string) filemtime( MDS_RM_PATH . $discography_css )
+				);
+			}
 			wp_enqueue_style( 'wp-color-picker' );
 			wp_enqueue_style( 'wp-components' );
 			wp_enqueue_style( 'wp-block-editor' );
@@ -374,7 +396,7 @@ final class Assets {
 			wp_enqueue_script(
 				'mds-settings-defaults',
 				MDS_RM_URL . $defaults_script,
-				array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'mds-rm-icon-picker', 'mds-rm-release-meta-controls', 'mds-rm-release-links-controls', 'mds-rm-discography-table-controls' ),
+				array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'wp-a11y', 'mds-rm-icon-picker', 'mds-rm-release-meta-controls', 'mds-rm-release-links-controls', 'mds-rm-discography-table-controls' ),
 				filemtime( MDS_RM_PATH . $defaults_script ),
 				true
 			);
@@ -383,14 +405,14 @@ final class Assets {
 				'mds-settings-defaults',
 				'var mdsRmDefaultsSettings = ' . wp_json_encode(
 					array(
-						'editorSettings'      => get_block_editor_settings( array(), $context ),
-						'defaults'            => get_option( 'mds_rm_block_defaults', array() ),
-						'metaItems'           => \MDS\ReleaseManager\Blocks\ReleaseMeta::default_items(),
-						'metaFields'          => \MDS\ReleaseManager\Blocks\ReleaseMeta::fields(),
-						'providers'           => \MDS\ReleaseManager\Blocks\ReleaseLinks::providers(),
-						'audioPlayers'        => \MDS\ReleaseManager\Core\AudioPlayers::get_client_players(),
-						'activeAudioPlayer'   => \MDS\ReleaseManager\Core\AudioPlayers::get_active_player(),
-						'audioPlayerSettings' => \MDS\ReleaseManager\Core\AudioPlayers::get_all_settings(),
+						'editorSettings' => get_block_editor_settings( array(), $context ),
+						'defaults'       => get_option( 'mds_rm_block_defaults', array() ),
+						'metaItems'      => \MDS\ReleaseManager\Blocks\ReleaseMeta::default_items(),
+						'metaFields'     => \MDS\ReleaseManager\Blocks\ReleaseMeta::fields(),
+						'providers'      => \MDS\ReleaseManager\Blocks\ReleaseLinks::providers(),
+						'audioProviders' => \MDS\ReleaseManager\Core\Audio\AudioApi::get_provider_descriptors(),
+						'themeScheme'    => ThemeScheme::detect(),
+						'stylePresets'   => ThemeScheme::presets(),
 					)
 				) . ';',
 				'before'

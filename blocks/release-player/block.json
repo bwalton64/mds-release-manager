@@ -1,75 +1,48 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "mds-release-manager/release-player",
+	"name": "mds-rm/release-player",
 	"title": "Release Player",
 	"category": "mds-release-manager",
 	"icon": "album",
 	"description": "Mobile-first unified audio preview player with optional artwork, metadata, scrubber, tracklist, and sequential crossfade.",
 	"keywords": [ "audio", "music", "player", "preview", "release", "sampler" ],
 	"textdomain": "mds-release-manager",
+	"usesContext": [ "postId", "postType" ],
 	"editorScript": "mds-rm-release-player-editor",
 	"style": "mds-rm-release-player",
 	"supports": {
 		"html": false,
-		"align": [ "wide", "full" ]
+		"align": [ "wide", "full" ],
+		"spacing": {
+			"margin": true
+		}
 	},
 	"attributes": {
-		"releaseId": {
-			"type": "integer",
-			"default": 0
-		},
-		"upc": {
-			"type": "string",
-			"default": ""
-		},
-		"provider": {
-			"type": "string",
-			"default": ""
-		},
-		"showArtwork": {
-			"type": "boolean",
-			"default": true
-		},
-		"showMeta": {
-			"type": "boolean",
-			"default": true
-		},
-		"showProgress": {
-			"type": "boolean",
-			"default": true
-		},
-		"showTime": {
-			"type": "boolean",
-			"default": true
-		},
-		"showTracklist": {
-			"type": "boolean",
-			"default": false
-		},
-		"showProviderBadge": {
-			"type": "boolean",
-			"default": true
-		},
-		"samplerMode": {
-			"type": "boolean",
-			"default": true
-		},
-		"previewSeconds": {
-			"type": "integer",
-			"default": 20
-		},
-		"crossfadeMs": {
-			"type": "integer",
-			"default": 1500
-		},
-		"compact": {
-			"type": "boolean",
-			"default": false
-		},
-		"accentColor": {
-			"type": "string",
-			"default": ""
-		}
+		"releaseId": { "type": "integer", "default": 0 },
+		"upcOverride": { "type": "string", "default": "" },
+		"upc": { "type": "string", "default": "" },
+		"provider": { "type": "string" },
+		"showArtwork": { "type": "boolean" },
+		"showMeta": { "type": "boolean" },
+		"showProgress": { "type": "boolean" },
+		"showTime": { "type": "boolean" },
+		"showTracklist": { "type": "boolean" },
+		"showProviderBadge": { "type": "boolean" },
+		"samplerMode": { "type": "boolean" },
+		"previewSeconds": { "type": "integer" },
+		"crossfadeMs": { "type": "integer" },
+		"compact": { "type": "boolean" },
+		"backgroundColor": { "type": "string" },
+		"textColor": { "type": "string" },
+		"mutedColor": { "type": "string" },
+		"accentColor": { "type": "string" },
+		"playIconColor": { "type": "string" },
+		"borderColor": { "type": "string" },
+		"borderRadius": { "type": "integer" },
+		"borderWidth": { "type": "integer" },
+		"padding": { "type": "integer" },
+		"maxWidth": { "type": "string" },
+		"shadow": { "type": "string" }
 	}
 }

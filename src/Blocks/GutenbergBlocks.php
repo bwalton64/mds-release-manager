@@ -111,6 +111,7 @@ final class GutenbergBlocks {
 			'window.mdsReleasePlayer = ' . wp_json_encode(
 				array(
 					'providers' => \MDS\ReleaseManager\Core\Audio\AudioApi::get_provider_descriptors(),
+					'defaults'  => BlockDefaults::get( 'release-player' ),
 				)
 			) . ';',
 			'before'
@@ -211,7 +212,7 @@ final class GutenbergBlocks {
 			wp_register_script(
 				'mds-rm-release-player-editor',
 				MDS_RM_URL . $player_script,
-				array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'wp-i18n' ),
+				array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'wp-i18n', 'mds-rm-release-picker', 'mds-rm-color-control' ),
 				filemtime( MDS_RM_PATH . $player_script ),
 				true
 			);

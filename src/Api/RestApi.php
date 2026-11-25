@@ -403,22 +403,6 @@ final class RestApi {
 			return new WP_Error( 'mds_rm_invalid_providers', __( 'The streaming providers are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
 		}
 
-		$audio_player_settings = null;
-		if ( isset( $params['mds_rm_audio_player_settings'] ) ) {
-			$raw_audio_settings = $params['mds_rm_audio_player_settings'];
-			if ( is_string( $raw_audio_settings ) ) {
-				if ( strlen( $raw_audio_settings ) > 65536 ) {
-					return new WP_Error( 'mds_rm_invalid_audio_player_settings', __( 'The audio player settings are invalid.', 'mds-release-manager' ), array( 'status' => 400 ) );
-				}
-				$raw_audio_settings = json_decode( wp_unslash( $raw_audio_settings ), true );
-			}
-			$validated_audio_settings = \MDS\ReleaseManager\Core\AudioPlayers::validate_settings( $raw_audio_settings );
-			if ( is_wp_error( $validated_audio_settings ) ) {
-				return $validated_audio_settings;
-			}
-			$audio_player_settings = $validated_audio_settings;
-		}
-
 		$cache_settings = null;
 		if ( isset( $params['mds_rm_cache_present'] ) || isset( $params['mds_rm_cache_plugins'] ) || isset( $params['mds_rm_cache_purge_on_post_save'] ) ) {
 			$existing_cache  = class_exists( 'MDS\ReleaseManager\Core\Cache' ) ? \MDS\ReleaseManager\Core\Cache::get_settings() : array( 'plugins' => array() );
@@ -458,24 +442,12 @@ final class RestApi {
 			update_option( 'mds_rm_providers', $providers );
 		}
 
-		$players = array();
-		if ( isset( $params['mds_rm_audio_players'] ) && is_array( $params['mds_rm_audio_players'] ) ) {
-			$players = \MDS\ReleaseManager\Core\AudioPlayers::sanitize_active_players( wp_unslash( $params['mds_rm_audio_players'] ) );
-			update_option( 'mds_rm_audio_players', $players );
-		} else {
-			update_option( 'mds_rm_audio_players', array() );
-		}
-
-		if ( null !== $audio_player_settings ) {
-			update_option( 'mds_rm_audio_player_settings', $audio_player_settings );
-		}
-
 		if ( isset( $params['mds_rm_fa_support'] ) ) {
 			update_option( 'mds_rm_fa_support', \MDS\ReleaseManager\Frontend\Assets::sanitize_font_awesome_source( wp_unslash( $params['mds_rm_fa_support'] ) ) );
 		}
 
 		if ( null !== $block_defaults ) {
-			update_option( 'mds_rm_block_defaults', $block_defaults );
+			update_option( 'mds_rm_block_defaults', $block_defaults, true );
 		}
 
 		if ( null !== $template_defaults ) {
@@ -484,18 +456,6 @@ final class RestApi {
 
 		if ( null !== $cache_settings ) {
 			update_option( \MDS\ReleaseManager\Core\Cache::OPTION_NAME, $cache_settings );
-		}
-
-		if ( function_exists( 'do_action' ) ) {
-			/**
-			 * Fires after Audio Player Manager settings are saved.
-			 *
-			 * @since 1.1.0
-			 * @param string $active_player         Active audio player slug, or empty string.
-			 * @param array  $audio_player_settings Validated per-player settings array.
-			 * @param array  $params                Raw request parameters.
-			 */
-			do_action( 'mds_rm_save_audio_player_settings', $players[0] ?? '', $audio_player_settings ?? array(), $params );
 		}
 
 		\MDS\ReleaseManager\Core\Sync::purge_cache( 'settings' );

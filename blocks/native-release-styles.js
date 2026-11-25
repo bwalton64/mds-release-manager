@@ -247,14 +247,12 @@
 			);
 		}
 		function color(key, label, help = undefined) {
-			const options = presets(palette, 'color');
 			return el('div', { className: 'mds-style-field mds-style-field--color' },
-				// translators: %s: Name of the color setting.
-				!!options.length && select(key, sprintf(__('%s (Theme Preset)', 'mds-release-manager'), label), options, false),
-				!options.length && customColor !== false && el('span', { className: 'mds-style-field__label' }, label),
+				el('span', { className: 'mds-style-field__label' }, label),
 				customColor !== false && el(window.mdsRmColorControl, {
 					label,
 					value: value[key],
+					palette,
 					onChange: (setting) => update(key, setting),
 				}),
 				help && el('p', { className: 'mds-style-field__help' }, help),

@@ -52,12 +52,6 @@
                             onChange: function(value) { setAttributes({ newTab: value === '' ? undefined : value === 'true' }); }
                         }),
                         el(wp.components.SelectControl, {
-                            label: __('Show audio player', 'mds-release-manager'),
-                            value: attributes.showAudio === undefined ? '' : String(attributes.showAudio),
-                            options: [{ label: defaults.showAudio === false ? __('Use site default (No)', 'mds-release-manager') : __('Use site default (Yes)', 'mds-release-manager'), value: '' }, { label: __('Yes', 'mds-release-manager'), value: 'true' }, { label: __('No', 'mds-release-manager'), value: 'false' }],
-                            onChange: function(value) { setAttributes({ showAudio: value === '' ? undefined : value === 'true' }); }
-                        }),
-                        el(wp.components.SelectControl, {
                             label: __('Multi-format Buy Now behavior', 'mds-release-manager'),
                             help: __('Applies when a release has 2+ Media Formats and no store extension overrides Buy Now.', 'mds-release-manager'),
                             value: attributes.buyNowMode === undefined ? '' : String(attributes.buyNowMode),
@@ -139,7 +133,7 @@
                     block: name, attributes, httpMethod: 'POST',
                     urlQueryArgs: contextId ? { post_id: contextId } : undefined,
                     EmptyResponsePlaceholder: () => el('p', null, resolved
-                        ? __('This Release has no links or audio to display.', 'mds-release-manager')
+                        ? __('This Release has no links to display.', 'mds-release-manager')
                         : source.error
                             ? __('The Release source could not be checked.', 'mds-release-manager')
                             : source.loading

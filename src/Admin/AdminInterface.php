@@ -465,36 +465,34 @@ final class AdminInterface {
 		}
 
 		return array(
-			'postId'                 => (int) $post->ID,
-			'restBase'               => esc_url_raw( rest_url( 'mds/v1/' ) ),
-			'nonce'                  => wp_create_nonce( 'wp_rest' ),
-			'upcEan'                 => (string) $args['upc_ean'],
-			'releaseType'            => $selected_type,
-			'releaseTypes'           => $release_types,
-			'canAssignTypes'         => current_user_can( get_taxonomy( 'release_type' )->cap->assign_terms ),
-			'formatConflict'         => ! empty( $args['format_conflict'] ),
-			'artistId'               => (string) $args['artist_id'],
-			'artistTitle'            => (string) $args['selected_artist_title'],
-			'artistEditUrl'          => (string) $args['selected_artist_edit_url'],
-			'artistHomepage'         => (string) $args['artist_homepage_url'],
-			'recordLabel'            => (string) $args['record_label'],
-			'distributor'            => (string) $args['distributor'],
-			'tags'                   => array_values( array_map( 'strval', (array) $current_tags ) ),
-			'tagSuggestions'         => array_values( array_map( 'strval', (array) $all_tags ) ),
-			'providers'              => array_values( array_map( 'strval', (array) $args['providers'] ) ),
-			'streamingLinks'         => $streaming_rows,
-			'audioPreviewUrl'        => (string) $args['audio_preview_url'],
-			'activeAudioPlayerSlug'  => (string) $args['active_audio_player_slug'],
-			'activeAudioPlayerLabel' => (string) $args['active_audio_player_label'],
-			'mediaFormats'           => $media_formats,
-			'buyNowLinks'            => array_values( (array) $args['buy_now_links'] ),
-			'buyNowMode'             => (string) $args['buy_now_mode'],
-			'routingMode'            => (string) $args['release_routing_mode'],
-			'routingUrl'             => (string) $args['release_routing_url'],
-			'routingModes'           => $routing_modes,
-			'routingPreviewLabel'    => (string) ( $args['release_routing_preview']['label'] ?? __( 'Release Fallback Page', 'mds-release-manager' ) ),
-			'settingsUrl'            => (string) $args['settings_url'],
-			'mediaFormatsUrl'        => (string) $args['media_formats_url'],
+			'postId'              => (int) $post->ID,
+			'restBase'            => esc_url_raw( rest_url( 'mds/v1/' ) ),
+			'nonce'               => wp_create_nonce( 'wp_rest' ),
+			'upcEan'              => (string) $args['upc_ean'],
+			'releaseType'         => $selected_type,
+			'releaseTypes'        => $release_types,
+			'canAssignTypes'      => current_user_can( get_taxonomy( 'release_type' )->cap->assign_terms ),
+			'formatConflict'      => ! empty( $args['format_conflict'] ),
+			'artistId'            => (string) $args['artist_id'],
+			'artistTitle'         => (string) $args['selected_artist_title'],
+			'artistEditUrl'       => (string) $args['selected_artist_edit_url'],
+			'artistHomepage'      => (string) $args['artist_homepage_url'],
+			'recordLabel'         => (string) $args['record_label'],
+			'distributor'         => (string) $args['distributor'],
+			'tags'                => array_values( array_map( 'strval', (array) $current_tags ) ),
+			'tagSuggestions'      => array_values( array_map( 'strval', (array) $all_tags ) ),
+			'providers'           => array_values( array_map( 'strval', (array) $args['providers'] ) ),
+			'streamingLinks'      => $streaming_rows,
+			'audioPreviewUrl'     => (string) $args['audio_preview_url'],
+			'mediaFormats'        => $media_formats,
+			'buyNowLinks'         => array_values( (array) $args['buy_now_links'] ),
+			'buyNowMode'          => (string) $args['buy_now_mode'],
+			'routingMode'         => (string) $args['release_routing_mode'],
+			'routingUrl'          => (string) $args['release_routing_url'],
+			'routingModes'        => $routing_modes,
+			'routingPreviewLabel' => (string) ( $args['release_routing_preview']['label'] ?? __( 'Release Fallback Page', 'mds-release-manager' ) ),
+			'settingsUrl'         => (string) $args['settings_url'],
+			'mediaFormatsUrl'     => (string) $args['media_formats_url'],
 		);
 	}
 
@@ -605,41 +603,33 @@ final class AdminInterface {
 
 		$buy_now_links = \MDS\ReleaseManager\Core\ReleaseModel::get_buy_now_links( $post->ID );
 
-		$active_audio_slug  = \MDS\ReleaseManager\Core\AudioPlayers::get_active_player();
-		$registered_players = \MDS\ReleaseManager\Core\AudioPlayers::get_registered_players();
-		$active_audio_label = isset( $registered_players[ $active_audio_slug ]['label'] )
-			? (string) $registered_players[ $active_audio_slug ]['label']
-			: '';
-
 		$args = array(
-			'nonce_field'               => wp_nonce_field( 'mds_save_release_data', 'mds_release_meta_nonce', true, false ),
-			'post'                      => $post,
-			'artist_id'                 => $artist_id,
-			'selected_artist_title'     => $selected_artist_title,
-			'selected_artist_post_id'   => $selected_artist_post_id,
-			'selected_artist_edit_url'  => $selected_artist_edit_url,
-			'artist_homepage_url'       => $artist_homepage_url,
-			'providers'                 => $provider_names,
-			'streaming_links'           => $streaming_links,
-			'upc_ean'                   => $upc_ean,
-			'record_label'              => $record_label,
-			'distributor'               => $distributor,
-			'buy_now_link'              => $buy_now_link,
-			'buy_now_links'             => $buy_now_links,
-			'buy_now_mode'              => (string) get_post_meta( $post->ID, 'buy_now_mode', true ),
-			'release_routing_mode'      => \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( get_post_meta( $post->ID, 'release_routing_mode', true ) ),
-			'release_routing_url'       => (string) get_post_meta( $post->ID, 'release_routing_url', true ),
-			'release_routing_modes'     => \MDS\ReleaseManager\Frontend\ArtistRouting::release_modes(),
-			'release_routing_preview'   => \MDS\ReleaseManager\Frontend\ArtistRouting::describe_release_destination( $post->ID ),
-			'audio_preview_url'         => $audio_preview_url,
-			'active_audio_player_slug'  => $active_audio_slug,
-			'active_audio_player_label' => $active_audio_label,
-			'settings_url'              => admin_url( 'edit.php?post_type=release&page=mds-release-settings' ),
-			'media_formats_url'         => admin_url( 'edit-tags.php?taxonomy=release_media_format&post_type=release' ),
-			'release_formats'           => $release_formats,
-			'all_formats'               => $all_formats,
-			'all_media_formats'         => $all_media_formats,
-			'format_conflict'           => \MDS\ReleaseManager\Core\ReleaseModel::has_legacy_format_conflict( $post->ID ),
+			'nonce_field'              => wp_nonce_field( 'mds_save_release_data', 'mds_release_meta_nonce', true, false ),
+			'post'                     => $post,
+			'artist_id'                => $artist_id,
+			'selected_artist_title'    => $selected_artist_title,
+			'selected_artist_post_id'  => $selected_artist_post_id,
+			'selected_artist_edit_url' => $selected_artist_edit_url,
+			'artist_homepage_url'      => $artist_homepage_url,
+			'providers'                => $provider_names,
+			'streaming_links'          => $streaming_links,
+			'upc_ean'                  => $upc_ean,
+			'record_label'             => $record_label,
+			'distributor'              => $distributor,
+			'buy_now_link'             => $buy_now_link,
+			'buy_now_links'            => $buy_now_links,
+			'buy_now_mode'             => (string) get_post_meta( $post->ID, 'buy_now_mode', true ),
+			'release_routing_mode'     => \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_release_mode( get_post_meta( $post->ID, 'release_routing_mode', true ) ),
+			'release_routing_url'      => (string) get_post_meta( $post->ID, 'release_routing_url', true ),
+			'release_routing_modes'    => \MDS\ReleaseManager\Frontend\ArtistRouting::release_modes(),
+			'release_routing_preview'  => \MDS\ReleaseManager\Frontend\ArtistRouting::describe_release_destination( $post->ID ),
+			'audio_preview_url'        => $audio_preview_url,
+			'settings_url'             => admin_url( 'edit.php?post_type=release&page=mds-release-settings' ),
+			'media_formats_url'        => admin_url( 'edit-tags.php?taxonomy=release_media_format&post_type=release' ),
+			'release_formats'          => $release_formats,
+			'all_formats'              => $all_formats,
+			'all_media_formats'        => $all_media_formats,
+			'format_conflict'          => \MDS\ReleaseManager\Core\ReleaseModel::has_legacy_format_conflict( $post->ID ),
 		);
 
 		$cache[ $post->ID ] = $args;
@@ -961,14 +951,6 @@ final class AdminInterface {
 			$global_providers = array();
 		}
 
-		$audio_players = array();
-		foreach ( \MDS\ReleaseManager\Core\AudioPlayers::get_registered_players() as $slug => $player ) {
-			$audio_players[ $slug ] = $player['label'];
-		}
-
-		$active_player  = \MDS\ReleaseManager\Core\AudioPlayers::get_active_player();
-		$active_players = '' !== $active_player ? array( $active_player ) : array();
-
 		$fa_sources  = array(
 			'auto'   => __( 'Auto (Recommended — use active Font Awesome plugin if detected, otherwise Public CDN)', 'mds-release-manager' ),
 			'cdn'    => __( 'Load Font Awesome Free 6.7.2 via Public CDN (cdnjs)', 'mds-release-manager' ),
@@ -980,16 +962,12 @@ final class AdminInterface {
 
 		$args = array(
 			'providers'               => $global_providers,
-			'audio_players'           => $audio_players,
-			'active_players'          => $active_players,
-			'active_audio_player'     => $active_player,
-			'audio_player_settings'   => \MDS\ReleaseManager\Core\AudioPlayers::get_all_settings(),
 			'fa_sources'              => $fa_sources,
 			'active_fa_source'        => \MDS\ReleaseManager\Frontend\Assets::sanitize_font_awesome_source( get_option( 'mds_rm_fa_support', 'auto' ) ),
 			'detected_fa_plugin'      => $detected_fa,
 			'cache_settings'          => \MDS\ReleaseManager\Core\Cache::get_settings(),
 			'detected_cache_adapters' => \MDS\ReleaseManager\Core\Cache::detected_adapters(),
-			'extension_tabs'          => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'default-templates', 'audio-player-manager', 'block-defaults', 'integrations' ) ),
+			'extension_tabs'          => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'default-templates', 'block-defaults', 'integrations' ) ),
 			'block_defaults'          => get_option( 'mds_rm_block_defaults', array() ),
 			'template_defaults'       => \MDS\ReleaseManager\Frontend\TemplateDefaults::get_all(),
 			'settings'                => array(

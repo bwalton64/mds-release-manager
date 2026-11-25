@@ -100,27 +100,55 @@
         },
     };
 
-    function fetchLookup(path, signal) {
-        const entry = lookups[path];
-        if (!signal && entry && (entry.pending || Date.now() - entry.time < cacheTtl)) {
-            return entry.promise;
+    const resolvedCache = new Map();
+    const inflightLookups = new Map();
+
+    function getCachedLookup(path) {
+        const entry = resolvedCache.get(path);
+        if (entry && Date.now() - entry.time < cacheTtl) {
+            return entry.data;
         }
-        const record = { pending: true, time: Date.now() };
-        record.promise = wp.apiFetch(signal ? { path, signal } : { path }).then(
-            (data) => { record.pending = false; record.time = Date.now(); return data; },
-            (error) => { delete lookups[path]; throw error; }
+        return undefined;
+    }
+
+    function fetchLookup(path, signal) {
+        const cached = getCachedLookup(path);
+        if (cached !== undefined) {
+            return Promise.resolve(cached);
+        }
+        if (!signal && inflightLookups.has(path)) {
+            return inflightLookups.get(path);
+        }
+        const promise = wp.apiFetch(signal ? { path, signal } : { path }).then(
+            (data) => {
+                resolvedCache.set(path, { data, time: Date.now() });
+                inflightLookups.delete(path);
+                return data;
+            },
+            (error) => {
+                inflightLookups.delete(path);
+                throw error;
+            }
         );
         if (!signal) {
-            lookups[path] = record;
+            inflightLookups.set(path, promise);
         }
-        return record.promise;
+        return promise;
     }
 
     function useLookup(route, params, enabled, delay = 0) {
         const path = wp.url.addQueryArgs('/mds/v1/' + route, params);
-        const [result, setResult] = wp.element.useState({});
+        const cachedNow = enabled ? getCachedLookup(path) : undefined;
+        const [result, setResult] = wp.element.useState(() =>
+            cachedNow !== undefined ? { path, data: cachedNow } : {}
+        );
         wp.element.useEffect(() => {
             if (!enabled) {
+                return undefined;
+            }
+            const hit = getCachedLookup(path);
+            if (hit !== undefined) {
+                setResult({ path, data: hit });
                 return undefined;
             }
             let active = true;
@@ -130,11 +158,12 @@
             // with block previews, delaying these lookups past the timeout.
             function fail(error, attempt) {
                 if (!active) return;
+                if (error && error.name === 'AbortError') return;
                 if (attempt < 2) {
-                    timers.push(setTimeout(() => { if (active) run(attempt + 1); }, 2000 * (attempt + 1)));
+                    timers.push(setTimeout(() => { if (active) run(attempt + 1); }, 1500 * (attempt + 1)));
                     return;
                 }
-                setResult({ path, error });
+                setResult((prev) => ({ path, data: prev.data, error }));
             }
             function run(attempt) {
                 let timedOut = false;
@@ -151,14 +180,21 @@
                     (error) => { clearTimeout(timer); if (active && !timedOut) fail(error, attempt); }
                 );
             }
-            timers.push(setTimeout(() => run(0), delay));
+            if (delay > 0) {
+                timers.push(setTimeout(() => run(0), delay));
+            } else {
+                run(0);
+            }
             return () => {
                 active = false;
                 timers.forEach(clearTimeout);
                 controllers.forEach((controller) => controller.abort());
             };
         }, [path, delay, enabled]);
-        return result.path === path ? result : { loading: true };
+        if (cachedNow !== undefined) {
+            return { path, data: cachedNow, loading: false };
+        }
+        return result.path === path ? result : { data: result.data, loading: true };
     }
 
     function title(item) {
@@ -183,24 +219,31 @@
         const active = enabled !== false;
         const [search, setSearch] = wp.element.useState('');
         const [page, setPage] = wp.element.useState(1);
-        const saved = attributes.releaseId || attributes.upcOverride;
+        const savedUpc = attributes.upcOverride || attributes.upc || '';
+        const saved = attributes.releaseId || savedUpc;
         const usePreloaded = canUsePreloadedCatalog();
+        const editorPostType = wp.data?.select?.('core/editor')?.getCurrentPostType?.() || '';
+        const isPlainPageContext = editorPostType === 'page' || editorPostType === 'post';
         const preloadedExplicit = usePreloaded && saved
-            ? findPreloadedRelease({ releaseId: attributes.releaseId, upc: attributes.upcOverride })
+            ? findPreloadedRelease({ releaseId: attributes.releaseId, upc: savedUpc })
             : null;
         const preloadedContext = usePreloaded && contextId
             ? findPreloadedRelease({ releaseId: contextId })
             : null;
-        const needsSourceRest = active && (!usePreloaded || (Boolean(contextId) && !preloadedContext && !preloadedExplicit));
-        const restResults = useLookup('release-links-choices', { search, page }, active && !usePreloaded, 250);
+        const needsSourceRest = active && (!usePreloaded || (Boolean(contextId) && !isPlainPageContext && !preloadedContext && !preloadedExplicit));
+        const restResults = useLookup('release-links-choices', { search, page }, active && !usePreloaded, search ? 120 : 0);
         const restSource = useLookup(
             'release-links-source',
-            { context_id: contextId, release_id: attributes.releaseId || 0, upc: attributes.upcOverride || '' },
+            { context_id: contextId, release_id: attributes.releaseId || 0, upc: savedUpc },
             needsSourceRest
         );
 
+        const preloadedData = wp.element.useMemo(
+            () => (usePreloaded ? window.mdsRmToolkit.getReleases({ search, page, filter }) : null),
+            [usePreloaded, search, page, filter]
+        );
         const results = usePreloaded
-            ? { loading: false, data: window.mdsRmToolkit.getReleases({ search, page, filter }) }
+            ? { loading: false, data: preloadedData }
             : restResults;
         const source = !needsSourceRest
             ? {
@@ -215,9 +258,17 @@
         const resolved = source.data?.item;
         const selected = saved && !source.data?.missing ? resolved : null;
         const rawItems = results.data?.items || [];
-        const items = !usePreloaded && typeof filter === 'function' ? rawItems.filter(filter) : rawItems;
-        const options = items.map(option);
-        if (selected && !options.some(({ value }) => value === String(selected.id))) options.unshift(option(selected));
+        const items = wp.element.useMemo(
+            () => (!usePreloaded && typeof filter === 'function' ? rawItems.filter(filter) : rawItems),
+            [usePreloaded, filter, rawItems]
+        );
+        const options = wp.element.useMemo(() => {
+            const list = items.map(option);
+            if (selected && !list.some(({ value }) => value === String(selected.id))) {
+                list.unshift(option(selected));
+            }
+            return list;
+        }, [items, selected]);
 
         function applyBindings(item) {
             if (!metaBindings || typeof metaBindings !== 'object') {

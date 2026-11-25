@@ -332,12 +332,6 @@
 			...(data.mediaFormats || []).map((m) => ({ value: m.slug, label: m.name })),
 		];
 
-		const showThirdPartyPlayerNote =
-			data.activeAudioPlayerSlug &&
-			data.activeAudioPlayerSlug !== 'html5' &&
-			data.activeAudioPlayerSlug !== 'native' &&
-			data.activeAudioPlayerLabel;
-
 		const tabs = [
 			{ name: 'identity', title: __('Identity & Catalog', 'mds-release-manager') },
 			{ name: 'streaming', title: __('Streaming & Audio', 'mds-release-manager') },
@@ -560,9 +554,6 @@
 						el(Card, { className: 'mds-editor-card' },
 							el(CardBody, null,
 								el('h3', { className: 'mds-card-subheading' }, __('Core Audio Preview (.mp3)', 'mds-release-manager')),
-								showThirdPartyPlayerNote && el(Notice, { status: 'info', isDismissible: false },
-									sprintf(__('Active site-wide player: %s. This .mp3 URL is used automatically as a fallback if that player is not configured for this release.', 'mds-release-manager'), data.activeAudioPlayerLabel)
-								),
 								el('div', { className: 'mds-audio-bar' },
 									el('div', { style: { flex: '1 1 auto' } },
 										el(TextControl, {

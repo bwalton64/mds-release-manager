@@ -69,14 +69,12 @@
 			);
 		}
 		function color(key, label, help = undefined) {
-			const options = presetChoices(palette, 'color');
 			return el('div', { className: 'mds-style-field mds-style-field--color' },
-				// translators: %s: Name of the color setting.
-				!!options.length && select(key, sprintf(__('%s (Theme Preset)', 'mds-release-manager'), label), options, false),
-				!options.length && customColor !== false && el('span', { className: 'mds-style-field__label' }, label),
+				el('span', { className: 'mds-style-field__label' }, label),
 				customColor !== false && el(window.mdsRmColorControl, {
 					label,
 					value: value[key],
+					palette,
 					onChange: (setting) => update({ [key]: setting }),
 				}),
 				help && el('p', { className: 'mds-style-field__help' }, help),
@@ -169,10 +167,10 @@
 					inheritance: __('The panels below target individual table layers (Wrapper, Column Headers, Table Rows, and Cells).', 'mds-release-manager'),
 				})
 			),
-			el(PanelBody, { title: __('Table Wrapper & Base Typography', 'mds-release-manager'), initialOpen: false, ...stylePanelProps?.('table') },
+			el(PanelBody, { title: __('Table Frame & Base Text', 'mds-release-manager'), initialOpen: false, ...stylePanelProps?.('table') },
 				el(SectionInfo, {
-					title: __('About Table Wrapper & Base Typography', 'mds-release-manager'),
-					summary: __('Styles the scrolling table frame and sets base colors and typography inherited by the table. Column Headers and Table Rows can override these base values.', 'mds-release-manager'),
+					title: __('About Table Frame & Base Text', 'mds-release-manager'),
+					summary: __('Styles the scrolling table frame itself and sets base colors and typography inherited by all rows. Column Headers and Table Rows below can override these base values.', 'mds-release-manager'),
 					inheritance: __('Table Padding adds space around the table inside its frame. To adjust spacing inside individual cells, use Cells, Grid Borders & Links.', 'mds-release-manager'),
 				}),
 				el(ControlGroup, { title: __('Wrapper Spacing', 'mds-release-manager'), twoCol: true },

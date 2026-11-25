@@ -3,6 +3,7 @@
 	const { BlockEditorProvider, useSettings } = wp.blockEditor;
 	const { BoxControl, Button, Notice, PanelBody, RangeControl, SelectControl, TabPanel, TextControl, ToggleControl } = wp.components;
 	const { __, sprintf } = wp.i18n;
+	const speak = wp.a11y && typeof wp.a11y.speak === 'function' ? wp.a11y.speak : () => {};
 	const config = window.mdsRmDefaultsSettings;
 	const input = document.getElementById('mds-rm-block-defaults');
 	let all = Array.isArray(config.defaults) ? {} : { ...config.defaults };
@@ -11,7 +12,8 @@
 
 	const PANEL_IDS = {
 		'release-meta': ['items', 'container', 'typography', 'icons'],
-		'release-links': ['items', 'behavior', 'container', 'buttons', 'audio'],
+		'release-links': ['items', 'behavior', 'container', 'buttons'],
+		'release-player': ['modules', 'playback', 'styles'],
 		'artist-discography': ['outer', 'table', 'header', 'rows', 'cells'],
 	};
 
@@ -60,14 +62,12 @@
 		}
 		function color(path, label) {
 			const current = get(path);
-			const options = presetChoices(palette, 'color');
 			return el('div', { className: 'mds-style-field mds-style-field--color' },
-				// translators: %s: Name of the color setting.
-				!!options.length && select(path, sprintf(__('%s (Theme Preset)', 'mds-release-manager'), label), options),
-				!options.length && customColor !== false && el('span', { className: 'mds-style-field__label' }, label),
+				el('span', { className: 'mds-style-field__label' }, label),
 				customColor !== false && el(window.mdsRmColorControl, {
 					label,
 					value: current,
+					palette,
 					onChange: (setting) => set(path, setting),
 				})
 			);
@@ -105,11 +105,11 @@
 				})
 			);
 		}
-		return el(PanelBody, { title: __('Block Container', 'mds-release-manager'), ...panelProps },
+		return el(PanelBody, { title: __('Outer Section Box', 'mds-release-manager'), ...panelProps },
 			el(SectionInfo, {
-				title: __('About Block Container', 'mds-release-manager'),
-				summary: __('Styles the outer box surrounding the entire Artist Discography block, including the heading, table, and pagination links.', 'mds-release-manager'),
-				inheritance: __('Individual table layers (Table Wrapper, Column Headers, Table Rows, and Cells) below can override these base colors and typography.', 'mds-release-manager'),
+				title: __('About Outer Section Box', 'mds-release-manager'),
+				summary: __('Styles the outer box surrounding the entire Artist Discography block, including its heading, table, and pagination links.', 'mds-release-manager'),
+				inheritance: __('Individual table layers (Table Frame & Base Text, Column Headers, Table Rows, and Cells) below can override these base colors and typography.', 'mds-release-manager'),
 			}),
 			el(ControlGroup, { title: __('Surface & Link Colors', 'mds-release-manager'), twoCol: true },
 				color(['color', 'background'], __('Background Color', 'mds-release-manager')),
@@ -374,7 +374,571 @@
 		);
 	}
 
-	function Defaults({ slug }) {
+	const PLAYER_MAX_WIDTH_PRESETS = [
+		{ label: __('Full Width (100%)', 'mds-release-manager'), value: '' },
+		{ label: __('Compact (360px)', 'mds-release-manager'), value: '360px' },
+		{ label: __('Medium (480px)', 'mds-release-manager'), value: '480px' },
+		{ label: __('Wide (640px)', 'mds-release-manager'), value: '640px' },
+		{ label: __('Custom…', 'mds-release-manager'), value: '__custom' },
+	];
+
+	function ReleasePlayerDefaults({ value, onChange, stylePanelProps }) {
+		const [palette, customColor] = useSettings('color.palette', 'color.custom');
+		const scheme = config.themeScheme || {};
+		const providerOptions = [
+			{ label: __('Auto (Priority Order)', 'mds-release-manager'), value: '' },
+			...(Array.isArray(config.audioProviders) ? config.audioProviders : []).map((p) => ({
+				label: p.label || p.id,
+				value: p.id,
+			})),
+		];
+		const boolDefault = (key, fallback) => (Object.prototype.hasOwnProperty.call(value, key) ? Boolean(value[key]) : fallback);
+		const currentMaxWidth = value.maxWidth || '';
+		const isPresetWidth = ['', '360px', '480px', '640px'].includes(currentMaxWidth);
+
+		function colorField(key, label, fallbackHex) {
+			const current = value[key] || '';
+			return el('div', { className: 'mds-style-field mds-style-field--color' },
+				el('span', { className: 'mds-style-field__label' }, label),
+				customColor !== false && el(window.mdsRmColorControl, {
+					label,
+					value: current,
+					palette,
+					fallbackHint: fallbackHex ? sprintf(__('Auto (%s)', 'mds-release-manager'), fallbackHex) : __('Theme default', 'mds-release-manager'),
+					onChange: (setting) => onChange({ [key]: setting || undefined }),
+				})
+			);
+		}
+
+		return el(Fragment, null,
+			el(PanelBody, { title: __('Player Modules & Source', 'mds-release-manager'), ...stylePanelProps('modules') },
+				el(SectionInfo, {
+					title: __('About Release Player Modules', 'mds-release-manager'),
+					summary: __('Configure default visibility for Release Player modules and the default audio source priority across all Release Player blocks and shortcodes.', 'mds-release-manager'),
+					inheritance: __('Individual Release Player blocks can override any setting below in the block inspector.', 'mds-release-manager'),
+				}),
+				el(ControlGroup, { title: __('Audio Source & Layout', 'mds-release-manager'), twoCol: true },
+					el(SelectControl, {
+						label: __('Default Audio Provider', 'mds-release-manager'),
+						help: __('Auto uses the priority order configured under the Audio Providers tab (or falls back to the built-in HTML5 preview).', 'mds-release-manager'),
+						value: value.provider || '',
+						options: providerOptions,
+						onChange: (provider) => onChange({ provider: provider || undefined }),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Compact Bar Layout', 'mds-release-manager'),
+						help: __('Uses a condensed single-row player layout by default.', 'mds-release-manager'),
+						checked: boolDefault('compact', false),
+						onChange: (compact) => onChange({ compact }),
+						__nextHasNoMarginBottom: true,
+					})
+				),
+				el(ControlGroup, { title: __('Visible Modules', 'mds-release-manager'), twoCol: true },
+					el(ToggleControl, {
+						label: __('Show Artwork', 'mds-release-manager'),
+						checked: boolDefault('showArtwork', true),
+						onChange: (showArtwork) => onChange({ showArtwork }),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Title & Artist', 'mds-release-manager'),
+						checked: boolDefault('showMeta', true),
+						onChange: (showMeta) => onChange({ showMeta }),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Progress Bar', 'mds-release-manager'),
+						checked: boolDefault('showProgress', true),
+						onChange: (showProgress) => onChange({ showProgress }),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Time Readout', 'mds-release-manager'),
+						checked: boolDefault('showTime', true),
+						onChange: (showTime) => onChange({ showTime }),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Tracklist', 'mds-release-manager'),
+						checked: boolDefault('showTracklist', true),
+						onChange: (showTracklist) => onChange({ showTracklist }),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Provider Badge', 'mds-release-manager'),
+						checked: boolDefault('showProviderBadge', true),
+						onChange: (showProviderBadge) => onChange({ showProviderBadge }),
+						__nextHasNoMarginBottom: true,
+					})
+				)
+			),
+			el(PanelBody, { title: __('Preview & Sampler Playback', 'mds-release-manager'), ...stylePanelProps('playback') },
+				el(SectionInfo, {
+					title: __('About Preview & Sampler Playback', 'mds-release-manager'),
+					summary: __('Controls default preview clip duration and automatic crossfade between tracks when Sampler Mode is enabled.', 'mds-release-manager'),
+				}),
+				el(ControlGroup, { title: __('Sampler Controls', 'mds-release-manager'), twoCol: true },
+					el(ToggleControl, {
+						label: __('Enable Sampler Mode', 'mds-release-manager'),
+						help: __('Automatically advances and crossfades across tracks.', 'mds-release-manager'),
+						checked: boolDefault('samplerMode', false),
+						onChange: (samplerMode) => onChange({ samplerMode }),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(RangeControl, {
+						label: __('Preview Clip Length (seconds)', 'mds-release-manager'),
+						min: 10,
+						max: 60,
+						step: 5,
+						allowReset: true,
+						value: typeof value.previewSeconds === 'number' ? value.previewSeconds : undefined,
+						onChange: (previewSeconds) => onChange({ previewSeconds: previewSeconds === undefined ? undefined : Math.round(previewSeconds) }),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					}),
+					el(RangeControl, {
+						label: __('Crossfade Duration (ms)', 'mds-release-manager'),
+						min: 0,
+						max: 4000,
+						step: 100,
+						allowReset: true,
+						value: typeof value.crossfadeMs === 'number' ? value.crossfadeMs : undefined,
+						onChange: (crossfadeMs) => onChange({ crossfadeMs: crossfadeMs === undefined ? undefined : Math.round(crossfadeMs) }),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					})
+				)
+			),
+			el(PanelBody, { title: __('Colors & Surface Styling', 'mds-release-manager'), ...stylePanelProps('styles') },
+				el(SectionInfo, {
+					title: __('About Release Player Styling', 'mds-release-manager'),
+					summary: __('Sets site-wide CSS custom property defaults for the Release Player card, typography, accents, border, and elevation.', 'mds-release-manager'),
+					inheritance: __('Leave any color unset to automatically adapt to your active theme color scheme (including Twenty Twenty-Five Default, Evening, and other variations).', 'mds-release-manager'),
+				}),
+				el(ControlGroup, { title: __('Player Palette', 'mds-release-manager'), twoCol: true },
+					colorField('backgroundColor', __('Background', 'mds-release-manager'), scheme.surface),
+					colorField('textColor', __('Text', 'mds-release-manager'), scheme.text),
+					colorField('mutedColor', __('Muted Text', 'mds-release-manager'), scheme.muted),
+					colorField('accentColor', __('Accent / Play Button', 'mds-release-manager'), scheme.accent),
+					colorField('playIconColor', __('Play Icon', 'mds-release-manager'), scheme.accentText),
+					colorField('borderColor', __('Border', 'mds-release-manager'), scheme.border)
+				),
+				el(ControlGroup, { title: __('Surface, Border & Sizing', 'mds-release-manager'), twoCol: true },
+					el(RangeControl, {
+						label: __('Corner Radius (px)', 'mds-release-manager'),
+						help: __('Default: 10px.', 'mds-release-manager'),
+						min: 0,
+						max: 32,
+						step: 1,
+						allowReset: true,
+						value: typeof value.borderRadius === 'number' ? value.borderRadius : undefined,
+						onChange: (borderRadius) => onChange({ borderRadius: borderRadius === undefined ? undefined : Math.round(borderRadius) }),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					}),
+					el(RangeControl, {
+						label: __('Border Width (px)', 'mds-release-manager'),
+						help: __('Default: 1px.', 'mds-release-manager'),
+						min: 0,
+						max: 6,
+						step: 1,
+						allowReset: true,
+						value: typeof value.borderWidth === 'number' ? value.borderWidth : undefined,
+						onChange: (borderWidth) => onChange({ borderWidth: borderWidth === undefined ? undefined : Math.round(borderWidth) }),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					}),
+					el(RangeControl, {
+						label: __('Inner Padding (px)', 'mds-release-manager'),
+						help: __('Default: 12px.', 'mds-release-manager'),
+						min: 0,
+						max: 32,
+						step: 1,
+						allowReset: true,
+						value: typeof value.padding === 'number' ? value.padding : undefined,
+						onChange: (padding) => onChange({ padding: padding === undefined ? undefined : Math.round(padding) }),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					}),
+					el(SelectControl, {
+						label: __('Max Width', 'mds-release-manager'),
+						value: isPresetWidth ? currentMaxWidth : '__custom',
+						options: PLAYER_MAX_WIDTH_PRESETS,
+						onChange: (preset) => onChange({ maxWidth: preset === '__custom' ? '520px' : (preset || undefined) }),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					}),
+					!isPresetWidth && el(TextControl, {
+						label: __('Custom Max Width', 'mds-release-manager'),
+						help: __('Accepts px, rem, em, %, or vw (e.g. 520px or 36rem).', 'mds-release-manager'),
+						value: currentMaxWidth,
+						onChange: (maxWidth) => onChange({ maxWidth: maxWidth.trim() || undefined }),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					}),
+					el(SelectControl, {
+						label: __('Elevation Shadow', 'mds-release-manager'),
+						value: value.shadow || '',
+						options: [
+							{ label: __('Default (None)', 'mds-release-manager'), value: '' },
+							{ label: __('None (Flat)', 'mds-release-manager'), value: 'none' },
+							{ label: __('Subtle', 'mds-release-manager'), value: 'subtle' },
+							{ label: __('Elevated', 'mds-release-manager'), value: 'elevated' },
+						],
+						onChange: (shadow) => onChange({ shadow: shadow || undefined }),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					})
+				),
+				!!Object.keys(value).length && el('div', { className: 'mds-reset-row' },
+					el(Button, {
+						variant: 'tertiary',
+						isDestructive: true,
+						onClick: () => {
+							const clear = {};
+							Object.keys(value).forEach((k) => { clear[k] = undefined; });
+							onChange(clear);
+						},
+					}, __('Reset all Release Player defaults', 'mds-release-manager'))
+				)
+			)
+		);
+	}
+
+	const SAMPLE_META_VALUES = {
+		release_year: '2025',
+		record_label: 'Midnight Records',
+		distributor: 'DistroKid',
+		upc_ean: '012345678901',
+		release_type: 'Album',
+		release_media_format: 'Vinyl LP, CD, Digital',
+		release_date: 'Oct 24, 2025',
+		release_title: 'Neon Horizons',
+		artist: 'The Midnight Drive',
+		release_tags: 'Synthwave, Electronic',
+	};
+
+	const SAMPLE_DISCOGRAPHY = [
+		{ year: '2025', title: 'Neon Horizons', format: 'Album', label: 'Midnight Records' },
+		{ year: '2023', title: 'Starlight Overdrive', format: 'EP', label: 'Midnight Records' },
+		{ year: '2021', title: 'Afterglow', format: 'Single', label: 'Independent' },
+	];
+
+	function cssVarsFromStyles(styles, prefix) {
+		const vars = {};
+		if (!styles || typeof styles !== 'object') return vars;
+		Object.entries(styles).forEach(([key, val]) => {
+			if (val === null || val === undefined || val === '') return;
+			const prop = `--mds-${prefix}-${key.replace(/_/g, '-')}-desktop`;
+			if (typeof val === 'object') {
+				const sides = ['top', 'right', 'bottom', 'left'].map((s) => val[s] || '');
+				if (sides.some(Boolean)) {
+					vars[prop] = sides.map((s) => s || '0').join(' ');
+				}
+			} else {
+				vars[prop] = String(val);
+			}
+		});
+		return vars;
+	}
+
+	function ReleaseMetaPreview({ value }) {
+		const items = (Array.isArray(value.items) && value.items.length ? value.items : config.metaItems) || [];
+		const visible = items.filter((item) => item && item.enabled !== false && config.metaFields[item.field]);
+		const styleVars = cssVarsFromStyles(value.metaStyles, 'meta');
+
+		if (!visible.length) {
+			return el('p', { className: 'mds-bd-preview-empty' }, __('All metadata fields are currently hidden. Enable one or more fields under Fields & Ordering to preview.', 'mds-release-manager'));
+		}
+
+		return el('div', { className: 'wp-block-mds-rm-release-meta', style: styleVars },
+			el('div', { className: 'mds-release-meta' },
+				visible.map((item) => {
+					const sample = SAMPLE_META_VALUES[item.field] || config.metaFields[item.field]?.label || item.field;
+					const tooltip = item.title || config.metaFields[item.field]?.label || '';
+					return el('span', { key: item.field, className: 'mds-release-meta__item', title: tooltip },
+						item.icon && el('i', { className: `mds-release-meta__icon ${item.icon}`, 'aria-hidden': true }),
+						el('span', null, sample)
+					);
+				})
+			)
+		);
+	}
+
+	function ReleaseLinksPreview({ value, providers }) {
+		const list = Array.isArray(providers) ? providers : [];
+		const fallback = list.map((p) => ({ name: p.name, enabled: true })).concat([{ name: '__buy_now', enabled: true }]);
+		const items = (Array.isArray(value.items) && value.items.length ? value.items : fallback).slice();
+		fallback.forEach((item) => {
+			if (!items.some((existing) => existing.name.toLowerCase() === item.name.toLowerCase())) items.push(item);
+		});
+		const visible = items.filter((item) => item && item.enabled !== false);
+		const styleVars = cssVarsFromStyles(value.linkStyles, 'links');
+		const newTabText = value.newTab !== false
+			? __('Opens in new tab', 'mds-release-manager')
+			: __('Opens in same tab', 'mds-release-manager');
+		const buyModeText = (value.buyNowMode || 'picker') === 'direct'
+			? __('Buy Now: Primary Direct Link', 'mds-release-manager')
+			: __('Buy Now: Choose Format Modal', 'mds-release-manager');
+
+		if (!visible.length) {
+			return el('p', { className: 'mds-bd-preview-empty' }, __('All link buttons are currently hidden. Enable one or more providers to preview.', 'mds-release-manager'));
+		}
+
+		return el(Fragment, null,
+			el('div', { className: 'wp-block-mds-rm-release-links', style: styleVars },
+				el('div', { className: 'mds-release-links' },
+					el('div', { className: 'mds-release-links__buttons' },
+						visible.map((item) => {
+							const isBuy = item.name === '__buy_now';
+							const provider = list.find((p) => p.name.toLowerCase() === item.name.toLowerCase());
+							const icon = (item.icon && item.icon.trim()) || (provider && provider.icon) || (isBuy ? 'fas fa-shopping-cart' : 'fas fa-link');
+							const bg = isBuy ? '#2271b1' : ((provider && provider.color) || '#333333');
+							const label = item.title || (isBuy ? __('Buy Now', 'mds-release-manager') : item.name);
+							return el('a', {
+								key: item.name,
+								href: '#preview',
+								className: `mds-release-links__link${isBuy ? ' mds-release-links__link--buy' : ''}`,
+								style: { '--mds-links-provider-background': bg },
+								title: label,
+								onClick: (e) => e.preventDefault(),
+							}, el('i', { className: icon, 'aria-hidden': true }));
+						})
+					)
+				)
+			),
+			el('p', { className: 'mds-bd-preview-caption' }, `${newTabText} · ${buyModeText}`)
+		);
+	}
+
+	function ReleasePlayerPreview({ value }) {
+		const boolDefault = (key, fallback) => (Object.prototype.hasOwnProperty.call(value, key) ? Boolean(value[key]) : fallback);
+		const showArtwork = boolDefault('showArtwork', true);
+		const showMeta = boolDefault('showMeta', true);
+		const showProgress = boolDefault('showProgress', true);
+		const showTime = boolDefault('showTime', true);
+		const showTracklist = boolDefault('showTracklist', true);
+		const showProviderBadge = boolDefault('showProviderBadge', true);
+		const samplerMode = boolDefault('samplerMode', false);
+		const compact = boolDefault('compact', false);
+		const previewSecs = typeof value.previewSeconds === 'number' ? value.previewSeconds : 30;
+		const crossfadeMs = typeof value.crossfadeMs === 'number' ? value.crossfadeMs : 1200;
+		const shadow = value.shadow || 'none';
+
+		const vars = {};
+		if (value.backgroundColor) vars['--mds-player-bg'] = value.backgroundColor;
+		if (value.textColor) vars['--mds-player-text'] = value.textColor;
+		if (value.mutedColor) vars['--mds-player-muted'] = value.mutedColor;
+		if (value.accentColor) vars['--mds-player-accent'] = value.accentColor;
+		if (value.playIconColor) vars['--mds-player-play-icon'] = value.playIconColor;
+		if (value.borderColor) vars['--mds-player-border'] = value.borderColor;
+		if (typeof value.borderRadius === 'number') vars['--mds-player-radius'] = `${value.borderRadius}px`;
+		if (typeof value.borderWidth === 'number') vars['--mds-player-border-width'] = `${value.borderWidth}px`;
+		if (typeof value.padding === 'number') vars['--mds-player-padding'] = `${value.padding}px`;
+		if (value.maxWidth) vars['--mds-player-max-width'] = value.maxWidth;
+
+		const classes = ['mds-rm-player'];
+		if (compact) classes.push('mds-rm-player--compact');
+		if (shadow === 'subtle' || shadow === 'elevated') classes.push(`mds-rm-player--shadow-${shadow}`);
+
+		const providerList = Array.isArray(config.audioProviders) ? config.audioProviders : [];
+		const selectedProvider = value.provider
+			? (providerList.find((p) => p.id === value.provider)?.label || value.provider)
+			: (providerList[0]?.label || __('Built-in HTML5 Preview', 'mds-release-manager'));
+
+		const formatSecs = (secs) => `0:${String(secs).padStart(2, '0')}`;
+
+		return el('div', { className: classes.join(' '), style: vars },
+			el('div', { className: 'mds-rm-player__main' },
+				showArtwork && el('div', { className: 'mds-rm-player__art' },
+					el('div', { className: 'mds-bd-preview-art', 'aria-hidden': true },
+						el('span', { className: 'dashicons dashicons-album' })
+					)
+				),
+				el('div', { className: 'mds-rm-player__controls' },
+					el('button', {
+						type: 'button',
+						className: 'mds-rm-player__btn mds-rm-player__btn--play',
+						'aria-label': __('Play preview', 'mds-release-manager'),
+						onClick: (e) => e.preventDefault(),
+					}, el('span', { className: 'mds-rm-player__icon mds-rm-player__icon--play', 'aria-hidden': true }, '\u25B6'))
+				),
+				el('div', { className: 'mds-rm-player__body' },
+					showMeta && el('div', { className: 'mds-rm-player__meta' },
+						el('span', { className: 'mds-rm-player__title' }, 'Neon Horizons'),
+						el('span', { className: 'mds-rm-player__artist' }, 'The Midnight Drive')
+					),
+					(showProgress || showTime) && el('div', { className: 'mds-rm-player__timeline' },
+						showProgress && el('input', {
+							type: 'range',
+							className: 'mds-rm-player__scrubber',
+							min: 0,
+							max: 100,
+							value: 35,
+							readOnly: true,
+							tabIndex: -1,
+							'aria-hidden': true,
+						}),
+						showTime && el('span', { className: 'mds-rm-player__time', 'aria-hidden': true }, `0:11 / ${formatSecs(previewSecs)}`)
+					)
+				),
+				showTracklist && el('button', {
+					type: 'button',
+					className: 'mds-rm-player__btn mds-rm-player__btn--tracks',
+					'aria-label': __('Toggle tracklist', 'mds-release-manager'),
+					onClick: (e) => e.preventDefault(),
+				}, el('span', { 'aria-hidden': true }, '\u2630'))
+			),
+			showTracklist && el('ol', { className: 'mds-rm-player__tracklist' },
+				el('li', { className: 'mds-rm-player__track is-active' },
+					el('span', { className: 'mds-rm-player__track-num' }, '1.'),
+					el('span', { className: 'mds-rm-player__track-title' }, 'Neon Horizons'),
+					el('span', { className: 'mds-rm-player__track-dur' }, formatSecs(previewSecs))
+				),
+				el('li', { className: 'mds-rm-player__track' },
+					el('span', { className: 'mds-rm-player__track-num' }, '2.'),
+					el('span', { className: 'mds-rm-player__track-title' }, 'Night Runner'),
+					el('span', { className: 'mds-rm-player__track-dur' }, formatSecs(previewSecs))
+				)
+			),
+			showProviderBadge && el('div', { className: 'mds-rm-player__footer' },
+				el('span', { className: 'mds-rm-player__badge' },
+					// translators: %s: Audio provider name.
+					sprintf(__('Preview via %s', 'mds-release-manager'), selectedProvider),
+					samplerMode ? ` · ${sprintf(__('Sampler (%dms fade)', 'mds-release-manager'), crossfadeMs)}` : ''
+				)
+			)
+		);
+	}
+
+	function ArtistDiscographyPreview({ value }) {
+		const wrapper = value.style || {};
+		const table = value.tableStyles || {};
+		const outerStyle = {};
+
+		if (wrapper.color?.background) outerStyle.backgroundColor = wrapper.color.background;
+		if (wrapper.color?.text) outerStyle.color = wrapper.color.text;
+		if (wrapper.typography?.fontFamily) outerStyle.fontFamily = wrapper.typography.fontFamily;
+		if (wrapper.typography?.fontSize) outerStyle.fontSize = wrapper.typography.fontSize;
+		if (wrapper.typography?.fontWeight) outerStyle.fontWeight = wrapper.typography.fontWeight;
+		if (wrapper.typography?.fontStyle) outerStyle.fontStyle = wrapper.typography.fontStyle;
+		if (wrapper.typography?.lineHeight) outerStyle.lineHeight = wrapper.typography.lineHeight;
+		if (wrapper.typography?.letterSpacing) outerStyle.letterSpacing = wrapper.typography.letterSpacing;
+		if (wrapper.border?.style) outerStyle.borderStyle = wrapper.border.style;
+		if (wrapper.border?.width) outerStyle.borderWidth = wrapper.border.width;
+		if (wrapper.border?.color) outerStyle.borderColor = wrapper.border.color;
+		if (wrapper.border?.radius) outerStyle.borderRadius = wrapper.border.radius;
+
+		['margin', 'padding'].forEach((prop) => {
+			const val = wrapper.spacing?.[prop];
+			if (!val) return;
+			if (typeof val === 'string') outerStyle[prop] = val;
+			else if (typeof val === 'object') {
+				const sides = ['top', 'right', 'bottom', 'left'].map((s) => val[s] || '');
+				if (sides.some(Boolean)) outerStyle[prop] = sides.map((s) => s || '0').join(' ');
+			}
+		});
+
+		Object.entries(table).forEach(([key, val]) => {
+			if (key === 'striped' || val === null || val === undefined || val === '') return;
+			outerStyle[`--mds-discography-${key}`] = String(val);
+		});
+		if (table.striped && !table['stripe-background']) {
+			outerStyle['--mds-discography-stripe-background'] = 'rgba(127, 127, 127, 0.08)';
+		}
+		if (wrapper.elements?.link?.color?.text && !table['link-color']) {
+			outerStyle['--mds-discography-link-color'] = wrapper.elements.link.color.text;
+		}
+
+		return el('div', { className: 'wp-block-mds-rm-artist-discography', style: outerStyle },
+			el('div', { className: 'mds-discography' },
+				el('div', { className: 'mds-discography__scroll' },
+					el('table', { className: 'mds-bd-preview-table' },
+						el('thead', null,
+							el('tr', null,
+								el('th', null, __('Year', 'mds-release-manager')),
+								el('th', null, __('Release', 'mds-release-manager')),
+								el('th', null, __('Format', 'mds-release-manager')),
+								el('th', null, __('Label', 'mds-release-manager'))
+							)
+						),
+						el('tbody', null,
+							SAMPLE_DISCOGRAPHY.map((row, idx) =>
+								el('tr', {
+									key: row.title,
+									style: table.striped && idx % 2 === 1
+										? { backgroundColor: outerStyle['--mds-discography-stripe-background'] }
+										: undefined,
+								},
+									el('td', null, row.year),
+									el('td', null, el('a', {
+										href: '#preview',
+										onClick: (e) => e.preventDefault(),
+										style: outerStyle['--mds-discography-link-color']
+											? { color: outerStyle['--mds-discography-link-color'], textDecoration: table['link-decoration'] || undefined }
+											: { textDecoration: table['link-decoration'] || undefined },
+									}, row.title)),
+									el('td', null, row.format),
+									el('td', null, row.label)
+								)
+							)
+						)
+					)
+				)
+			)
+		);
+	}
+
+	const BLOCK_TITLES = {
+		'release-meta': __('Release Meta', 'mds-release-manager'),
+		'release-links': __('Release Links', 'mds-release-manager'),
+		'release-player': __('Release Player', 'mds-release-manager'),
+		'artist-discography': __('Artist Discography', 'mds-release-manager'),
+	};
+
+	function BlockLivePreview({ slug, value, providers, canvasMode }) {
+		const scheme = config.themeScheme || {};
+		const isDark = canvasMode === 'dark' || (canvasMode === 'theme' && Boolean(scheme.isDark));
+		const stageStyle = canvasMode === 'theme' && scheme.background
+			? {
+				backgroundColor: scheme.background,
+				color: scheme.text || (scheme.isDark ? '#f9fafb' : '#1d2327'),
+				borderColor: scheme.border || undefined,
+			}
+			: undefined;
+		const canvasLabel = canvasMode === 'theme'
+			// translators: %s: Active theme name.
+			? sprintf(__('Active Theme (%s)', 'mds-release-manager'), scheme.themeName || (isDark ? __('Dark', 'mds-release-manager') : __('Light', 'mds-release-manager')))
+			: (isDark ? __('Dark canvas', 'mds-release-manager') : __('Light canvas', 'mds-release-manager'));
+
+		return el('aside', {
+			id: `mds-bd-live-preview-${slug}`,
+			className: 'mds-tpl-preview-col',
+			role: 'region',
+			// translators: %s: Block name.
+			'aria-label': sprintf(__('%s Live Preview', 'mds-release-manager'), BLOCK_TITLES[slug] || slug),
+		},
+			el('div', { className: 'mds-tpl-preview-card' },
+				el('div', { className: 'mds-tpl-preview-card__header' },
+					el('strong', null, sprintf(__('Live Preview — %s', 'mds-release-manager'), BLOCK_TITLES[slug] || slug)),
+					el('span', { className: 'mds-tpl-preview-card__hint' }, canvasLabel)
+				),
+				el('div', { className: `mds-bd-preview-stage${isDark ? ' is-dark' : ''}`, style: stageStyle },
+					slug === 'release-meta' && el(ReleaseMetaPreview, { value }),
+					slug === 'release-links' && el(ReleaseLinksPreview, { value, providers }),
+					slug === 'release-player' && el(ReleasePlayerPreview, { value }),
+					slug === 'artist-discography' && el(ArtistDiscographyPreview, { value })
+				),
+				el('p', { className: 'mds-bd-preview-caption' },
+					__('Updates in real time as you adjust controls. Click Save Settings to apply site-wide.', 'mds-release-manager')
+				)
+			)
+		);
+	}
+
+	function Defaults({ slug, isPreviewOpen, onTogglePreview, canvasMode, onCycleCanvas }) {
 		const [value, setValue] = useState(all[slug] || {});
 		const [providers, setProviders] = useState(config.providers);
 		const panelList = PANEL_IDS[slug] || [];
@@ -416,77 +980,184 @@
 		}
 		const isMeta = slug === 'release-meta';
 		const isLinks = slug === 'release-links';
+		const isPlayer = slug === 'release-player';
+		const isDiscography = slug === 'artist-discography';
+		const canvasBtnLabel = canvasMode === 'theme'
+			? __('Canvas: Active Theme', 'mds-release-manager')
+			: (canvasMode === 'dark' ? __('Canvas: Dark', 'mds-release-manager') : __('Canvas: Light', 'mds-release-manager'));
+
 		return el(BlockEditorProvider, { settings: config.editorSettings, value: emptyBlocks, onInput: () => {}, onChange: () => {} },
-			el(AccordionToolbar, {
-				openCount,
-				totalCount: panelList.length,
-				onExpandAll: expandAll,
-				onCollapseAll: collapseAll,
-			}),
-			isMeta && el(Items, { value, onChange: change, panelProps: stylePanelProps('items') }),
-			isLinks && el(LinkProviders, { value, onChange: change, providers, onProvidersChange: changeProviders, panelProps: stylePanelProps('items') }),
-			isLinks && el(PanelBody, { title: __('Behavior & Display', 'mds-release-manager'), ...stylePanelProps('behavior') },
-				el(SectionInfo, {
-					title: __('About Behavior & Display', 'mds-release-manager'),
-					summary: __('Controls link target behavior when visitors click a streaming or Buy Now button, and whether the audio preview slot renders when audio is available.', 'mds-release-manager'),
-					inheritance: __('To choose which audio player is active or adjust its skin/height, use the Audio Player Manager tab. To resize the audio slot width, use Audio Player Sizing below.', 'mds-release-manager'),
+			el('div', { className: 'mds-bd-toolbar' },
+				el(AccordionToolbar, {
+					openCount,
+					totalCount: panelList.length,
+					onExpandAll: expandAll,
+					onCollapseAll: collapseAll,
 				}),
-				el(ControlGroup, { title: __('Interaction Defaults', 'mds-release-manager'), twoCol: true },
-					el(ToggleControl, {
-						label: __('Open Links in a New Tab', 'mds-release-manager'),
-						help: __('Adds target="_blank" and rel="noopener noreferrer" to streaming and Buy Now links.', 'mds-release-manager'),
-						checked: value.newTab !== false,
-						__nextHasNoMarginBottom: true,
-						onChange: (newTab) => change({ newTab }),
-					}),
-					el(ToggleControl, {
-						label: __('Show Audio Preview Player', 'mds-release-manager'),
-						help: __('Displays the active audio preview player whenever the Release has audio configured.', 'mds-release-manager'),
-						checked: value.showAudio !== false,
-						__nextHasNoMarginBottom: true,
-						onChange: (showAudio) => change({ showAudio }),
-					}),
-					el(SelectControl, {
-						label: __('Multi-Format Buy Now Behavior', 'mds-release-manager'),
-						help: __('When a release has multiple Media Formats and no WooCommerce White-Label override is active, choose whether clicking Buy Now opens a format picker modal or links directly to the Primary format.', 'mds-release-manager'),
-						value: value.buyNowMode || 'picker',
-						__next40pxDefaultSize: true,
-						__nextHasNoMarginBottom: true,
-						options: [
-							{ label: __('Choose Format Modal (Recommended)', 'mds-release-manager'), value: 'picker' },
-							{ label: __('Primary Direct Link', 'mds-release-manager'), value: 'direct' },
-						],
-						onChange: (buyNowMode) => change({ buyNowMode }),
-					})
+				el('div', { className: 'mds-bd-toolbar__actions' },
+					isPreviewOpen && el(Button, {
+						variant: 'tertiary',
+						size: 'compact',
+						onClick: onCycleCanvas,
+					}, canvasBtnLabel),
+					el(Button, {
+						variant: 'secondary',
+						size: 'compact',
+						'aria-expanded': isPreviewOpen,
+						'aria-controls': `mds-bd-live-preview-${slug}`,
+						onClick: onTogglePreview,
+					}, isPreviewOpen ? __('Hide Live Preview', 'mds-release-manager') : __('Show Live Preview', 'mds-release-manager'))
 				)
 			),
-			isMeta && el(window.mdsRmReleaseMetaControls, { standalone: true, stylePanelProps, attributes: value, setAttributes: change }),
-			isLinks && el(window.mdsRmReleaseLinksControls, { standalone: true, stylePanelProps, attributes: value, setAttributes: change }),
-			isMeta && value.metaStyles && el('div', { className: 'mds-reset-row' },
-				el(Button, { variant: 'tertiary', isDestructive: true, onClick: () => change({ metaStyles: undefined }) }, __('Reset Release Meta styles', 'mds-release-manager'))
+			el('div', { className: `mds-bd-workspace${isPreviewOpen ? ' has-preview' : ''}` },
+				el('div', { className: 'mds-bd-controls-col' },
+					isMeta && el(Items, { value, onChange: change, panelProps: stylePanelProps('items') }),
+					isLinks && el(LinkProviders, { value, onChange: change, providers, onProvidersChange: changeProviders, panelProps: stylePanelProps('items') }),
+					isLinks && el(PanelBody, { title: __('Behavior & Display', 'mds-release-manager'), ...stylePanelProps('behavior') },
+						el(SectionInfo, {
+							title: __('About Behavior & Display', 'mds-release-manager'),
+							summary: __('Controls link target behavior when visitors click a streaming or Buy Now button.', 'mds-release-manager'),
+							inheritance: __('Applies site-wide to all Release Links blocks unless overridden on an individual block.', 'mds-release-manager'),
+						}),
+						el(ControlGroup, { title: __('Interaction Defaults', 'mds-release-manager'), twoCol: true },
+							el(ToggleControl, {
+								label: __('Open Links in a New Tab', 'mds-release-manager'),
+								help: __('Adds target="_blank" and rel="noopener noreferrer" to streaming and Buy Now links.', 'mds-release-manager'),
+								checked: value.newTab !== false,
+								__nextHasNoMarginBottom: true,
+								onChange: (newTab) => change({ newTab }),
+							}),
+							el(SelectControl, {
+								label: __('Multi-Format Buy Now Behavior', 'mds-release-manager'),
+								help: __('When a release has multiple Media Formats and no WooCommerce White-Label override is active, choose whether clicking Buy Now opens a format picker modal or links directly to the Primary format.', 'mds-release-manager'),
+								value: value.buyNowMode || 'picker',
+								__next40pxDefaultSize: true,
+								__nextHasNoMarginBottom: true,
+								options: [
+									{ label: __('Choose Format Modal (Recommended)', 'mds-release-manager'), value: 'picker' },
+									{ label: __('Primary Direct Link', 'mds-release-manager'), value: 'direct' },
+								],
+								onChange: (buyNowMode) => change({ buyNowMode }),
+							})
+						)
+					),
+					isPlayer && el(ReleasePlayerDefaults, { value, onChange: change, stylePanelProps }),
+					isMeta && el(window.mdsRmReleaseMetaControls, { standalone: true, stylePanelProps, attributes: value, setAttributes: change }),
+					isLinks && el(window.mdsRmReleaseLinksControls, { standalone: true, stylePanelProps, attributes: value, setAttributes: change }),
+					isMeta && value.metaStyles && el('div', { className: 'mds-reset-row' },
+						el(Button, { variant: 'tertiary', isDestructive: true, onClick: () => change({ metaStyles: undefined }) }, __('Reset Release Meta styles', 'mds-release-manager'))
+					),
+					isLinks && value.linkStyles && el('div', { className: 'mds-reset-row' },
+						el(Button, { variant: 'tertiary', isDestructive: true, onClick: () => change({ linkStyles: undefined }) }, __('Reset Release Links styles', 'mds-release-manager'))
+					),
+					isDiscography && el(WrapperStyles, { panelProps: stylePanelProps('outer'), value: value.style || {}, onChange: (style) => change({ style }) }),
+					isDiscography && el(window.mdsRmDiscographyTableControls, { standalone: true, stylePanelProps, value: value.tableStyles || {}, onChange: (tableStyles) => change({ tableStyles }) })
+				),
+				isPreviewOpen && el(BlockLivePreview, { slug, value, providers, canvasMode })
+			)
+		);
+	}
+
+	function ThemePresetBar({ onApplyPreset }) {
+		const scheme = config.themeScheme || {};
+		const presets = Array.isArray(config.stylePresets) ? config.stylePresets : [];
+		if (!presets.length) return null;
+
+		const modeLabel = scheme.isDark ? __('Dark', 'mds-release-manager') : __('Light', 'mds-release-manager');
+		return el('div', { className: 'mds-theme-preset-bar' },
+			el('div', { className: 'mds-theme-preset-bar__status' },
+				el('span', { className: 'mds-theme-preset-bar__swatches', 'aria-hidden': true },
+					scheme.background && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.background }, title: __('Theme Background', 'mds-release-manager') }),
+					scheme.text && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.text }, title: __('Theme Text', 'mds-release-manager') }),
+					scheme.accent && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.accent }, title: __('Theme Accent', 'mds-release-manager') })
+				),
+				el('div', null,
+					el('span', { className: 'mds-theme-preset-bar__title' },
+						// translators: 1: Active theme name. 2: Detected color scheme (Light or Dark).
+						sprintf(__('Detected Theme Scheme: %1$s (%2$s)', 'mds-release-manager'), scheme.themeName || __('Active Theme', 'mds-release-manager'), modeLabel)
+					),
+					el('span', { className: 'mds-theme-preset-bar__sub' },
+						__('Unset colors automatically adapt to your active theme or Twenty Twenty-Five color variation. Or apply a starter preset across all four blocks:', 'mds-release-manager')
+					)
+				)
 			),
-			isLinks && value.linkStyles && el('div', { className: 'mds-reset-row' },
-				el(Button, { variant: 'tertiary', isDestructive: true, onClick: () => change({ linkStyles: undefined }) }, __('Reset Release Links styles', 'mds-release-manager'))
-			),
-			!isMeta && !isLinks && el(WrapperStyles, { panelProps: stylePanelProps('outer'), value: value.style || {}, onChange: (style) => change({ style }) }),
-			!isMeta && !isLinks && el(window.mdsRmDiscographyTableControls, { standalone: true, stylePanelProps, value: value.tableStyles || {}, onChange: (tableStyles) => change({ tableStyles }) })
+			el('div', { className: 'mds-theme-preset-bar__actions' },
+				presets.map((preset) => el(Button, {
+					key: preset.id,
+					variant: preset.id === 'auto' ? 'secondary' : 'tertiary',
+					size: 'compact',
+					title: preset.description || '',
+					onClick: () => onApplyPreset(preset),
+				}, preset.label))
+			)
 		);
 	}
 
 	function BlockDefaultsTabs() {
+		const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+		const [canvasMode, setCanvasMode] = useState('theme');
+		const [presetRevision, setPresetRevision] = useState(0);
+
+		function togglePreview() {
+			const next = !isPreviewOpen;
+			setIsPreviewOpen(next);
+			speak(next ? __('Live preview shown.', 'mds-release-manager') : __('Live preview hidden.', 'mds-release-manager'), 'polite');
+		}
+
+		function cycleCanvas() {
+			const order = ['theme', 'light', 'dark'];
+			const next = order[(order.indexOf(canvasMode) + 1) % order.length];
+			setCanvasMode(next);
+			speak(sprintf(__('Preview canvas switched to %s.', 'mds-release-manager'), next), 'polite');
+		}
+
+		function applyPreset(preset) {
+			if (!preset || !preset.blocks) return;
+			const nextAll = { ...all };
+			Object.entries(preset.blocks).forEach(([slug, patch]) => {
+				const current = { ...(nextAll[slug] || {}) };
+				Object.entries(patch).forEach(([k, v]) => {
+					if (v === null || v === undefined) delete current[k];
+					else current[k] = v;
+				});
+				if (Object.keys(current).length) nextAll[slug] = current;
+				else delete nextAll[slug];
+			});
+			all = nextAll;
+			input.value = JSON.stringify(all);
+			input.dispatchEvent(new Event('change', { bubbles: true }));
+			setPresetRevision((r) => r + 1);
+			if (preset.id === 'tt5-evening') setCanvasMode('dark');
+			else if (preset.id === 'tt5-light') setCanvasMode('light');
+			else if (preset.id === 'auto') setCanvasMode('theme');
+			// translators: %s: Preset name.
+			speak(sprintf(__('Applied "%s" preset to Block Defaults. Click Save Settings to persist.', 'mds-release-manager'), preset.label), 'polite');
+		}
+
 		const tabs = [
 			{ name: 'release-meta', title: __('Release Meta', 'mds-release-manager') },
 			{ name: 'release-links', title: __('Release Links', 'mds-release-manager') },
+			{ name: 'release-player', title: __('Release Player', 'mds-release-manager') },
 			{ name: 'artist-discography', title: __('Artist Discography', 'mds-release-manager') },
 		];
-		return el(TabPanel, {
-			className: 'mds-block-defaults-tabs',
-			activeClass: 'is-active',
-			tabs,
-		}, (tab) => el('div', {
-			className: 'mds-block-defaults-tab-content',
-			'data-block-tab': tab.name,
-		}, el(Defaults, { key: tab.name, slug: tab.name })));
+		return el(Fragment, null,
+			el(ThemePresetBar, { onApplyPreset: applyPreset }),
+			el(TabPanel, {
+				className: 'mds-block-defaults-tabs',
+				activeClass: 'is-active',
+				tabs,
+			}, (tab) => el('div', {
+				className: 'mds-block-defaults-tab-content',
+				'data-block-tab': tab.name,
+			}, el(Defaults, {
+				key: `${tab.name}-${presetRevision}`,
+				slug: tab.name,
+				isPreviewOpen,
+				onTogglePreview: togglePreview,
+				canvasMode,
+				onCycleCanvas: cycleCanvas,
+			})))
+		);
 	}
 
 	const blockDefaultsTarget = document.getElementById('mds-block-defaults-root');
@@ -494,210 +1165,5 @@
 		const element = el(BlockDefaultsTabs);
 		if (wp.element.createRoot) wp.element.createRoot(blockDefaultsTarget).render(element);
 		else wp.element.render(element, blockDefaultsTarget);
-	}
-
-	function AudioPlayerFields({ player, values, onChange }) {
-		const [palette, customColor] = useSettings('color.palette', 'color.custom');
-		const colorPresets = presetChoices(palette, 'color');
-
-		function updateField(key, nextValue) {
-			const next = { ...values };
-			if (nextValue === undefined || nextValue === '') {
-				delete next[key];
-			} else {
-				next[key] = nextValue;
-			}
-			onChange(next);
-		}
-
-		return el('div', { className: 'mds-style-grid-2col' },
-			player.fields.map((field) => {
-				const current = Object.prototype.hasOwnProperty.call(values, field.key) ? values[field.key] : field.default;
-				if (field.type === 'toggle') {
-					return el('div', { key: field.key, className: 'mds-style-field' },
-						el(ToggleControl, {
-							label: field.label,
-							help: field.help || undefined,
-							checked: Boolean(current),
-							onChange: (checked) => updateField(field.key, Boolean(checked)),
-						})
-					);
-				}
-				if (field.type === 'select') {
-					const options = Object.entries(field.options || {}).map(([val, label]) => ({ value: String(val), label }));
-					return el('div', { key: field.key, className: 'mds-style-field' },
-						el(SelectControl, {
-							label: field.label,
-							help: field.help || undefined,
-							value: current != null ? String(current) : '',
-							options,
-							onChange: (selected) => updateField(field.key, selected),
-						})
-					);
-				}
-				if (field.type === 'range' || field.type === 'number') {
-					return el('div', { key: field.key, className: 'mds-style-field' },
-						el(RangeControl, {
-							label: field.label,
-							help: field.help || undefined,
-							min: field.min ?? 0,
-							max: field.max ?? 1000,
-							step: field.step ?? 1,
-							allowReset: true,
-							value: current != null && current !== '' ? Number(current) : undefined,
-							onChange: (num) => updateField(field.key, num === undefined ? undefined : Number(num)),
-						})
-					);
-				}
-				if (field.type === 'color') {
-					return el('div', { key: field.key, className: 'mds-style-field mds-style-field--color' },
-						colorPresets.length > 0 && el(SelectControl, {
-							// translators: %s: Name of the color setting.
-							label: sprintf(__('%s (Theme Preset)', 'mds-release-manager'), field.label),
-							value: colorPresets.some((opt) => opt.value === current) ? current : '',
-							options: [{ label: __('Custom / default', 'mds-release-manager'), value: '' }, ...colorPresets],
-							onChange: (preset) => updateField(field.key, preset || (field.default ?? '')),
-						}),
-						customColor !== false && el(window.mdsRmColorControl, {
-							label: field.label,
-							value: current || '',
-							onChange: (colorVal) => updateField(field.key, colorVal || (field.default ?? '')),
-						}),
-						field.help && el('p', { className: 'mds-style-field__help' }, field.help)
-					);
-				}
-				return el('div', { key: field.key, className: 'mds-style-field' },
-					el(TextControl, {
-						label: field.label,
-						help: field.help || undefined,
-						value: current != null ? String(current) : '',
-						onChange: (text) => updateField(field.key, text),
-					})
-				);
-			})
-		);
-	}
-
-	function AudioPlayerManager() {
-		const players = Array.isArray(config.audioPlayers) ? config.audioPlayers : [];
-		const [activePlayer, setActivePlayer] = useState(config.activeAudioPlayer || 'html5');
-		const [playerSettings, setPlayerSettings] = useState(
-			config.audioPlayerSettings && !Array.isArray(config.audioPlayerSettings) ? { ...config.audioPlayerSettings } : {}
-		);
-		const [openPanels, setOpenPanels] = useState(() => ({ [config.activeAudioPlayer || 'html5']: true }));
-		const settingsInput = document.getElementById('mds-rm-audio-player-settings');
-		const playerFieldsContainer = document.getElementById('mds-audio-player-fields');
-
-		function selectActivePlayer(slug) {
-			setActivePlayer(slug);
-			if (playerFieldsContainer) {
-				playerFieldsContainer.replaceChildren();
-				if (slug) {
-					const hidden = document.createElement('input');
-					hidden.type = 'hidden';
-					hidden.name = 'mds_rm_audio_players[]';
-					hidden.value = slug;
-					playerFieldsContainer.appendChild(hidden);
-				}
-			}
-			if (settingsInput) {
-				settingsInput.dispatchEvent(new Event('change', { bubbles: true }));
-			}
-		}
-
-		function updatePlayerSettings(slug, nextValues) {
-			const nextAll = { ...playerSettings };
-			if (nextValues && Object.keys(nextValues).length > 0) {
-				nextAll[slug] = nextValues;
-			} else {
-				delete nextAll[slug];
-			}
-			setPlayerSettings(nextAll);
-			if (settingsInput) {
-				settingsInput.value = JSON.stringify(nextAll);
-				settingsInput.dispatchEvent(new Event('change', { bubbles: true }));
-			}
-		}
-
-		function resetPlayerSettings(slug) {
-			const defaults = {};
-			const player = players.find((item) => item.slug === slug);
-			(player?.fields || []).forEach((field) => {
-				if (field.default !== undefined) defaults[field.key] = field.default;
-			});
-			updatePlayerSettings(slug, Object.keys(defaults).length ? defaults : undefined);
-		}
-
-		return el(BlockEditorProvider, { settings: config.editorSettings, value: emptyBlocks, onInput: () => {}, onChange: () => {} },
-			players.map((player) => {
-				const isActive = activePlayer === player.slug;
-				const statusText = isActive
-					? __('Active Player', 'mds-release-manager')
-					: player.isBuiltin
-						? __('Automatic Fallback', 'mds-release-manager')
-						: __('Inactive', 'mds-release-manager');
-				// translators: 1: Audio player label. 2: Current player status (Active Player, Automatic Fallback, or Inactive).
-				const panelTitle = sprintf(__('%1$s — %2$s', 'mds-release-manager'), player.label, statusText);
-				const values = playerSettings[player.slug] || {};
-				const hasFields = Array.isArray(player.fields) && player.fields.length > 0;
-
-				return el(PanelBody, {
-					key: player.slug,
-					title: panelTitle,
-					opened: Boolean(openPanels[player.slug]),
-					onToggle: () => setOpenPanels((current) => ({ ...current, [player.slug]: !current[player.slug] })),
-				},
-					player.description && el(SectionInfo, {
-						title: player.label,
-						summary: player.description,
-						inheritance: player.isBuiltin && !isActive
-							? __('This core player remains active as an automatic fallback whenever the selected third-party player is not configured on a release.', 'mds-release-manager')
-							: undefined,
-					}),
-					el(ControlGroup, { title: __('Player Activation', 'mds-release-manager') },
-						el('label', { className: 'mds-admin-option' },
-							el('input', {
-								type: 'radio',
-								name: 'mds_rm_active_audio_player_radio',
-								value: player.slug,
-								checked: isActive,
-								onChange: () => selectActivePlayer(player.slug),
-							}),
-							' ',
-							// translators: %s: Audio player label.
-							sprintf(__('Set %s as the active site-wide audio preview player', 'mds-release-manager'), player.label)
-						)
-					),
-					hasFields
-						? el(ControlGroup, {
-							title: __('Player Styling & Parameters', 'mds-release-manager'),
-							description: __('Site-wide appearance and embed options applied whenever this player renders.', 'mds-release-manager'),
-						},
-							el(AudioPlayerFields, {
-								player,
-								values,
-								onChange: (nextValues) => updatePlayerSettings(player.slug, nextValues),
-							}),
-							el('div', { className: 'mds-reset-row' },
-								el(Button, {
-									variant: 'tertiary',
-									isDestructive: true,
-									onClick: () => resetPlayerSettings(player.slug),
-								}, __('Restore player defaults', 'mds-release-manager'))
-							)
-						)
-						: el('p', { className: 'mds-style-field__help' },
-							__('This player uses the release’s Audio Preview URL (.mp3) and requires no additional player parameters. To resize the audio slot width inside the Release Links block, use Audio Player Sizing under Block Defaults → Release Links.', 'mds-release-manager')
-						)
-				);
-			})
-		);
-	}
-
-	const audioManagerTarget = document.getElementById('mds-audio-player-manager');
-	if (audioManagerTarget) {
-		const managerElement = el(AudioPlayerManager);
-		if (wp.element.createRoot) wp.element.createRoot(audioManagerTarget).render(managerElement);
-		else wp.element.render(managerElement, audioManagerTarget);
 	}
 })(window.wp);

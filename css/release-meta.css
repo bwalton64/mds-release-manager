@@ -4,8 +4,8 @@
 	flex-direction: var(--mds-meta-direction-desktop, row);
 	align-items: var(--mds-meta-vertical-align-desktop, center);
 	width: var(--mds-meta-width-desktop, auto);
-	background: var(--mds-meta-background-desktop, #000);
-	color: var(--mds-meta-color-desktop, #fff);
+	background: var(--mds-meta-background-desktop, var(--mds-theme-meta-bg, #f4f4f0));
+	color: var(--mds-meta-color-desktop, var(--mds-theme-meta-text, #1d2327));
 	font-family: var(--mds-meta-font-family-desktop, inherit);
 	font-size: var(--mds-meta-font-size-desktop, .95em);
 	font-weight: var(--mds-meta-font-weight-desktop, 500);
@@ -55,8 +55,8 @@
 		flex-direction: var(--mds-meta-direction-tablet, var(--mds-meta-direction-desktop, row));
 		align-items: var(--mds-meta-vertical-align-tablet, var(--mds-meta-vertical-align-desktop, center));
 		width: var(--mds-meta-width-tablet, var(--mds-meta-width-desktop, auto));
-		background: var(--mds-meta-background-tablet, var(--mds-meta-background-desktop, #000));
-		color: var(--mds-meta-color-tablet, var(--mds-meta-color-desktop, #fff));
+		background: var(--mds-meta-background-tablet, var(--mds-meta-background-desktop, var(--mds-theme-meta-bg, #f4f4f0)));
+		color: var(--mds-meta-color-tablet, var(--mds-meta-color-desktop, var(--mds-theme-meta-text, #1d2327)));
 		font-family: var(--mds-meta-font-family-tablet, var(--mds-meta-font-family-desktop, inherit));
 		font-size: var(--mds-meta-font-size-tablet, var(--mds-meta-font-size-desktop, .95em));
 		font-weight: var(--mds-meta-font-weight-tablet, var(--mds-meta-font-weight-desktop, 500));
@@ -88,8 +88,8 @@
 		flex-direction: var(--mds-meta-direction-mobile, var(--mds-meta-direction-tablet, var(--mds-meta-direction-desktop, row)));
 		align-items: var(--mds-meta-vertical-align-mobile, var(--mds-meta-vertical-align-tablet, var(--mds-meta-vertical-align-desktop, center)));
 		width: var(--mds-meta-width-mobile, var(--mds-meta-width-tablet, var(--mds-meta-width-desktop, auto)));
-		background: var(--mds-meta-background-mobile, var(--mds-meta-background-tablet, var(--mds-meta-background-desktop, #000)));
-		color: var(--mds-meta-color-mobile, var(--mds-meta-color-tablet, var(--mds-meta-color-desktop, #fff)));
+		background: var(--mds-meta-background-mobile, var(--mds-meta-background-tablet, var(--mds-meta-background-desktop, var(--mds-theme-meta-bg, #f4f4f0))));
+		color: var(--mds-meta-color-mobile, var(--mds-meta-color-tablet, var(--mds-meta-color-desktop, var(--mds-theme-meta-text, #1d2327))));
 		font-family: var(--mds-meta-font-family-mobile, var(--mds-meta-font-family-tablet, var(--mds-meta-font-family-desktop, inherit)));
 		font-size: var(--mds-meta-font-size-mobile, var(--mds-meta-font-size-tablet, var(--mds-meta-font-size-desktop, .95em)));
 		font-weight: var(--mds-meta-font-weight-mobile, var(--mds-meta-font-weight-tablet, var(--mds-meta-font-weight-desktop, 500)));

@@ -17,7 +17,6 @@ namespace MDS\ReleaseManager\Api;
 use MDS\ReleaseManager\Blocks\ReleaseLinks;
 use MDS\ReleaseManager\Blocks\ReleaseMeta;
 use MDS\ReleaseManager\Core\Audio\AudioApi;
-use MDS\ReleaseManager\Core\AudioPlayers;
 use MDS\ReleaseManager\Core\Cache;
 use MDS\ReleaseManager\Core\ReleaseModel;
 use MDS\ReleaseManager\Core\ReleaseSearch;
@@ -272,18 +271,6 @@ final class ExtensionApi {
 	 */
 	public static function render_release_player( array $attributes = array(), int $context_post_id = 0 ): string {
 		return \MDS\ReleaseManager\Blocks\ReleasePlayer::render( $attributes, null, $context_post_id );
-	}
-
-	/**
-	 * Returns validated site-wide settings for a registered audio player slug.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @param string $slug Registered audio player slug.
-	 * @return array<string, mixed> Player settings.
-	 */
-	public static function get_audio_player_settings( string $slug ): array {
-		return AudioPlayers::get_player_settings( $slug );
 	}
 
 	/**
