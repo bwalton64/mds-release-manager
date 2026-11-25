@@ -45,11 +45,13 @@ jobs:
         if: hashFiles('composer.json') != ''
         run: composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --prefer-dist
 
-      - name: Build JS/CSS assets (if build script exists)
+      - name: Build JS/CSS assets (when webpack entry point exists)
         run: |
-          if [ -f package.json ] && node -e "const p = require('./package.json'); process.exit(p.scripts && p.scripts.build ? 0 : 1)"; then
-            npm ci
+          if [ -f package.json ] && { [ -f src/index.js ] || [ -f src/index.ts ] || [ -f src/index.tsx ] || [ -f webpack.config.js ]; }; then
+            if [ -f package-lock.json ]; then npm ci; else npm install; fi
             npm run build
+          else
+            echo "No JS build entry point detected; shipping source JS/CSS directly."
           fi
 
       - name: Stage clean plugin ZIP
