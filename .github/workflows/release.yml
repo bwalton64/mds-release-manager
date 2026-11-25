@@ -1,0 +1,98 @@
+name: Build & Publish WordPress Plugin Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing Git tag to publish (e.g. v1.2.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      PLUGIN_SLUG: mds-release-manager
+      PLUGIN_NAME: MDS Release Manager
+
+    steps:
+      - name: Resolve tag and version
+        id: meta
+        run: |
+          TAG="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.meta.outputs.tag }}
+
+      - name: Setup PHP 8.2 & Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: Install production Composer dependencies
+        if: hashFiles('composer.json') != ''
+        run: composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --prefer-dist
+
+      - name: Build JS/CSS assets (if build script exists)
+        run: |
+          if [ -f package.json ] && node -e "const p = require('./package.json'); process.exit(p.scripts && p.scripts.build ? 0 : 1)"; then
+            npm ci
+            npm run build
+          fi
+
+      - name: Stage clean plugin ZIP
+        run: |
+          VERSION="${{ steps.meta.outputs.version }}"
+          STAGE_DIR="/tmp/${PLUGIN_SLUG}"
+          rm -rf "$STAGE_DIR" dist
+          mkdir -p "$STAGE_DIR" dist
+
+          RSYNC_ARGS=(-a --exclude='.git' --exclude='.github' --exclude='.agents' --exclude='.local' --exclude='.vscode' --exclude='tests' --exclude='node_modules' --exclude='dist' --exclude='*.log')
+          if [ -f .distignore ]; then
+            RSYNC_ARGS+=(--exclude-from=.distignore)
+          fi
+
+          rsync "${RSYNC_ARGS[@]}" ./ "$STAGE_DIR/"
+          (cd /tmp && zip -rq "${GITHUB_WORKSPACE}/dist/${PLUGIN_SLUG}-${VERSION}.zip" "${PLUGIN_SLUG}")
+          (cd dist && sha256sum "${PLUGIN_SLUG}-${VERSION}.zip" > "${PLUGIN_SLUG}-${VERSION}.zip.sha256")
+          ls -lh dist/
+
+      - name: Extract release notes from changelog.md
+        id: notes
+        run: |
+          VERSION="${{ steps.meta.outputs.version }}"
+          if [ -f changelog.md ]; then
+            awk -v ver="$VERSION" '
+              $0 ~ "^## \\[" ver "\\]" { found=1; next }
+              found && /^## \[/ { exit }
+              found { print }
+            ' changelog.md > /tmp/release-notes.md
+          fi
+          if [ -s /tmp/release-notes.md ]; then
+            echo "has_notes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_notes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release & upload ZIP asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: "${{ env.PLUGIN_NAME }} ${{ steps.meta.outputs.tag }}"
+          body_path: ${{ steps.notes.outputs.has_notes == 'true' && '/tmp/release-notes.md' || '' }}
+          generate_release_notes: ${{ steps.notes.outputs.has_notes != 'true' }}
+          files: |
+            dist/${{ env.PLUGIN_SLUG }}-${{ steps.meta.outputs.version }}.zip
+            dist/${{ env.PLUGIN_SLUG }}-${{ steps.meta.outputs.version }}.zip.sha256

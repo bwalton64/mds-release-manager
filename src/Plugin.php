@@ -57,6 +57,21 @@ final class Plugin {
 		\MDS\ReleaseManager\Blocks\BlockDefaults::register_hooks();
 		\MDS\ReleaseManager\Api\VirtualMedia::register_hooks();
 		\MDS\ReleaseManager\Api\Abilities::register_hooks();
+		\MDS\ReleaseManager\Core\GitHubUpdater::register(
+			array(
+				'basename'       => MDS_RM_BASENAME,
+				'slug'           => 'mds-release-manager',
+				'repo'           => 'bwalton64/mds-release-manager',
+				'version'        => MDS_RM_VERSION,
+				'name'           => 'MDS Release Manager',
+				'author'         => 'Walton International Business Group',
+				'homepage'       => 'https://mustydungeon.com',
+				'token_constant' => 'MDS_RM_GITHUB_TOKEN',
+				'requires'       => '7.0',
+				'tested'         => '7.0',
+				'requires_php'   => '8.0',
+			)
+		);
 
 		/**
 		 * Fires once MDS Release Manager core components are bootstrapped.

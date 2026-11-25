@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- Add a centralized native WordPress `Update URI` GitHub Releases updater (`MDS\ReleaseManager\Core\GitHubUpdater`, exposed to companion plugins via `ExtensionApi::register_github_updater()`), supporting private GitHub repositories via `wp-config.php` Personal Access Token (`MDS_RM_GITHUB_TOKEN` or per-plugin constant), automatic unauthenticated public-repo operation when the token is removed, WP-Admin release details modals, and clean opt-out for future WordPress.org submissions (`tests/github-updater.php`).
+
 ## [2.0.0] - 2026-11-25
 
 ### Added

@@ -18,6 +18,7 @@ use MDS\ReleaseManager\Blocks\ReleaseLinks;
 use MDS\ReleaseManager\Blocks\ReleaseMeta;
 use MDS\ReleaseManager\Core\Audio\AudioApi;
 use MDS\ReleaseManager\Core\Cache;
+use MDS\ReleaseManager\Core\GitHubUpdater;
 use MDS\ReleaseManager\Core\ReleaseModel;
 use MDS\ReleaseManager\Core\ReleaseSearch;
 use MDS\ReleaseManager\Core\Sync;
@@ -111,6 +112,21 @@ final class ExtensionApi {
 	 */
 	public static function get_theme_css_variables(): string {
 		return ThemeScheme::css_variables();
+	}
+
+	/**
+	 * Registers a companion plugin for native WordPress `Update URI` updates from GitHub Releases.
+	 *
+	 * Supports private GitHub repositories via a `wp-config.php` Personal Access Token
+	 * (`MDS_RM_GITHUB_TOKEN` or a per-plugin constant) and public repositories with zero token.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param array<string, string> $config Updater config (`basename`, `slug`, `repo`, `version`, optional `name`, `token_constant`).
+	 * @return bool True when registered.
+	 */
+	public static function register_github_updater( array $config ): bool {
+		return GitHubUpdater::register( $config );
 	}
 
 	/**
