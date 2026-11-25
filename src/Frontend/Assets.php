@@ -331,7 +331,12 @@ final class Assets {
 				}
 				wp_add_inline_script(
 					'mds-rm-release-editor',
-					'var mdsReleaseEditorData = ' . wp_json_encode( \MDS\ReleaseManager\Admin\AdminInterface::get_release_editor_client_data( $editor_post ) ) . ';',
+					'var mdsReleaseEditorData = ' . wp_json_encode(
+						array_merge(
+							\MDS\ReleaseManager\Admin\AdminInterface::get_release_editor_client_data( $editor_post ),
+							array( 'themeScheme' => ThemeScheme::detect() )
+						)
+					) . ';',
 					'before'
 				);
 				wp_set_script_translations( 'mds-rm-release-editor', 'mds-release-manager', MDS_RM_PATH . 'languages' );
@@ -354,7 +359,12 @@ final class Assets {
 				}
 				wp_add_inline_script(
 					'mds-rm-artist-editor',
-					'var mdsArtistEditorData = ' . wp_json_encode( \MDS\ReleaseManager\Admin\AdminInterface::get_artist_editor_client_data( $editor_post ) ) . ';',
+					'var mdsArtistEditorData = ' . wp_json_encode(
+						array_merge(
+							\MDS\ReleaseManager\Admin\AdminInterface::get_artist_editor_client_data( $editor_post ),
+							array( 'themeScheme' => ThemeScheme::detect() )
+						)
+					) . ';',
 					'before'
 				);
 				wp_set_script_translations( 'mds-rm-artist-editor', 'mds-release-manager', MDS_RM_PATH . 'languages' );
@@ -423,17 +433,19 @@ final class Assets {
 			wp_enqueue_script(
 				'mds-template-defaults',
 				MDS_RM_URL . $template_defaults_script,
-				array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'wp-a11y', 'mds-rm-release-meta-controls' ),
+				array( 'wp-element', 'wp-components', 'wp-block-editor', 'wp-i18n', 'wp-a11y', 'mds-rm-color-control', 'mds-rm-release-meta-controls' ),
 				filemtime( MDS_RM_PATH . $template_defaults_script ),
 				true
 			);
 			wp_add_inline_script(
 				'mds-template-defaults',
-				'var mdsRmTemplateDefaultsData = ' . wp_json_encode(
+				'window.mdsRmThemeScheme = ' . wp_json_encode( ThemeScheme::detect() ) . '; var mdsRmTemplateDefaultsData = ' . wp_json_encode(
 					array(
-						'editorSettings' => get_block_editor_settings( array(), $context ),
-						'values'         => TemplateDefaults::get_all(),
-						'defaults'       => TemplateDefaults::defaults(),
+						'editorSettings'  => get_block_editor_settings( array(), $context ),
+						'values'          => TemplateDefaults::get_all(),
+						'defaults'        => TemplateDefaults::defaults(),
+						'themeScheme'     => ThemeScheme::detect(),
+						'templatePresets' => ThemeScheme::template_presets(),
 					)
 				) . ';',
 				'before'

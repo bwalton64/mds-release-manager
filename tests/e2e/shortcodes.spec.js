@@ -59,7 +59,7 @@ test('shortcodes expose block selection, options, and styling', async ({ fixture
 	expect(output.links).not.toContain('mds-release-links__audio');
 	expect(output.links_context).toContain(fixture.spotify);
 
-	expect(output.discography_default_stripe).toContain('--mds-discography-stripe-background:rgba(0,0,0,0.06)');
+	expect(output.discography_default_stripe).toMatch(/--mds-discography-stripe-background:(?:#[a-f0-9]{6}|rgba?\()/i);
 	expect(output.discography).toContain(fixture.title);
 	expect(output.discography).toContain('--mds-discography-table-background:#ffffff');
 	expect(output.discography).toContain('--mds-discography-cell-padding-top:12px');

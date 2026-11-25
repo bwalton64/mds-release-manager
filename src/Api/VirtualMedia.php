@@ -23,11 +23,15 @@ final class VirtualMedia {
 	/**
 	 * Registers virtual-media filters.
 	 *
+	 * On multisite networks, filters are also registered on the Hub so cross-blog
+	 * `switch_to_blog( $spoke_id )` operations (such as `set_post_thumbnail()` and
+	 * `get_the_post_thumbnail_url()`) resolve spoke virtual attachments cleanly while
+	 * remaining a zero-query no-op whenever the current blog is the Hub.
+	 *
 	 * @since 0.9.0
 	 */
 	public static function register_hooks(): void {
-		// Virtual attachments only exist on Spoke sites; skip runtime filters on the Hub.
-		if ( \MDS\ReleaseManager\Core\Sync::is_hub() ) {
+		if ( ! is_multisite() && \MDS\ReleaseManager\Core\Sync::is_hub() ) {
 			return;
 		}
 
@@ -68,6 +72,9 @@ final class VirtualMedia {
 	 * @return mixed The stored hub URL or original filter value.
 	 */
 	public static function virtual_attachment_url( mixed $url, $post_id ): mixed {
+		if ( \MDS\ReleaseManager\Core\Sync::is_hub() ) {
+			return $url;
+		}
 		$hub_url = get_post_meta( $post_id, '_mds_is_hub_media', true );
 		if ( ! empty( $hub_url ) ) {
 			return $hub_url;
@@ -84,6 +91,9 @@ final class VirtualMedia {
 	 * @return mixed The virtual image dimensions or original result.
 	 */
 	public static function virtual_image_downsize( mixed $downsize, $attachment_id ): mixed {
+		if ( \MDS\ReleaseManager\Core\Sync::is_hub() ) {
+			return $downsize;
+		}
 		$hub_url = get_post_meta( $attachment_id, '_mds_is_hub_media', true );
 		if ( ! empty( $hub_url ) ) {
 			$info = self::stored_media_info( (int) $attachment_id );
@@ -103,7 +113,7 @@ final class VirtualMedia {
 	 */
 	public static function virtual_media_meta_fallback( mixed $value, $object_id, $meta_key ): mixed {
 		static $in_progress = false;
-		if ( $in_progress || ! in_array( $meta_key, array( '_wp_attached_file', '_wp_attachment_metadata' ), true ) ) {
+		if ( $in_progress || \MDS\ReleaseManager\Core\Sync::is_hub() || ! in_array( $meta_key, array( '_wp_attached_file', '_wp_attachment_metadata' ), true ) ) {
 			return $value;
 		}
 
@@ -273,6 +283,9 @@ final class VirtualMedia {
 	 * @return \WP_REST_Response The updated attachment REST response.
 	 */
 	public static function force_rest_virtual_attachment( $response, $post ) {
+		if ( \MDS\ReleaseManager\Core\Sync::is_hub() ) {
+			return $response;
+		}
 		$hub_url = get_post_meta( $post->ID, '_mds_is_hub_media', true );
 		if ( ! empty( $hub_url ) ) {
 			$info                  = self::stored_media_info( (int) $post->ID );

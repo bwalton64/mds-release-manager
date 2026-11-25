@@ -96,9 +96,9 @@ if ( 'sync-cleanup' === $action ) {
 }
 
 if ( 'export-seed' === $action ) {
-	$term = get_term_by( 'name', 'Album', 'release_format' );
+	$term = get_term_by( 'name', 'Album', 'release_type' );
 	if ( ! $term ) {
-		WP_CLI::error( 'The Album release format was not registered.' );
+		WP_CLI::error( 'The Album release type was not registered.' );
 	}
 
 	$token = str_replace( '-', '', wp_generate_uuid4() );
@@ -122,7 +122,7 @@ if ( 'export-seed' === $action ) {
 			);
 			$state['releases'][] = $release_id;
 			update_post_meta( $release_id, 'upc_ean', (string) ( $base_upc + $index ) );
-			$check( wp_set_post_terms( $release_id, array( (int) $term->term_id ), 'release_format' ) );
+			$check( wp_set_post_terms( $release_id, array( (int) $term->term_id ), 'release_type' ) );
 		}
 
 		echo 'MDS_RM_TEST_JSON:' . wp_json_encode( $state );
@@ -151,9 +151,9 @@ if ( 'check-upc' === $action ) {
 	$post_id            = 0;
 
 	try {
-		$term = get_term_by( 'name', 'Album', 'release_format' );
+		$term = get_term_by( 'name', 'Album', 'release_type' );
 		if ( ! $term ) {
-			throw new RuntimeException( 'The Album release format was not registered.' );
+			throw new RuntimeException( 'The Album release type was not registered.' );
 		}
 		$post_id = $check(
 			wp_insert_post(
@@ -169,9 +169,9 @@ if ( 'check-upc' === $action ) {
 		delete_post_meta( $post_id, '_mds_normalized_upc' );
 		update_option( 'mds_rm_normalized_upc_migration_complete', '0', false );
 
-		$legacy_result = MDS_RM_Release_Model::validate( 0, $upc, array( (int) $term->term_id ) );
+		$legacy_result = \MDS\ReleaseManager\Core\ReleaseModel::validate( 0, $upc, array( (int) $term->term_id ) );
 		update_post_meta( $post_id, '_mds_normalized_upc', $upc );
-		$indexed_result = MDS_RM_Release_Model::validate( 0, $upc, array( (int) $term->term_id ) );
+		$indexed_result = \MDS\ReleaseManager\Core\ReleaseModel::validate( 0, $upc, array( (int) $term->term_id ) );
 
 		echo 'MDS_RM_TEST_JSON:' . wp_json_encode(
 			array(

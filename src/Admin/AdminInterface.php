@@ -45,6 +45,7 @@ final class AdminInterface {
 		add_action( 'admin_init', array( self::class, 'remove_legacy_artist_images' ) );
 		add_action( 'save_post_release', array( self::class, 'save_release_meta_data' ) );
 		add_action( 'admin_menu', array( self::class, 'register_settings_page' ) );
+		add_action( 'admin_menu', array( self::class, 'organize_releases_submenu' ), 999 );
 	}
 
 	/**
@@ -937,6 +938,67 @@ final class AdminInterface {
 			'mds-release-settings',
 			array( self::class, 'settings_page' )
 		);
+	}
+
+	/**
+	 * Removes the redundant "Add New Release" submenu item and enforces a consistent
+	 * submenu order: All Releases & All Artists at the top, taxonomies/extensions in
+	 * the middle, and Settings & CSV Import/Export at the bottom.
+	 *
+	 * @since 2.1.0
+	 * @return void
+	 */
+	public static function organize_releases_submenu(): void {
+		$parent = 'edit.php?post_type=release';
+
+		remove_submenu_page( $parent, 'post-new.php?post_type=release' );
+
+		global $submenu;
+		if ( ! isset( $submenu[ $parent ] ) || ! is_array( $submenu[ $parent ] ) ) {
+			return;
+		}
+
+		$top_slugs    = array(
+			'edit.php?post_type=release',
+			'edit.php?post_type=artist',
+		);
+		$bottom_slugs = array(
+			'mds-release-settings',
+			'mds-release-csv',
+		);
+
+		$top_items    = array();
+		$middle_items = array();
+		$bottom_items = array();
+
+		foreach ( $submenu[ $parent ] as $item ) {
+			$slug = isset( $item[2] ) ? (string) $item[2] : '';
+			if ( in_array( $slug, $top_slugs, true ) ) {
+				$top_items[ $slug ] = $item;
+			} elseif ( in_array( $slug, $bottom_slugs, true ) ) {
+				$bottom_items[ $slug ] = $item;
+			} else {
+				$middle_items[] = $item;
+			}
+		}
+
+		$ordered = array();
+		foreach ( $top_slugs as $slug ) {
+			if ( isset( $top_items[ $slug ] ) ) {
+				$ordered[] = $top_items[ $slug ];
+			}
+		}
+		foreach ( $middle_items as $item ) {
+			$ordered[] = $item;
+		}
+		foreach ( $bottom_slugs as $slug ) {
+			if ( isset( $bottom_items[ $slug ] ) ) {
+				$ordered[] = $bottom_items[ $slug ];
+			}
+		}
+
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Intentional submenu ordering for the plugin's own Releases top-level menu.
+		$submenu[ $parent ] = $ordered;
 	}
 
 	/**

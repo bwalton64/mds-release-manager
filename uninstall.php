@@ -42,18 +42,44 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 		'mds_rm_woo_meta_align',
 		'mds_rm_audio_players',
 		'mds_rm_audio_player_settings',
+		'mds_rm_audio_provider_priority',
+		'mds_rm_audio_disabled_providers',
 		'mds_rm_bandcamp_template',
 		'mds_rm_providers',
 		'mds_rm_global_redirect',
 		'mds_rm_block_defaults',
 		'mds_rm_template_defaults',
 		'mds_rm_cache_settings',
+		'mds_rm_network_sync_job',
+		'mds_rm_network_sync_lock',
+		'mds_rm_release_type_migrated',
+		'mds_rm_seeded_media_formats_hash',
+		'mds_rm_media_formats_seeded',
+		'mds_rm_normalized_upc_migration_complete',
 		'mds_rm_artist_image_cleanup_complete',
 	);
 
 	$delete_local_options = static function () use ( $options ): void {
 		foreach ( $options as $opt ) {
 			delete_option( $opt );
+		}
+
+		if ( function_exists( 'delete_transient' ) ) {
+			delete_transient( 'mds_rm_release_audit' );
+		}
+
+		global $wpdb;
+		if ( isset( $wpdb ) && is_object( $wpdb ) && method_exists( $wpdb, 'query' ) ) {
+			$like_val     = $wpdb->esc_like( '_transient_mds_rm_audio_' ) . '%';
+			$like_timeout = $wpdb->esc_like( '_transient_timeout_mds_rm_audio_' ) . '%';
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Targeted uninstall cleanup of MDS Release Manager audio transients.
+			$wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+					$like_val,
+					$like_timeout
+				)
+			);
 		}
 	};
 

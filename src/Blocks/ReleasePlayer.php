@@ -212,7 +212,7 @@ final class ReleasePlayer {
 		);
 		foreach ( $color_map as $attr_key => $css_var ) {
 			if ( is_string( $attrs[ $attr_key ] ) && '' !== trim( $attrs[ $attr_key ] ) ) {
-				$valid = ReleaseMeta::valid_style( trim( $attrs[ $attr_key ] ), 'color' );
+				$valid = ReleaseLinksBlock::style_value( trim( $attrs[ $attr_key ] ), 'color' );
 				if ( '' !== $valid ) {
 					$style_vars[] = $css_var . ':' . $valid;
 				}
@@ -235,7 +235,7 @@ final class ReleasePlayer {
 		}
 
 		if ( is_string( $attrs['maxWidth'] ) && '' !== trim( $attrs['maxWidth'] ) ) {
-			$valid_width = ReleaseMeta::valid_style( trim( $attrs['maxWidth'] ), 'width' );
+			$valid_width = ReleaseLinksBlock::style_value( trim( $attrs['maxWidth'] ), 'width' );
 			if ( '' !== $valid_width ) {
 				$style_vars[] = '--mds-player-max-width:' . $valid_width;
 			}

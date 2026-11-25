@@ -12,7 +12,6 @@ namespace MDS\ReleaseManager\Blocks;
 use WP_Block;
 use WP_Post;
 use WP_REST_Request;
-use WP_REST_Response;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

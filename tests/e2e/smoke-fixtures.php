@@ -64,7 +64,7 @@ try {
 	$title    = 'Smoke Release ' . substr( $token, 0, 8 );
 	$artist_title = 'Smoke Artist ' . $token;
 	$spotify  = 'https://open.spotify.com/album/0123456789ABCDEFGHIJKL';
-	$term     = get_term_by( 'name', 'Album', 'release_format' );
+	$term     = get_term_by( 'name', 'Album', 'release_type' );
 	$check( $term );
 	$state['user'] = $check( wp_insert_user( array( 'user_login' => $username, 'user_pass' => $password, 'role' => 'administrator' ) ) );
 	$state['artist'] = $check(
@@ -78,7 +78,7 @@ try {
 	update_post_meta( $state['release'], 'record_label', $label );
 	update_post_meta( $state['release'], 'upc_ean', '0' . random_int( 99000000000, 99999999999 ) );
 	update_post_meta( $state['release'], 'streaming_links', wp_slash( wp_json_encode( array( 'Spotify' => $spotify ) ) ) );
-	$check( wp_set_post_terms( $state['release'], array( (int) $term->term_id ), 'release_format' ) );
+	$check( wp_set_post_terms( $state['release'], array( (int) $term->term_id ), 'release_type' ) );
 	$state['host'] = $check(
 		wp_insert_post( array( 'post_type' => 'post', 'post_status' => 'publish', 'post_title' => 'Smoke Host ' . $token, 'post_content' => '' ), true )
 	);

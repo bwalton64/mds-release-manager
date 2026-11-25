@@ -15,6 +15,7 @@
 			}
 			let active = true;
 			const timers = [];
+			let controller = null;
 			// Retry transient failures: editor boot can saturate PHP workers
 			// with block previews, delaying these lookups past the timeout.
 			function fail(error, attempt) {
@@ -27,9 +28,16 @@
 			}
 			function run(attempt) {
 				let timedOut = false;
-				const timer = setTimeout(() => { timedOut = true; fail({ code: 'timeout' }, attempt); }, requestTimeout);
+				controller = typeof AbortController === 'function' ? new AbortController() : null;
+				const timer = setTimeout(() => {
+					timedOut = true;
+					if (controller) controller.abort();
+					fail({ code: 'timeout' }, attempt);
+				}, requestTimeout);
 				timers.push(timer);
-				wp.apiFetch({ path, parse: !collection }).then(async (response) => {
+				const fetchOpts = { path, parse: !collection };
+				if (controller) fetchOpts.signal = controller.signal;
+				wp.apiFetch(fetchOpts).then(async (response) => {
 					const data = collection ? await response.json() : response;
 					clearTimeout(timer);
 					if (active && !timedOut) setResult({ path, data, pages: collection ? Number(response.headers.get('X-WP-TotalPages')) : 0 });
@@ -41,6 +49,7 @@
 			return () => {
 				active = false;
 				timers.forEach(clearTimeout);
+				if (controller) controller.abort();
 			};
 		}, [path, delay, collection, enabled]);
 		return path && result.path === path ? result : { loading: !!path };

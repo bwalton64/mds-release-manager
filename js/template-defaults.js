@@ -76,27 +76,39 @@
 		);
 	}
 
-	function ColorField({ label, help, value, onChange, palette, customColor }) {
-		const options = presetChoices(palette, 'color');
+	function ColorField({ label, help, value, onChange, palette, customColor, fallbackHint }) {
 		return el('div', { className: 'mds-style-field mds-style-field--color' },
-			!!options.length && el(SelectControl, {
-				// translators: %s: Name of the color setting.
-				label: sprintf(__('%s (Theme Preset)', 'mds-release-manager'), label),
-				value: options.some((opt) => opt.value === value) ? value : '',
-				options: [{ label: __('Theme / default', 'mds-release-manager'), value: '' }, ...options],
-				onChange: (next) => onChange(next),
-			}),
-			!options.length && customColor !== false && el('span', { className: 'mds-style-field__label' }, label),
+			el('span', { className: 'mds-style-field__label' }, label),
 			customColor !== false && window.mdsRmColorControl && el(window.mdsRmColorControl, {
 				label,
 				value: value || '',
+				palette,
+				fallbackHint,
 				onChange: (next) => onChange(next || ''),
 			}),
 			help && el('p', { className: 'mds-style-field__help' }, help)
 		);
 	}
 
-	function ReleaseLivePreview({ s }) {
+	function resolveCanvasPalette(canvasMode, scheme) {
+		if (canvasMode === 'dark') {
+			return { isDark: true, bg: '#111827', text: '#f3f4f6', surface: '#1f2937', border: '#374151', accent: '#7dd3fc' };
+		}
+		if (canvasMode === 'light') {
+			return { isDark: false, bg: '#ffffff', text: '#1d2327', surface: '#f4f4f0', border: '#e2e4e7', accent: '#2271b1' };
+		}
+		return {
+			isDark: Boolean(scheme.isDark),
+			bg: scheme.background || '#ffffff',
+			text: scheme.text || '#1d2327',
+			surface: scheme.surface || '#f4f4f0',
+			border: scheme.border || '#e2e4e7',
+			accent: scheme.accent || '#2271b1',
+		};
+	}
+
+	function ReleaseLivePreview({ s, canvasMode, scheme }) {
+		const theme = resolveCanvasPalette(canvasMode, scheme);
 		const ratioMap = {
 			'40_60': ['1fr', '1.4fr'],
 			'50_50': ['1fr', '1fr'],
@@ -108,8 +120,9 @@
 
 		const containerStyle = {
 			padding: `${Math.min(24, Math.round(s.padding_vertical * 0.4))}px ${Math.min(24, Math.round(s.padding_horizontal * 0.4))}px`,
-			background: s.container_bg || '#ffffff',
-			border: s.container_border ? `1px solid ${s.container_border}` : '1px solid #e2e4e7',
+			background: s.container_bg || theme.bg,
+			color: s.content_color || theme.text,
+			border: s.container_border ? `1px solid ${s.container_border}` : `1px solid ${theme.border}`,
 			borderRadius: `${s.container_radius || 0}px`,
 		};
 
@@ -142,7 +155,7 @@
 		};
 
 		const bodyStyle = {
-			color: s.content_color || '#1e1e1e',
+			color: s.content_color || theme.text,
 			fontFamily: s.content_font_family || 'inherit',
 			fontSize: `${Math.max(10, Math.round(s.content_font_size * 0.78))}px`,
 			lineHeight: s.content_line_height / 100,
@@ -166,10 +179,11 @@
 				el('div', { style: mainStyle },
 					slots.map((slot) => {
 						if (slot === 'meta' && s.show_meta) {
+							const pillStyle = { background: theme.surface, color: theme.text, border: `1px solid ${theme.border}` };
 							return el('div', { key: 'meta', className: 'mds-tpl-preview-meta' },
-								el('span', null, '2026'),
-								el('span', null, 'Indie Label'),
-								el('span', null, 'Single')
+								el('span', { style: pillStyle }, '2026'),
+								el('span', { style: pillStyle }, 'Midnight Records'),
+								el('span', { style: pillStyle }, 'Album')
 							);
 						}
 						if (slot === 'body') {
@@ -181,7 +195,7 @@
 							return el('div', { key: 'links', className: 'mds-tpl-preview-links' },
 								el('span', { className: 'mds-tpl-preview-pill' }, 'Spotify'),
 								el('span', { className: 'mds-tpl-preview-pill' }, 'Apple'),
-								el('span', { className: 'mds-tpl-preview-pill is-primary' }, __('Buy Now', 'mds-release-manager'))
+								el('span', { className: 'mds-tpl-preview-pill is-primary', style: { background: theme.accent } }, __('Buy Now', 'mds-release-manager'))
 							);
 						}
 						return null;
@@ -191,14 +205,16 @@
 		);
 	}
 
-	function ArtistLivePreview({ s }) {
+	function ArtistLivePreview({ s, canvasMode, scheme }) {
+		const theme = resolveCanvasPalette(canvasMode, scheme);
 		const shadow = SHADOW_MAP.artist[s.image_shadow] || SHADOW_MAP.artist.default;
 		const scaledGap = `${Math.max(8, Math.round(s.gap * 0.5))}px`;
 
 		const containerStyle = {
 			padding: `${Math.min(24, Math.round(s.padding_vertical * 0.4))}px ${Math.min(24, Math.round(s.padding_horizontal * 0.4))}px`,
-			background: s.container_bg || '#ffffff',
-			border: s.container_border ? `1px solid ${s.container_border}` : '1px solid #e2e4e7',
+			background: s.container_bg || theme.bg,
+			color: s.body_color || theme.text,
+			border: s.container_border ? `1px solid ${s.container_border}` : `1px solid ${theme.border}`,
 			borderRadius: `${s.container_radius || 0}px`,
 			display: 'flex',
 			flexDirection: 'column',
@@ -215,7 +231,7 @@
 		};
 
 		const bioStyle = {
-			color: s.body_color || '#1e1e1e',
+			color: s.body_color || theme.text,
 			fontFamily: s.body_font_family || 'inherit',
 			fontSize: s.body_font_size > 0 ? `${Math.max(10, Math.round(s.body_font_size * 0.78))}px` : '12px',
 			lineHeight: s.body_line_height / 100,
@@ -225,11 +241,11 @@
 		const contactStyle = {
 			padding: `${Math.max(8, Math.round(s.contact_padding * 0.5))}px`,
 			borderRadius: `${s.contact_radius}px`,
-			background: s.contact_background || '#f9f9f9',
-			color: s.contact_color || '#1e1e1e',
+			background: s.contact_background || theme.surface,
+			color: s.contact_color || theme.text,
 			border: s.contact_border_color && s.contact_border_width > 0
 				? `${s.contact_border_width}px solid ${s.contact_border_color}`
-				: 'none',
+				: `1px solid ${theme.border}`,
 		};
 
 		const heroEl = s.layout === 'split' && s.show_portrait
@@ -256,11 +272,11 @@
 			);
 
 		const discographyEl = s.show_discography && el('div', { className: 'mds-tpl-preview-discog' },
-			s.discography_heading && el('h4', { className: 'mds-tpl-preview-heading' }, s.discography_heading),
-			el('div', { className: 'mds-tpl-preview-table' },
-				el('div', { className: 'mds-tpl-preview-row is-head' }, el('span', null, __('Title', 'mds-release-manager')), el('span', null, __('Year', 'mds-release-manager'))),
-				el('div', { className: 'mds-tpl-preview-row' }, el('span', null, 'What The Gold'), el('span', null, '2026')),
-				el('div', { className: 'mds-tpl-preview-row' }, el('span', null, 'Northern Lights'), el('span', null, '2024'))
+			s.discography_heading && el('h4', { className: 'mds-tpl-preview-heading', style: { color: theme.text } }, s.discography_heading),
+			el('div', { className: 'mds-tpl-preview-table', style: { borderColor: theme.border } },
+				el('div', { className: 'mds-tpl-preview-row is-head', style: { background: theme.surface, color: theme.text } }, el('span', null, __('Title', 'mds-release-manager')), el('span', null, __('Year', 'mds-release-manager'))),
+				el('div', { className: 'mds-tpl-preview-row', style: { borderTopColor: theme.border } }, el('span', null, 'Neon Horizons'), el('span', null, '2026')),
+				el('div', { className: 'mds-tpl-preview-row', style: { borderTopColor: theme.border } }, el('span', null, 'Northern Lights'), el('span', null, '2024'))
 			)
 		);
 
@@ -276,19 +292,54 @@
 		);
 	}
 
+	function TemplatePresetBar({ scheme, presets, onApplyPreset }) {
+		if (!Array.isArray(presets) || !presets.length) return null;
+		const modeLabel = scheme.isDark ? __('Dark', 'mds-release-manager') : __('Light', 'mds-release-manager');
+		return el('div', { className: 'mds-theme-preset-bar' },
+			el('div', { className: 'mds-theme-preset-bar__status' },
+				el('span', { className: 'mds-theme-preset-bar__swatches', 'aria-hidden': true },
+					scheme.background && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.background }, title: __('Theme Background', 'mds-release-manager') }),
+					scheme.text && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.text }, title: __('Theme Text', 'mds-release-manager') }),
+					scheme.accent && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.accent }, title: __('Theme Accent', 'mds-release-manager') })
+				),
+				el('div', null,
+					el('span', { className: 'mds-theme-preset-bar__title' },
+						// translators: 1: Active theme name. 2: Detected color scheme (Light or Dark).
+						sprintf(__('Detected Theme Scheme: %1$s (%2$s)', 'mds-release-manager'), scheme.themeName || __('Active Theme', 'mds-release-manager'), modeLabel)
+					),
+					el('span', { className: 'mds-theme-preset-bar__sub' },
+						__('Unset colors automatically adapt to your active theme or Twenty Twenty-Five variation. Or apply a starter preset to both templates:', 'mds-release-manager')
+					)
+				)
+			),
+			el('div', { className: 'mds-theme-preset-bar__actions' },
+				presets.map((preset) => el(Button, {
+					key: preset.id,
+					variant: preset.id === 'auto' ? 'secondary' : 'tertiary',
+					size: 'compact',
+					title: preset.description || '',
+					onClick: () => onApplyPreset(preset),
+				}, preset.label))
+			)
+		);
+	}
+
 	function TemplateDefaultsEditor() {
 		const [palette, customColor, families] = useSettings(
 			'color.palette',
 			'color.custom',
 			'typography.fontFamilies'
 		);
+		const scheme = config.themeScheme || {};
+		const presets = Array.isArray(config.templatePresets) ? config.templatePresets : [];
 
 		const [all, setAll] = useState(() => ({
 			release: { ...config.defaults.release, ...(config.values?.release || {}) },
 			artist: { ...config.defaults.artist, ...(config.values?.artist || {}) },
 		}));
 		const [activeTemplate, setActiveTemplate] = useState('release');
-		const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+		const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+		const [canvasMode, setCanvasMode] = useState('theme');
 		const [openPanels, setOpenPanels] = useState({
 			release: { layout: true, image: false, components: false, typography: false },
 			artist: { layout: true, portrait: false, biography: false, discography: false, contact: false },
@@ -961,9 +1012,10 @@
 					),
 					el(ColorField, {
 						label: __('Card Background', 'mds-release-manager'),
-						help: __('Override the default #f9f9f9 tint—recommended on dark themes.', 'mds-release-manager'),
+						help: __('Leave unset to automatically adapt to your active theme surface color (light or dark).', 'mds-release-manager'),
 						value: a.contact_background,
 						palette, customColor,
+						fallbackHint: scheme.surface ? sprintf(__('Auto (%s)', 'mds-release-manager'), scheme.surface) : undefined,
 						onChange: (val) => updateField('artist', 'contact_background', val),
 					}),
 					el(ColorField, {
@@ -994,7 +1046,37 @@
 			)
 		);
 
+		function cycleCanvas() {
+			const order = ['theme', 'light', 'dark'];
+			const next = order[(order.indexOf(canvasMode) + 1) % order.length];
+			setCanvasMode(next);
+			speak(sprintf(__('Preview canvas switched to %s.', 'mds-release-manager'), next), 'polite');
+		}
+
+		function applyPreset(preset) {
+			if (!preset || !preset.templates) return;
+			persist({
+				release: { ...all.release, ...(preset.templates.release || {}) },
+				artist: { ...all.artist, ...(preset.templates.artist || {}) },
+			});
+			if (preset.id === 'tt5-evening') setCanvasMode('dark');
+			else if (preset.id === 'tt5-light') setCanvasMode('light');
+			else if (preset.id === 'auto') setCanvasMode('theme');
+			// translators: %s: Preset name.
+			speak(sprintf(__('Applied "%s" preset to Default Templates. Click Save Settings to persist.', 'mds-release-manager'), preset.label), 'polite');
+		}
+
+		const canvasBtnLabel = canvasMode === 'theme'
+			? __('Canvas: Active Theme', 'mds-release-manager')
+			: (canvasMode === 'dark' ? __('Canvas: Dark', 'mds-release-manager') : __('Canvas: Light', 'mds-release-manager'));
+
+		const canvasHint = canvasMode === 'theme'
+			// translators: %s: Active theme name.
+			? sprintf(__('Active Theme (%s)', 'mds-release-manager'), scheme.themeName || (scheme.isDark ? __('Dark', 'mds-release-manager') : __('Light', 'mds-release-manager')))
+			: (canvasMode === 'dark' ? __('Dark canvas', 'mds-release-manager') : __('Light canvas', 'mds-release-manager'));
+
 		return el('div', { className: 'mds-tpl-workspace' },
+			el(TemplatePresetBar, { scheme, presets, onApplyPreset: applyPreset }),
 			el('div', { className: 'mds-tpl-header-bar' },
 				el('div', { className: 'mds-tpl-switcher' },
 					el(SegmentedControl, {
@@ -1008,14 +1090,21 @@
 					})
 				),
 				el('div', { className: 'mds-tpl-header-actions' },
+					isPreviewOpen && el(Button, {
+						variant: 'tertiary',
+						size: 'compact',
+						onClick: cycleCanvas,
+					}, canvasBtnLabel),
 					el(Button, {
 						variant: 'secondary',
+						size: 'compact',
 						'aria-expanded': isPreviewOpen,
 						'aria-controls': 'mds-tpl-live-preview-pane',
 						onClick: togglePreview,
 					}, isPreviewOpen ? __('Hide Live Preview', 'mds-release-manager') : __('Show Live Preview', 'mds-release-manager')),
 					el(Button, {
 						variant: 'tertiary',
+						size: 'compact',
 						isDestructive: true,
 						onClick: () => resetSection(activeTemplate),
 					}, activeTemplate === 'release'
@@ -1024,7 +1113,7 @@
 					)
 				)
 			),
-			el('div', { className: `mds-tpl-body${isPreviewOpen ? ' has-preview' : ''}` },
+			el('div', { className: `mds-bd-workspace${isPreviewOpen ? ' has-preview' : ''}` },
 				el('div', { className: 'mds-tpl-controls-col' },
 					el(AccordionToolbar, {
 						openCount,
@@ -1048,11 +1137,14 @@
 								? __('Live Preview — Release Fallback', 'mds-release-manager')
 								: __('Live Preview — Artist Fallback', 'mds-release-manager')
 							),
-							el('span', { className: 'mds-tpl-preview-card__hint' }, __('Scaled schematic preview', 'mds-release-manager'))
+							el('span', { className: 'mds-tpl-preview-card__hint' }, canvasHint)
 						),
 						activeTemplate === 'release'
-							? el(ReleaseLivePreview, { s: r })
-							: el(ArtistLivePreview, { s: a })
+							? el(ReleaseLivePreview, { s: r, canvasMode, scheme })
+							: el(ArtistLivePreview, { s: a, canvasMode, scheme }),
+						el('p', { className: 'mds-bd-preview-caption' },
+							__('Updates in real time as you adjust controls. Click Save Settings to apply site-wide.', 'mds-release-manager')
+						)
 					)
 				)
 			)

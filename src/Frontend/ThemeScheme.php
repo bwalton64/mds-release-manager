@@ -124,7 +124,7 @@ final class ThemeScheme {
 		 * @since 1.2.0
 		 * @param array<string, mixed> $scheme Detected scheme tokens.
 		 */
-		$filtered = apply_filters( 'mds_rm_theme_scheme', $scheme );
+		$filtered = function_exists( 'apply_filters' ) ? apply_filters( 'mds_rm_theme_scheme', $scheme ) : $scheme;
 		$cached   = is_array( $filtered ) ? $filtered : $scheme;
 
 		return $cached;
@@ -167,7 +167,7 @@ final class ThemeScheme {
 			array(
 				'id'          => 'auto',
 				'label'       => __( 'Auto-Match Theme', 'mds-release-manager' ),
-				'description' => __( 'Clears explicit color overrides so blocks automatically adapt whenever you switch themes or Twenty Twenty-Five color variations.', 'mds-release-manager' ),
+				'description' => __( 'Clears explicit color overrides so blocks automatically adapt whenever you switch themes or style variations.', 'mds-release-manager' ),
 				'blocks'      => array(
 					'release-meta'       => array( 'metaStyles' => null ),
 					'release-links'      => array( 'linkStyles' => null ),
@@ -188,8 +188,8 @@ final class ThemeScheme {
 			),
 			array(
 				'id'          => 'tt5-light',
-				'label'       => __( 'Twenty Twenty-Five — Light', 'mds-release-manager' ),
-				'description' => __( 'Clean editorial surfaces tuned for the default light Twenty Twenty-Five palette.', 'mds-release-manager' ),
+				'label'       => __( 'Light Scheme Defaults', 'mds-release-manager' ),
+				'description' => __( 'Overrides Auto-Match Theme with clean light surfaces, dark text, and subtle borders across all four blocks.', 'mds-release-manager' ),
 				'blocks'      => array(
 					'release-meta'       => array(
 						'metaStyles' => array(
@@ -237,8 +237,8 @@ final class ThemeScheme {
 			),
 			array(
 				'id'          => 'tt5-evening',
-				'label'       => __( 'Twenty Twenty-Five — Evening (Dark)', 'mds-release-manager' ),
-				'description' => __( 'Deep charcoal surfaces, crisp subtle borders, and luminous accents tailored for the Twenty Twenty-Five Evening variation and dark themes.', 'mds-release-manager' ),
+				'label'       => __( 'Dark Scheme Defaults', 'mds-release-manager' ),
+				'description' => __( 'Overrides Auto-Match Theme with deep charcoal surfaces, subtle borders, and light text across all four blocks.', 'mds-release-manager' ),
 				'blocks'      => array(
 					'release-meta'       => array(
 						'metaStyles' => array(
@@ -283,6 +283,93 @@ final class ThemeScheme {
 							'cell-border-color' => '#32343d',
 							'link-color'        => '#f9fafb',
 						),
+					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Returns designer-ready starter presets for the Default Templates settings screen.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function template_presets(): array {
+		return array(
+			array(
+				'id'          => 'auto',
+				'label'       => __( 'Auto-Match Theme', 'mds-release-manager' ),
+				'description' => __( 'Clears explicit color overrides so Release and Artist fallback pages automatically adapt whenever you switch themes or Twenty Twenty-Five variations.', 'mds-release-manager' ),
+				'templates'   => array(
+					'release' => array(
+						'container_bg'       => '',
+						'container_border'   => '',
+						'image_border_color' => '',
+						'content_color'      => '',
+					),
+					'artist'  => array(
+						'container_bg'         => '',
+						'container_border'     => '',
+						'image_border_color'   => '',
+						'body_color'           => '',
+						'contact_background'   => '',
+						'contact_color'        => '',
+						'contact_border_color' => '',
+						'contact_border_width' => 0,
+					),
+				),
+			),
+			array(
+				'id'          => 'tt5-light',
+				'label'       => __( 'Light Scheme Defaults', 'mds-release-manager' ),
+				'description' => __( 'Overrides Auto-Match Theme with clean light surfaces and crisp borders across Release and Artist fallback pages.', 'mds-release-manager' ),
+				'templates'   => array(
+					'release' => array(
+						'container_bg'       => '#ffffff',
+						'container_border'   => '#e5e5de',
+						'container_radius'   => 8,
+						'padding_vertical'   => 24,
+						'padding_horizontal' => 24,
+						'image_border_color' => '#dcdcd4',
+						'content_color'      => '#111111',
+					),
+					'artist'  => array(
+						'container_bg'         => '#ffffff',
+						'container_border'     => '#e5e5de',
+						'container_radius'     => 8,
+						'image_border_color'   => '#dcdcd4',
+						'body_color'           => '#111111',
+						'contact_background'   => '#f4f4f0',
+						'contact_color'        => '#111111',
+						'contact_border_color' => '#dcdcd4',
+						'contact_border_width' => 1,
+					),
+				),
+			),
+			array(
+				'id'          => 'tt5-evening',
+				'label'       => __( 'Dark Scheme Defaults', 'mds-release-manager' ),
+				'description' => __( 'Overrides Auto-Match Theme with deep charcoal containers, subtle dark borders, and high-contrast text across Release and Artist fallback pages.', 'mds-release-manager' ),
+				'templates'   => array(
+					'release' => array(
+						'container_bg'       => '#191a1f',
+						'container_border'   => '#32343d',
+						'container_radius'   => 8,
+						'padding_vertical'   => 24,
+						'padding_horizontal' => 24,
+						'image_border_color' => '#32343d',
+						'content_color'      => '#f3f4f6',
+					),
+					'artist'  => array(
+						'container_bg'         => '#191a1f',
+						'container_border'     => '#32343d',
+						'container_radius'     => 8,
+						'image_border_color'   => '#32343d',
+						'body_color'           => '#f3f4f6',
+						'contact_background'   => '#22242b',
+						'contact_color'        => '#f3f4f6',
+						'contact_border_color' => '#32343d',
+						'contact_border_width' => 1,
 					),
 				),
 			),

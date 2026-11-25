@@ -94,9 +94,9 @@
 		font-size: var(--mds-meta-font-size-mobile, var(--mds-meta-font-size-tablet, var(--mds-meta-font-size-desktop, .95em)));
 		font-weight: var(--mds-meta-font-weight-mobile, var(--mds-meta-font-weight-tablet, var(--mds-meta-font-weight-desktop, 500)));
 		line-height: var(--mds-meta-line-height-mobile, var(--mds-meta-line-height-tablet, var(--mds-meta-line-height-desktop, 1.4)));
-		gap: var(--mds-meta-gap-mobile, var(--mds-meta-gap-tablet, var(--mds-meta-gap-desktop, 15px)));
+		gap: var(--mds-meta-gap-mobile, var(--mds-meta-gap-tablet, var(--mds-meta-gap-desktop, 10px 14px)));
 		justify-content: var(--mds-meta-align-mobile, var(--mds-meta-align-tablet, var(--mds-meta-align-desktop, flex-start)));
-		padding: var(--mds-meta-padding-mobile, var(--mds-meta-padding-tablet, var(--mds-meta-padding-desktop, 12px 18px)));
+		padding: var(--mds-meta-padding-mobile, var(--mds-meta-padding-tablet, var(--mds-meta-padding-desktop, 10px 14px)));
 		margin: var(--mds-meta-margin-mobile, var(--mds-meta-margin-tablet, var(--mds-meta-margin-desktop, 0 0 25px)));
 		border-width: var(--mds-meta-border-width-mobile, var(--mds-meta-border-width-tablet, var(--mds-meta-border-width-desktop, 0)));
 		border-style: var(--mds-meta-border-style-mobile, var(--mds-meta-border-style-tablet, var(--mds-meta-border-style-desktop, none)));

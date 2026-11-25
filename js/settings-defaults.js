@@ -388,8 +388,8 @@
 		const providerOptions = [
 			{ label: __('Auto (Priority Order)', 'mds-release-manager'), value: '' },
 			...(Array.isArray(config.audioProviders) ? config.audioProviders : []).map((p) => ({
-				label: p.label || p.id,
-				value: p.id,
+				label: p.label || p.slug,
+				value: p.slug,
 			})),
 		];
 		const boolDefault = (key, fallback) => (Object.prototype.hasOwnProperty.call(value, key) ? Boolean(value[key]) : fallback);
@@ -462,7 +462,7 @@
 					}),
 					el(ToggleControl, {
 						label: __('Show Tracklist', 'mds-release-manager'),
-						checked: boolDefault('showTracklist', true),
+						checked: boolDefault('showTracklist', false),
 						onChange: (showTracklist) => onChange({ showTracklist }),
 						__nextHasNoMarginBottom: true,
 					}),
@@ -483,12 +483,13 @@
 					el(ToggleControl, {
 						label: __('Enable Sampler Mode', 'mds-release-manager'),
 						help: __('Automatically advances and crossfades across tracks.', 'mds-release-manager'),
-						checked: boolDefault('samplerMode', false),
+						checked: boolDefault('samplerMode', true),
 						onChange: (samplerMode) => onChange({ samplerMode }),
 						__nextHasNoMarginBottom: true,
 					}),
 					el(RangeControl, {
 						label: __('Preview Clip Length (seconds)', 'mds-release-manager'),
+						help: __('Default: 20s. Applied to full-length streams; native timed previews play as provided.', 'mds-release-manager'),
 						min: 10,
 						max: 60,
 						step: 5,
@@ -500,6 +501,7 @@
 					}),
 					el(RangeControl, {
 						label: __('Crossfade Duration (ms)', 'mds-release-manager'),
+						help: __('Default: 1500ms.', 'mds-release-manager'),
 						min: 0,
 						max: 4000,
 						step: 100,
@@ -515,7 +517,7 @@
 				el(SectionInfo, {
 					title: __('About Release Player Styling', 'mds-release-manager'),
 					summary: __('Sets site-wide CSS custom property defaults for the Release Player card, typography, accents, border, and elevation.', 'mds-release-manager'),
-					inheritance: __('Leave any color unset to automatically adapt to your active theme color scheme (including Twenty Twenty-Five Default, Evening, and other variations).', 'mds-release-manager'),
+					inheritance: __('Leave any color unset to automatically adapt to your active theme color scheme.', 'mds-release-manager'),
 				}),
 				el(ControlGroup, { title: __('Player Palette', 'mds-release-manager'), twoCol: true },
 					colorField('backgroundColor', __('Background', 'mds-release-manager'), scheme.surface),
@@ -719,12 +721,12 @@
 		const showMeta = boolDefault('showMeta', true);
 		const showProgress = boolDefault('showProgress', true);
 		const showTime = boolDefault('showTime', true);
-		const showTracklist = boolDefault('showTracklist', true);
+		const showTracklist = boolDefault('showTracklist', false);
 		const showProviderBadge = boolDefault('showProviderBadge', true);
-		const samplerMode = boolDefault('samplerMode', false);
+		const samplerMode = boolDefault('samplerMode', true);
 		const compact = boolDefault('compact', false);
-		const previewSecs = typeof value.previewSeconds === 'number' ? value.previewSeconds : 30;
-		const crossfadeMs = typeof value.crossfadeMs === 'number' ? value.crossfadeMs : 1200;
+		const previewSecs = typeof value.previewSeconds === 'number' ? value.previewSeconds : 20;
+		const crossfadeMs = typeof value.crossfadeMs === 'number' ? value.crossfadeMs : 1500;
 		const shadow = value.shadow || 'none';
 
 		const vars = {};
@@ -745,7 +747,7 @@
 
 		const providerList = Array.isArray(config.audioProviders) ? config.audioProviders : [];
 		const selectedProvider = value.provider
-			? (providerList.find((p) => p.id === value.provider)?.label || value.provider)
+			? (providerList.find((p) => p.slug === value.provider)?.label || value.provider)
 			: (providerList[0]?.label || __('Built-in HTML5 Preview', 'mds-release-manager'));
 
 		const formatSecs = (secs) => `0:${String(secs).padStart(2, '0')}`;
@@ -1077,7 +1079,7 @@
 						sprintf(__('Detected Theme Scheme: %1$s (%2$s)', 'mds-release-manager'), scheme.themeName || __('Active Theme', 'mds-release-manager'), modeLabel)
 					),
 					el('span', { className: 'mds-theme-preset-bar__sub' },
-						__('Unset colors automatically adapt to your active theme or Twenty Twenty-Five color variation. Or apply a starter preset across all four blocks:', 'mds-release-manager')
+						__('Unset colors automatically adapt to your active theme or style variation. Or override with a starter preset across all four blocks:', 'mds-release-manager')
 					)
 				)
 			),
@@ -1094,7 +1096,7 @@
 	}
 
 	function BlockDefaultsTabs() {
-		const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+		const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 		const [canvasMode, setCanvasMode] = useState('theme');
 		const [presetRevision, setPresetRevision] = useState(0);
 

@@ -50,8 +50,8 @@
 	padding: var(--mds-artist-contact-padding, 20px);
 	border: var(--mds-artist-contact-border, none);
 	border-radius: var(--mds-artist-contact-radius, 8px);
-	background: var(--mds-artist-contact-background, #f9f9f9);
-	color: var(--mds-artist-contact-color, inherit);
+	background: var(--mds-artist-contact-background, var(--mds-theme-surface, #f9f9f9));
+	color: var(--mds-artist-contact-color, var(--mds-theme-text, inherit));
 	text-align: left;
 }
 .mds-artist-fallback__contact h2 {
@@ -69,7 +69,7 @@
 .mds-discography th,
 .mds-discography td {
 	padding: .6em;
-	border: 1px solid #ddd;
+	border: 1px solid var(--mds-theme-border, #ddd);
 }
 .mds-discography__pagination {
 	display: flex;
@@ -78,7 +78,23 @@
 	margin-top: 1em;
 }
 @media (max-width: 767px) {
+	.mds-artist-fallback {
+		padding: var(--mds-artist-padding-vertical, 20px) var(--mds-artist-padding-horizontal, 16px);
+	}
 	.mds-artist-fallback__hero {
 		grid-template-columns: minmax(0, 1fr);
+	}
+	.mds-discography__scroll {
+		-webkit-overflow-scrolling: touch;
+	}
+	.mds-discography th,
+	.mds-discography td {
+		padding: 0.75em 0.65em;
+	}
+	.mds-discography table a {
+		display: inline-block;
+		padding: 6px 0;
+		min-height: 36px;
+		line-height: 1.4;
 	}
 }

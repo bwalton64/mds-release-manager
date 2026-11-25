@@ -33,7 +33,7 @@ module.exports = async function globalSetup() {
 	runWpCli(['plugin', 'deactivate', 'mds-release-manager', '--network']);
 	try {
 		runWpCli(['rewrite', 'flush']);
-		const staleRules = getRewriteRules().filter((rule) => /^(release|artist|release-tag|release-format)\//.test(rule));
+		const staleRules = getRewriteRules().filter((rule) => /^(release|artist|release-tag|release-type|release-format)\//.test(rule));
 		if (staleRules.length > 0) {
 			throw new Error(`Could not clear custom rewrite rules before activation: ${staleRules.join(', ')}`);
 		}

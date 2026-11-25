@@ -48,11 +48,14 @@
 		const links = (res.css_urls || [])
 			.map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}" />`)
 			.join('\n');
+		const scheme = data.themeScheme || {};
+		const bg = scheme.background || '#fff';
+		const fg = scheme.text || '#1e1e1e';
 		return (
 			'<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />' +
 			'<meta name="viewport" content="width=device-width, initial-scale=1" />' +
 			links +
-			'<style>body{margin:0;padding:24px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif;color:#1e1e1e;background:#fff;}h1.mds-preview-page-title{max-width:900px;margin:0 auto 20px;font-size:28px;line-height:1.25;}</style>' +
+			`<style>body{margin:0;padding:24px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif;color:${escapeHtml(fg)};background:${escapeHtml(bg)};}h1.mds-preview-page-title{max-width:900px;margin:0 auto 20px;font-size:28px;line-height:1.25;}</style>` +
 			'</head><body>' +
 			(res.title ? `<h1 class="mds-preview-page-title">${escapeHtml(res.title)}</h1>` : '') +
 			(res.html || '') +
@@ -267,7 +270,7 @@
 					releases: releases.map((r) => ({
 						id: r.id,
 						mode: r.ownMode,
-						url: r.customUrl,
+						custom_url: r.customUrl,
 					})),
 				}),
 			})

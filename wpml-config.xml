@@ -26,6 +26,9 @@
 		<custom-field action="copy">artist_homepage_url</custom-field>
 		<custom-field action="copy">artist_homepage_routing</custom-field>
 		<custom-field action="copy">artist_releases_routing_mode</custom-field>
+		<custom-field action="copy">audio_preview_url</custom-field>
+		<custom-field action="copy">featured_image_url</custom-field>
+		<custom-field action="copy">_mds_hub_release_key</custom-field>
 	</custom-fields>
 	<admin-texts>
 		<key name="mds_rm_template_defaults">

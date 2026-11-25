@@ -249,7 +249,7 @@ final class RestApi {
 					if ( $release_id <= 0 || 'release' !== get_post_type( $release_id ) ) {
 						return false;
 					}
-					if ( 'publish' === get_post_status( $release_id ) ) {
+					if ( 'publish' === get_post_status( $release_id ) && ! post_password_required( $release_id ) ) {
 						return true;
 					}
 					return current_user_can( 'edit_post', $release_id );
@@ -294,6 +294,7 @@ final class RestApi {
 			array(
 				'post_type'      => 'release',
 				'post_status'    => 'publish',
+				'has_password'   => false,
 				'posts_per_page' => min( 100, max( 1, null === $per_page ? 100 : absint( $per_page ) ) ),
 				'paged'          => max( 1, null === $page ? 1 : absint( $page ) ),
 			)
@@ -451,7 +452,7 @@ final class RestApi {
 		}
 
 		if ( null !== $template_defaults ) {
-			update_option( \MDS\ReleaseManager\Frontend\TemplateDefaults::OPTION_NAME, $template_defaults );
+			update_option( \MDS\ReleaseManager\Frontend\TemplateDefaults::OPTION_NAME, $template_defaults, true );
 		}
 
 		if ( null !== $cache_settings ) {

@@ -27,8 +27,6 @@ final class Config {
 	public const OPTION_TEMPLATE_DEFAULTS        = 'mds_rm_template_defaults';
 	public const OPTION_CACHE_SETTINGS           = 'mds_rm_cache_settings';
 	public const OPTION_PROVIDERS                = 'mds_rm_providers';
-	public const OPTION_AUDIO_PLAYERS            = 'mds_rm_audio_players';
-	public const OPTION_AUDIO_PLAYER_SETTINGS    = 'mds_rm_audio_player_settings';
 	public const OPTION_AUDIO_PROVIDER_PRIORITY  = 'mds_rm_audio_provider_priority';
 	public const OPTION_AUDIO_DISABLED_PROVIDERS = 'mds_rm_audio_disabled_providers';
 	public const OPTION_FA_SUPPORT               = 'mds_rm_fa_support';

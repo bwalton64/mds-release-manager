@@ -231,6 +231,14 @@ final class CsvHandler {
 			);
 		}
 
+		if ( ! \MDS\ReleaseManager\Core\Sync::is_hub() ) {
+			wp_die(
+				esc_html__( 'CSV import is only available on the Hub site.', 'mds-release-manager' ),
+				'',
+				array( 'response' => 403 )
+			);
+		}
+
 		check_admin_referer( 'mds_csv_action', 'mds_csv_nonce' );
 
 		// PHP supplies this path; preserve it verbatim and verify its upload provenance below.
@@ -358,14 +366,18 @@ final class CsvHandler {
 			$format_id       = \MDS\ReleaseManager\Core\ReleaseModel::format_id( $format );
 			$release_found   = '' === $upc ? array() : get_posts(
 				array(
-					'post_type'   => 'release',
-					'meta_key'    => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Match the stored UPC to update a release or reject ambiguous matches.
-					'meta_value'  => $upc, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-					'post_status' => array_keys( get_post_stati() ),
-					'numberposts' => -1,
+					'post_type'              => 'release',
+					'meta_key'               => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Match the stored UPC to update a release or reject ambiguous matches.
+					'meta_value'             => $upc, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					'post_status'            => array_keys( get_post_stati() ),
+					'posts_per_page'         => 2,
+					'fields'                 => 'ids',
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
 				)
 			);
-			$release_post_id = 1 === count( $release_found ) ? $release_found[0]->ID : 0;
+			$release_post_id = 1 === count( $release_found ) ? (int) $release_found[0] : 0;
 			$validation      = \MDS\ReleaseManager\Core\ReleaseModel::validate( $release_post_id, $upc, $format_id ? array( $format_id ) : array() );
 			if ( count( $release_found ) > 1 || is_wp_error( $validation ) ) {
 				$message = count( $release_found ) > 1

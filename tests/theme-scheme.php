@@ -18,6 +18,9 @@ class WP_Error {
 function __( $message, $domain ) {
 	return $message;
 }
+function is_wp_error( $value ) {
+	return $value instanceof WP_Error;
+}
 function esc_attr( $value ) {
 	return (string) $value;
 }
@@ -80,13 +83,20 @@ check_scheme( '#14151a' === $detected['background'] && '#f5f5f7' === $detected['
 check_scheme( '#a5b4fc' === $detected['accent'] && '#111827' === $detected['accentText'], 'Light accent on dark theme must pick dark play icon for WCAG contrast.' );
 check_scheme( str_contains( ThemeScheme::css_variables(), '--mds-theme-surface:' ), 'CSS variables output must declare --mds-theme-surface.' );
 
-// 3. Every bundled preset must pass BlockDefaults::validate().
+// 3. Every bundled block & template preset must pass validation, and ExtensionApi must expose ThemeScheme.
 foreach ( ThemeScheme::presets() as $preset ) {
 	if ( 'auto' === $preset['id'] ) {
 		continue;
 	}
 	$valid = BlockDefaults::validate( $preset['blocks'] );
-	check_scheme( true === $valid, 'Preset ' . $preset['id'] . ' must pass BlockDefaults::validate().' );
+	check_scheme( true === $valid, 'Block preset ' . $preset['id'] . ' must pass BlockDefaults::validate().' );
 }
+foreach ( ThemeScheme::template_presets() as $preset ) {
+	$valid = \MDS\ReleaseManager\Frontend\TemplateDefaults::validate( $preset['templates'] );
+	check_scheme( is_array( $valid ), 'Template preset ' . $preset['id'] . ' must pass TemplateDefaults::validate().' );
+}
+check_scheme( true === \MDS\ReleaseManager\Api\ExtensionApi::is_dark_theme(), 'ExtensionApi::is_dark_theme() must reflect detected dark scheme.' );
+check_scheme( '#14151a' === \MDS\ReleaseManager\Api\ExtensionApi::get_theme_scheme()['background'], 'ExtensionApi::get_theme_scheme() must return resolved tokens.' );
+check_scheme( str_contains( \MDS\ReleaseManager\Api\ExtensionApi::get_theme_css_variables(), '--mds-theme-bg:#14151a;' ), 'ExtensionApi::get_theme_css_variables() must return CSS custom properties.' );
 
 echo "ThemeScheme checks passed.\n";

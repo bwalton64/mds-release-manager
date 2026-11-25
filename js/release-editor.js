@@ -50,11 +50,14 @@
 		const modalScript = res.buy_now_modal_js
 			? `<script src="${escapeHtml(res.buy_now_modal_js)}" defer></script>`
 			: '';
+		const scheme = data.themeScheme || {};
+		const bg = scheme.background || '#fff';
+		const fg = scheme.text || '#1e1e1e';
 		return (
 			'<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />' +
 			'<meta name="viewport" content="width=device-width, initial-scale=1" />' +
 			links +
-			'<style>body{margin:0;padding:24px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif;color:#1e1e1e;background:#fff;}h1.mds-preview-page-title{max-width:1200px;margin:0 auto 20px;font-size:28px;line-height:1.25;}</style>' +
+			`<style>body{margin:0;padding:24px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif;color:${escapeHtml(fg)};background:${escapeHtml(bg)};}h1.mds-preview-page-title{max-width:1200px;margin:0 auto 20px;font-size:28px;line-height:1.25;}</style>` +
 			'</head><body>' +
 			(res.title ? `<h1 class="mds-preview-page-title">${escapeHtml(res.title)}</h1>` : '') +
 			(res.html || '') +
@@ -132,6 +135,41 @@
 
 		const searchTimerRef = useRef(null);
 		const audioUploaderRef = useRef(null);
+
+		// Bridge for companion plugins (e.g. MDS Audio Providers "Use Bandcamp URL") to add a Buy Now row into React state.
+		useEffect(() => {
+			function handleAddBuyNowLink(event) {
+				const detail = event && event.detail ? event.detail : null;
+				if (!detail || !detail.url) {
+					return;
+				}
+				const targetUrl = String(detail.url).trim();
+				if (!targetUrl) {
+					return;
+				}
+				event.preventDefault();
+				setBuyNowLinks((prev) => {
+					const exists = prev.some((row) => String(row.url || '').trim().toLowerCase() === targetUrl.toLowerCase());
+					if (exists) {
+						speak(detail.existsMessage || __('This URL is already listed in Buy Now.', 'mds-release-manager'), 'polite');
+						return prev;
+					}
+					const nextRow = {
+						format: String(detail.format || ''),
+						store: String(detail.store || ''),
+						url: targetUrl,
+						primary: prev.length === 0 || (prev.length === 1 && !prev[0].url && !prev[0].format && !prev[0].store),
+					};
+					speak(detail.addedMessage || __('Added URL to Buy Now formats.', 'mds-release-manager'), 'polite');
+					if (prev.length === 1 && !prev[0].url && !prev[0].format && !prev[0].store) {
+						return [nextRow];
+					}
+					return [...prev, nextRow];
+				});
+			}
+			window.addEventListener('mds-rm:add-buy-now-link', handleAddBuyNowLink);
+			return () => window.removeEventListener('mds-rm:add-buy-now-link', handleAddBuyNowLink);
+		}, []);
 
 		// Inject "Live Release Preview" button right next to WordPress's "Add New Release" (.page-title-action).
 		useEffect(() => {
@@ -482,8 +520,8 @@
 					return el('div', { className: 'mds-release-tab-body' },
 						el(InfoCallout, {
 							title: __('Streaming Platforms & Audio Preview', 'mds-release-manager'),
-							summary: __('Add direct listening URLs for each streaming service where this release is available. The Audio Preview (.mp3) powers the built-in HTML5 player and serves as an automatic fallback whenever a third-party player is not configured for this release.', 'mds-release-manager'),
-							tip: __('Designer tip: Manage global streaming providers, icons, and colors under Releases → Settings → Block Defaults, and choose your active player under Audio Player Manager.', 'mds-release-manager'),
+							summary: __('Add direct listening URLs for each streaming service where this release is available. The optional Local Audio Preview (.mp3/.m4a) powers the Unified Release Player directly and overrides automatic provider previews (Apple Music, Deezer, Bandcamp, SoundCloud, Spotify) when set.', 'mds-release-manager'),
+							tip: __('Designer tip: Customize streaming link icons and Release Player styling under Releases → Settings → Block Defaults, and manage audio provider priority under Releases → Settings → Audio Providers.', 'mds-release-manager'),
 						}),
 						el(Card, { className: 'mds-editor-card' },
 							el(CardBody, null,
@@ -553,7 +591,7 @@
 						),
 						el(Card, { className: 'mds-editor-card' },
 							el(CardBody, null,
-								el('h3', { className: 'mds-card-subheading' }, __('Core Audio Preview (.mp3)', 'mds-release-manager')),
+								el('h3', { className: 'mds-card-subheading' }, __('Local Audio Preview (.mp3 / .m4a)', 'mds-release-manager')),
 								el('div', { className: 'mds-audio-bar' },
 									el('div', { style: { flex: '1 1 auto' } },
 										el(TextControl, {

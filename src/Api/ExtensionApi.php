@@ -22,6 +22,7 @@ use MDS\ReleaseManager\Core\ReleaseModel;
 use MDS\ReleaseManager\Core\ReleaseSearch;
 use MDS\ReleaseManager\Core\Sync;
 use MDS\ReleaseManager\Frontend\Assets;
+use MDS\ReleaseManager\Frontend\ThemeScheme;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -72,6 +73,44 @@ final class ExtensionApi {
 	 */
 	public static function hub_id(): int {
 		return Sync::hub_id();
+	}
+
+	/**
+	 * Returns the detected active theme color scheme tokens (Global Styles / `theme.json`).
+	 *
+	 * Companion plugins can use these WCAG-computed tokens (`themeName`, `mode`, `isDark`,
+	 * `background`, `text`, `surface`, `border`, `muted`, `accent`, `accentText`, `stripe`)
+	 * to auto-adapt their blocks, widgets, and admin previews to light or dark themes
+	 * (including Twenty Twenty-Five Default, Evening, Midnight, and other variations).
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array<string, mixed> Detected theme scheme tokens.
+	 */
+	public static function get_theme_scheme(): array {
+		return ThemeScheme::detect();
+	}
+
+	/**
+	 * Determines whether the active WordPress theme uses a dark background color scheme.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return bool True when the detected theme background luminance is dark.
+	 */
+	public static function is_dark_theme(): bool {
+		return ! empty( ThemeScheme::detect()['isDark'] );
+	}
+
+	/**
+	 * Returns the `:root` CSS custom properties declaration for the active theme scheme.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return string CSS rule declaring `--mds-theme-*` custom properties.
+	 */
+	public static function get_theme_css_variables(): string {
+		return ThemeScheme::css_variables();
 	}
 
 	/**
@@ -320,6 +359,17 @@ final class ExtensionApi {
 	 */
 	public static function invalidate_audio_cache( int $post_id ): void {
 		AudioApi::invalidate_release( $post_id );
+	}
+
+	/**
+	 * Resets in-memory audio provider caches after provider settings change.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @return void
+	 */
+	public static function reset_audio_cache(): void {
+		AudioApi::reset_cache();
 	}
 
 	/**

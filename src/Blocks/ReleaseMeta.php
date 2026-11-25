@@ -274,6 +274,24 @@ final class ReleaseMeta {
 			}
 			return $resolved;
 		}
+		if ( '' === $upc && $context_post_id > 0 ) {
+			/**
+			 * Allows extensions (such as WooCommerce integration) to resolve a context post
+			 * directly to a Release `WP_Post` by explicit link without routing through UPC/SKU.
+			 *
+			 * @since 2.1.0
+			 *
+			 * @param WP_Post|null $resolved_post   Resolved Release post, or null to continue.
+			 * @param int          $context_post_id Current context post ID.
+			 */
+			$context_post = apply_filters( 'mds_rm_release_context_post', null, $context_post_id );
+			if ( $context_post instanceof WP_Post && 'release' === $context_post->post_type && self::can_display( $context_post ) ) {
+				if ( $use_cache ) {
+					self::$resolved_cache[ $cache_key ] = $context_post;
+				}
+				return $context_post;
+			}
+		}
 		if ( '' === $upc ) {
 			$upc = apply_filters( 'mds_rm_release_meta_context_upc', '', $context_post_id );
 		}

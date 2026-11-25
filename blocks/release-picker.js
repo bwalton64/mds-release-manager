@@ -2,7 +2,7 @@
     const { createElement: el, Fragment } = wp.element;
     const { Button, ComboboxControl, Notice, TextControl } = wp.components;
     const { __, sprintf } = wp.i18n;
-    const requestTimeout = 30000;
+    const requestTimeout = () => (typeof window.mdsRmLookupTimeoutMs === 'number' && window.mdsRmLookupTimeoutMs > 0 ? window.mdsRmLookupTimeoutMs : 30000);
     const cacheTtl = 60000;
     const lookups = {};
     const defaultPerPage = 20;
@@ -173,7 +173,7 @@
                     timedOut = true;
                     if (controller) controller.abort();
                     fail({ code: 'timeout' }, attempt);
-                }, requestTimeout);
+                }, requestTimeout());
                 timers.push(timer);
                 fetchLookup(path, controller ? controller.signal : undefined).then(
                     (data) => { clearTimeout(timer); if (active && !timedOut) setResult({ path, data }); },

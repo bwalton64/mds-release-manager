@@ -160,11 +160,11 @@
 		}
 
 		return el(standalone ? Fragment : InspectorControls, standalone ? null : { group: 'styles' },
-			!standalone && el(PanelBody, { title: __('Block Container', 'mds-release-manager'), initialOpen: false },
+			!standalone && el(PanelBody, { title: __('Outer Section Box', 'mds-release-manager'), initialOpen: false },
 				el(SectionInfo, {
-					title: __('About Block Container', 'mds-release-manager'),
+					title: __('About Outer Section Box', 'mds-release-manager'),
 					summary: __('Use WordPress’s built-in Color, Typography, Dimensions, and Border controls in this Styles tab to style the outer discography wrapper and pagination.', 'mds-release-manager'),
-					inheritance: __('The panels below target individual table layers (Wrapper, Column Headers, Table Rows, and Cells).', 'mds-release-manager'),
+					inheritance: __('The panels below target individual table layers (Table Frame & Base Text, Column Headers, Table Rows, and Cells).', 'mds-release-manager'),
 				})
 			),
 			el(PanelBody, { title: __('Table Frame & Base Text', 'mds-release-manager'), initialOpen: false, ...stylePanelProps?.('table') },

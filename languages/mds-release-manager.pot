@@ -9,15 +9,16 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-21T01:06:28+00:00\n"
+"POT-Creation-Date: 2026-11-25T18:20:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mds-release-manager\n"
 
 #. Plugin Name of the plugin
 #: mds-release-manager.php
-#: includes/api/class-mds-rm-abilities.php:51
-#: includes/blocks/class-mds-rm-gutenberg-blocks.php:55
+#: src/Api/Abilities.php:53
+#: src/Blocks/GutenbergBlocks.php:57
+#: src/Config.php:90
 msgid "MDS Release Manager"
 msgstr ""
 
@@ -34,171 +35,6 @@ msgstr ""
 #. Author URI of the plugin
 #: mds-release-manager.php
 msgid "https://mustydungeon.com"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:250
-msgid "Release Identity"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:251
-msgid "Release Details"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:252
-msgid "Streaming & Audio"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:253
-msgid "Commerce"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:257
-#: includes/admin/views/release-identity-box.php:49
-msgid "Artist Profile"
-msgstr ""
-
-#. translators: %s: synchronization error message
-#: includes/admin/class-mds-rm-admin-interface.php:520
-#, php-format
-msgid "The artist was saved, but synchronization failed: %s"
-msgstr ""
-
-#. translators: %s: synchronization error message
-#: includes/admin/class-mds-rm-admin-interface.php:628
-#: includes/core/class-mds-rm-release-model.php:581
-#, php-format
-msgid "The release was saved, but synchronization failed: %s"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:671
-msgid "HTML5 Player (.mp3)"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:678
-msgid "Load bundled Font Awesome Free 6"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:679
-msgid "Use existing plugin (Font Awesome Official)"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:680
-msgid "Use theme provided Font-Awesome"
-msgstr ""
-
-#: includes/admin/class-mds-rm-admin-interface.php:681
-msgid "Do not load Font-Awesome"
-msgstr ""
-
-#: includes/admin/class-mds-rm-csv-handler.php:56
-#: includes/admin/class-mds-rm-csv-handler.php:171
-msgid "You are not allowed to manage CSV data."
-msgstr ""
-
-#. translators: %d: Release post ID.
-#: includes/admin/class-mds-rm-csv-handler.php:100
-#, php-format
-msgid "Cannot export release %d: its format conflicts with legacy data. Resolve the conflict first."
-msgstr ""
-
-#. translators: %1$d: Release post ID. %2$s: Error message.
-#: includes/admin/class-mds-rm-csv-handler.php:104
-#, php-format
-msgid "Cannot export release %1$d: %2$s"
-msgstr ""
-
-#: includes/admin/class-mds-rm-csv-handler.php:113
-msgid "Could not create the CSV export."
-msgstr ""
-
-#: includes/admin/class-mds-rm-csv-handler.php:185
-msgid "Please select a CSV file to import."
-msgstr ""
-
-#: includes/admin/class-mds-rm-csv-handler.php:193
-#: includes/admin/class-mds-rm-csv-handler.php:204
-#: includes/admin/class-mds-rm-csv-handler.php:214
-msgid "The uploaded CSV file could not be opened."
-msgstr ""
-
-#: includes/admin/class-mds-rm-csv-handler.php:269
-msgid "The CSV must include a Release Format column."
-msgstr ""
-
-#. translators: %d: CSV row number.
-#: includes/admin/class-mds-rm-csv-handler.php:277
-#, php-format
-msgid "Row %d: incorrect number of columns."
-msgstr ""
-
-#: includes/admin/class-mds-rm-csv-handler.php:316
-msgid "More than one release has this UPC/EAN."
-msgstr ""
-
-#. translators: %1$d: CSV row number. %2$s: Error message.
-#: includes/admin/class-mds-rm-csv-handler.php:319
-#: includes/admin/class-mds-rm-csv-handler.php:422
-#, php-format
-msgid "Row %1$d: %2$s"
-msgstr ""
-
-#. translators: %1$d: CSV row number. %2$s: Error message.
-#: includes/admin/class-mds-rm-csv-handler.php:352
-#, php-format
-msgid "Row %1$d: artist synchronization failed: %2$s"
-msgstr ""
-
-#. translators: %d: CSV row number.
-#: includes/admin/class-mds-rm-csv-handler.php:397
-#, php-format
-msgid "Row %d: could not save the release."
-msgstr ""
-
-#. translators: %1$d: CSV row number. %2$s: Error message.
-#: includes/admin/class-mds-rm-csv-handler.php:440
-#, php-format
-msgid "Row %1$d: release saved but synchronization failed: %2$s"
-msgstr ""
-
-#: includes/admin/class-mds-rm-csv-handler.php:451
-msgid "The CSV must include UPC/EAN and Release Format columns."
-msgstr ""
-
-#: includes/admin/class-mds-rm-editor.php:138
-msgid "Releases and Artists are managed on the hub site and are read-only here."
-msgstr ""
-
-#: includes/admin/class-mds-rm-editor.php:140
-msgid "Edit them on the hub site."
-msgstr ""
-
-#: includes/admin/class-mds-rm-editor.php:154
-#: includes/api/class-mds-rm-abilities.php:108
-msgid "Release title"
-msgstr ""
-
-#: includes/admin/class-mds-rm-editor.php:158
-msgid "Artist name"
-msgstr ""
-
-#: includes/admin/class-mds-rm-network-admin.php:132
-msgid "You are not allowed to manage network settings."
-msgstr ""
-
-#: includes/admin/views/artist-meta-box.php:19
-msgid "Official Homepage URL"
-msgstr ""
-
-#: includes/admin/views/artist-meta-box.php:22
-msgid "Redirect visitors to this homepage"
-msgstr ""
-
-#: includes/admin/views/artist-meta-box.php:24
-msgid "Routing is enabled, but the homepage URL is invalid or points to this artist page. Visitors will see the artist page instead."
-msgstr ""
-
-#: includes/admin/views/artist-meta-box.php:29
-msgid "Contact Info"
 msgstr ""
 
 #: includes/admin/views/csv-page.php:15
@@ -255,1187 +91,4561 @@ msgstr ""
 msgid "Import CSV"
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:15
+#: includes/admin/views/network-settings-page.php:17
 msgid "MDS Release Manager - Network Settings"
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:17
+#: includes/admin/views/network-settings-page.php:19
 msgid "MDS Release Manager Network Settings have been saved."
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:24
+#: includes/admin/views/network-settings-page.php:23
+msgid "Network"
+msgstr ""
+
+#: includes/admin/views/network-settings-page.php:33
 msgid "Network Architecture"
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:27
+#: includes/admin/views/network-settings-page.php:36
 msgid "Hub Site"
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:34
+#: includes/admin/views/network-settings-page.php:43
 msgid "Select the Main Site (Hub) where catalog items are created. The plugin will automatically broadcast and synchronize data from this site to all selected spoke sites below."
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:38
+#: includes/admin/views/network-settings-page.php:47
 msgid "Spoke Sites"
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:41
+#: includes/admin/views/network-settings-page.php:50
 msgid "Single-site installation detected. Hub-and-Spoke broadcasting is not applicable."
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:62
+#: includes/admin/views/network-settings-page.php:67
 msgid "Data Management"
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:65
+#: includes/admin/views/network-settings-page.php:70
 msgid "Uninstall Behavior"
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:69
+#: includes/admin/views/network-settings-page.php:74
 msgid "Delete all data, even network settings, upon uninstall"
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:71
+#: includes/admin/views/network-settings-page.php:76
 msgid "By default, plugin settings stored in wp_sitemeta and global tables are preserved during uninstall to allow for safe reinstalls and upgrades. Check this box to perform a complete wipe upon deletion (including custom post types across the network)."
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:78
-#: includes/api/class-mds-rm-abilities.php:215
+#: includes/admin/views/network-settings-page.php:83
+#: src/Api/Abilities.php:212
 msgid "Save Network Settings"
 msgstr ""
 
-#: includes/admin/views/network-settings-page.php:79
+#: includes/admin/views/network-settings-page.php:84
 msgid "Settings saved!"
 msgstr ""
 
-#: includes/admin/views/release-commerce-box.php:17
-msgid "Buy Now URL"
+#: includes/admin/views/network-settings-page.php:97
+msgid "This extension network settings tab encountered an error and could not be rendered. Check the error log for details."
 msgstr ""
 
-#: includes/admin/views/release-details-box.php:17
-msgid "Record Label"
-msgstr ""
-
-#: includes/admin/views/release-details-box.php:21
-#: includes/frontend/class-mds-rm-discography.php:153
-msgid "Distributor"
-msgstr ""
-
-#: includes/admin/views/release-details-box.php:25
-msgid "Release Tags"
-msgstr ""
-
-#: includes/admin/views/release-identity-box.php:19
-msgid "UPC/EAN *"
-msgstr ""
-
-#: includes/admin/views/release-identity-box.php:23
-msgid "Release Format *"
-msgstr ""
-
-#: includes/admin/views/release-identity-box.php:26
-msgid "Unable to load release formats. Please reload the page."
-msgstr ""
-
-#: includes/admin/views/release-identity-box.php:30
-msgid "The existing format conflicts with legacy data. Choose the correct format to resolve it."
-msgstr ""
-
-#: includes/admin/views/release-identity-box.php:33
-msgid "Select a release format"
-msgstr ""
-
-#: includes/admin/views/release-identity-box.php:53
-msgid "No Artists Found. Please Create One."
-msgstr ""
-
-#: includes/admin/views/release-identity-box.php:55
-msgid "-- Select Artist --"
-msgstr ""
-
-#: includes/admin/views/release-streaming-box.php:16
-#: includes/admin/views/release-streaming-box.php:33
-msgid "Select Provider"
-msgstr ""
-
-#: includes/admin/views/release-streaming-box.php:42
-#: includes/admin/views/settings-page.php:36
-#: includes/frontend/class-mds-rm-assets.php:182
-msgid "Remove"
-msgstr ""
-
-#: includes/admin/views/release-streaming-box.php:46
-msgid "+ Add Link"
-msgstr ""
-
-#: includes/admin/views/release-streaming-box.php:50
-msgid "Audio Preview URL (.mp3)"
-msgstr ""
-
-#: includes/admin/views/release-streaming-box.php:53
-msgid "Select Audio"
-msgstr ""
-
-#: includes/admin/views/settings-page.php:15
+#: includes/admin/views/settings-page.php:17
 msgid "Release Manager Settings"
 msgstr ""
 
-#: includes/admin/views/settings-page.php:18
-msgid "Release Data"
+#: includes/admin/views/settings-page.php:20
+msgid "General Settings"
 msgstr ""
 
-#: includes/admin/views/settings-page.php:19
-msgid "Integrations"
+#: includes/admin/views/settings-page.php:21
+msgid "Default Templates"
 msgstr ""
 
-#: includes/admin/views/settings-page.php:25
-msgid "Streaming Provider Defaults"
-msgstr ""
-
-#: includes/admin/views/settings-page.php:26
-msgid "Configure streaming providers used in the release editor."
-msgstr ""
-
-#: includes/admin/views/settings-page.php:31
-#: includes/frontend/class-mds-rm-assets.php:180
-msgid "Provider Name"
-msgstr ""
-
-#: includes/admin/views/settings-page.php:41
-msgid "+ Add Provider"
+#: includes/admin/views/settings-page.php:22
+#: includes/admin/views/settings-page.php:42
+msgid "Block Defaults"
 msgstr ""
 
 #: includes/admin/views/settings-page.php:43
-msgid "Audio Preview Player"
+msgid "Configure site-wide presentation and behavior defaults for Release Meta, Release Links, Release Player, and Artist Discography. These defaults apply to automatic fallback blocks and to inserted blocks that do not override them."
 msgstr ""
 
-#: includes/admin/views/settings-page.php:46
-msgid "Select Active Player(s)"
-msgstr ""
-
-#: includes/admin/views/settings-page.php:57
-msgid "Bandcamp Shortcode Template"
-msgstr ""
-
-#: includes/admin/views/settings-page.php:60
-msgid "Only enabled if Blocks for Bandcamp is selected."
-msgstr ""
-
-#: includes/admin/views/settings-page.php:71
-#: includes/admin/views/settings-page.php:113
+#: includes/admin/views/settings-page.php:47
+#: includes/admin/views/settings-page.php:132
+#: includes/admin/views/settings-page.php:144
+#: src/Frontend/Assets.php:470
 msgid "Save Settings"
 msgstr ""
 
-#: includes/admin/views/settings-page.php:72
-#: includes/admin/views/settings-page.php:114
+#: includes/admin/views/settings-page.php:48
+#: includes/admin/views/settings-page.php:133
+#: includes/admin/views/settings-page.php:145
 msgid "Settings saved! Cache purged."
 msgstr ""
 
-#: includes/admin/views/settings-page.php:78
-msgid "Routing"
+#: includes/admin/views/settings-page.php:54
+msgid "Cache Management"
 msgstr ""
 
-#: includes/admin/views/settings-page.php:81
-msgid "Site-Wide Routing"
+#: includes/admin/views/settings-page.php:55
+msgid "Automatically purge page and CSS/JS caches after styling updates, syncs, and companion plugin changes (Bandcamp, WooCommerce). Purges are coalesced to run once per site at the end of a request."
 msgstr ""
 
-#: includes/admin/views/settings-page.php:83
-msgid "Enable Site-Wide Routing"
+#: includes/admin/views/settings-page.php:61
+msgid "Detected Cache Plugin"
 msgstr ""
 
-#: includes/admin/views/settings-page.php:84
-msgid "Redirect releases with a Buy Now URL. When enabled, the automatic Release fallback composition is disabled for all releases."
+#: includes/admin/views/settings-page.php:62
+msgid "Tier"
 msgstr ""
 
-#. translators: %s: the emphasized Buy Now Link field name.
-#: includes/admin/views/settings-page.php:89
+#: includes/admin/views/settings-page.php:63
+msgid "Purge Behavior"
+msgstr ""
+
+#. translators: %s: Cache plugin name.
+#: includes/admin/views/settings-page.php:75
 #, php-format
-msgid "Redirect visitors directly to the release's configured %s."
+msgid "Purge behavior for %s"
 msgstr ""
 
-#: includes/admin/views/settings-page.php:90
-msgid "Buy Now Link"
+#: includes/admin/views/settings-page.php:89
+msgid "No supported cache plugin is currently active on this site (supports LiteSpeed Cache, WP Rocket, W3 Total Cache, WP Fastest Cache, SiteGround Optimizer, WP Super Cache, Autoptimize, FlyingPress, and Breeze)."
 msgstr ""
 
-#: includes/admin/views/settings-page.php:98
-msgid "Network Synchronization"
+#: includes/admin/views/settings-page.php:94
+msgid "Purge cache when individual Releases or Artists are saved"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:97
+msgid "Uncheck if your cache plugin already auto-purges on post save. Site-wide styling changes, Default Templates, and Hub-to-Spoke syncs will still trigger a purge."
 msgstr ""
 
 #: includes/admin/views/settings-page.php:99
-msgid "Manually force a broadcast of all Artists and Releases from this Hub site to all configured Spoke sites. This is useful if a Spoke site was added recently or if sync was interrupted."
-msgstr ""
-
-#: includes/admin/views/settings-page.php:100
-msgid "Run Manual Sync"
+msgid "Purge Cache Now"
 msgstr ""
 
 #: includes/admin/views/settings-page.php:103
-msgid "Font-Awesome Integration"
+msgid "Network Synchronization"
 msgstr ""
 
 #: includes/admin/views/settings-page.php:104
-msgid "Select which Font-Awesome source to use for the shortcode widgets."
+msgid "Manually force a broadcast of all Artists and Releases from this Hub site to all configured Spoke sites. This is useful if a Spoke site was added recently or if sync was interrupted."
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:52
+#: includes/admin/views/settings-page.php:105
+msgid "Run Manual Sync"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:108
+msgid "Font Awesome Integration"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:109
+msgid "Choose how Font Awesome icons are loaded for Release Meta and Release Links. Auto mode defers to an installed Font Awesome plugin when detected, and otherwise loads Font Awesome Free 6.7.2 from cdnjs with Subresource Integrity (SRI)."
+msgstr ""
+
+#: includes/admin/views/settings-page.php:110
+msgid "Font Awesome source"
+msgstr ""
+
+#. translators: %s: Detected Font Awesome plugin or stylesheet name.
+#: includes/admin/views/settings-page.php:121
+#, php-format
+msgid "Status: Detected %s. Auto mode will use this provider and skip the public CDN."
+msgstr ""
+
+#: includes/admin/views/settings-page.php:126
+msgid "Status: No Font Awesome plugin detected. Auto mode will load Font Awesome Free 6.7.2 from cdnjs."
+msgstr ""
+
+#: includes/admin/views/settings-page.php:139
+msgid "Default Fallback Templates"
+msgstr ""
+
+#: includes/admin/views/settings-page.php:140
+msgid "Customize the automatic page layouts rendered for Release and Artist pages when no page builder or custom redirect is active. Settings here are theme-independent and survive theme switches."
+msgstr ""
+
+#: includes/admin/views/settings-page.php:158
+msgid "This extension settings tab encountered an error and could not be rendered. Check the error log for details."
+msgstr ""
+
+#: src/Admin/AdminInterface.php:257
+msgid "Release Manager"
+msgstr ""
+
+#: src/Admin/AdminInterface.php:261
+msgid "Artist Manager"
+msgstr ""
+
+#: src/Admin/AdminInterface.php:316
+msgid "(no title)"
+msgstr ""
+
+#: src/Admin/AdminInterface.php:494
+#: js/release-editor.js:335
+msgid "Release Fallback Page"
+msgstr ""
+
+#. translators: %s: synchronization error message
+#: src/Admin/AdminInterface.php:722
+#, php-format
+msgid "The artist was saved, but synchronization failed: %s"
+msgstr ""
+
+#. translators: %s: synchronization error message
+#: src/Admin/AdminInterface.php:913
+#: src/Core/ReleaseModel.php:1328
+#, php-format
+msgid "The release was saved, but synchronization failed: %s"
+msgstr ""
+
+#: src/Admin/AdminInterface.php:1017
+msgid "Auto (Recommended — use active Font Awesome plugin if detected, otherwise Public CDN)"
+msgstr ""
+
+#: src/Admin/AdminInterface.php:1018
+msgid "Load Font Awesome Free 6.7.2 via Public CDN (cdnjs)"
+msgstr ""
+
+#: src/Admin/AdminInterface.php:1019
+msgid "Use existing Font Awesome plugin"
+msgstr ""
+
+#: src/Admin/AdminInterface.php:1020
+msgid "Use theme-provided Font Awesome"
+msgstr ""
+
+#: src/Admin/AdminInterface.php:1021
+msgid "Do not load Font Awesome"
+msgstr ""
+
+#: src/Admin/CsvHandler.php:58
+#: src/Admin/CsvHandler.php:228
+msgid "You are not allowed to manage CSV data."
+msgstr ""
+
+#: src/Admin/CsvHandler.php:116
+#: src/Admin/CsvHandler.php:194
+#: src/Admin/CsvHandler.php:203
+msgid "Could not create the CSV export."
+msgstr ""
+
+#. translators: %d: Release post ID.
+#: src/Admin/CsvHandler.php:170
+#, php-format
+msgid "Cannot export release %d: its format conflicts with legacy data. Resolve the conflict first."
+msgstr ""
+
+#. translators: %1$d: Release post ID. %2$s: Error message.
+#: src/Admin/CsvHandler.php:174
+#, php-format
+msgid "Cannot export release %1$d: %2$s"
+msgstr ""
+
+#: src/Admin/CsvHandler.php:236
+msgid "CSV import is only available on the Hub site."
+msgstr ""
+
+#: src/Admin/CsvHandler.php:250
+msgid "Please select a CSV file to import."
+msgstr ""
+
+#: src/Admin/CsvHandler.php:258
+#: src/Admin/CsvHandler.php:269
+#: src/Admin/CsvHandler.php:279
+msgid "The uploaded CSV file could not be opened."
+msgstr ""
+
+#: src/Admin/CsvHandler.php:334
+msgid "The CSV must include a Release Type column."
+msgstr ""
+
+#. translators: %d: CSV row number.
+#: src/Admin/CsvHandler.php:342
+#, php-format
+msgid "Row %d: incorrect number of columns."
+msgstr ""
+
+#: src/Admin/CsvHandler.php:384
+msgid "More than one release has this UPC/EAN."
+msgstr ""
+
+#. translators: %1$d: CSV row number. %2$s: Error message.
+#: src/Admin/CsvHandler.php:387
+#: src/Admin/CsvHandler.php:491
+#, php-format
+msgid "Row %1$d: %2$s"
+msgstr ""
+
+#. translators: %d: CSV row number.
+#: src/Admin/CsvHandler.php:467
+#, php-format
+msgid "Row %d: could not save the release."
+msgstr ""
+
+#. translators: %1$s: Record key. %2$s: Error message.
+#: src/Admin/CsvHandler.php:516
+#: src/Admin/CsvHandler.php:534
+#, php-format
+msgid "%1$s saved but synchronization failed: %2$s"
+msgstr ""
+
+#: src/Admin/CsvHandler.php:540
+msgid "The CSV must include UPC/EAN and Release Format columns."
+msgstr ""
+
+#: src/Admin/Editor.php:155
+msgid "Releases and Artists are managed on the hub site and are read-only here."
+msgstr ""
+
+#: src/Admin/Editor.php:157
+msgid "Edit them on the hub site."
+msgstr ""
+
+#: src/Admin/Editor.php:171
+#: src/Api/Abilities.php:110
+msgid "Release title"
+msgstr ""
+
+#: src/Admin/Editor.php:175
+msgid "Artist name"
+msgstr ""
+
+#: src/Admin/NetworkAdmin.php:147
+msgid "You are not allowed to manage network settings."
+msgstr ""
+
+#: src/Api/Abilities.php:54
 msgid "Manage artist releases, formats, and distribution settings"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:71
+#: src/Api/Abilities.php:73
 msgid "Get Releases"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:72
+#: src/Api/Abilities.php:74
 msgid "Retrieve a list of published artist releases with metadata"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:81
+#: src/Api/Abilities.php:83
 msgid "Number of releases per page"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:88
+#: src/Api/Abilities.php:90
 msgid "Page number for pagination"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:104
+#: src/Api/Abilities.php:106
 msgid "Release post ID"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:112
+#: src/Api/Abilities.php:114
 msgid "UPC/EAN identifier"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:116
+#: src/Api/Abilities.php:118
 msgid "Release format (Single, EP, Album, Digital)"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:123
+#: src/Api/Abilities.php:125
 msgid "Total number of releases"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:127
+#: src/Api/Abilities.php:129
 msgid "Total number of pages"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:144
+#: src/Api/Abilities.php:146
 msgid "Save Plugin Settings"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:145
+#: src/Api/Abilities.php:147
 msgid "Update plugin settings including providers, audio players, and global redirect"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:154
+#: src/Api/Abilities.php:156
 msgid "Release providers configuration"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:159
+#: src/Api/Abilities.php:161
 msgid "Provider names"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:164
+#: src/Api/Abilities.php:166
 msgid "Provider icon classes or URLs"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:169
+#: src/Api/Abilities.php:171
 msgid "Provider brand colors"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:176
-msgid "Enabled audio player slugs"
-msgstr ""
-
-#: includes/api/class-mds-rm-abilities.php:180
+#: src/Api/Abilities.php:177
 msgid "Enable global artist homepage redirect"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:184
-msgid "Font Awesome support setting"
+#: src/Api/Abilities.php:181
+msgid "Font Awesome source setting"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:194
-#: includes/api/class-mds-rm-abilities.php:239
+#: src/Api/Abilities.php:191
+#: src/Api/Abilities.php:236
 msgid "Whether settings were saved successfully"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:198
-#: includes/api/class-mds-rm-abilities.php:243
+#: src/Api/Abilities.php:195
+#: src/Api/Abilities.php:240
 msgid "Response message"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:216
+#: src/Api/Abilities.php:213
 msgid "Update network-wide settings for the multisite release manager"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:225
+#: src/Api/Abilities.php:222
 msgid "Master hub site blog ID"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:230
+#: src/Api/Abilities.php:227
 msgid "Whether to delete all plugin data on uninstall"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:260
+#: src/Api/Abilities.php:257
 msgid "Sync Network Data"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:261
-msgid "Synchronize releases and artists across all network sites"
+#: src/Api/Abilities.php:258
+msgid "Synchronize releases and artists across all network sites in resumable batches"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:274
-msgid "Whether sync completed successfully"
+#: src/Api/Abilities.php:267
+msgid "Job ID returned by a previous batch; omit to start or resume the active job."
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:278
-msgid "Sync result message with counts"
+#: src/Api/Abilities.php:276
+msgid "Whether the sync has encountered synchronization errors so far"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:282
+#: src/Api/Abilities.php:280
+msgid "Whether all records have been synchronized"
+msgstr ""
+
+#: src/Api/Abilities.php:284
+msgid "Job ID to pass to the next batch request"
+msgstr ""
+
+#: src/Api/Abilities.php:288
+msgid "Current phase: artists, releases, or complete"
+msgstr ""
+
+#: src/Api/Abilities.php:292
+msgid "Batch progress message with cumulative counts"
+msgstr ""
+
+#: src/Api/Abilities.php:296
 msgid "Number of artists synchronized"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:286
+#: src/Api/Abilities.php:300
 msgid "Number of releases synchronized"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:291
+#: src/Api/Abilities.php:305
 msgid "Any errors that occurred during sync"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:430
+#: src/Api/Abilities.php:309
+msgid "Total synchronization errors, including errors beyond the retained detail limit"
+msgstr ""
+
+#: src/Api/Abilities.php:441
 msgid "Settings saved successfully"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:461
+#: src/Api/Abilities.php:472
 msgid "Network settings saved successfully"
 msgstr ""
 
-#: includes/api/class-mds-rm-abilities.php:482
-msgid "Sync must be run from the master hub site"
+#: src/Api/RestApi.php:190
+msgid "The synchronization job ID must be text."
 msgstr ""
 
-#. translators: %1$d: Release count. %2$d: Artist count.
-#: includes/api/class-mds-rm-abilities.php:534
+#: src/Api/RestApi.php:378
+msgid "The block defaults are invalid."
+msgstr ""
+
+#: src/Api/RestApi.php:392
+#: src/Frontend/TemplateDefaults.php:219
+#: src/Frontend/TemplateDefaults.php:317
+msgid "The default template settings are invalid."
+msgstr ""
+
+#: src/Api/RestApi.php:404
+msgid "The streaming providers are invalid."
+msgstr ""
+
+#: src/Api/RestApi.php:478
+msgid "Release not found."
+msgstr ""
+
+#. translators: %s: Active redirect URL.
+#: src/Api/RestApi.php:650
 #, php-format
-msgid "Successfully synced %1$d releases and %2$d artists to spoke sites."
+msgid "Page Routing active: visitors will be redirected (302) to %s instead of seeing this fallback layout."
 msgstr ""
 
-#: includes/blocks/class-mds-rm-release-links.php:264
+#: src/Api/RestApi.php:677
+#: src/Api/RestApi.php:882
+msgid "Artist not found."
+msgstr ""
+
+#: src/Api/RestApi.php:725
+#: src/Config.php:91
+#: src/Frontend/FrontendTemplates.php:68
+#: templates/artist-fallback.php:21
+msgid "Contact Information"
+msgstr ""
+
+#. translators: %s: Active artist homepage redirect URL.
+#: src/Api/RestApi.php:742
+#, php-format
+msgid "Homepage Redirect active: visitors will be redirected (302) to %s instead of seeing this fallback profile."
+msgstr ""
+
+#. translators: %s: Comma-separated list of purged cache plugins.
+#: src/Api/RestApi.php:775
+#, php-format
+msgid "Cache purged: %s."
+msgstr ""
+
+#: src/Api/RestApi.php:779
+msgid "No active cache plugin was purged (none detected or all set to Disabled)."
+msgstr ""
+
+#. translators: %d: Number of updated releases.
+#: src/Api/RestApi.php:966
+#, php-format
+msgid "Routing saved and synchronized (%d releases)."
+msgstr ""
+
+#: src/Api/RestApi.php:969
+msgid "Routing saved, but some spoke synchronizations reported errors."
+msgstr ""
+
+#: src/Api/RestApi.php:998
+msgid "No audio preview is available for this release."
+msgstr ""
+
+#: src/Blocks/BlockDefaults.php:37
+msgid "Site-wide presentation and behavior defaults for MDS Release Manager blocks."
+msgstr ""
+
+#: src/Blocks/BlockDefaults.php:292
+msgid "The block defaults contain an unsupported value. Review the settings and try again."
+msgstr ""
+
+#: src/Blocks/ReleaseLinks.php:267
+#: src/Config.php:92
+#: src/Core/ReleaseModel.php:546
+#: src/Core/ReleaseModel.php:564
+#: blocks/release-links/edit.js:91
+#: js/settings-defaults.js:266
+#: js/settings-defaults.js:701
+#: js/template-defaults.js:198
 msgid "Buy Now"
 msgstr ""
 
-#. translators: %s: Release format name.
-#: includes/core/class-mds-rm-release-model.php:94
+#: src/Blocks/ReleaseLinks.php:305
+msgid "Buy"
+msgstr ""
+
+#: src/Blocks/ReleaseLinks.php:310
+#: src/Config.php:93
+msgid "Choose a Format"
+msgstr ""
+
+#: src/Blocks/ReleaseLinks.php:311
+msgid "Close"
+msgstr ""
+
+#: src/Blocks/ReleasePlayer.php:94
+#: src/Blocks/ReleasePlayer.php:298
+#: js/settings-defaults.js:766
+msgid "Play preview"
+msgstr ""
+
+#: src/Blocks/ReleasePlayer.php:95
+msgid "Pause preview"
+msgstr ""
+
+#: src/Blocks/ReleasePlayer.php:96
+#: src/Blocks/ReleasePlayer.php:288
+msgid "Previous track"
+msgstr ""
+
+#: src/Blocks/ReleasePlayer.php:97
+#: src/Blocks/ReleasePlayer.php:310
+msgid "Next track"
+msgstr ""
+
+#: src/Blocks/ReleasePlayer.php:98
+msgid "Loading preview…"
+msgstr ""
+
+#: src/Blocks/ReleasePlayer.php:99
+msgid "Audio preview unavailable."
+msgstr ""
+
+#: src/Blocks/ReleasePlayer.php:100
+msgid "Tracks"
+msgstr ""
+
+#: src/Blocks/ReleasePlayer.php:101
+msgid "Preview via"
+msgstr ""
+
+#: src/Blocks/ReleasePlayer.php:102
+#: src/Blocks/ReleasePlayer.php:337
+msgid "Seek audio position"
+msgstr ""
+
+#. translators: %s: Release title.
+#: src/Blocks/ReleasePlayer.php:273
 #, php-format
-msgid "Could not register the release format \"%s\". Check the server error log."
+msgid "Audio preview player for %s"
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:124
-msgid "Release formats must be Single, EP, Album, or Digital without a parent."
+#: src/Blocks/ReleasePlayer.php:354
+#: js/settings-defaults.js:792
+msgid "Toggle tracklist"
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:178
-msgid "The release must have exactly one valid release format."
+#. translators: %d: 1-based track number.
+#: src/Core/Audio/AudioApi.php:361
+#, php-format
+msgid "Track %d"
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:237
+#: src/Core/Audio/LocalPreviewProvider.php:35
+msgid "Local Audio Preview"
+msgstr ""
+
+#: src/Core/Audio/LocalPreviewProvider.php:85
+msgid "Audio Preview"
+msgstr ""
+
+#: src/Core/Cache.php:94
+msgid "The cache settings are invalid."
+msgstr ""
+
+#: src/Core/Cache.php:109
+msgid "The cache plugin mode settings are invalid."
+msgstr ""
+
+#: src/Core/Cache.php:124
+msgid "An invalid cache purge mode was selected."
+msgstr ""
+
+#: src/Core/Cache.php:148
+msgid "LiteSpeed Cache"
+msgstr ""
+
+#: src/Core/Cache.php:149
+#: src/Core/Cache.php:235
+#: src/Core/Cache.php:267
+#: src/Core/Cache.php:292
+#: src/Core/Cache.php:310
+#: src/Core/Cache.php:346
+msgid "Free"
+msgstr ""
+
+#: src/Core/Cache.php:153
+msgid "Purge All (Pages + CSS/JS)"
+msgstr ""
+
+#: src/Core/Cache.php:154
+msgid "Purge CSS & JS Only"
+msgstr ""
+
+#: src/Core/Cache.php:155
+msgid "Disabled (let LiteSpeed auto-purge)"
+msgstr ""
+
+#: src/Core/Cache.php:171
+msgid "WP Rocket"
+msgstr ""
+
+#: src/Core/Cache.php:172
+#: src/Core/Cache.php:328
+msgid "Paid"
+msgstr ""
+
+#: src/Core/Cache.php:176
+msgid "Purge All (Pages + Minified CSS/JS)"
+msgstr ""
+
+#: src/Core/Cache.php:177
+#: src/Core/Cache.php:208
+msgid "Purge Minified CSS & JS Only"
+msgstr ""
+
+#: src/Core/Cache.php:178
+msgid "Disabled (let WP Rocket auto-purge)"
+msgstr ""
+
+#: src/Core/Cache.php:202
+msgid "W3 Total Cache"
+msgstr ""
+
+#: src/Core/Cache.php:203
+msgid "Free / Pro"
+msgstr ""
+
+#: src/Core/Cache.php:207
+msgid "Purge All Caches (Pages + Minify)"
+msgstr ""
+
+#: src/Core/Cache.php:209
+msgid "Disabled (let W3 Total Cache auto-purge)"
+msgstr ""
+
+#: src/Core/Cache.php:234
+msgid "WP Fastest Cache (Premium)"
+msgstr ""
+
+#: src/Core/Cache.php:234
+msgid "WP Fastest Cache"
+msgstr ""
+
+#: src/Core/Cache.php:235
+msgid "Premium"
+msgstr ""
+
+#: src/Core/Cache.php:240
+msgid "Purge All (HTML + Minified CSS/JS)"
+msgstr ""
+
+#: src/Core/Cache.php:241
+msgid "Purge HTML Cache Only"
+msgstr ""
+
+#: src/Core/Cache.php:242
+#: src/Core/Cache.php:246
+msgid "Disabled (let WP Fastest Cache auto-purge)"
+msgstr ""
+
+#: src/Core/Cache.php:245
+#: src/Core/Cache.php:296
+#: src/Core/Cache.php:350
+msgid "Purge All Cache"
+msgstr ""
+
+#: src/Core/Cache.php:266
+msgid "SiteGround Speed Optimizer"
+msgstr ""
+
+#: src/Core/Cache.php:271
+msgid "Purge All (Dynamic + Assets)"
+msgstr ""
+
+#: src/Core/Cache.php:272
+msgid "Disabled (let SG Optimizer auto-purge)"
+msgstr ""
+
+#: src/Core/Cache.php:291
+msgid "WP Super Cache"
+msgstr ""
+
+#: src/Core/Cache.php:297
+msgid "Disabled (let WP Super Cache auto-purge)"
+msgstr ""
+
+#: src/Core/Cache.php:309
+msgid "Autoptimize"
+msgstr ""
+
+#: src/Core/Cache.php:314
+msgid "Purge Aggregated CSS & JS Cache"
+msgstr ""
+
+#: src/Core/Cache.php:315
+msgid "Disabled"
+msgstr ""
+
+#: src/Core/Cache.php:327
+msgid "FlyingPress"
+msgstr ""
+
+#: src/Core/Cache.php:332
+msgid "Purge Everything"
+msgstr ""
+
+#: src/Core/Cache.php:333
+msgid "Disabled (let FlyingPress auto-purge)"
+msgstr ""
+
+#: src/Core/Cache.php:345
+msgid "Breeze (Cloudways)"
+msgstr ""
+
+#: src/Core/Cache.php:351
+msgid "Disabled (let Breeze auto-purge)"
+msgstr ""
+
+#: src/Core/PostTypes.php:178
+#: src/Core/PostTypes.php:180
+msgid "Release Types"
+msgstr ""
+
+#: src/Core/PostTypes.php:179
+msgid "Release Type"
+msgstr ""
+
+#: src/Core/PostTypes.php:197
+#: src/Core/PostTypes.php:199
+msgid "Media Formats"
+msgstr ""
+
+#: src/Core/PostTypes.php:198
+#: js/release-editor.js:650
+msgid "Media Format"
+msgstr ""
+
+#: src/Core/PostTypes.php:200
+msgid "Add New Media Format"
+msgstr ""
+
+#: src/Core/PostTypes.php:201
+msgid "Edit Media Format"
+msgstr ""
+
+#. translators: %s: Release type name.
+#: src/Core/ReleaseModel.php:170
+#, php-format
+msgid "Could not register the release type \"%s\". Check the server error log."
+msgstr ""
+
+#: src/Core/ReleaseModel.php:252
+#: src/Core/ReleaseModel.php:275
+#: src/Core/ReleaseModel.php:325
+#: src/Core/ReleaseModel.php:357
+#: src/Core/ReleaseModel.php:381
+#: src/Core/ReleaseModel.php:433
+msgid "Icon"
+msgstr ""
+
+#: src/Core/ReleaseModel.php:259
+#: src/Core/ReleaseModel.php:283
+msgid "Font Awesome or Dashicons icon shown in the Buy Now format picker."
+msgstr ""
+
+#: src/Core/ReleaseModel.php:364
+#: src/Core/ReleaseModel.php:389
+msgid "Font Awesome or Dashicons icon shown alongside this Release Type in the Release Meta block and shortcode."
+msgstr ""
+
+#: src/Core/ReleaseModel.php:748
+msgid "Release types must be Single, EP, Album, or Digital without a parent."
+msgstr ""
+
+#: src/Core/ReleaseModel.php:820
+msgid "The release must have exactly one valid release type."
+msgstr ""
+
+#: src/Core/ReleaseModel.php:859
 msgid "These releases need review for missing, malformed, or duplicate UPCs, invalid formats, or conflicting legacy format data:"
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:274
+#: src/Core/ReleaseModel.php:1000
 msgid "A UPC/EAN is required."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:278
-msgid "Select exactly one release format."
+#: src/Core/ReleaseModel.php:1004
+msgid "Select exactly one release type."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:282
+#: src/Core/ReleaseModel.php:1008
 msgid "Select Single, EP, Album, or Digital."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:334
+#: src/Core/ReleaseModel.php:1081
 msgid "This UPC/EAN is already assigned to another release."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:354
+#: src/Core/ReleaseModel.php:1101
 msgid "Could not reserve this UPC/EAN for saving. Please try again."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:409
-msgid "Change the release format in the release editor."
+#: src/Core/ReleaseModel.php:1156
+msgid "Change the release type in the release editor."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:419
-msgid "Resolve the release format conflict in the release editor first."
+#: src/Core/ReleaseModel.php:1166
+msgid "Resolve the release type conflict in the release editor first."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:453
-#: includes/core/class-mds-rm-release-model.php:507
-msgid "The saved format conflicts with legacy data. Choose a release format explicitly."
+#: src/Core/ReleaseModel.php:1200
+#: src/Core/ReleaseModel.php:1254
+msgid "The saved release type conflicts with legacy data. Choose a release type explicitly."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:467
-msgid "You are not allowed to assign a release format."
+#: src/Core/ReleaseModel.php:1214
+msgid "You are not allowed to assign a release type."
 msgstr ""
 
-#: includes/core/class-mds-rm-release-model.php:479
+#: src/Core/ReleaseModel.php:1226
 msgid "Invalid release"
 msgstr ""
 
-#: includes/core/class-mds-rm-sync.php:119
+#: src/Core/Sync.php:346
+msgid "No synchronization job is currently running."
+msgstr ""
+
+#: src/Core/Sync.php:364
+msgid "Network synchronization must run from the hub site."
+msgstr ""
+
+#: src/Core/Sync.php:369
+msgid "A network synchronization batch is already running. Please retry shortly."
+msgstr ""
+
+#: src/Core/Sync.php:381
+msgid "The requested synchronization job was not found."
+msgstr ""
+
+#. translators: %1$d: Release count. %2$d: Artist count.
+#: src/Core/Sync.php:572
+#, php-format
+msgid "Sync completed: %1$d releases and %2$d artists processed."
+msgstr ""
+
+#. translators: %1$s: Current sync phase. %2$d: Release count. %3$d: Artist count.
+#: src/Core/Sync.php:578
+#, php-format
+msgid "Sync in progress (%1$s): %2$d releases and %3$d artists processed."
+msgstr ""
+
+#. translators: %d: Number of errors.
+#: src/Core/Sync.php:587
+#, php-format
+msgid "%d synchronization errors occurred."
+msgstr ""
+
+#: src/Core/Sync.php:821
 msgid "Cannot synchronize a record without its identifier."
 msgstr ""
 
-#: includes/core/class-mds-rm-sync.php:122
+#: src/Core/Sync.php:824
 msgid "Cannot synchronize a release with an invalid or conflicting format."
 msgstr ""
 
-#. translators: %d: Spoke site ID.
-#: includes/core/class-mds-rm-sync.php:224
-#, php-format
-msgid "Site %d has conflicting identifiers."
+#: src/Core/Sync/MultisiteTransport.php:149
+msgid "Invalid spoke site ID."
 msgstr ""
 
 #. translators: %d: Spoke site ID.
-#: includes/core/class-mds-rm-sync.php:250
+#: src/Core/Sync/MultisiteTransport.php:156
+#, php-format
+msgid "Spoke site %d does not exist."
+msgstr ""
+
+#. translators: %d: Spoke site ID.
+#: src/Core/Sync/MultisiteTransport.php:160
+#, php-format
+msgid "Spoke site %d is inactive (archived, deleted, or spam)."
+msgstr ""
+
+#. translators: %d: Spoke site ID.
+#: src/Core/Sync/MultisiteTransport.php:333
+#, php-format
+msgid "Conflicting shadow records were found on site %d."
+msgstr ""
+
+#. translators: %d: Spoke site ID.
+#: src/Core/Sync/MultisiteTransport.php:366
 #, php-format
 msgid "Could not save the shadow record on site %d."
 msgstr ""
 
 #. translators: %d: Spoke site ID.
-#: includes/core/class-mds-rm-sync.php:293
+#: src/Core/Sync/MultisiteTransport.php:420
 #, php-format
 msgid "Could not synchronize a taxonomy term on site %d."
 msgstr ""
 
 #. translators: %1$d: Spoke site ID. %2$s: Error message.
-#: includes/core/class-mds-rm-sync.php:305
+#: src/Core/Sync/MultisiteTransport.php:432
 #, php-format
 msgid "Could not synchronize taxonomy on site %1$d: %2$s"
 msgstr ""
 
-#: includes/core/class-mds-rm-template-loader.php:46
-#: includes/core/class-mds-rm-template-loader.php:70
+#: src/Core/TemplateLoader.php:48
+#: src/Core/TemplateLoader.php:72
 msgid "The requested Release Manager template is invalid."
 msgstr ""
 
-#: includes/core/class-mds-rm-template-loader.php:51
+#: src/Core/TemplateLoader.php:53
 msgid "The requested Release Manager template arguments are invalid."
 msgstr ""
 
-#: includes/core/class-mds-rm-template-loader.php:86
+#: src/Core/TemplateLoader.php:88
 msgid "The requested Release Manager template could not be found."
 msgstr ""
 
-#: includes/frontend/class-mds-rm-assets.php:181
+#: src/Frontend/ArtistRouting.php:70
+msgid "Fallback Page (Default)"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:71
+msgid "Forward All Releases to Artist Website"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:72
+msgid "Primary Buy Now URL (fallback to Artist Website)"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:73
+msgid "Primary Buy Now URL (fallback to Release Page)"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:112
+msgid "Inherit Artist Default"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:113
+msgid "Fallback Page (No Redirect)"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:114
+msgid "Artist Website"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:115
+msgid "Primary Buy Now URL"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:116
+msgid "Custom URL"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:246
+msgid "Fallback Page"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:253
+msgid "No Artist Website URL set — shows fallback"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:263
+msgid "No Buy Now URL set — shows fallback"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:275
+msgid "No Buy Now or Artist URL set — shows fallback"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:282
+msgid "No Custom URL entered — shows fallback"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:298
+msgid "Extension target unavailable — shows fallback"
+msgstr ""
+
+#: src/Frontend/ArtistRouting.php:310
+msgid "Invalid or self-referencing URL — shows fallback"
+msgstr ""
+
+#: src/Frontend/Assets.php:90
+msgid "Font Awesome (Official)"
+msgstr ""
+
+#: src/Frontend/Assets.php:92
+msgid "Better Font Awesome"
+msgstr ""
+
+#: src/Frontend/Assets.php:94
+msgid "Font Awesome Plugin"
+msgstr ""
+
+#. translators: %s: Registered WordPress stylesheet handle.
+#: src/Frontend/Assets.php:107
+#, php-format
+msgid "Active stylesheet (%s)"
+msgstr ""
+
+#: src/Frontend/Assets.php:466
+#: js/settings-defaults.js:351
+msgid "Provider Name"
+msgstr ""
+
+#: src/Frontend/Assets.php:467
 msgid "Hex Color"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:116
+#: src/Frontend/Assets.php:468
+#: js/release-editor.js:578
+#: js/release-editor.js:707
+msgid "Remove"
+msgstr ""
+
+#: src/Frontend/Assets.php:469
+msgid "Saving..."
+msgstr ""
+
+#: src/Frontend/Assets.php:471
+msgid "Error saving settings."
+msgstr ""
+
+#: src/Frontend/Assets.php:472
+msgid "Settings were saved, but newer changes have not been saved."
+msgstr ""
+
+#: src/Frontend/Discography.php:272
 msgid "No releases found."
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:150
+#: src/Frontend/Discography.php:306
+#: js/template-defaults.js:277
 msgid "Title"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:151
+#: src/Frontend/Discography.php:307
 msgid "UPC/EAN"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:152
+#: src/Frontend/Discography.php:308
+#: js/settings-defaults.js:866
 msgid "Label"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:154
+#: src/Frontend/Discography.php:309
+#: js/release-editor.js:496
+msgid "Distributor"
+msgstr ""
+
+#: src/Frontend/Discography.php:310
 msgid "Release Year"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:176
-#: includes/frontend/class-mds-rm-discography.php:177
+#: src/Frontend/Discography.php:344
+#: src/Frontend/Discography.php:345
 msgid "Discography"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:217
+#: src/Frontend/Discography.php:385
 msgid "No releases found on this page."
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:220
+#: src/Frontend/Discography.php:388
 msgid "Discography pages"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:229
+#: src/Frontend/Discography.php:397
 msgid "Previous"
 msgstr ""
 
-#: includes/frontend/class-mds-rm-discography.php:230
+#: src/Frontend/Discography.php:398
 msgid "Next"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:34
+#: src/Frontend/TemplateDefaults.php:404
+msgid "One or more default template settings are invalid."
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:105
+#: js/settings-defaults.js:1079
+#: js/template-defaults.js:308
+msgid "Active Theme"
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:169
+#: src/Frontend/ThemeScheme.php:301
+msgid "Auto-Match Theme"
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:170
+msgid "Clears explicit color overrides so blocks automatically adapt whenever you switch themes or style variations."
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:191
+#: src/Frontend/ThemeScheme.php:324
+msgid "Light Scheme Defaults"
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:192
+msgid "Overrides Auto-Match Theme with clean light surfaces, dark text, and subtle borders across all four blocks."
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:240
+#: src/Frontend/ThemeScheme.php:351
+msgid "Dark Scheme Defaults"
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:241
+msgid "Overrides Auto-Match Theme with deep charcoal surfaces, subtle borders, and light text across all four blocks."
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:302
+msgid "Clears explicit color overrides so Release and Artist fallback pages automatically adapt whenever you switch themes or Twenty Twenty-Five variations."
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:325
+msgid "Overrides Auto-Match Theme with clean light surfaces and crisp borders across Release and Artist fallback pages."
+msgstr ""
+
+#: src/Frontend/ThemeScheme.php:352
+msgid "Overrides Auto-Match Theme with deep charcoal containers, subtle dark borders, and high-contrast text across Release and Artist fallback pages."
+msgstr ""
+
+#: src/Integrations/Elementor/LinksWidget.php:36
 msgid "Release Links Block"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:39
+#: src/Integrations/Elementor/LinksWidget.php:41
+#: js/settings-defaults.js:898
+#: js/settings-defaults.js:1141
 msgid "Release Links"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:43
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:61
+#: src/Integrations/Elementor/LinksWidget.php:45
+#: src/Integrations/Elementor/Widget.php:63
 msgid "UPC/EAN Override"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:45
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:63
+#: src/Integrations/Elementor/LinksWidget.php:47
+#: src/Integrations/Elementor/Widget.php:65
 msgid "Leave blank to use the current release or supported context."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:52
+#: src/Integrations/Elementor/LinksWidget.php:54
 msgid "Open links in a new tab"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:61
+#: src/Integrations/Elementor/LinksWidget.php:63
 msgid "Show audio player"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:71
+#: src/Integrations/Elementor/LinksWidget.php:73
 msgid "Provider name"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:73
+#: src/Integrations/Elementor/LinksWidget.php:75
 msgid "Use the provider name from Release Settings, or __buy_now for Buy Now."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:79
+#: src/Integrations/Elementor/LinksWidget.php:81
+#: blocks/release-links/edit.js:148
 msgid "Show link"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:88
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:121
+#: src/Integrations/Elementor/LinksWidget.php:90
+#: src/Integrations/Elementor/Widget.php:123
 msgid "Icon classes"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:90
+#: src/Integrations/Elementor/LinksWidget.php:92
 msgid "Leave blank for the provider default. Dashicons and Font Awesome are supported."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:96
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:130
+#: src/Integrations/Elementor/LinksWidget.php:98
+#: src/Integrations/Elementor/Widget.php:132
 msgid "Tooltip title"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:98
+#: src/Integrations/Elementor/LinksWidget.php:100
 msgid "Leave blank for the provider name."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:117
+#: src/Integrations/Elementor/LinksWidget.php:119
 msgid "Provider overrides"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:122
+#: src/Integrations/Elementor/LinksWidget.php:124
 msgid "Reorder or hide links here. Other saved providers remain visible."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:130
+#: src/Integrations/Elementor/LinksWidget.php:132
 msgid "Release Links Styles"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-links-widget.php:138
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:157
+#: src/Integrations/Elementor/LinksWidget.php:140
+#: src/Integrations/Elementor/Widget.php:159
 msgid "Tablet styles apply at 1024px and below; mobile styles apply at 767px and below. Blank values inherit."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:34
+#: src/Integrations/Elementor/Widget.php:36
 msgid "Release Meta Block"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:57
-#: blocks/release-meta/edit.js:53
+#: src/Integrations/Elementor/Widget.php:59
+#: js/settings-defaults.js:897
+#: js/settings-defaults.js:1140
 msgid "Release Meta"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:82
+#: src/Integrations/Elementor/Widget.php:84
 msgid "Field"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:90
+#: src/Integrations/Elementor/Widget.php:92
+#: blocks/release-meta/edit.js:106
 msgid "Show field"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:99
+#: src/Integrations/Elementor/Widget.php:101
 msgid "Choose icon"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:103
+#: src/Integrations/Elementor/Widget.php:105
 msgid "Custom icon classes"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:104
+#: src/Integrations/Elementor/Widget.php:106
+#: blocks/native-release-styles.js:10
+#: js/icon-picker.js:185
 msgid "No icon"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:123
+#: src/Integrations/Elementor/Widget.php:125
 msgid "Use Dashicons or Font Awesome classes; leave blank for no icon."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:137
+#: src/Integrations/Elementor/Widget.php:139
 msgid "Fields"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:149
+#: src/Integrations/Elementor/Widget.php:151
 msgid "Release Meta Styles"
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:206
+#: src/Integrations/Elementor/Widget.php:208
 msgid "Hex color, transparent, or inherit."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:208
+#: src/Integrations/Elementor/Widget.php:210
 msgid "CSS lengths such as 12px or 1em; spacing accepts up to four values."
 msgstr ""
 
-#: includes/integrations/elementor/class-mds-rm-elementor-widget.php:210
+#: src/Integrations/Elementor/Widget.php:212
 msgid "Use auto or a CSS length such as 100% or 20rem."
 msgstr ""
 
-#: templates/artist-fallback.php:22
-msgid "Contact Information"
-msgstr ""
-
-#. translators: %1$s: Artist title. %2$s: Artist post ID.
-#: blocks/artist-discography/edit.js:33
-#, js-format
-msgid "%1$s (ID %2$s)"
-msgstr ""
-
-#: blocks/artist-discography/edit.js:38
+#: blocks/artist-discography/edit.js:66
 msgid "Untitled Artist"
 msgstr ""
 
 #. translators: %s: Current Artist title.
-#: blocks/artist-discography/edit.js:56
+#: blocks/artist-discography/edit.js:84
 #, js-format
 msgid "Using the current Artist: %s."
 msgstr ""
 
-#: blocks/artist-discography/edit.js:62
+#: blocks/artist-discography/edit.js:90
+#: js/settings-defaults.js:900
+#: js/settings-defaults.js:1143
 msgid "Artist Discography"
 msgstr ""
 
-#: blocks/artist-discography/edit.js:64
+#: blocks/artist-discography/edit.js:92
 msgid "Artist"
 msgstr ""
 
-#: blocks/artist-discography/edit.js:67
+#: blocks/artist-discography/edit.js:95
 msgid "Leave blank to use the current Artist."
 msgstr ""
 
-#: blocks/artist-discography/edit.js:74
+#: blocks/artist-discography/edit.js:102
 msgid "Use current Artist"
 msgstr ""
 
-#: blocks/artist-discography/edit.js:75
-#: blocks/release-picker.js:58
+#: blocks/artist-discography/edit.js:103
+#: blocks/release-picker.js:347
 msgid "Previous results"
 msgstr ""
 
-#: blocks/artist-discography/edit.js:76
-#: blocks/release-picker.js:59
+#: blocks/artist-discography/edit.js:104
+#: blocks/release-picker.js:348
 msgid "Next results"
 msgstr ""
 
-#: blocks/artist-discography/edit.js:78
+#: blocks/artist-discography/edit.js:106
 msgid "No more Artists match this search."
 msgstr ""
 
-#: blocks/artist-discography/edit.js:78
+#: blocks/artist-discography/edit.js:106
 msgid "Artist search failed. Change the search to try again."
 msgstr ""
 
-#: blocks/artist-discography/edit.js:81
+#: blocks/artist-discography/edit.js:109
 msgid "The selected Artist is unavailable. Choose another Artist or clear the selection."
 msgstr ""
 
-#: blocks/artist-discography/edit.js:82
+#: blocks/artist-discography/edit.js:110
 msgid "The selected Artist could not be checked. The saved selection has not changed."
 msgstr ""
 
-#: blocks/artist-discography/edit.js:88
+#: blocks/artist-discography/edit.js:116
 msgid "Select an Artist to preview the discography."
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:24
-msgid "Default / inherit"
+#: blocks/artist-discography/table-controls.js:30
+#: blocks/artist-discography/table-controls.js:144
+#: blocks/native-release-styles.js:192
+msgid "Use site default"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:56
-#: blocks/release-meta/controls.js:36
-msgid "Font family"
+#: blocks/artist-discography/table-controls.js:30
+#: blocks/artist-discography/table-controls.js:144
+#: blocks/native-release-styles.js:192
+msgid "Ignore site default"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:57
-#: blocks/release-meta/controls.js:37
-msgid "Font size preset"
+#: blocks/artist-discography/table-controls.js:38
+#: blocks/native-release-styles.js:165
+#: js/settings-defaults.js:56
+#: js/template-defaults.js:349
+msgid "Theme / default"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:58
-#: blocks/release-meta/controls.js:38
-msgid "Custom font size (px)"
+#: blocks/artist-discography/table-controls.js:85
+msgid "Typography & Alignment"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:59
-#: blocks/release-meta/controls.js:39
-msgid "Font weight"
+#: blocks/artist-discography/table-controls.js:85
+msgid "Typography"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:60
-#: blocks/artist-discography/table-controls.js:64
-#: blocks/release-meta/controls.js:40
-#: blocks/release-meta/controls.js:44
-msgid "Normal"
+#: blocks/artist-discography/table-controls.js:86
+#: blocks/release-meta/controls.js:73
+#: js/settings-defaults.js:124
+#: js/template-defaults.js:667
+#: js/template-defaults.js:898
+msgid "Font Family"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:60
-#: blocks/release-meta/controls.js:40
-msgid "Medium"
+#: blocks/artist-discography/table-controls.js:87
+#: blocks/release-meta/controls.js:74
+#: js/settings-defaults.js:125
+msgid "Font Size (Theme Preset)"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:61
-#: blocks/release-meta/controls.js:41
-msgid "Semibold"
+#: blocks/artist-discography/table-controls.js:88
+#: blocks/release-meta/controls.js:75
+#: js/settings-defaults.js:126
+msgid "Custom Font Size (px)"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:61
-#: blocks/release-meta/controls.js:41
-msgid "Bold"
+#: blocks/artist-discography/table-controls.js:89
+#: blocks/release-meta/controls.js:76
+#: js/settings-defaults.js:127
+msgid "Font Weight"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:63
-#: blocks/release-meta/controls.js:43
-msgid "Font style"
+#: blocks/artist-discography/table-controls.js:90
+#: blocks/release-meta/controls.js:77
+#: js/settings-defaults.js:128
+msgid "Normal (400)"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:64
-#: blocks/release-meta/controls.js:44
-msgid "Italic"
+#: blocks/artist-discography/table-controls.js:91
+#: blocks/release-meta/controls.js:78
+#: js/settings-defaults.js:129
+msgid "Medium (500)"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:66
-#: blocks/release-meta/controls.js:46
-msgid "Line height"
+#: blocks/artist-discography/table-controls.js:92
+#: blocks/release-meta/controls.js:79
+#: js/settings-defaults.js:130
+msgid "Semibold (600)"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:72
-msgid "Top"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:73
-msgid "Right"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:74
-msgid "Bottom"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:75
-msgid "Left"
-msgstr ""
-
-#. translators: %1$s: Spacing setting. %2$s: Side of the table or cell.
-#: blocks/artist-discography/table-controls.js:78
-#, js-format
-msgid "%1$s preset (%2$s)"
-msgstr ""
-
-#. translators: %1$s: Spacing setting. %2$s: Side of the table or cell.
-#: blocks/artist-discography/table-controls.js:80
-#, js-format
-msgid "%1$s (%2$s, px)"
+#: blocks/artist-discography/table-controls.js:93
+#: blocks/release-meta/controls.js:80
+#: js/settings-defaults.js:131
+msgid "Bold (700)"
 msgstr ""
 
 #: blocks/artist-discography/table-controls.js:95
-#: blocks/native-release-styles.js:73
-msgid "Border style"
+#: blocks/release-meta/controls.js:82
+#: js/settings-defaults.js:133
+msgid "Font Style"
 msgstr ""
 
 #: blocks/artist-discography/table-controls.js:96
-#: blocks/native-release-styles.js:74
-msgid "None"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:96
-#: blocks/native-release-styles.js:75
-msgid "Solid"
+#: blocks/release-meta/controls.js:83
+#: js/settings-defaults.js:134
+msgid "Normal"
 msgstr ""
 
 #: blocks/artist-discography/table-controls.js:97
-#: blocks/native-release-styles.js:76
-msgid "Dashed"
+#: blocks/release-meta/controls.js:84
+#: js/settings-defaults.js:135
+msgid "Italic"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:97
-#: blocks/native-release-styles.js:77
-msgid "Dotted"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:98
-#: blocks/native-release-styles.js:78
-msgid "Double"
+#: blocks/artist-discography/table-controls.js:99
+#: blocks/release-meta/controls.js:86
+#: js/settings-defaults.js:137
+msgid "Line Height"
 msgstr ""
 
 #: blocks/artist-discography/table-controls.js:100
-msgid "Border width (px)"
+#: blocks/release-meta/controls.js:88
+#: js/template-defaults.js:694
+msgid "Text Alignment"
 msgstr ""
 
 #: blocks/artist-discography/table-controls.js:101
-#: blocks/native-release-styles.js:80
-msgid "Border color"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:106
-#: blocks/release-links/controls.js:11
-#: blocks/release-meta/controls.js:17
-msgid "Background color"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:107
-#: blocks/release-meta/controls.js:35
-msgid "Text color"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:109
-#: blocks/release-meta/controls.js:48
-msgid "Text alignment"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:110
-#: blocks/native-release-styles.js:89
+#: blocks/release-links/controls.js:43
 #: blocks/release-meta/controls.js:49
-msgid "Start"
+#: blocks/release-meta/controls.js:89
+msgid "Left / Start"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:110
-#: blocks/native-release-styles.js:90
-#: blocks/release-meta/controls.js:49
+#: blocks/artist-discography/table-controls.js:102
+#: blocks/native-release-styles.js:305
+#: blocks/release-links/controls.js:44
+#: blocks/release-meta/controls.js:50
+#: blocks/release-meta/controls.js:90
+#: js/template-defaults.js:699
+#: js/template-defaults.js:743
+#: js/template-defaults.js:930
 msgid "Center"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:111
-#: blocks/native-release-styles.js:91
-#: blocks/release-meta/controls.js:50
-msgid "End"
+#: blocks/artist-discography/table-controls.js:103
+#: blocks/release-links/controls.js:45
+#: blocks/release-meta/controls.js:51
+#: blocks/release-meta/controls.js:91
+msgid "Right / End"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:116
-msgid "Discography table"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:117
-msgid "Table margin"
-msgstr ""
-
-#: blocks/artist-discography/table-controls.js:118
-msgid "Table padding"
-msgstr ""
-
+#. translators: %s: Name of the spacing setting.
+#. translators: %s: Name of the spacing or width setting.
 #: blocks/artist-discography/table-controls.js:120
-msgid "Table corner radius (px)"
+#: blocks/native-release-styles.js:229
+#: blocks/native-release-styles.js:243
+#: js/settings-defaults.js:99
+#, js-format
+msgid "%s (Theme Preset)"
 msgstr ""
 
 #: blocks/artist-discography/table-controls.js:122
-msgid "Discography header"
+msgid "Custom / theme default"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:123
-msgid "Discography body"
+#: blocks/artist-discography/table-controls.js:149
+#: blocks/native-release-styles.js:284
+#: js/settings-defaults.js:141
+msgid "Border Style"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:125
-msgid "Striped rows"
+#: blocks/artist-discography/table-controls.js:150
+#: blocks/native-release-styles.js:285
+#: js/settings-defaults.js:142
+#: js/template-defaults.js:354
+msgid "None"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:126
-msgid "Alternate row color"
+#: blocks/artist-discography/table-controls.js:151
+#: blocks/native-release-styles.js:286
+#: js/settings-defaults.js:143
+msgid "Solid"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:128
-msgid "Discography cells and links"
+#: blocks/artist-discography/table-controls.js:152
+#: blocks/native-release-styles.js:287
+#: js/settings-defaults.js:144
+msgid "Dashed"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:129
-msgid "Cell padding"
+#: blocks/artist-discography/table-controls.js:153
+#: blocks/native-release-styles.js:288
+#: js/settings-defaults.js:145
+msgid "Dotted"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:130
-msgid "Table link color"
+#: blocks/artist-discography/table-controls.js:154
+#: blocks/native-release-styles.js:289
+#: js/settings-defaults.js:146
+msgid "Double"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:131
-msgid "Table link decoration"
+#: blocks/artist-discography/table-controls.js:156
+#: blocks/release-player/edit.js:309
+#: js/settings-defaults.js:148
+#: js/settings-defaults.js:544
+#: js/template-defaults.js:1030
+msgid "Border Width (px)"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:132
+#: blocks/artist-discography/table-controls.js:157
+#: blocks/native-release-styles.js:291
+#: js/settings-defaults.js:149
+#: js/template-defaults.js:548
+#: js/template-defaults.js:810
+#: js/template-defaults.js:1039
+msgid "Border Color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:158
+#: blocks/release-player/edit.js:299
+#: js/settings-defaults.js:150
+#: js/settings-defaults.js:532
+#: js/template-defaults.js:595
+#: js/template-defaults.js:1005
+msgid "Corner Radius (px)"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:163
+#: js/settings-defaults.js:108
+msgid "Outer Section Box"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:165
+#: js/settings-defaults.js:110
+msgid "About Outer Section Box"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:166
+msgid "Use WordPress’s built-in Color, Typography, Dimensions, and Border controls in this Styles tab to style the outer discography wrapper and pagination."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:167
+msgid "The panels below target individual table layers (Table Frame & Base Text, Column Headers, Table Rows, and Cells)."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:170
+msgid "Table Frame & Base Text"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:172
+msgid "About Table Frame & Base Text"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:173
+msgid "Styles the scrolling table frame itself and sets base colors and typography inherited by all rows. Column Headers and Table Rows below can override these base values."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:174
+msgid "Table Padding adds space around the table inside its frame. To adjust spacing inside individual cells, use Cells, Grid Borders & Links."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:176
+msgid "Wrapper Spacing"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:177
+msgid "Table Margin"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:178
+msgid "Table Padding"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:180
+#: blocks/release-links/controls.js:21
+#: blocks/release-meta/controls.js:26
+msgid "Surface & Colors"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:181
+msgid "Table Background Color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:182
+msgid "Table Text Color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:185
+msgid "Table Border & Corners"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:185
+msgid "Outline and corner rounding around the scrolling table frame."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:187
+msgid "Column Headers"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:189
+msgid "About Column Headers"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:190
+msgid "Styles only the top header row containing column labels such as Title, UPC/EAN, Label, Distributor, and Release Year."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:191
+msgid "Overrides Table Wrapper base colors and typography for the header row only."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:193
+msgid "Header Colors"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:194
+#: js/settings-defaults.js:115
+#: js/template-defaults.js:541
+#: js/template-defaults.js:803
+msgid "Background Color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:195
+#: blocks/release-meta/controls.js:69
+#: js/settings-defaults.js:116
+#: js/template-defaults.js:705
+msgid "Text Color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:199
+msgid "Table Rows & Zebra Striping"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:201
+msgid "About Table Rows & Zebra Striping"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:202
+msgid "Styles the data rows listing each release below the column headers. Enable Zebra Striping to apply a distinct background tint to alternating rows for easier scanning."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:203
+msgid "Overrides Table Wrapper base colors and typography for release rows."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:205
+msgid "Row Colors & Striping"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:206
+msgid "Row Background Color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:207
+msgid "Row Text Color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:210
+msgid "Enable Zebra Striping"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:211
+msgid "Applies an alternating background color to every second release row."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:216
+msgid "Alternating Row Color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:220
+msgid "Cells, Grid Borders & Links"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:222
+msgid "About Cells, Grid Borders & Links"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:223
+msgid "Controls internal padding for each table cell, divider lines between cells, and the appearance of clickable release title links inside the table."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:224
+msgid "Table Link settings apply to release titles inside the table and do not alter pagination links."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:226
+msgid "Cell Spacing"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:227
+msgid "Cell Padding"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:227
+msgid "Applies inside every header and data cell."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:229
+msgid "Cell Grid Lines"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:229
+msgid "Interior divider lines separating table rows and columns."
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:230
+msgid "Release Title Links"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:231
+msgid "Table Link Color"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:232
+msgid "Link Underline Style"
+msgstr ""
+
+#: blocks/artist-discography/table-controls.js:233
 msgid "Underline"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:132
-msgid "No underline"
+#: blocks/artist-discography/table-controls.js:234
+msgid "No Underline"
 msgstr ""
 
-#: blocks/artist-discography/table-controls.js:135
+#: blocks/artist-discography/table-controls.js:239
 msgid "Reset discography table styles"
 msgstr ""
 
+#: blocks/color-control.js:32
+#: blocks/release-player/edit.js:169
+#: js/settings-defaults.js:407
+msgid "Theme default"
+msgstr ""
+
+#: blocks/color-control.js:42
+#, js-format
+msgid "Choose color for %s"
+msgstr ""
+
+#: blocks/color-control.js:53
+msgid "Theme Palette"
+msgstr ""
+
+#: blocks/color-control.js:69
+msgid "Reset to theme default"
+msgstr ""
+
+#: blocks/native-release-styles.js:9
+msgid "Choose a common icon…"
+msgstr ""
+
+#: blocks/native-release-styles.js:11
+msgid "Album (Dashicons)"
+msgstr ""
+
+#: blocks/native-release-styles.js:12
+msgid "Calendar (Dashicons)"
+msgstr ""
+
+#: blocks/native-release-styles.js:13
+msgid "Artist (Dashicons)"
+msgstr ""
+
+#: blocks/native-release-styles.js:14
+msgid "Tag (Dashicons)"
+msgstr ""
+
+#: blocks/native-release-styles.js:15
+msgid "Star (Dashicons)"
+msgstr ""
+
+#: blocks/native-release-styles.js:16
+msgid "External Link (Dashicons)"
+msgstr ""
+
+#: blocks/native-release-styles.js:17
+msgid "Cart (Dashicons)"
+msgstr ""
+
+#: blocks/native-release-styles.js:18
+msgid "Calendar (Font Awesome)"
+msgstr ""
+
 #: blocks/native-release-styles.js:19
-msgid "Default / legacy"
+msgid "Disc (Font Awesome)"
 msgstr ""
 
-#: blocks/native-release-styles.js:72
-msgid "Border width"
+#: blocks/native-release-styles.js:20
+msgid "Distributor (Font Awesome)"
 msgstr ""
 
-#: blocks/native-release-styles.js:81
-msgid "Corner radius"
+#: blocks/native-release-styles.js:21
+msgid "Barcode (Font Awesome)"
 msgstr ""
 
-#: blocks/native-release-styles.js:85
-msgid "Auto"
+#: blocks/native-release-styles.js:22
+msgid "Music (Font Awesome)"
 msgstr ""
 
-#: blocks/native-release-styles.js:86
-msgid "Full width"
+#: blocks/native-release-styles.js:23
+msgid "Link (Font Awesome)"
 msgstr ""
 
-#: blocks/native-release-styles.js:94
-msgid "Legacy responsive styles"
+#: blocks/native-release-styles.js:24
+msgid "Shopping Bag (Font Awesome)"
 msgstr ""
 
-#: blocks/native-release-styles.js:95
+#: blocks/native-release-styles.js:25
+msgid "Spotify (Font Awesome)"
+msgstr ""
+
+#: blocks/native-release-styles.js:26
+msgid "Apple (Font Awesome)"
+msgstr ""
+
+#: blocks/native-release-styles.js:27
+msgid "Bandcamp (Font Awesome)"
+msgstr ""
+
+#: blocks/native-release-styles.js:28
+msgid "YouTube (Font Awesome)"
+msgstr ""
+
+#: blocks/native-release-styles.js:29
+msgid "Amazon (Font Awesome)"
+msgstr ""
+
+#: blocks/native-release-styles.js:30
+msgid "SoundCloud (Font Awesome)"
+msgstr ""
+
+#. translators: %1$d: Number of open sections. %2$d: Total number of sections.
+#: blocks/native-release-styles.js:56
+#, js-format
+msgid "%1$d of %2$d sections open"
+msgstr ""
+
+#: blocks/native-release-styles.js:59
+msgid "Expand all"
+msgstr ""
+
+#: blocks/native-release-styles.js:60
+msgid "Collapse all"
+msgstr ""
+
+#: blocks/native-release-styles.js:96
+msgid "Show"
+msgstr ""
+
+#. translators: %s: Item name.
+#: blocks/native-release-styles.js:98
+#, js-format
+msgid "Show %s"
+msgstr ""
+
+#. translators: %s: Item name.
+#: blocks/native-release-styles.js:110
+#: blocks/release-links/edit.js:157
+#: blocks/release-meta/edit.js:115
+#, js-format
+msgid "Move %s up"
+msgstr ""
+
+#: blocks/native-release-styles.js:111
+#: blocks/release-links/edit.js:158
+#: blocks/release-meta/edit.js:116
+msgid "Move up"
+msgstr ""
+
+#. translators: %s: Item name.
+#: blocks/native-release-styles.js:119
+#: blocks/release-links/edit.js:164
+#: blocks/release-meta/edit.js:122
+#, js-format
+msgid "Move %s down"
+msgstr ""
+
+#: blocks/native-release-styles.js:120
+#: blocks/release-links/edit.js:165
+#: blocks/release-meta/edit.js:123
+msgid "Move down"
+msgstr ""
+
+#: blocks/native-release-styles.js:127
+msgid "Done"
+msgstr ""
+
+#: blocks/native-release-styles.js:127
+msgid "Customize"
+msgstr ""
+
+#. translators: %s: Name of the spacing or width setting.
+#: blocks/native-release-styles.js:231
+#, js-format
+msgid "%s (Custom px)"
+msgstr ""
+
+#: blocks/native-release-styles.js:278
+#: js/settings-defaults.js:140
+msgid "Border & Corners"
+msgstr ""
+
+#: blocks/native-release-styles.js:280
+msgid "Customize the outline and rounded corners of each individual link button."
+msgstr ""
+
+#: blocks/native-release-styles.js:281
+msgid "Customize the outer frame border and rounded corners of the container box."
+msgstr ""
+
+#: blocks/native-release-styles.js:294
+msgid "Border Width"
+msgstr ""
+
+#: blocks/native-release-styles.js:295
+msgid "Corner Radius"
+msgstr ""
+
+#: blocks/native-release-styles.js:300
+msgid "Auto (Fit Content)"
+msgstr ""
+
+#: blocks/native-release-styles.js:301
+#: blocks/release-player/edit.js:31
+#: js/settings-defaults.js:378
+msgid "Full Width (100%)"
+msgstr ""
+
+#: blocks/native-release-styles.js:304
+msgid "Start"
+msgstr ""
+
+#: blocks/native-release-styles.js:306
+msgid "End"
+msgstr ""
+
+#: blocks/native-release-styles.js:309
+msgid "Legacy Responsive Styles"
+msgstr ""
+
+#: blocks/native-release-styles.js:310
 msgid "Saved tablet and mobile overrides still apply at their original widths. Use Gutenberg’s device preview to check them."
 msgstr ""
 
-#: blocks/native-release-styles.js:99
+#: blocks/native-release-styles.js:317
 msgid "Remove legacy tablet/mobile overrides"
 msgstr ""
 
-#: blocks/release-links/controls.js:10
-msgid "Release Links layout"
-msgstr ""
-
-#: blocks/release-links/controls.js:12
-#: blocks/release-meta/controls.js:18
-msgid "Margin"
-msgstr ""
-
 #: blocks/release-links/controls.js:13
-#: blocks/release-meta/controls.js:19
-msgid "Padding"
-msgstr ""
-
-#: blocks/release-links/controls.js:14
-#: blocks/release-meta/controls.js:20
-msgid "Container width"
+#: blocks/release-meta/controls.js:18
+msgid "Container & Layout"
 msgstr ""
 
 #: blocks/release-links/controls.js:15
-msgid "Gap between links and audio"
+#: blocks/release-meta/controls.js:20
+msgid "About Container & Layout"
 msgstr ""
 
 #: blocks/release-links/controls.js:16
-#: blocks/release-meta/controls.js:22
-msgid "Main-axis alignment"
-msgstr ""
-
-#: blocks/release-links/controls.js:16
-#: blocks/release-meta/controls.js:22
-msgid "Space between"
-msgstr ""
-
-#: blocks/release-links/controls.js:17
-#: blocks/release-meta/controls.js:23
-msgid "Cross-axis alignment"
-msgstr ""
-
-#: blocks/release-links/controls.js:17
-#: blocks/release-meta/controls.js:23
-msgid "Stretch"
+msgid "Controls the outer wrapper around the streaming and Buy Now button group. To adjust spacing between individual link buttons, use the Button Styling panel."
 msgstr ""
 
 #: blocks/release-links/controls.js:18
-#: blocks/release-meta/controls.js:24
-msgid "Direction"
+msgid "Applies site-wide to all Release Links blocks and automatic fallback templates unless overridden on an individual block."
 msgstr ""
 
 #: blocks/release-links/controls.js:19
-#: blocks/release-meta/controls.js:25
-msgid "Row"
-msgstr ""
-
-#: blocks/release-links/controls.js:20
-#: blocks/release-meta/controls.js:25
-msgid "Reverse row"
-msgstr ""
-
-#: blocks/release-links/controls.js:21
-#: blocks/release-meta/controls.js:26
-msgid "Column"
+msgid "Overrides the site-wide Release Links defaults for this block only. Leave controls unset to inherit."
 msgstr ""
 
 #: blocks/release-links/controls.js:22
-#: blocks/release-meta/controls.js:26
-msgid "Reverse column"
+#: blocks/release-meta/controls.js:27
+msgid "Container Background Color"
 msgstr ""
 
 #: blocks/release-links/controls.js:24
-#: blocks/release-meta/controls.js:28
-msgid "Wrapping"
+#: blocks/release-meta/controls.js:29
+#: js/settings-defaults.js:119
+msgid "Dimensions & Spacing"
 msgstr ""
 
 #: blocks/release-links/controls.js:25
-#: blocks/release-meta/controls.js:29
-msgid "Wrap"
+#: blocks/release-meta/controls.js:30
+msgid "Container Width"
 msgstr ""
 
 #: blocks/release-links/controls.js:26
-#: blocks/release-meta/controls.js:29
-msgid "Do not wrap"
+#: blocks/release-meta/controls.js:32
+#: js/settings-defaults.js:120
+msgid "Outer Margin"
 msgstr ""
 
 #: blocks/release-links/controls.js:27
-#: blocks/release-meta/controls.js:30
-msgid "Reverse wrap"
+#: blocks/release-meta/controls.js:33
+#: js/settings-defaults.js:121
+msgid "Inner Padding"
+msgstr ""
+
+#: blocks/release-links/controls.js:30
+#: blocks/release-meta/controls.js:36
+msgid "Layout & Alignment"
 msgstr ""
 
 #: blocks/release-links/controls.js:31
-msgid "Release Links buttons"
-msgstr ""
-
-#: blocks/release-links/controls.js:32
-msgid "Gap between buttons"
+msgid "Arrange link buttons horizontally or vertically and set how the group aligns inside its container."
 msgstr ""
 
 #: blocks/release-links/controls.js:34
-msgid "Button size (px)"
+#: blocks/release-meta/controls.js:40
+msgid "Layout Direction"
+msgstr ""
+
+#: blocks/release-links/controls.js:35
+#: blocks/release-meta/controls.js:41
+msgid "Horizontal (Row)"
+msgstr ""
+
+#: blocks/release-links/controls.js:36
+#: blocks/release-meta/controls.js:42
+msgid "Vertical (Column)"
 msgstr ""
 
 #: blocks/release-links/controls.js:38
-#: blocks/release-meta/controls.js:55
-msgid "Icon size (px)"
+#: blocks/release-meta/controls.js:44
+msgid "Line Wrapping"
 msgstr ""
 
 #: blocks/release-links/controls.js:39
-#: blocks/release-meta/controls.js:54
-msgid "Icon color"
+#: blocks/release-meta/controls.js:45
+msgid "Wrap to Multiple Lines"
 msgstr ""
 
 #: blocks/release-links/controls.js:40
-msgid "Button background"
+#: blocks/release-meta/controls.js:46
+msgid "Single Line (No Wrap)"
 msgstr ""
 
 #: blocks/release-links/controls.js:42
-msgid "Hover opacity"
+#: blocks/release-meta/controls.js:48
+msgid "Horizontal Alignment"
 msgstr ""
 
-#: blocks/release-links/controls.js:44
-msgid "Release Links audio"
+#: blocks/release-links/controls.js:46
+#: blocks/release-meta/controls.js:52
+msgid "Spread Evenly"
 msgstr ""
 
-#: blocks/release-links/controls.js:45
-msgid "Audio player width"
+#: blocks/release-links/controls.js:48
+#: blocks/release-meta/controls.js:54
+msgid "Vertical Alignment"
 msgstr ""
 
-#: blocks/release-links/edit.js:94
-msgid "This Release has no links or audio to display."
+#: blocks/release-links/controls.js:49
+#: blocks/release-meta/controls.js:55
+msgid "Top"
 msgstr ""
 
-#: blocks/release-links/edit.js:96
-#: blocks/release-meta/edit.js:105
+#: blocks/release-links/controls.js:50
+#: blocks/release-meta/controls.js:56
+msgid "Middle"
+msgstr ""
+
+#: blocks/release-links/controls.js:51
+#: blocks/release-meta/controls.js:57
+msgid "Bottom"
+msgstr ""
+
+#: blocks/release-links/controls.js:52
+#: blocks/release-meta/controls.js:58
+msgid "Stretch to Fill"
+msgstr ""
+
+#: blocks/release-links/controls.js:57
+msgid "Button Styling"
+msgstr ""
+
+#: blocks/release-links/controls.js:59
+msgid "About Button Styling"
+msgstr ""
+
+#: blocks/release-links/controls.js:60
+msgid "Styles each individual streaming or Buy Now button, including button dimensions, icon size, colors, borders, and hover feedback."
+msgstr ""
+
+#: blocks/release-links/controls.js:62
+msgid "A site-wide Shared Button Background is active. Click \"Ignore site default\" under Shared Button Background to restore individual provider brand colors on this block."
+msgstr ""
+
+#: blocks/release-links/controls.js:63
+msgid "Leave Shared Button Background unset to preserve each provider’s configured brand color."
+msgstr ""
+
+#: blocks/release-links/controls.js:65
+msgid "Sizing & Spacing"
+msgstr ""
+
+#: blocks/release-links/controls.js:68
+msgid "Button Size (px)"
+msgstr ""
+
+#: blocks/release-links/controls.js:69
+msgid "Minimum width and height for each square/pill link button (44px minimum for touch accessibility)."
+msgstr ""
+
+#: blocks/release-links/controls.js:78
+#: blocks/release-meta/controls.js:105
+msgid "Icon Size (px)"
+msgstr ""
+
+#: blocks/release-links/controls.js:79
+msgid "Gap Between Buttons"
+msgstr ""
+
+#: blocks/release-links/controls.js:81
+msgid "Colors & Hover"
+msgstr ""
+
+#: blocks/release-links/controls.js:82
+msgid "Button Icon Color"
+msgstr ""
+
+#: blocks/release-links/controls.js:83
+msgid "Shared Button Background"
+msgstr ""
+
+#: blocks/release-links/controls.js:83
+msgid "Overrides individual provider brand colors with a uniform button fill."
+msgstr ""
+
+#: blocks/release-links/controls.js:84
+msgid "Hover Opacity"
+msgstr ""
+
+#: blocks/release-links/controls.js:84
+msgid "Controls button transparency when a visitor hovers or focuses on a link."
+msgstr ""
+
+#: blocks/release-links/edit.js:58
+msgid "Release Source & Behavior"
+msgstr ""
+
+#: blocks/release-links/edit.js:61
+#: js/settings-defaults.js:1026
+msgid "Open Links in a New Tab"
+msgstr ""
+
+#: blocks/release-links/edit.js:64
+msgid "Use site default (No)"
+msgstr ""
+
+#: blocks/release-links/edit.js:64
+msgid "Use site default (Yes)"
+msgstr ""
+
+#: blocks/release-links/edit.js:65
+msgid "Yes"
+msgstr ""
+
+#: blocks/release-links/edit.js:66
+msgid "No"
+msgstr ""
+
+#: blocks/release-links/edit.js:71
+#: js/settings-defaults.js:1033
+msgid "Multi-Format Buy Now Behavior"
+msgstr ""
+
+#: blocks/release-links/edit.js:72
+msgid "Applies when a release has 2+ Media Formats and no store extension overrides Buy Now."
+msgstr ""
+
+#: blocks/release-links/edit.js:75
+msgid "Use site default (Primary Direct Link)"
+msgstr ""
+
+#: blocks/release-links/edit.js:75
+msgid "Use site default (Choose Format Modal)"
+msgstr ""
+
+#: blocks/release-links/edit.js:76
+msgid "Choose Format Modal"
+msgstr ""
+
+#: blocks/release-links/edit.js:77
+#: js/settings-defaults.js:1040
+msgid "Primary Direct Link"
+msgstr ""
+
+#: blocks/release-links/edit.js:82
+#: js/settings-defaults.js:257
+msgid "Streaming Providers & Buy Now"
+msgstr ""
+
+#: blocks/release-links/edit.js:84
+#: js/settings-defaults.js:259
+msgid "About Streaming Providers & Buy Now"
+msgstr ""
+
+#: blocks/release-links/edit.js:85
+msgid "Toggle visibility, reorder buttons, or click Customize to override icons and tooltips for this block only."
+msgstr ""
+
+#: blocks/release-links/edit.js:86
+msgid "URLs come from the Release. Unchanged items inherit from Releases → Settings → Block Defaults."
+msgstr ""
+
+#: blocks/release-links/edit.js:97
+#: blocks/release-meta/edit.js:57
+msgid "Use site visibility"
+msgstr ""
+
+#: blocks/release-links/edit.js:101
+msgid "Link Icon"
+msgstr ""
+
+#: blocks/release-links/edit.js:102
+msgid "Leave empty to use the provider default."
+msgstr ""
+
+#: blocks/release-links/edit.js:109
+#: blocks/release-meta/edit.js:69
+#: js/settings-defaults.js:203
+#: js/settings-defaults.js:300
+msgid "Icon CSS Classes"
+msgstr ""
+
+#: blocks/release-links/edit.js:113
+#: blocks/release-meta/edit.js:73
+msgid "Use site icon"
+msgstr ""
+
+#: blocks/release-links/edit.js:116
+#: js/settings-defaults.js:324
+msgid "Accessible Label & Tooltip"
+msgstr ""
+
+#: blocks/release-links/edit.js:117
+msgid "Leave blank to use the provider name."
+msgstr ""
+
+#: blocks/release-links/edit.js:121
+#: blocks/release-meta/edit.js:80
+msgid "Use site tooltip"
+msgstr ""
+
+#: blocks/release-links/edit.js:127
+msgid "Use site defaults for this link"
+msgstr ""
+
+#: blocks/release-links/edit.js:136
+#: js/settings-defaults.js:277
+msgid "Core CTA"
+msgstr ""
+
+#: blocks/release-links/edit.js:136
+#: blocks/release-meta/edit.js:94
+#: js/settings-defaults.js:186
+#: js/settings-defaults.js:277
+msgid "Hidden"
+msgstr ""
+
+#: blocks/release-links/edit.js:169
+msgid "Custom Provider Override"
+msgstr ""
+
+#: blocks/release-links/edit.js:171
+msgid "Additional Provider Name"
+msgstr ""
+
+#: blocks/release-links/edit.js:172
+msgid "Add an override for a saved provider not in current site settings."
+msgstr ""
+
+#: blocks/release-links/edit.js:185
+msgid "Add Provider Override"
+msgstr ""
+
+#: blocks/release-links/edit.js:191
+msgid "Use site link order"
+msgstr ""
+
+#: blocks/release-links/edit.js:197
+msgid "Use site link defaults"
+msgstr ""
+
+#: blocks/release-links/edit.js:208
+msgid "This Release has no links to display."
+msgstr ""
+
+#: blocks/release-links/edit.js:210
+#: blocks/release-meta/edit.js:150
+#: blocks/release-player/edit.js:366
 msgid "The Release source could not be checked."
 msgstr ""
 
-#: blocks/release-links/edit.js:98
-#: blocks/release-meta/edit.js:107
+#: blocks/release-links/edit.js:212
+#: blocks/release-meta/edit.js:152
+#: blocks/release-player/edit.js:368
 msgid "Checking Release context…"
 msgstr ""
 
-#: blocks/release-links/edit.js:99
+#: blocks/release-links/edit.js:213
 msgid "Select a Release to preview its links."
 msgstr ""
 
-#: blocks/release-meta/controls.js:16
-msgid "Release Meta layout"
-msgstr ""
-
 #: blocks/release-meta/controls.js:21
-msgid "Gap between fields"
+msgid "Controls the outer box surrounding all metadata fields (Release Year, Format, Label, Distributor, UPC/EAN, and Tags). Use Inner Padding for room inside the box, Outer Margin for space around it, and Gap Between Fields to separate individual metadata entries."
 msgstr ""
 
-#: blocks/release-meta/controls.js:34
-msgid "Release Meta typography"
+#: blocks/release-meta/controls.js:23
+msgid "Applies site-wide to all Release Meta blocks and automatic fallback templates unless overridden on an individual block."
 msgstr ""
 
-#: blocks/release-meta/controls.js:47
-msgid "Letter spacing (px)"
+#: blocks/release-meta/controls.js:24
+msgid "Overrides the site-wide Release Meta defaults for this block only. Leave controls unset to inherit."
 msgstr ""
 
-#: blocks/release-meta/controls.js:53
-msgid "Release Meta icons"
+#: blocks/release-meta/controls.js:31
+msgid "Gap Between Fields"
 msgstr ""
 
-#: blocks/release-meta/controls.js:56
-msgid "Icon opacity"
+#: blocks/release-meta/controls.js:31
+msgid "Space between separate metadata entries. To adjust space between an icon and its text, use the Icons panel."
 msgstr ""
 
-#: blocks/release-meta/controls.js:57
-msgid "Gap between icon and text"
+#: blocks/release-meta/controls.js:37
+msgid "Arrange metadata fields horizontally in a row or vertically in a column, and control how items justify and align."
 msgstr ""
 
-#: blocks/release-meta/edit.js:103
+#: blocks/release-meta/controls.js:63
+msgid "Typography & Text"
+msgstr ""
+
+#: blocks/release-meta/controls.js:65
+msgid "About Typography & Text"
+msgstr ""
+
+#: blocks/release-meta/controls.js:66
+msgid "Styles the displayed metadata values such as the record label, format, and release year. Icons automatically inherit this text color unless a separate Icon Color is set in the Icons panel."
+msgstr ""
+
+#: blocks/release-meta/controls.js:67
+msgid "Does not affect the page title or body text controlled by your active theme."
+msgstr ""
+
+#: blocks/release-meta/controls.js:70
+msgid "Field Text Color"
+msgstr ""
+
+#: blocks/release-meta/controls.js:72
+msgid "Font & Sizing"
+msgstr ""
+
+#: blocks/release-meta/controls.js:87
+#: js/settings-defaults.js:138
+msgid "Letter Spacing (px)"
+msgstr ""
+
+#: blocks/release-meta/controls.js:95
+msgid "Icons"
+msgstr ""
+
+#: blocks/release-meta/controls.js:97
+msgid "About Metadata Icons"
+msgstr ""
+
+#: blocks/release-meta/controls.js:98
+msgid "Controls the color, size, opacity, and spacing of the icon displayed beside each metadata value."
+msgstr ""
+
+#: blocks/release-meta/controls.js:100
+msgid "To choose which icon appears for each individual field, expand that field under Fields & Ordering above."
+msgstr ""
+
+#: blocks/release-meta/controls.js:101
+msgid "To choose a different icon for a specific field, open that field’s panel in the block’s Settings tab."
+msgstr ""
+
+#: blocks/release-meta/controls.js:103
+msgid "Icon Appearance"
+msgstr ""
+
+#: blocks/release-meta/controls.js:104
+msgid "Icon Color"
+msgstr ""
+
+#: blocks/release-meta/controls.js:104
+msgid "Leave empty to inherit the Field Text Color."
+msgstr ""
+
+#: blocks/release-meta/controls.js:106
+msgid "Icon Opacity"
+msgstr ""
+
+#: blocks/release-meta/controls.js:107
+msgid "Gap Between Icon & Text"
+msgstr ""
+
+#: blocks/release-meta/controls.js:107
+msgid "Space between the icon and its label inside a single metadata field."
+msgstr ""
+
+#: blocks/release-meta/edit.js:44
+msgid "Release Source"
+msgstr ""
+
+#: blocks/release-meta/edit.js:45
+#: js/settings-defaults.js:170
+msgid "Fields & Ordering"
+msgstr ""
+
+#: blocks/release-meta/edit.js:47
+#: js/settings-defaults.js:172
+msgid "About Fields & Ordering"
+msgstr ""
+
+#: blocks/release-meta/edit.js:48
+msgid "Toggle visibility, reorder fields, or click Customize to override icons and tooltips for this block only."
+msgstr ""
+
+#: blocks/release-meta/edit.js:49
+msgid "Unchanged fields inherit from Releases → Settings → Block Defaults."
+msgstr ""
+
+#: blocks/release-meta/edit.js:61
+#: js/settings-defaults.js:196
+msgid "Field Icon"
+msgstr ""
+
+#: blocks/release-meta/edit.js:62
+msgid "Choose a Font Awesome or Dashicons icon, or clear for no icon."
+msgstr ""
+
+#: blocks/release-meta/edit.js:76
+#: js/settings-defaults.js:208
+msgid "Field Tooltip Label"
+msgstr ""
+
+#: blocks/release-meta/edit.js:86
+msgid "Use site defaults for this field"
+msgstr ""
+
+#: blocks/release-meta/edit.js:131
+msgid "Use site field order"
+msgstr ""
+
+#: blocks/release-meta/edit.js:137
+msgid "Use site field defaults"
+msgstr ""
+
+#: blocks/release-meta/edit.js:148
 msgid "This Release has no enabled metadata to display."
 msgstr ""
 
-#: blocks/release-meta/edit.js:108
+#: blocks/release-meta/edit.js:153
 msgid "Select a Release to preview its metadata."
 msgstr ""
 
-#: blocks/release-picker.js:23
+#: blocks/release-picker.js:201
 msgid "Untitled Release"
 msgstr ""
 
 #. translators: %s: The Release title.
-#: blocks/release-picker.js:43
+#: blocks/release-picker.js:309
 #, js-format
 msgid "Using the current context: %s."
 msgstr ""
 
-#: blocks/release-picker.js:46
+#: blocks/release-picker.js:312
 msgid "No Release is available in this context."
 msgstr ""
 
-#: blocks/release-picker.js:49
+#: blocks/release-picker.js:323
+#: js/artist-editor.js:466
+#: js/settings-defaults.js:864
 msgid "Release"
 msgstr ""
 
-#: blocks/release-picker.js:50
-msgid "Search by title or enter the full UPC/EAN. Leave blank to use the current context."
+#: blocks/release-picker.js:324
+msgid "Search by Release title or Artist name. Leave blank to use the current context."
 msgstr ""
 
-#: blocks/release-picker.js:57
+#: blocks/release-picker.js:332
+msgid "Primary ID (UPC/EAN)"
+msgstr ""
+
+#: blocks/release-picker.js:333
+msgid "Shown because WP_DEBUG is enabled. The block resolves its Release through this ID."
+msgstr ""
+
+#: blocks/release-picker.js:341
+msgid "Shown because WP_DEBUG is enabled."
+msgstr ""
+
+#: blocks/release-picker.js:346
 msgid "Use current context"
 msgstr ""
 
-#: blocks/release-picker.js:60
+#: blocks/release-picker.js:349
 msgid "Release search failed. Change the search to try again."
 msgstr ""
 
-#: blocks/release-picker.js:61
+#: blocks/release-picker.js:350
 msgid "The Release selection could not be checked. The saved selection has not changed."
 msgstr ""
 
-#: blocks/release-picker.js:63
+#: blocks/release-picker.js:352
 msgid "The selected Release is unavailable. The saved selection has not changed."
+msgstr ""
+
+#: blocks/release-player/edit.js:18
+#: js/settings-defaults.js:389
+msgid "Auto (Priority Order)"
+msgstr ""
+
+#: blocks/release-player/edit.js:24
+#: js/settings-defaults.js:587
+msgid "Default (None)"
+msgstr ""
+
+#: blocks/release-player/edit.js:25
+#: js/settings-defaults.js:588
+msgid "None (Flat)"
+msgstr ""
+
+#: blocks/release-player/edit.js:26
+#: js/settings-defaults.js:589
+#: js/template-defaults.js:355
+msgid "Subtle"
+msgstr ""
+
+#: blocks/release-player/edit.js:27
+#: js/settings-defaults.js:590
+#: js/template-defaults.js:357
+msgid "Elevated"
+msgstr ""
+
+#: blocks/release-player/edit.js:32
+#: js/settings-defaults.js:379
+msgid "Compact (360px)"
+msgstr ""
+
+#: blocks/release-player/edit.js:33
+#: js/settings-defaults.js:380
+msgid "Medium (480px)"
+msgstr ""
+
+#: blocks/release-player/edit.js:34
+#: js/settings-defaults.js:381
+msgid "Wide (640px)"
+msgstr ""
+
+#: blocks/release-player/edit.js:35
+#: js/settings-defaults.js:382
+msgid "Custom…"
+msgstr ""
+
+#: blocks/release-player/edit.js:169
+#: js/settings-defaults.js:407
+#: js/template-defaults.js:1018
+#, js-format
+msgid "Auto (%s)"
+msgstr ""
+
+#: blocks/release-player/edit.js:183
+msgid "Release & Provider"
+msgstr ""
+
+#: blocks/release-player/edit.js:186
+msgid "Audio Provider"
+msgstr ""
+
+#: blocks/release-player/edit.js:194
+#: js/settings-defaults.js:414
+msgid "Player Modules & Source"
+msgstr ""
+
+#: blocks/release-player/edit.js:196
+#: js/settings-defaults.js:440
+msgid "Show Artwork"
+msgstr ""
+
+#: blocks/release-player/edit.js:201
+#: js/settings-defaults.js:446
+msgid "Show Title & Artist"
+msgstr ""
+
+#: blocks/release-player/edit.js:206
+#: js/settings-defaults.js:452
+msgid "Show Progress Bar"
+msgstr ""
+
+#: blocks/release-player/edit.js:211
+#: js/settings-defaults.js:458
+msgid "Show Time Readout"
+msgstr ""
+
+#: blocks/release-player/edit.js:216
+#: js/settings-defaults.js:464
+msgid "Show Tracklist"
+msgstr ""
+
+#: blocks/release-player/edit.js:221
+#: js/settings-defaults.js:470
+msgid "Show Provider Badge"
+msgstr ""
+
+#: blocks/release-player/edit.js:226
+#: js/settings-defaults.js:431
+msgid "Compact Bar Layout"
+msgstr ""
+
+#: blocks/release-player/edit.js:233
+#: js/settings-defaults.js:477
+msgid "Preview & Sampler Playback"
+msgstr ""
+
+#: blocks/release-player/edit.js:235
+#: js/settings-defaults.js:484
+msgid "Enable Sampler Mode"
+msgstr ""
+
+#: blocks/release-player/edit.js:236
+#: js/settings-defaults.js:485
+msgid "Automatically advances and crossfades across tracks."
+msgstr ""
+
+#: blocks/release-player/edit.js:241
+#: js/settings-defaults.js:491
+msgid "Preview Clip Length (seconds)"
+msgstr ""
+
+#: blocks/release-player/edit.js:242
+#: js/settings-defaults.js:492
+msgid "Default: 20s. Applied to full-length streams; native timed previews play as provided."
+msgstr ""
+
+#: blocks/release-player/edit.js:251
+#: js/settings-defaults.js:503
+msgid "Crossfade Duration (ms)"
+msgstr ""
+
+#: blocks/release-player/edit.js:252
+#: js/settings-defaults.js:504
+msgid "Default: 1500ms."
+msgstr ""
+
+#: blocks/release-player/edit.js:265
+msgid "Reset modules & playback to site defaults"
+msgstr ""
+
+#: blocks/release-player/edit.js:274
+#: js/settings-defaults.js:516
+msgid "Colors & Surface Styling"
+msgstr ""
+
+#: blocks/release-player/edit.js:276
+#: js/settings-defaults.js:518
+msgid "About Release Player Styling"
+msgstr ""
+
+#: blocks/release-player/edit.js:277
+msgid "Overrides site-wide Release Player colors, border, padding, max width, and elevation for this block only."
+msgstr ""
+
+#: blocks/release-player/edit.js:278
+msgid "Leave any control unset to inherit from Releases → Settings → Block Defaults (or auto-match your active theme)."
+msgstr ""
+
+#: blocks/release-player/edit.js:281
+#: js/settings-defaults.js:522
+msgid "Player Palette"
+msgstr ""
+
+#: blocks/release-player/edit.js:282
+#: blocks/release-player/edit.js:290
+#: js/settings-defaults.js:523
+msgid "Background"
+msgstr ""
+
+#: blocks/release-player/edit.js:283
+#: blocks/release-player/edit.js:291
+#: js/settings-defaults.js:524
+msgid "Text"
+msgstr ""
+
+#: blocks/release-player/edit.js:284
+#: blocks/release-player/edit.js:292
+#: js/settings-defaults.js:525
+msgid "Muted Text"
+msgstr ""
+
+#: blocks/release-player/edit.js:285
+#: blocks/release-player/edit.js:293
+#: js/settings-defaults.js:526
+msgid "Accent / Play Button"
+msgstr ""
+
+#: blocks/release-player/edit.js:286
+#: blocks/release-player/edit.js:294
+#: js/settings-defaults.js:527
+msgid "Play Icon"
+msgstr ""
+
+#: blocks/release-player/edit.js:287
+#: blocks/release-player/edit.js:295
+#: js/settings-defaults.js:528
+msgid "Border"
+msgstr ""
+
+#: blocks/release-player/edit.js:297
+#: js/settings-defaults.js:530
+msgid "Surface, Border & Sizing"
+msgstr ""
+
+#: blocks/release-player/edit.js:300
+#: js/settings-defaults.js:533
+msgid "Default: 10px."
+msgstr ""
+
+#: blocks/release-player/edit.js:310
+#: js/settings-defaults.js:545
+msgid "Default: 1px."
+msgstr ""
+
+#: blocks/release-player/edit.js:319
+#: js/settings-defaults.js:556
+#: js/template-defaults.js:995
+msgid "Inner Padding (px)"
+msgstr ""
+
+#: blocks/release-player/edit.js:320
+#: js/settings-defaults.js:557
+msgid "Default: 12px."
+msgstr ""
+
+#: blocks/release-player/edit.js:329
+#: js/settings-defaults.js:568
+msgid "Max Width"
+msgstr ""
+
+#: blocks/release-player/edit.js:335
+#: js/settings-defaults.js:576
+msgid "Custom Max Width"
+msgstr ""
+
+#: blocks/release-player/edit.js:336
+#: js/settings-defaults.js:577
+msgid "Accepts px, rem, em, %, or vw (e.g. 520px or 36rem)."
+msgstr ""
+
+#: blocks/release-player/edit.js:341
+#: js/settings-defaults.js:584
+msgid "Elevation Shadow"
+msgstr ""
+
+#: blocks/release-player/edit.js:351
+msgid "Reset to site defaults"
+msgstr ""
+
+#: blocks/release-player/edit.js:364
+msgid "This Release has no audio preview available to play."
+msgstr ""
+
+#: blocks/release-player/edit.js:369
+msgid "Select a Release to preview the audio player."
+msgstr ""
+
+#: js/artist-editor.js:130
+#: js/artist-editor.js:559
+#: js/artist-editor.js:593
+msgid "Live Artist Preview"
+msgstr ""
+
+#: js/artist-editor.js:151
+msgid "Rendering live artist preview…"
+msgstr ""
+
+#: js/artist-editor.js:197
+msgid "Live Artist Preview loaded."
+msgstr ""
+
+#: js/artist-editor.js:200
+#: js/release-editor.js:259
+msgid "Could not render preview. Please save draft once or try again."
+msgstr ""
+
+#: js/artist-editor.js:238
+msgid "Select at least one release to apply a bulk action."
+msgstr ""
+
+#: js/artist-editor.js:246
+msgid "Bulk routing mode applied. Click Save Routing Changes to persist."
+msgstr ""
+
+#: js/artist-editor.js:252
+msgid "All releases reset to Inherit Artist Default. Click Save Routing Changes to persist."
+msgstr ""
+
+#: js/artist-editor.js:281
+#: js/artist-editor.js:300
+msgid "Could not save routing changes."
+msgstr ""
+
+#: js/artist-editor.js:294
+msgid "Routing saved and synced."
+msgstr ""
+
+#: js/artist-editor.js:307
+msgid "Bulk Actions…"
+msgstr ""
+
+#: js/artist-editor.js:312
+#, js-format
+msgid "Set selected to: %s"
+msgstr ""
+
+#: js/artist-editor.js:319
+msgid "Profile & Contact"
+msgstr ""
+
+#. translators: %d: Number of releases linked to this artist.
+#: js/artist-editor.js:324
+#, js-format
+msgid "Release Routing (%d)"
+msgstr ""
+
+#: js/artist-editor.js:350
+msgid "Artist Profile & Fallback Composition"
+msgstr ""
+
+#: js/artist-editor.js:351
+msgid "Configure the artist’s official website, optional homepage redirect, and rich-text Contact / Booking details. Together with the Biography, Portrait (Featured Image), and Discography, these compose the automatic Artist Fallback Page."
+msgstr ""
+
+#: js/artist-editor.js:352
+msgid "Designer tip: Customize Artist layout (Centered Stacked vs. Split), portrait shape, biography typography, and contact card styling under Releases → Settings → Default Templates."
+msgstr ""
+
+#: js/artist-editor.js:356
+msgid "Official Website & Redirect"
+msgstr ""
+
+#: js/artist-editor.js:360
+msgid "Official Homepage URL"
+msgstr ""
+
+#: js/artist-editor.js:374
+msgid "Open official homepage URL in a new tab"
+msgstr ""
+
+#: js/artist-editor.js:379
+msgid "Redirect visitors to official homepage (302 Found)"
+msgstr ""
+
+#: js/artist-editor.js:380
+msgid "When enabled with a valid external URL, visiting this Artist page redirects to their official website instead of showing the fallback profile."
+msgstr ""
+
+#: js/artist-editor.js:388
+msgid "Routing is enabled, but the homepage URL is missing, invalid, or points to this artist page. Visitors will see the fallback artist page until a valid external URL is entered."
+msgstr ""
+
+#: js/artist-editor.js:395
+msgid "Contact & Booking Information"
+msgstr ""
+
+#: js/artist-editor.js:402
+msgid "Artist & Per-Release Routing"
+msgstr ""
+
+#: js/artist-editor.js:403
+msgid "Set a default routing policy for every release belonging to this Artist, or override individual releases below. Changes saved here batch-sync automatically to all Multisite Spokes."
+msgstr ""
+
+#: js/artist-editor.js:404
+msgid "Designer tip: All redirects use 302 Found and fall back gracefully to the Release Fallback Page (styled under Releases → Settings → Default Templates) if a target URL is missing."
+msgstr ""
+
+#: js/artist-editor.js:410
+msgid "Default Routing Policy for All Releases"
+msgstr ""
+
+#: js/artist-editor.js:411
+msgid "Applies to every release below set to \"Inherit Artist Default\"."
+msgstr ""
+
+#: js/artist-editor.js:425
+msgid "No releases are currently linked to this Artist. Once releases are assigned to this Artist, you can manage their individual and bulk routing rules here."
+msgstr ""
+
+#: js/artist-editor.js:431
+msgid "Bulk routing action"
+msgstr ""
+
+#: js/artist-editor.js:439
+msgid "Apply"
+msgstr ""
+
+#: js/artist-editor.js:440
+msgid "Reset All to Inherit"
+msgstr ""
+
+#: js/artist-editor.js:444
+msgid "Filter releases by title or UPC"
+msgstr ""
+
+#: js/artist-editor.js:446
+msgid "Filter releases by title or UPC…"
+msgstr ""
+
+#: js/artist-editor.js:461
+msgid "Select all visible releases"
+msgstr ""
+
+#: js/artist-editor.js:465
+msgid "Cover"
+msgstr ""
+
+#: js/artist-editor.js:467
+msgid "UPC / EAN"
+msgstr ""
+
+#: js/artist-editor.js:468
+msgid "Routing Mode"
+msgstr ""
+
+#: js/artist-editor.js:469
+msgid "Custom URL / Resolved Destination"
+msgstr ""
+
+#: js/artist-editor.js:483
+#, js-format
+msgid "Select %s"
+msgstr ""
+
+#: js/artist-editor.js:505
+#, js-format
+msgid "Routing mode for %s"
+msgstr ""
+
+#: js/artist-editor.js:517
+#, js-format
+msgid "Custom redirect URL for %s"
+msgstr ""
+
+#: js/artist-editor.js:548
+msgid "Saving & syncing…"
+msgstr ""
+
+#: js/artist-editor.js:548
+msgid "Save Routing Changes"
+msgstr ""
+
+#: js/artist-editor.js:563
+msgid "Live Artist Preview closed."
+msgstr ""
+
+#: js/artist-editor.js:567
+#: js/release-editor.js:799
+msgid "Preview viewport"
+msgstr ""
+
+#: js/artist-editor.js:570
+#: js/release-editor.js:802
+msgid "Desktop"
+msgstr ""
+
+#: js/artist-editor.js:571
+#: js/release-editor.js:803
+msgid "Tablet (768px)"
+msgstr ""
+
+#: js/artist-editor.js:572
+#: js/release-editor.js:804
+msgid "Mobile (390px)"
+msgstr ""
+
+#: js/artist-editor.js:580
+#: js/release-editor.js:812
+#, js-format
+msgid "Preview viewport switched to %s."
+msgstr ""
+
+#: js/artist-editor.js:589
+#: js/release-editor.js:821
+msgid "Rendering live preview…"
+msgstr ""
+
+#: js/icon-picker.js:119
+msgid "All"
+msgstr ""
+
+#: js/icon-picker.js:120
+msgid "Music & Audio"
+msgstr ""
+
+#: js/icon-picker.js:121
+msgid "Streaming & Brands"
+msgstr ""
+
+#: js/icon-picker.js:122
+msgid "Commerce"
+msgstr ""
+
+#: js/icon-picker.js:123
+msgid "Metadata & UI"
+msgstr ""
+
+#: js/icon-picker.js:124
+msgid "Dashicons"
+msgstr ""
+
+#: js/icon-picker.js:166
+#, js-format
+msgid "Selected icon: %s"
+msgstr ""
+
+#: js/icon-picker.js:167
+msgid "Icon cleared."
+msgstr ""
+
+#: js/icon-picker.js:194
+#: js/icon-picker.js:205
+msgid "Choose Icon"
+msgstr ""
+
+#: js/icon-picker.js:200
+#: js/release-editor.js:460
+#: js/release-editor.js:615
+msgid "Clear"
+msgstr ""
+
+#: js/icon-picker.js:205
+#, js-format
+msgid "Choose Icon — %s"
+msgstr ""
+
+#: js/icon-picker.js:211
+msgid "Search icons"
+msgstr ""
+
+#: js/icon-picker.js:212
+msgid "Search by name or keyword (e.g. vinyl, spotify, cart)…"
+msgstr ""
+
+#: js/icon-picker.js:225
+msgid "Available icons"
+msgstr ""
+
+#: js/icon-picker.js:227
+msgid "No matching icons in this category. Try another search or enter a custom Font Awesome class below."
+msgstr ""
+
+#: js/icon-picker.js:248
+msgid "Custom Icon CSS Classes"
+msgstr ""
+
+#: js/icon-picker.js:249
+msgid "Paste any Font Awesome 6 Free/Pro or Dashicons class string."
+msgstr ""
+
+#: js/icon-picker.js:260
+msgid "Use Custom Class"
+msgstr ""
+
+#: js/release-editor.js:154
+msgid "This URL is already listed in Buy Now."
+msgstr ""
+
+#: js/release-editor.js:163
+msgid "Added URL to Buy Now formats."
+msgstr ""
+
+#: js/release-editor.js:188
+#: js/release-editor.js:791
+#: js/release-editor.js:825
+msgid "Live Release Preview"
+msgstr ""
+
+#: js/release-editor.js:209
+msgid "Rendering live release preview…"
+msgstr ""
+
+#: js/release-editor.js:256
+msgid "Live Release Preview loaded."
+msgstr ""
+
+#: js/release-editor.js:302
+msgid "Choose Audio Preview"
+msgstr ""
+
+#: js/release-editor.js:310
+msgid "Audio preview selected."
+msgstr ""
+
+#: js/release-editor.js:321
+msgid "12 digits (UPC-A)"
+msgstr ""
+
+#: js/release-editor.js:324
+msgid "13 digits (EAN-13)"
+msgstr ""
+
+#: js/release-editor.js:327
+#, js-format
+msgid "%d digits"
+msgstr ""
+
+#: js/release-editor.js:338
+#, js-format
+msgid "Custom URL (%s)"
+msgstr ""
+
+#: js/release-editor.js:339
+msgid "Custom URL (enter a URL above)"
+msgstr ""
+
+#: js/release-editor.js:343
+#, js-format
+msgid "Primary Buy Now URL (%s)"
+msgstr ""
+
+#: js/release-editor.js:344
+msgid "Release Fallback Page (no Buy Now URL configured)"
+msgstr ""
+
+#: js/release-editor.js:348
+#, js-format
+msgid "Artist Website (%s)"
+msgstr ""
+
+#: js/release-editor.js:349
+msgid "Release Fallback Page (Artist has no website configured)"
+msgstr ""
+
+#: js/release-editor.js:352
+msgid "Inherit Artist Policy"
+msgstr ""
+
+#: js/release-editor.js:359
+msgid "Select a release type"
+msgstr ""
+
+#: js/release-editor.js:364
+msgid "Select Provider"
+msgstr ""
+
+#: js/release-editor.js:369
+msgid "— Media Format —"
+msgstr ""
+
+#: js/release-editor.js:374
+msgid "Identity & Catalog"
+msgstr ""
+
+#: js/release-editor.js:375
+msgid "Streaming & Audio"
+msgstr ""
+
+#: js/release-editor.js:376
+msgid "Buy Now & Routing"
+msgstr ""
+
+#: js/release-editor.js:412
+msgid "Catalog Identity & Synchronization"
+msgstr ""
+
+#: js/release-editor.js:413
+msgid "The Barcode (UPC/EAN) and Release Type uniquely identify this release across your catalog, CSV exports, and Multisite Spoke sync. Assigning a Primary Artist automatically lists this release in their Discography and connects artist-level routing."
+msgstr ""
+
+#: js/release-editor.js:414
+msgid "Designer tip: These fields power the Release Meta block, [release-meta] shortcode, and Elementor tags. Configure field visibility and styling under Releases → Settings → Block Defaults."
+msgstr ""
+
+#: js/release-editor.js:417
+msgid "The existing release type conflicts with legacy data. Select the correct Release Type below to resolve it."
+msgstr ""
+
+#: js/release-editor.js:425
+msgid "Barcode (UPC / EAN) *"
+msgstr ""
+
+#: js/release-editor.js:426
+msgid "Unique 12-digit UPC or 13-digit EAN. Leading zeroes are preserved automatically."
+msgstr ""
+
+#: js/release-editor.js:437
+msgid "Release Type *"
+msgstr ""
+
+#: js/release-editor.js:438
+msgid "Primary classification for this UPC (Single, EP, Album, or Digital)."
+msgstr ""
+
+#: js/release-editor.js:450
+msgid "Edit Artist"
+msgstr ""
+
+#: js/release-editor.js:458
+msgid "Primary artist cleared."
+msgstr ""
+
+#: js/release-editor.js:463
+msgid "Primary Artist"
+msgstr ""
+
+#: js/release-editor.js:464
+msgid "Type at least 2 characters to search published Artist profiles."
+msgstr ""
+
+#: js/release-editor.js:474
+#, js-format
+msgid "Selected artist: %s"
+msgstr ""
+
+#: js/release-editor.js:488
+msgid "Record Label"
+msgstr ""
+
+#: js/release-editor.js:489
+msgid "e.g. Independent / Label Name"
+msgstr ""
+
+#: js/release-editor.js:497
+msgid "e.g. DistroKid, CD Baby, TuneCore"
+msgstr ""
+
+#: js/release-editor.js:505
+msgid "Release Tags"
+msgstr ""
+
+#: js/release-editor.js:522
+msgid "Streaming Platforms & Audio Preview"
+msgstr ""
+
+#: js/release-editor.js:523
+msgid "Add direct listening URLs for each streaming service where this release is available. The optional Local Audio Preview (.mp3/.m4a) powers the Unified Release Player directly and overrides automatic provider previews (Apple Music, Deezer, Bandcamp, SoundCloud, Spotify) when set."
+msgstr ""
+
+#: js/release-editor.js:524
+msgid "Designer tip: Customize streaming link icons and Release Player styling under Releases → Settings → Block Defaults, and manage audio provider priority under Releases → Settings → Audio Providers."
+msgstr ""
+
+#: js/release-editor.js:528
+msgid "Streaming Platforms"
+msgstr ""
+
+#: js/release-editor.js:530
+msgid "No streaming links added yet. Click \"+ Add Streaming Link\" to link Spotify, Apple Music, YouTube, or other providers."
+msgstr ""
+
+#: js/release-editor.js:538
+msgid "Provider"
+msgstr ""
+
+#: js/release-editor.js:551
+msgid "Streaming URL"
+msgstr ""
+
+#: js/release-editor.js:569
+msgid "Open streaming URL in a new tab"
+msgstr ""
+
+#: js/release-editor.js:576
+msgid "Streaming link removed."
+msgstr ""
+
+#: js/release-editor.js:586
+msgid "Streaming link row added."
+msgstr ""
+
+#: js/release-editor.js:588
+msgid "+ Add Streaming Link"
+msgstr ""
+
+#: js/release-editor.js:594
+msgid "Local Audio Preview (.mp3 / .m4a)"
+msgstr ""
+
+#: js/release-editor.js:598
+msgid "Audio Preview URL (.mp3)"
+msgstr ""
+
+#: js/release-editor.js:607
+msgid "Select Audio"
+msgstr ""
+
+#: js/release-editor.js:613
+msgid "Audio preview cleared."
+msgstr ""
+
+#: js/release-editor.js:628
+msgid "Multi-Format Purchase Links"
+msgstr ""
+
+#: js/release-editor.js:629
+msgid "Configure one Buy Now URL per physical or digital Media Format (Digital Download, CD, Vinyl LP, etc.) and mark one as Primary for direct links and routing. When 2 or more formats are configured, visitors can choose a format in an accessible modal unless overridden below."
+msgstr ""
+
+#: js/release-editor.js:630
+msgid "Designer tip: Manage Media Formats and icons under Releases → Media Formats. Site-wide Buy Now styling and default behavior live under Releases → Settings → Block Defaults."
+msgstr ""
+
+#: js/release-editor.js:634
+msgid "Purchase Formats"
+msgstr ""
+
+#: js/release-editor.js:647
+msgid "Primary"
+msgstr ""
+
+#: js/release-editor.js:663
+msgid "Store / Edition"
+msgstr ""
+
+#: js/release-editor.js:665
+msgid "Store / Edition (optional)"
+msgstr ""
+
+#: js/release-editor.js:676
+msgid "Buy Now URL"
+msgstr ""
+
+#: js/release-editor.js:694
+msgid "Open Buy Now URL in a new tab"
+msgstr ""
+
+#: js/release-editor.js:705
+msgid "Purchase format row removed."
+msgstr ""
+
+#: js/release-editor.js:718
+msgid "Purchase format row added."
+msgstr ""
+
+#: js/release-editor.js:720
+msgid "+ Add Media Format"
+msgstr ""
+
+#: js/release-editor.js:733
+msgid "Buy Now Button Behavior"
+msgstr ""
+
+#: js/release-editor.js:734
+msgid "Controls what happens when a visitor clicks Buy Now in the Release Links block or shortcode for this release."
+msgstr ""
+
+#: js/release-editor.js:737
+msgid "Use site / block default"
+msgstr ""
+
+#: js/release-editor.js:738
+msgid "Use Primary URL Only (direct link)"
+msgstr ""
+
+#: js/release-editor.js:739
+msgid "Show Modal Popup (choose format)"
+msgstr ""
+
+#: js/release-editor.js:749
+msgid "Advanced: Page Routing Override"
+msgstr ""
+
+#: js/release-editor.js:754
+msgid "Per-Release Page Routing"
+msgstr ""
+
+#: js/release-editor.js:755
+msgid "By default, this release inherits its Primary Artist’s routing policy (displaying the Release Fallback Template or redirecting with a 302 Found redirect). Choose a mode below only if this release needs an individual override."
+msgstr ""
+
+#: js/release-editor.js:756
+msgid "Designer tip: Bulk-manage routing for all releases on the Artist Edit screen, or style the fallback page under Releases → Settings → Default Templates."
+msgstr ""
+
+#: js/release-editor.js:760
+msgid "Destination Mode"
+msgstr ""
+
+#: js/release-editor.js:768
+msgid "Custom Redirect URL"
+msgstr ""
+
+#: js/release-editor.js:779
+msgid "Resolved destination:"
+msgstr ""
+
+#: js/release-editor.js:783
+#, js-format
+msgid "Manage all routing for %s →"
+msgstr ""
+
+#: js/release-editor.js:795
+msgid "Live Release Preview closed."
+msgstr ""
+
+#: js/settings-defaults.js:111
+msgid "Styles the outer box surrounding the entire Artist Discography block, including its heading, table, and pagination links."
+msgstr ""
+
+#: js/settings-defaults.js:112
+msgid "Individual table layers (Table Frame & Base Text, Column Headers, Table Rows, and Cells) below can override these base colors and typography."
+msgstr ""
+
+#: js/settings-defaults.js:114
+msgid "Surface & Link Colors"
+msgstr ""
+
+#: js/settings-defaults.js:117
+msgid "Default Link Color"
+msgstr ""
+
+#: js/settings-defaults.js:123
+msgid "Base Typography"
+msgstr ""
+
+#: js/settings-defaults.js:153
+msgid "Reset Block Container styles"
+msgstr ""
+
+#: js/settings-defaults.js:173
+msgid "Toggle visibility and reorder metadata fields directly from each row below. Click Customize on any field to change its icon or hover tooltip."
+msgstr ""
+
+#: js/settings-defaults.js:174
+msgid "Only fields that have a saved value on a given Release will render on the frontend."
+msgstr ""
+
+#: js/settings-defaults.js:197
+msgid "Choose a Font Awesome or Dashicons icon, or leave empty for no icon."
+msgstr ""
+
+#: js/settings-defaults.js:209
+msgid "Changes the hover text and accessible description for this field, not the displayed metadata value."
+msgstr ""
+
+#: js/settings-defaults.js:219
+msgid "Restore built-in field defaults"
+msgstr ""
+
+#: js/settings-defaults.js:260
+msgid "Manage site-wide streaming providers (Spotify, Apple Music, Bandcamp, etc.) and the Buy Now button. Toggle visibility and reorder buttons directly on each row, or click Customize to edit icons, brand colors, and tooltips."
+msgstr ""
+
+#: js/settings-defaults.js:261
+msgid "Provider icons and colors apply across the release editor, shortcodes, Elementor, and blocks. A Shared Button Background in Button Styling overrides individual provider colors."
+msgstr ""
+
+#: js/settings-defaults.js:285
+msgid "This saved block override has no configured provider. Existing release URLs and this override are retained."
+msgstr ""
+
+#: js/settings-defaults.js:288
+msgid "Provider Icon"
+msgstr ""
+
+#: js/settings-defaults.js:288
+msgid "Block Icon"
+msgstr ""
+
+#: js/settings-defaults.js:290
+msgid "Used across the release editor, shortcodes, Elementor, and blocks unless overridden."
+msgstr ""
+
+#: js/settings-defaults.js:291
+msgid "Changes the icon for this link in blocks."
+msgstr ""
+
+#: js/settings-defaults.js:308
+#, js-format
+msgid "The saved block icon override is \"%s\"; it takes precedence over the provider icon in blocks. Other outputs continue to use the provider icon."
+msgstr ""
+
+#: js/settings-defaults.js:309
+msgid "Use provider icon in blocks"
+msgstr ""
+
+#: js/settings-defaults.js:311
+msgid "Use block icon for all outputs"
+msgstr ""
+
+#: js/settings-defaults.js:314
+#, js-format
+msgid "Brand Background Color for %s"
+msgstr ""
+
+#: js/settings-defaults.js:316
+#, js-format
+msgid "Background color for %s"
+msgstr ""
+
+#: js/settings-defaults.js:320
+msgid "Clearing a built-in provider color restores its default brand color. Provider names are fixed to protect existing release links."
+msgstr ""
+
+#: js/settings-defaults.js:322
+msgid "Buy Now uses its default accent background unless a Shared Button Background is set under Button Styling."
+msgstr ""
+
+#: js/settings-defaults.js:325
+msgid "Changes the hover text and screen-reader label in blocks, not the destination URL."
+msgstr ""
+
+#: js/settings-defaults.js:337
+#, js-format
+msgid "Remove %s from configured providers? Saved release URLs and block overrides remain, but the provider defaults will no longer apply."
+msgstr ""
+
+#: js/settings-defaults.js:341
+msgid "Remove provider"
+msgstr ""
+
+#: js/settings-defaults.js:347
+msgid "Add New Streaming Provider"
+msgstr ""
+
+#: js/settings-defaults.js:348
+msgid "At least one provider must remain configured. Hide its toggle above if it should not appear by default."
+msgstr ""
+
+#: js/settings-defaults.js:357
+msgid "Enter a unique provider name without markup or encoded characters (maximum 200 characters)."
+msgstr ""
+
+#: js/settings-defaults.js:358
+msgid "Provider names are fixed after adding to protect saved release links."
+msgstr ""
+
+#: js/settings-defaults.js:368
+msgid "Add Provider"
+msgstr ""
+
+#: js/settings-defaults.js:372
+msgid "Restore block link defaults"
+msgstr ""
+
+#: js/settings-defaults.js:416
+msgid "About Release Player Modules"
+msgstr ""
+
+#: js/settings-defaults.js:417
+msgid "Configure default visibility for Release Player modules and the default audio source priority across all Release Player blocks and shortcodes."
+msgstr ""
+
+#: js/settings-defaults.js:418
+msgid "Individual Release Player blocks can override any setting below in the block inspector."
+msgstr ""
+
+#: js/settings-defaults.js:420
+msgid "Audio Source & Layout"
+msgstr ""
+
+#: js/settings-defaults.js:422
+msgid "Default Audio Provider"
+msgstr ""
+
+#: js/settings-defaults.js:423
+msgid "Auto uses the priority order configured under the Audio Providers tab (or falls back to the built-in HTML5 preview)."
+msgstr ""
+
+#: js/settings-defaults.js:432
+msgid "Uses a condensed single-row player layout by default."
+msgstr ""
+
+#: js/settings-defaults.js:438
+msgid "Visible Modules"
+msgstr ""
+
+#: js/settings-defaults.js:479
+msgid "About Preview & Sampler Playback"
+msgstr ""
+
+#: js/settings-defaults.js:480
+msgid "Controls default preview clip duration and automatic crossfade between tracks when Sampler Mode is enabled."
+msgstr ""
+
+#: js/settings-defaults.js:482
+msgid "Sampler Controls"
+msgstr ""
+
+#: js/settings-defaults.js:519
+msgid "Sets site-wide CSS custom property defaults for the Release Player card, typography, accents, border, and elevation."
+msgstr ""
+
+#: js/settings-defaults.js:520
+msgid "Leave any color unset to automatically adapt to your active theme color scheme."
+msgstr ""
+
+#: js/settings-defaults.js:606
+msgid "Reset all Release Player defaults"
+msgstr ""
+
+#: js/settings-defaults.js:655
+msgid "All metadata fields are currently hidden. Enable one or more fields under Fields & Ordering to preview."
+msgstr ""
+
+#: js/settings-defaults.js:682
+msgid "Opens in new tab"
+msgstr ""
+
+#: js/settings-defaults.js:683
+msgid "Opens in same tab"
+msgstr ""
+
+#: js/settings-defaults.js:685
+msgid "Buy Now: Primary Direct Link"
+msgstr ""
+
+#: js/settings-defaults.js:686
+msgid "Buy Now: Choose Format Modal"
+msgstr ""
+
+#: js/settings-defaults.js:689
+msgid "All link buttons are currently hidden. Enable one or more providers to preview."
+msgstr ""
+
+#: js/settings-defaults.js:751
+msgid "Built-in HTML5 Preview"
+msgstr ""
+
+#. translators: %s: Audio provider name.
+#: js/settings-defaults.js:811
+#, js-format
+msgid "Preview via %s"
+msgstr ""
+
+#: js/settings-defaults.js:812
+#, js-format
+msgid "Sampler (%dms fade)"
+msgstr ""
+
+#: js/settings-defaults.js:863
+#: js/template-defaults.js:277
+msgid "Year"
+msgstr ""
+
+#: js/settings-defaults.js:865
+msgid "Format"
+msgstr ""
+
+#: js/settings-defaults.js:899
+#: js/settings-defaults.js:1142
+msgid "Release Player"
+msgstr ""
+
+#: js/settings-defaults.js:915
+#: js/template-defaults.js:1075
+#, js-format
+msgid "Active Theme (%s)"
+msgstr ""
+
+#: js/settings-defaults.js:915
+#: js/settings-defaults.js:1068
+#: js/template-defaults.js:297
+#: js/template-defaults.js:1075
+msgid "Dark"
+msgstr ""
+
+#: js/settings-defaults.js:915
+#: js/settings-defaults.js:1068
+#: js/template-defaults.js:297
+#: js/template-defaults.js:1075
+msgid "Light"
+msgstr ""
+
+#: js/settings-defaults.js:916
+#: js/template-defaults.js:1076
+msgid "Dark canvas"
+msgstr ""
+
+#: js/settings-defaults.js:916
+#: js/template-defaults.js:1076
+msgid "Light canvas"
+msgstr ""
+
+#. translators: %s: Block name.
+#: js/settings-defaults.js:923
+#, js-format
+msgid "%s Live Preview"
+msgstr ""
+
+#: js/settings-defaults.js:927
+#, js-format
+msgid "Live Preview — %s"
+msgstr ""
+
+#: js/settings-defaults.js:937
+#: js/template-defaults.js:1146
+msgid "Updates in real time as you adjust controls. Click Save Settings to apply site-wide."
+msgstr ""
+
+#: js/settings-defaults.js:988
+#: js/template-defaults.js:1070
+msgid "Canvas: Active Theme"
+msgstr ""
+
+#: js/settings-defaults.js:989
+#: js/template-defaults.js:1071
+msgid "Canvas: Dark"
+msgstr ""
+
+#: js/settings-defaults.js:989
+#: js/template-defaults.js:1071
+msgid "Canvas: Light"
+msgstr ""
+
+#: js/settings-defaults.js:1011
+#: js/template-defaults.js:1104
+msgid "Hide Live Preview"
+msgstr ""
+
+#: js/settings-defaults.js:1011
+#: js/template-defaults.js:1104
+msgid "Show Live Preview"
+msgstr ""
+
+#: js/settings-defaults.js:1018
+msgid "Behavior & Display"
+msgstr ""
+
+#: js/settings-defaults.js:1020
+msgid "About Behavior & Display"
+msgstr ""
+
+#: js/settings-defaults.js:1021
+msgid "Controls link target behavior when visitors click a streaming or Buy Now button."
+msgstr ""
+
+#: js/settings-defaults.js:1022
+msgid "Applies site-wide to all Release Links blocks unless overridden on an individual block."
+msgstr ""
+
+#: js/settings-defaults.js:1024
+msgid "Interaction Defaults"
+msgstr ""
+
+#: js/settings-defaults.js:1027
+msgid "Adds target=\"_blank\" and rel=\"noopener noreferrer\" to streaming and Buy Now links."
+msgstr ""
+
+#: js/settings-defaults.js:1034
+msgid "When a release has multiple Media Formats and no WooCommerce White-Label override is active, choose whether clicking Buy Now opens a format picker modal or links directly to the Primary format."
+msgstr ""
+
+#: js/settings-defaults.js:1039
+msgid "Choose Format Modal (Recommended)"
+msgstr ""
+
+#: js/settings-defaults.js:1050
+msgid "Reset Release Meta styles"
+msgstr ""
+
+#: js/settings-defaults.js:1053
+msgid "Reset Release Links styles"
+msgstr ""
+
+#: js/settings-defaults.js:1072
+#: js/template-defaults.js:301
+msgid "Theme Background"
+msgstr ""
+
+#: js/settings-defaults.js:1073
+#: js/template-defaults.js:302
+msgid "Theme Text"
+msgstr ""
+
+#: js/settings-defaults.js:1074
+#: js/template-defaults.js:303
+msgid "Theme Accent"
+msgstr ""
+
+#. translators: 1: Active theme name. 2: Detected color scheme (Light or Dark).
+#: js/settings-defaults.js:1079
+#: js/template-defaults.js:308
+#, js-format
+msgid "Detected Theme Scheme: %1$s (%2$s)"
+msgstr ""
+
+#: js/settings-defaults.js:1082
+msgid "Unset colors automatically adapt to your active theme or style variation. Or override with a starter preset across all four blocks:"
+msgstr ""
+
+#: js/settings-defaults.js:1106
+msgid "Live preview shown."
+msgstr ""
+
+#: js/settings-defaults.js:1106
+msgid "Live preview hidden."
+msgstr ""
+
+#: js/settings-defaults.js:1113
+#: js/template-defaults.js:1053
+#, js-format
+msgid "Preview canvas switched to %s."
+msgstr ""
+
+#. translators: %s: Preset name.
+#: js/settings-defaults.js:1136
+#, js-format
+msgid "Applied \"%s\" preset to Block Defaults. Click Save Settings to persist."
+msgstr ""
+
+#: js/template-defaults.js:177
+msgid "Sticky"
+msgstr ""
+
+#: js/template-defaults.js:191
+msgid "Recorded live in Seattle, this release blends analog warmth with cinematic percussion and layered vocal harmonies."
+msgstr ""
+
+#: js/template-defaults.js:260
+#: js/template-defaults.js:270
+msgid "Multi-instrumentalist and producer crafting atmospheric folk and electronic records since 2018."
+msgstr ""
+
+#: js/template-defaults.js:311
+msgid "Unset colors automatically adapt to your active theme or Twenty Twenty-Five variation. Or apply a starter preset to both templates:"
+msgstr ""
+
+#: js/template-defaults.js:356
+msgid "Default"
+msgstr ""
+
+#: js/template-defaults.js:383
+msgid "Release Fallback Template settings reset to defaults."
+msgstr ""
+
+#: js/template-defaults.js:384
+msgid "Artist Fallback Template settings reset to defaults."
+msgstr ""
+
+#: js/template-defaults.js:394
+msgid "Live template preview opened."
+msgstr ""
+
+#: js/template-defaults.js:395
+msgid "Live template preview closed."
+msgstr ""
+
+#: js/template-defaults.js:426
+#: js/template-defaults.js:717
+msgid "Layout & Page Container"
+msgstr ""
+
+#: js/template-defaults.js:431
+msgid "About Release Page Layout"
+msgstr ""
+
+#: js/template-defaults.js:432
+msgid "Controls the overall column structure, container width, padding, and spacing for automatic Release pages when no page builder is active."
+msgstr ""
+
+#: js/template-defaults.js:433
+msgid "Release Meta and Release Links internal styling are configured separately under their respective Block tabs."
+msgstr ""
+
+#: js/template-defaults.js:435
+#: js/template-defaults.js:726
+msgid "Structure"
+msgstr ""
+
+#: js/template-defaults.js:437
+msgid "Page Layout"
+msgstr ""
+
+#: js/template-defaults.js:438
+msgid "Split places cover art beside details on desktop; Stacked places cover art above."
+msgstr ""
+
+#: js/template-defaults.js:441
+msgid "Split"
+msgstr ""
+
+#: js/template-defaults.js:442
+msgid "Stacked"
+msgstr ""
+
+#: js/template-defaults.js:447
+msgid "Split Column Ratio"
+msgstr ""
+
+#: js/template-defaults.js:448
+msgid "Adjusts the relative width of the cover art column versus the details column."
+msgstr ""
+
+#: js/template-defaults.js:451
+msgid "40 / 60 (Default)"
+msgstr ""
+
+#: js/template-defaults.js:452
+msgid "50 / 50 (Balanced)"
+msgstr ""
+
+#: js/template-defaults.js:453
+msgid "35 / 65 (Content-focused)"
+msgstr ""
+
+#: js/template-defaults.js:458
+msgid "Cover Art Side"
+msgstr ""
+
+#: js/template-defaults.js:459
+msgid "Choose which side displays the cover artwork on desktop screens."
+msgstr ""
+
+#: js/template-defaults.js:462
+#: js/template-defaults.js:698
+#: js/template-defaults.js:742
+#: js/template-defaults.js:929
+msgid "Left"
+msgstr ""
+
+#: js/template-defaults.js:463
+#: js/template-defaults.js:700
+#: js/template-defaults.js:744
+msgid "Right"
+msgstr ""
+
+#: js/template-defaults.js:469
+msgid "Sticky cover art while scrolling"
+msgstr ""
+
+#: js/template-defaults.js:470
+msgid "Keeps the artwork visible on desktop as visitors read long tracklists or liner notes."
+msgstr ""
+
+#: js/template-defaults.js:477
+msgid "Mobile Stacking Order"
+msgstr ""
+
+#: js/template-defaults.js:478
+msgid "Determines whether artwork or release details appear first on small screens."
+msgstr ""
+
+#: js/template-defaults.js:481
+msgid "Cover Art First"
+msgstr ""
+
+#: js/template-defaults.js:482
+msgid "Content First"
+msgstr ""
+
+#: js/template-defaults.js:487
+#: js/template-defaults.js:759
+msgid "Width & Spacing"
+msgstr ""
+
+#: js/template-defaults.js:490
+#: js/template-defaults.js:762
+msgid "Maximum Content Width (px)"
+msgstr ""
+
+#: js/template-defaults.js:491
+msgid "Caps the total width of the release template container."
+msgstr ""
+
+#: js/template-defaults.js:500
+msgid "Column Gap (px)"
+msgstr ""
+
+#: js/template-defaults.js:501
+msgid "Horizontal space between cover art and release details in Split layout."
+msgstr ""
+
+#: js/template-defaults.js:510
+#: js/template-defaults.js:772
+msgid "Section Spacing (px)"
+msgstr ""
+
+#: js/template-defaults.js:511
+msgid "Vertical space between Release Meta, Description, and Release Links."
+msgstr ""
+
+#: js/template-defaults.js:520
+#: js/template-defaults.js:782
+msgid "Page Vertical Padding (px)"
+msgstr ""
+
+#: js/template-defaults.js:521
+msgid "Top and bottom inner breathing room around the template container."
+msgstr ""
+
+#: js/template-defaults.js:530
+#: js/template-defaults.js:792
+msgid "Page Horizontal Padding (px)"
+msgstr ""
+
+#: js/template-defaults.js:531
+msgid "Left and right inner padding—helpful on full-width themes."
+msgstr ""
+
+#: js/template-defaults.js:539
+#: js/template-defaults.js:801
+msgid "Container Surface (Optional)"
+msgstr ""
+
+#: js/template-defaults.js:542
+#: js/template-defaults.js:804
+msgid "Leave unset to inherit the page background."
+msgstr ""
+
+#: js/template-defaults.js:549
+msgid "Adds a subtle 1px frame around the release container when set."
+msgstr ""
+
+#: js/template-defaults.js:556
+#: js/template-defaults.js:818
+msgid "Container Corner Radius (px)"
+msgstr ""
+
+#: js/template-defaults.js:557
+msgid "Rounds the corners of the outer container when a background or border is set."
+msgstr ""
+
+#: js/template-defaults.js:567
+msgid "Cover Art / Featured Image"
+msgstr ""
+
+#: js/template-defaults.js:571
+msgid "Artwork Display"
+msgstr ""
+
+#: js/template-defaults.js:574
+msgid "Show Cover Art in Template"
+msgstr ""
+
+#: js/template-defaults.js:575
+msgid "Disable if your active theme already renders a featured image hero."
+msgstr ""
+
+#: js/template-defaults.js:582
+#: js/template-defaults.js:854
+msgid "Aspect Ratio"
+msgstr ""
+
+#: js/template-defaults.js:583
+msgid "Crops cover artwork consistently across releases or preserves original dimensions."
+msgstr ""
+
+#: js/template-defaults.js:586
+#: js/template-defaults.js:861
+msgid "Original / Auto"
+msgstr ""
+
+#: js/template-defaults.js:587
+msgid "Square (1:1)"
+msgstr ""
+
+#: js/template-defaults.js:588
+msgid "Portrait (4:5)"
+msgstr ""
+
+#: js/template-defaults.js:589
+msgid "Landscape (16:9)"
+msgstr ""
+
+#: js/template-defaults.js:596
+msgid "Rounds the corners of the release artwork."
+msgstr ""
+
+#: js/template-defaults.js:604
+msgid "Drop Shadow"
+msgstr ""
+
+#: js/template-defaults.js:605
+msgid "Controls depth elevation behind the release artwork."
+msgstr ""
+
+#: js/template-defaults.js:611
+msgid "Artwork Border Color"
+msgstr ""
+
+#: js/template-defaults.js:612
+msgid "Optional 1px outline—useful for white album covers on light backgrounds."
+msgstr ""
+
+#: js/template-defaults.js:620
+msgid "Component Visibility & Order"
+msgstr ""
+
+#: js/template-defaults.js:625
+msgid "Automatic Block Composition"
+msgstr ""
+
+#: js/template-defaults.js:626
+msgid "Controls the order and visibility of automatic Release Meta and Release Links components inside the details column."
+msgstr ""
+
+#: js/template-defaults.js:627
+msgid "Manually inserted Release Meta or Release Links blocks/shortcodes in post content always take precedence."
+msgstr ""
+
+#: js/template-defaults.js:629
+msgid "Order & Toggles"
+msgstr ""
+
+#: js/template-defaults.js:631
+msgid "Component Order"
+msgstr ""
+
+#: js/template-defaults.js:632
+msgid "Choose where streaming/Buy Now links appear relative to metadata and description."
+msgstr ""
+
+#: js/template-defaults.js:635
+msgid "Release Meta → Description → Release Links (Default)"
+msgstr ""
+
+#: js/template-defaults.js:636
+msgid "Release Meta → Release Links → Description"
+msgstr ""
+
+#: js/template-defaults.js:637
+msgid "Release Links → Release Meta → Description"
+msgstr ""
+
+#: js/template-defaults.js:638
+msgid "Description → Release Meta → Release Links"
+msgstr ""
+
+#: js/template-defaults.js:644
+msgid "Show Automatic Release Meta"
+msgstr ""
+
+#: js/template-defaults.js:645
+msgid "Displays release year, label, distributor, and UPC automatically."
+msgstr ""
+
+#: js/template-defaults.js:651
+msgid "Show Automatic Release Links"
+msgstr ""
+
+#: js/template-defaults.js:652
+msgid "Displays streaming icons, Buy Now button, and audio preview automatically."
+msgstr ""
+
+#: js/template-defaults.js:661
+msgid "Description Typography"
+msgstr ""
+
+#: js/template-defaults.js:665
+#: js/template-defaults.js:896
+msgid "Text Appearance"
+msgstr ""
+
+#: js/template-defaults.js:668
+#: js/template-defaults.js:899
+msgid "Select a theme font preset or inherit the active theme body font."
+msgstr ""
+
+#: js/template-defaults.js:675
+msgid "Font Size (px)"
+msgstr ""
+
+#: js/template-defaults.js:676
+msgid "Base text size for release descriptions and liner notes."
+msgstr ""
+
+#: js/template-defaults.js:685
+#: js/template-defaults.js:916
+msgid "Line Height (%)"
+msgstr ""
+
+#: js/template-defaults.js:686
+msgid "Vertical line spacing for readability (160% = 1.6)."
+msgstr ""
+
+#: js/template-defaults.js:695
+msgid "Horizontal alignment for the release description text."
+msgstr ""
+
+#: js/template-defaults.js:706
+#: js/template-defaults.js:936
+msgid "Leave unset to inherit your theme text color."
+msgstr ""
+
+#: js/template-defaults.js:722
+msgid "About Artist Page Layout"
+msgstr ""
+
+#: js/template-defaults.js:723
+msgid "Controls the structure, section order, container width, and spacing for automatic Artist profile pages."
+msgstr ""
+
+#: js/template-defaults.js:724
+msgid "Table colors and typography for the discography are configured under the Artist Discography Block tab."
+msgstr ""
+
+#: js/template-defaults.js:728
+msgid "Header Layout"
+msgstr ""
+
+#: js/template-defaults.js:729
+msgid "Stacked centers the portrait above the bio; Split places portrait and bio side-by-side."
+msgstr ""
+
+#: js/template-defaults.js:732
+msgid "Centered Stacked"
+msgstr ""
+
+#: js/template-defaults.js:733
+msgid "Split (Portrait + Bio)"
+msgstr ""
+
+#: js/template-defaults.js:738
+msgid "Portrait Alignment"
+msgstr ""
+
+#: js/template-defaults.js:739
+msgid "Horizontal alignment of the artist portrait in Stacked layout."
+msgstr ""
+
+#: js/template-defaults.js:749
+msgid "Section Order"
+msgstr ""
+
+#: js/template-defaults.js:750
+msgid "Choose whether the Discography or Contact card appears first below the biography."
+msgstr ""
+
+#: js/template-defaults.js:753
+msgid "Discography First"
+msgstr ""
+
+#: js/template-defaults.js:754
+msgid "Contact First"
+msgstr ""
+
+#: js/template-defaults.js:763
+msgid "Caps the total width of the artist profile layout."
+msgstr ""
+
+#: js/template-defaults.js:773
+msgid "Vertical gap between portrait, biography, discography, and contact card."
+msgstr ""
+
+#: js/template-defaults.js:783
+msgid "Top and bottom inner padding for the artist container."
+msgstr ""
+
+#: js/template-defaults.js:793
+msgid "Left and right inner padding for the artist container."
+msgstr ""
+
+#: js/template-defaults.js:811
+msgid "Adds a subtle 1px frame around the artist container when set."
+msgstr ""
+
+#: js/template-defaults.js:819
+msgid "Rounds the outer container corners when a background or border is set."
+msgstr ""
+
+#: js/template-defaults.js:829
+msgid "Artist Portrait"
+msgstr ""
+
+#: js/template-defaults.js:833
+msgid "Portrait Display"
+msgstr ""
+
+#: js/template-defaults.js:836
+msgid "Show Artist Portrait"
+msgstr ""
+
+#: js/template-defaults.js:837
+msgid "Disable if your theme already displays the Artist featured image."
+msgstr ""
+
+#: js/template-defaults.js:845
+msgid "Portrait Size (px)"
+msgstr ""
+
+#: js/template-defaults.js:846
+msgid "Maximum width of the artist portrait image."
+msgstr ""
+
+#: js/template-defaults.js:855
+msgid "Square (1:1) pairs with 50% radius for circular portraits."
+msgstr ""
+
+#: js/template-defaults.js:858
+msgid "Square / Circle (1:1)"
+msgstr ""
+
+#: js/template-defaults.js:859
+msgid "Portrait (3:4)"
+msgstr ""
+
+#: js/template-defaults.js:860
+msgid "Landscape (4:3)"
+msgstr ""
+
+#: js/template-defaults.js:867
+msgid "Portrait Corner Radius (%)"
+msgstr ""
+
+#: js/template-defaults.js:868
+msgid "Use 50% for a circular portrait or 0% for sharp corners."
+msgstr ""
+
+#: js/template-defaults.js:876
+msgid "Portrait Shadow"
+msgstr ""
+
+#: js/template-defaults.js:877
+msgid "Elevation shadow displayed behind the artist portrait."
+msgstr ""
+
+#: js/template-defaults.js:883
+msgid "Portrait Border Color"
+msgstr ""
+
+#: js/template-defaults.js:884
+msgid "Optional 2px ring/border around the artist portrait."
+msgstr ""
+
+#: js/template-defaults.js:892
+msgid "Biography Typography"
+msgstr ""
+
+#: js/template-defaults.js:906
+msgid "Font Size (px — 0 inherits theme)"
+msgstr ""
+
+#: js/template-defaults.js:907
+msgid "Set to 0 to inherit your theme’s default paragraph size."
+msgstr ""
+
+#: js/template-defaults.js:917
+msgid "Vertical line spacing for the artist biography (160% = 1.6)."
+msgstr ""
+
+#: js/template-defaults.js:925
+msgid "Biography Alignment"
+msgstr ""
+
+#: js/template-defaults.js:926
+msgid "Horizontal alignment for the artist biography copy."
+msgstr ""
+
+#: js/template-defaults.js:935
+msgid "Biography Text Color"
+msgstr ""
+
+#: js/template-defaults.js:944
+msgid "Discography Section"
+msgstr ""
+
+#: js/template-defaults.js:948
+msgid "Automatic Discography"
+msgstr ""
+
+#: js/template-defaults.js:951
+msgid "Show Automatic Discography"
+msgstr ""
+
+#: js/template-defaults.js:952
+msgid "Renders the artist’s releases table automatically unless a Discography block/shortcode is already in the bio."
+msgstr ""
+
+#: js/template-defaults.js:960
+msgid "Section Heading (Optional)"
+msgstr ""
+
+#: js/template-defaults.js:961
+msgid "Displayed as an H2 above the discography table (e.g. \"Discography\"). Leave blank to omit."
+msgstr ""
+
+#: js/template-defaults.js:969
+msgid "Contact Information Card"
+msgstr ""
+
+#: js/template-defaults.js:973
+msgid "Visibility & Heading"
+msgstr ""
+
+#: js/template-defaults.js:976
+msgid "Show Contact Information Card"
+msgstr ""
+
+#: js/template-defaults.js:977
+msgid "Displays the artist’s Contact / Booking details when populated on their profile."
+msgstr ""
+
+#: js/template-defaults.js:985
+msgid "Contact Heading"
+msgstr ""
+
+#: js/template-defaults.js:986
+msgid "Heading displayed inside the contact card (e.g. \"Booking & Press\"). Leave blank to hide heading."
+msgstr ""
+
+#: js/template-defaults.js:992
+msgid "Card Styling"
+msgstr ""
+
+#: js/template-defaults.js:996
+msgid "Space inside the contact card."
+msgstr ""
+
+#: js/template-defaults.js:1006
+msgid "Rounds the corners of the contact card."
+msgstr ""
+
+#: js/template-defaults.js:1014
+msgid "Card Background"
+msgstr ""
+
+#: js/template-defaults.js:1015
+msgid "Leave unset to automatically adapt to your active theme surface color (light or dark)."
+msgstr ""
+
+#: js/template-defaults.js:1022
+msgid "Card Text Color"
+msgstr ""
+
+#: js/template-defaults.js:1023
+msgid "Ensure accessible contrast against the card background."
+msgstr ""
+
+#: js/template-defaults.js:1031
+msgid "Set above 0 and choose a border color to outline the contact card."
+msgstr ""
+
+#: js/template-defaults.js:1040
+msgid "Color of the contact card border when border width is greater than 0."
+msgstr ""
+
+#. translators: %s: Preset name.
+#: js/template-defaults.js:1066
+#, js-format
+msgid "Applied \"%s\" preset to Default Templates. Click Save Settings to persist."
+msgstr ""
+
+#: js/template-defaults.js:1083
+msgid "Template to Customize"
+msgstr ""
+
+#: js/template-defaults.js:1086
+msgid "Release Fallback Template"
+msgstr ""
+
+#: js/template-defaults.js:1087
+msgid "Artist Fallback Template"
+msgstr ""
+
+#: js/template-defaults.js:1111
+msgid "Reset Release Template"
+msgstr ""
+
+#: js/template-defaults.js:1112
+msgid "Reset Artist Template"
+msgstr ""
+
+#: js/template-defaults.js:1131
+msgid "Release Fallback Template Live Preview"
+msgstr ""
+
+#: js/template-defaults.js:1132
+msgid "Artist Fallback Template Live Preview"
+msgstr ""
+
+#: js/template-defaults.js:1137
+msgid "Live Preview — Release Fallback"
+msgstr ""
+
+#: js/template-defaults.js:1138
+msgid "Live Preview — Artist Fallback"
 msgstr ""
 
 #: blocks/artist-discography/block.json
@@ -1445,10 +4655,50 @@ msgstr ""
 
 #: blocks/release-links/block.json
 msgctxt "block title"
-msgid "Release Links Block"
+msgid "Release Links"
 msgstr ""
 
 #: blocks/release-meta/block.json
 msgctxt "block title"
-msgid "Release Meta Block"
+msgid "Release Meta"
+msgstr ""
+
+#: blocks/release-player/block.json
+msgctxt "block title"
+msgid "Release Player"
+msgstr ""
+
+#: blocks/release-player/block.json
+msgctxt "block description"
+msgid "Mobile-first unified audio preview player with optional artwork, metadata, scrubber, tracklist, and sequential crossfade."
+msgstr ""
+
+#: blocks/release-player/block.json
+msgctxt "block keyword"
+msgid "audio"
+msgstr ""
+
+#: blocks/release-player/block.json
+msgctxt "block keyword"
+msgid "music"
+msgstr ""
+
+#: blocks/release-player/block.json
+msgctxt "block keyword"
+msgid "player"
+msgstr ""
+
+#: blocks/release-player/block.json
+msgctxt "block keyword"
+msgid "preview"
+msgstr ""
+
+#: blocks/release-player/block.json
+msgctxt "block keyword"
+msgid "release"
+msgstr ""
+
+#: blocks/release-player/block.json
+msgctxt "block keyword"
+msgid "sampler"
 msgstr ""

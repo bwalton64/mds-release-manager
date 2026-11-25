@@ -1,576 +1,156 @@
-# MDS Release Manager - Technical Blueprint
+# MDS Release Manager — Technical Blueprint
 
-## 1. Plugin Overview & Tech Stack
-
-**Plugin:** MDS Release Manager  
-**Version:** 1.0.0  
-**Purpose:** Comprehensive artist release manager for streaming platforms, integrating releases, artists, audio players, and third-party services (WooCommerce, Bandcamp, Elementor).  
-**Network:** Multisite-enabled.
-
-**Requirements:**
-- PHP 8.0+.
-- WordPress 7.0+.
-- Composer PSR-4 autoloading (`vendor/autoload.php`) mapping `MDS\ReleaseManager\` → `src/`.
-
-- **Build Tools:**
-  - Composer (`composer.json`, `phpcs.xml.dist`) for PSR-4 autoloading (`MDS\ReleaseManager\` → `src/`) and WPCS/PHPCompatibilityWP linting.
-  - Versioned public **`MDS\ReleaseManager\Api\ExtensionApi`** facade (`MDS_RM_API_VERSION = '2.0.0'`, `do_action( 'mds_rm_loaded' )`) for companion plugins (`mds-bandcamp-integration`, `mds-woocommerce-integration`) with zero legacy `MDS_RM_*` global class aliases.
-- Assets: `package.json` configured for `@wordpress/scripts` and Playwright E2E tests; admin/block scripts use `wp_add_inline_script()` and `wp_set_script_translations()`.
-- Multilingual: `wpml-config.xml` and `init`-hooked `load_plugin_textdomain()`.
+**Plugin Slug:** `mds-release-manager`  
+**Version:** `1.0.0` · **Extension API Version:** `2.0.0` (`MDS_RM_API_VERSION`)  
+**PHP Root Namespace:** `MDS\ReleaseManager` (Composer PSR-4 → `src/`)  
+**Compatibility:** WordPress `7.0+` (Tested up to `7.x`) · PHP `8.0+` · Multisite (`Network: true`)
 
 ---
 
-## 2. Directory Structure & Architecture
+## 1. High-Level Architecture
 
+```mermaid
+flowchart TD
+    Boot["mds-release-manager.php (Bootstrap + Composer Autoloader)"] --> Plugin["MDS\\ReleaseManager\\Plugin"]
+    Plugin --> Core["Core (PostTypes, ReleaseModel, ReleaseSearch, Providers, Cache, Sync, AudioApi)"]
+    Plugin --> Admin["Admin (AdminInterface, NetworkAdmin, Editor, CsvHandler)"]
+    Plugin --> Api["Api (ExtensionApi, RestApi, Abilities, VirtualMedia)"]
+    Plugin --> Blocks["Blocks (GutenbergBlocks, BlockDefaults, ReleaseMeta, ReleaseLinks, ReleasePlayer)"]
+    Plugin --> Frontend["Frontend (Assets, ThemeScheme, TemplateDefaults, FrontendTemplates, ArtistRouting, Discography, Shortcodes)"]
+    Plugin --> Integrations["Integrations (Elementor Widgets & Dynamic Tags)"]
+
+    Core --> SyncLayer["Sync Layer (MultisiteTransport, SyncQueue, VirtualMedia)"]
+    Api --> Companion["Companion Plugins (mds-woocommerce, mds-bandcamp-integration, mds-audio-providers)"]
 ```
+
+- **Modern Hybrid Architecture:** All 40 active PHP classes live in `src/` under PSR-4 namespace `MDS\ReleaseManager\*`. Legacy `includes/legacy-class-aliases.php` provides lazy `class_alias()` shims for backward compatibility with older companion plugins.
+- **Public Extension Contract:** Companion plugins interact exclusively through `MDS\ReleaseManager\Api\ExtensionApi` (`MDS_RM_API_VERSION = '2.0.0'`) and documented `mds_rm_*` hooks.
+- **Hub-and-Spoke Multisite:** One Master Hub site owns catalog authoring (`release` and `artist` CPTs); Spoke sites are read-only and receive diff-based broadcasts through `Sync`, `MultisiteTransport`, `SyncQueue`, and zero-duplication `VirtualMedia`.
+- **Theme-Adaptive Presentation:** `ThemeScheme` inspects WordPress Global Styles (`wp_get_global_styles()` / `wp_get_global_settings()`) and WCAG luminance math to derive `--mds-theme-*` CSS custom properties for light and dark themes automatically.
+
+---
+
+## 2. Directory Structure
+
+```text
 mds-release-manager/
-├── mds-release-manager.php           # Main plugin file (entry point)
-├── uninstall.php                     # Uninstall handler
-├── README.md                         # End-user and contributor documentation
-├── changelog.md                      # Version history (Keep a Changelog format)
-├── composer.json / phpcs.xml.dist    # PSR-4 autoload + WPCS rules (tests/ excluded)
-├── src/                              # PSR-4 classes: MDS\ReleaseManager\* (Composer autoload)
-│   ├── Plugin.php                    # Bootstrap: register_hooks(), init(), load_textdomain()
-│   ├── Config.php                    # Tier 2 option/meta/taxonomy/REST constants
-│   ├── Admin/                        # AdminInterface, CsvHandler, Editor, NetworkAdmin
-│   ├── Core/                         # AudioPlayers, BuilderDetection, Cache, Logger, PostTypes,
-│   │                                 # Providers, ReleaseModel, ReleaseSearch, Sync, TemplateLoader
-│   ├── Frontend/                     # ArtistRouting, Assets, Customizer, Discography,
-│   │                                 # FrontendTemplates, Shortcodes, TemplateDefaults
-│   ├── Blocks/                       # BlockDefaults, GutenbergBlocks, ReleaseLinks, ReleaseLinksBlock, ReleaseMeta
-│   ├── Api/                          # Abilities, RestApi, VirtualMedia
-│   └── Integrations/Elementor/       # Tags, Widget, LinksWidget, ReleaseMetaTag
-├── includes/
-│   ├── legacy-class-aliases.php      # Lazy spl_autoload class_alias() bridge for 34 MDS_RM_* names
-│   └── admin/views/                  # Bundled admin views (IIFE-scoped), never resolved through the theme
-├── templates/                        # Theme-overridable frontend fallbacks
-│   ├── artist-fallback.php
-│   └── release-fallback.php
-├── blocks/                           # Gutenberg metadata and editor assets
-│   ├── artist-discography/           # block.json and edit.js
-│   ├── release-links/                # block.json and edit.js
-│   ├── release-meta/                 # block.json and edit.js
-│   ├── core-block-extensions.js       # Metadata bindings for core blocks
-│   └── style-control.js              # Shared Release block inspector controls
-├── js/                               # Admin scripts
-│   ├── meta-boxes.js                 # Meta box interactivity and shortcode copy
-│   ├── release-taxonomies.js         # Native tag editor integration
-│   └── settings.js                   # Settings page tabs
-├── css/                              # Frontend and admin styles
-│   ├── admin-defaults.css
-│   ├── admin-styles.css
-│   ├── artist-fallback.css
-│   ├── frontend.css
-│   ├── release-fallback.css
-│   ├── release-links.css
-│   └── release-meta.css
-├── .github/                          # Technical documentation and contributor guidance
-│   ├── copilot-instructions.md
-│   └── technical-blueprint.md        # This document
-└── .local/                           # Internal implementation notes and historical reports
-    ├── ABILITIES-API.md              # WordPress Abilities API reference
-    ├── IMPLEMENTATION-SUMMARY.md     # Abilities API implementation summary
-    └── ...                           # Refactoring and security audit reports
-```
-
-**Architecture Pattern:**
-- **Static class-based:** All classes are `final` and use static `register_hooks()` and static methods.
-- **No DI container:** `mds-release-manager.php` loads `vendor/autoload.php` + `includes/legacy-class-aliases.php`, then calls `MDS\ReleaseManager\Plugin::register_hooks()`.
-- **Autoloading:** Composer PSR-4 maps `MDS\ReleaseManager\` → `src/`. A lazy `spl_autoload_register()` bridge in `includes/legacy-class-aliases.php` resolves the 34 legacy `MDS_RM_*` names via `class_alias()` (case-insensitive) for companion plugins and themes. It is required from the main plugin file, never from `composer.json` `"files"`, because its `ABSPATH` guard would silently exit CLI tools such as PHPCS.
-- **Namespaces:** `MDS\ReleaseManager\{Admin,Core,Frontend,Blocks,Api,Integrations\Elementor}`; WordPress core classes are imported with `use WP_Post;` etc.
-- **Separation of concerns:** Each class handles one domain (Post Types, REST API, Admin UI, Customizer, etc.).
-- **Templates & views:** `templates/*.php` and `includes/admin/views/*.php` wrap their logic in a static IIFE that receives `$args`, so template variables never leak into global scope.
-
----
-
-## 3. WordPress Hooks & Lifecycle
-
-### Post Types & Taxonomies
-- **CPT: `release`**
-  - Singular: "Release"
-  - Archive: Enabled (`has_archive: true`)
-  - REST: Enabled (`show_in_rest: true`)
-  - Supports: title, editor, thumbnail, excerpt
-  - Slug: `release`
-  - Menu icon: `dashicons-album`
-
-- **CPT: `artist`**
-  - Singular: "Artist"
-  - Archive: Enabled
-  - REST: Enabled
-  - Supports: title, editor, thumbnail, excerpt
-  - Slug: `artist`
-  - Menu icon: `dashicons-groups`
-  - Menu placement: Under Releases
-
-Both CPTs use the classic edit screen: `MDS_RM_Editor` opts them out of the
-block editor so the reorganized meta boxes, extension meta boxes, and SEO
-plugin meta boxes host natively on `post.php`. On spoke sites the CPTs register
-with `create_posts => do_not_allow`, and `MDS_RM_Editor` denies the
-`edit_post`/`delete_post`/`publish_post` meta capabilities, making the catalog
-read-only outside the hub.
-
-### Core Actions & Filters
-- **`init`** → `MDS_RM_Post_Types::register_cpts()` — Registers release and artist CPTs.
-- **`wp_enqueue_scripts`** → `MDS_RM_Assets::enqueue_frontend_assets()` — Loads frontend CSS and Font Awesome.
-- **`template_redirect`** → `MDS_RM_Artist_Routing::redirect()` — Unified 2-tier HTTP 302 routing for singular `artist` and `release` pages (skipped in admin, previews, feeds, and REST requests, with automatic `allowed_redirect_hosts` whitelisting and self-redirect loop guards). Replaces the retired site-wide `mds_rm_global_redirect` handler.
-- **`admin_enqueue_scripts`** → `MDS_RM_Assets::admin_assets()` — Loads admin JS/CSS.
-- **`customize_register`** → `MDS_RM_Customizer::customize_register()` — Adds Customizer settings.
-- **`enqueue_block_assets`** → `MDS_RM_Release_Meta::enqueue_assets()` — Loads metadata CSS and icon assets in the frontend and editor.
-- **`rest_api_init`** → `MDS_RM_REST_API::register_rest_routes()` — Registers REST endpoints.
-- **`add_meta_boxes`** → `MDS_RM_Admin_Interface::add_meta_boxes()` — Adds the Release Identity, Release Details, Streaming & Audio, and Commerce boxes for releases and the Artist Profile box for artists.
-- **`use_block_editor_for_post_type`** → `MDS_RM_Editor::disable_block_editor()` — Keeps Releases and Artists on the classic edit screen.
-- **`map_meta_cap`** → `MDS_RM_Editor::deny_editing_on_spokes()` — Denies catalog editing capabilities on spoke sites.
-- **`admin_notices`** → `MDS_RM_Editor::render_spoke_notice()` — Explains the read-only catalog on spoke list screens with a link to the hub.
-- **`save_post_release`** → `MDS_RM_Admin_Interface::save_release_meta_data()` — Saves release meta.
-- **`save_post_artist`** → `MDS_RM_Admin_Interface::save_artist_meta_data()` — Saves artist meta.
-- **`admin_menu`** → `MDS_RM_Admin_Interface::register_settings_page()` — Registers Releases Settings page.
-- **`network_admin_menu`** → `MDS_RM_Network_Admin::register_menu()` — Registers the network settings page.
-- **`network_admin_edit_save_network_settings`** → `MDS_RM_Network_Admin::save_settings()` — Registered network settings save callback.
-- **`enqueue_block_editor_assets`** → `MDS_RM_Gutenberg_Blocks::enqueue_block_editor_assets()` — Loads block editor JS.
-- **`init`** → `MDS_RM_Gutenberg_Blocks::register_gutenberg_widget_blocks()` — Registers `mds-rm/release-meta`, `mds-rm/release-links`, and `mds-rm/artist-discography`.
-- **`render_block`** → `MDS_RM_Gutenberg_Blocks::render_core_block_with_meta()` — Injects release meta into core blocks.
-- **`the_content`** → `MDS_RM_Frontend_Templates::filter_release_content()` — Renders the named Release fallback partial only for singular Release main-loop content, unless Site-Wide Routing or a supported content builder is active. The default Meta component precedes the filtered post content; existing Meta/Links blocks and shortcodes (including synced patterns) suppress their matching defaults.
-- **`the_content`** → `MDS_RM_Frontend_Templates::filter_artist_content()` — Uses the active theme and adds the Artist featured image, content, Discography and contact, in that order. Existing Discography blocks or shortcodes, including synced patterns, suppress the default. Main-loop, query and builder guards apply.
-- **`post_thumbnail_html`** → `MDS_RM_Frontend_Templates::filter_release_featured_image()` — Suppresses the theme's duplicate main thumbnail only when the eligible Release or Artist fallback renders an image.
-- **`render_block`** → `MDS_RM_Frontend_Templates::filter_release_author_group()` — Hides theme author blocks on singular Release and Artist pages, including the complete Twenty Twenty-Five byline pattern; other sibling blocks, post content, and builder layouts are excluded.
-- **`wp_enqueue_scripts`** → `MDS_RM_Frontend_Templates::enqueue_release_fallback_assets()` — Loads fallback CSS before the header for eligible Release pages.
-- **Builder detection** → `MDS_RM_Builder_Detection::detect_builder()` — Detects Elementor, Divi 4/5, Bricks, WPBakery, and Beaver Builder. The `mds_rm_detected_content_builder` filter permits additional detection.
-- WooCommerce product hooks belong to the separate `mds-woocommerce-integration` plugin, not this plugin.
-
-### Custom Hooks (Extensibility)
-- **`do_action( 'mds_rm_register_custom_meta_boxes', $post )`** — Fire inside `add_meta_boxes`. Third-party plugins can register custom meta boxes here.
-- **`do_action( 'mds_rm_save_custom_meta', $post_id, $_POST )`** — Fire after core meta is saved. Third-party plugins can save their custom meta here.
-- **`apply_filters( 'mds_rm_settings_audio_fields', $html )`** — Filter audio preview section HTML on the Settings page.
-- **`apply_filters( 'mds_rm_network_settings_fields', $html )`** — Filter network admin settings page HTML.
-- **`apply_filters( 'mds_rm_site_settings_tabs', $tabs )`** and **`apply_filters( 'mds_rm_network_settings_tabs', $tabs )`** — Register keyed extension tabs with `label` and callable `render`. The owning extension renders and saves its own form; site and network capabilities remain separate. Existing section filters remain supported.
-- **`apply_filters( 'mds_rm_sync_target_sites', $site_ids, $post_id, $post_type )`** — Supplies sites to the generic hub/spoke synchronizer. The WooCommerce extension supplies the existing `mds_rm_woo_sites` list.
-- **`do_action( 'mds_rm_after_shadow_meta_sync', $shadow_id, $site_id, $source_id, $source_meta )`** — Lets extensions map their own metadata after a shadow record is copied.
-- **`apply_filters( 'mds_rm_release_meta_context_upc', $upc, $context_post_id )`** — Resolves non-release contexts. The WooCommerce extension resolves product SKUs here.
-- **`apply_filters( 'mds_rm_discography_columns', $columns, $artist )`** — Filters the ordered associative array of column key to plain-text heading for an Artist `WP_Post`.
-- **`apply_filters( 'mds_rm_discography_cell', $html, $column_key, $release, $artist )`** — Filters each cell for the Release and Artist `WP_Post` objects. Return a string; output is sanitized with `wp_kses_post`.
-- **`do_action( 'mds_rm_after_buy_now_field', $post )`** — Lets an integration add controls beside the existing Buy Now URL field.
-- **`apply_filters( 'mds_rm_register_audio_players', $players )`** — Registers audio preview players into the **Audio Player Manager** tab (`MDS_RM_Audio_Players`). Only one player is active site-wide at a time (`mds_rm_audio_players`); each player defines a `label`, optional `description` and `icon`, `render_callback( int $post_id, array $settings, array $attributes ): string`, and optional declarative `fields` schema (`select`, `color`, `toggle`, `range`, `number`, `text`) validated and stored in `mds_rm_audio_player_settings`. When a third-party player is active but returns empty markup for a release, core automatically falls back to the built-in HTML5 player (`audio_preview_url`).
-- **`do_action( 'mds_rm_save_audio_player_settings', $active_player, $audio_player_settings, $params )`** — Fires after Audio Player Manager settings are validated and saved.
-- **`apply_filters( 'mds_rm_release_links_audio_html', $html, $post_id, $attributes )`** — Legacy audio player markup filter retained for backward compatibility when no registered third-party player overrides it; sanitized with the plugin's iframe- and audio-aware kses allowlist.
-- **`apply_filters( 'mds_rm_release_picker_item', $item, $post )`** and **`apply_filters( 'mds_rm_artist_picker_item', $item, $artist )`** — Enrich Release (`id`, `title`, `artist`, `upc`) and Artist (`id`, `title`, `uuid`) records in `MDS_RM_Release_Search` with extension metadata (such as `bandcamp_album_id` or `artist_url`/`subdomain`) for the preloaded Gutenberg editor catalog (`window.mdsRmCatalog`).
-- **`do_action( 'mds_rm_purge_cache', $context, $args )`** and **`apply_filters( 'mds_rm_cache_adapters', $adapters )`** — Centralized cache purge API (`MDS_RM_Cache`) supporting 9 WordPress cache plugins (LiteSpeed, WP Rocket, W3TC, WP Fastest Cache, SiteGround Optimizer, WP Super Cache, Autoptimize, FlyingPress, Breeze) with per-plugin purge modes (`mds_rm_cache_settings`), shutdown coalescing, Multisite spoke purging, and manual `POST /wp-json/mds/v1/purge-cache`. Companion plugins (`mds-bandcamp-integration`, `mds-woocommerce-integration`) fire `do_action( 'mds_rm_purge_cache', 'plugin_context' )`.
-- **`apply_filters( 'mds_rm_release_routing_modes', $modes, $context )`** — Allows extensions (such as `mds-woocommerce-integration`) to register additional per-release routing modes (e.g., `shop_product`).
-- **`apply_filters( 'mds_rm_resolve_release_redirect_url', $url, $mode, $release_id, $artist_id )`** — Resolves extension-registered routing modes into a target redirect URL.
-- **`apply_filters( 'mds_rm_routing_destination_preview', $preview, $mode, $release_id, $artist_id )`** — Supplies a human-readable destination label and URL preview for extension routing modes in the Artist Release Routing table and Release Commerce meta box.
-- **`window.mdsRmIconPicker` (`js/icon-picker.js`)** — Shared native `@wordpress/components` visual Font Awesome 6 Free + Dashicons `IconPickerControl` (searchable modal with Music, Brands, Commerce, Metadata, and Dashicons categories + custom class fallback) used across Release Types, Media Formats, Block Defaults Settings, and Gutenberg Block Inspectors, and reusable by companion plugins.
-- **`MDS_RM_Release_Search`** (PHP service, not a hook) — Public editor search surface over published Releases and Artists: `query()` / `query_artists()`, `paginate()`, `describe()` / `describe_artists()`, and `editor_catalog()` feed the preloaded `window.mdsRmCatalog` / `window.mdsRmToolkit` editor toolkit and picker endpoints.
-- **`MDS_RM_Release_Meta::resolve_release( $attributes, $block, $context_post_id )` and `MDS_RM_Release_Meta::register_extension_meta( $meta_key, $args )`** — Public PHP developer toolkit for resolving a Release `WP_Post` across blocks/shortcodes/contexts and registering extension post meta keys on the `release` CPT.
-
-### Shortcodes
-- **`[release-meta release_id="123" upc="012345678901"]`** — Renders metadata for a Release. A readable Release ID takes precedence over UPC/EAN; an unresolved ID falls through to UPC, then current Release or supported extension context. UPC/EAN is a string and leading zeroes are significant.
-- **`[release-links release_id="123" upc="012345678901"]`** — Renders streaming links, Buy Now, and the configured audio preview using the same Release ID/UPC/context precedence.
-- **`[artist-discography artist_id="123"]`** — Renders an Artist's Discography. Omit `artist_id` to use the current Artist. Flat shortcode attributes expose table and outer-wrapper styles; see the shortcode reference in `README.md`.
-- `[release_links]` and the old links block/widget are not registered, and their legacy renderer and template have been removed. Stored streaming, purchase, audio and legacy styling data remain, but existing embeds must be replaced with the current shortcode or block.
-
-### Artist Discography
-- **`mds-rm/artist-discography`** uses the current Artist or an optional Artist post ID. Only published Releases associated through `artist_id` and the Artist's `_mds_artist_uuid` are listed, ordered by Release post date and ID descending, 25 per page. Release year is derived from the post date; UPC/EAN is displayed as text.
-- Pagination uses `mds_discography_page_{artist_id}`. The table scrolls horizontally when necessary. The automatic table and inserted blocks inherit the site-wide block defaults; shortcodes use their own attributes.
-- The editor queries the site's existing `/wp/v2/artist` endpoint for published Artists and resolves a saved selection independently of search results. The stored integer `artistId` remains unchanged; zero or absent resolves block context. The editor sends the context ID to the block renderer for preview only.
-- Core block supports own wrapper styles. An optional `tableStyles` attribute stores per-region overrides (including references to theme presets). Both block and shortcode renderers validate table settings and emit scoped CSS variables; shortcode `table_*`, `header_*`, `body_*`, `cell_*`, and `link_*` attributes map underscores to the corresponding `tableStyles` keys. `striped="1"` enables alternate rows. `wrapper_*` attributes mirror the core wrapper's color, typography, spacing, and border controls. Table styles are not responsive; outer styles are inline on the shortcode wrapper.
-
-### Gutenberg Block
-- Release Meta, Release Links, and Artist Discography register from `blocks/{name}/block.json` with their existing PHP renderers. The editor filters for metadata bindings on core blocks live separately in `blocks/core-block-extensions.js`.
-- **`mds-rm/release-meta`** — Dynamic API v3 block with `postId` context, `upcOverride`, ordered `items`, and per-device `styles`. The Elementor widget `mds_release_meta` uses the same renderer. The block icon is `dashicons-album`.
-- Release Meta and Release Links share published Release lookups and block context resolution. New selections store `releaseId`; legacy `upcOverride` remains readable. Artist context selects the latest published Release by Artist UUID, date, and ID. Context fallback does not rewrite a missing explicit selection.
-- Release Meta's native controls write `metaStyles` for layout, typography, and icons. New values replace corresponding legacy desktop values for the block only; legacy tablet/mobile rules still apply until reset. Core viewport previews do not edit those stored overrides.
-- Available fields: `release_year`, `record_label`, `distributor`, `upc_ean`, `release_format`, `release_date`, `release_title`, `artist`, `release_tags`. Only the first four are enabled by default; empty values are omitted. Full date uses the site's date format; artist resolves the stored artist UUID.
-- Each field can be reordered, hidden, and assigned a tooltip and Dashicons or Font Awesome classes. Shortcode `fields` is a comma-separated ordered selection; `icon_FIELD` and `title_FIELD` override each field's icon and tooltip, for example:
-
-  `[release-meta upc="012345678901" fields="release_title,release_format,upc_ean" icon_release_title="dashicons dashicons-album" title_upc_ean="Barcode" color="#ffffff" gap="15px" gap_mobile="8px"]`
-
-- Styles are per instance, not read from legacy widget options. Shortcode style attributes also include `font_style`, `text_align`, and `letter_spacing`; all component-style values can use `_tablet` and `_mobile` suffixes. Mobile is at most 767px and tablet at most 1024px, with inheritance from the next larger device. Elementor retains its existing device controls.
-- Colors accept hex, `rgb()`/`rgba()`, `transparent`, `inherit`, or `var(--wp--preset--color--{slug})`; font-family and font-size accept their corresponding WordPress preset variables. Lengths accept zero or `px`, `em`, `rem`, `%`, `vw`, and `vh`; width also accepts `auto`; spacing accepts up to four lengths. Main-axis alignment accepts `flex-start`, `center`, `flex-end`, or `space-between`; cross-axis alignment accepts `flex-start`, `center`, `flex-end`, or `stretch`. Direction accepts `row`, `row-reverse`, `column`, or `column-reverse`; wrapping accepts `wrap`, `nowrap`, or `wrap-reverse`. Border style accepts `none`, `solid`, `dashed`, `dotted`, or `double`; font style is `normal` or `italic`, text alignment is `start`, `center`, or `end`, and opacity is 0–1. Invalid style/icon values are omitted and logged.
-- The WooCommerce integration must be active on the hub to provide existing sync targets and on each store for product-context lookup and automatic product-page metadata. It honors the previously saved `mds_rm_woo_injection` placement/disabled value; an empty or nonnumeric SKU does not resolve a release. Product metadata and Release Links are not combined.
-
-### Release Links Block
-- **`mds-rm/release-links`** and the Elementor widget `mds_release_links` render independently of Release Meta, use the album Dashicon, and are placed manually, including in fallback release templates and product pages. Explicit UPC, current Release/Query Loop and extension-provided product SKU contexts use `MDS_RM_Release_Meta::resolve_post`.
-- The block stores a local `releaseId` for new choices and still reads legacy `upcOverride` strings. A missing explicit source falls back without rewriting the attributes. Artist context resolves the latest published Release by Artist UUID, post date, then post ID. The editor uses authenticated lookups for published title/UPC choices and contextual source status. The shortcode accepts `release_id` as well as `upc` and current context.
-- Native editor controls store optional `linkStyles`. These values replace matching legacy desktop styles at render time without modifying stored data. Saved tablet and mobile styles keep their existing precedence until explicitly removed. Plugin controls target the same inner layout and button elements as before, rather than applying a second layer of spacing or borders to the block wrapper.
-- Provider URLs come from each release; configured provider names, icons and colors remain defaults in Releases → Settings. Available saved links and Buy Now appear as icons, and missing URLs are omitted. Per-instance overrides control visibility, order, icon classes and tooltip; providers not in the override list remain visible. Add a provider override by its exact saved name, or use `__buy_now` for Buy Now. Dashicons and Font Awesome classes are supported. Link titles also supply accessible names.
-- Links open in a new tab by default; `new_tab="0"` uses the same tab. `show_audio="0"` hides audio. Extension markup from the `mds_rm_release_links_audio_html` filter takes priority over the built-in HTML5 player, which renders when enabled in settings. Legacy `native` and current `html5` player identifiers are supported.
-- Shortcode `order` and `hide` are comma-separated provider names; `icon_PROVIDER` and `title_PROVIDER` override individual values, with lowercase provider names and spaces replaced by underscores (for example `icon_apple_music`). Use `icon_buy_now` and `title_buy_now` for Buy Now:
-
-  `[release-links upc="012345678901" order="Apple Music,Spotify,__buy_now" hide="Spotify" icon_apple_music="dashicons dashicons-album" title_apple_music="Listen on Apple Music" show_audio="0" new_tab="0" button_size="48px" button_size_mobile="36px"]`
-
-- Styles are per instance; stored legacy widget options are not applied. The shortcode style attributes are `background`, `gap`, `align`, `vertical_align`, `direction`, `wrap`, `width`, `padding`, `margin`, `border_width`, `border_style`, `border_color`, `radius`, `link_gap`, `button_size`, `button_radius`, `button_color`, `button_background`, `button_border_width`, `button_border_style`, `button_border_color`, `icon_size`, `hover_opacity`, and `audio_width`. Add `_tablet` or `_mobile` for responsive overrides; breakpoints, inheritance, and valid values match the Release Meta styles. A button background override supersedes the configured provider colors.
-
----
-
-## 4. Data Storage & APIs
-
-### Release Model
-- A release represents one UPC/EAN and one release format. Different releases may share a title, but each must have its own UPC/EAN.
-- Use the dedicated `release_format` taxonomy as the authoritative format, with exactly one of Single, EP, Album, or Digital per release. Do not use the built-in post category taxonomy.
-- The four root terms are created automatically and cannot be renamed or deleted through the WordPress editor or REST API; unsupported or nested new format terms are rejected.
-- Group the required Release Format and UPC/EAN fields together. Require both for saved drafts and published releases; WordPress's initial empty auto-draft is exempt.
-- Store UPC/EAN as a string, preserving leading zeroes, and reject duplicate UPCs. Allow corrections to existing UPCs without creating duplicate spoke releases.
-- Maintain `_mds_normalized_upc` as a dedicated exact-match lookup key; existing releases are backfilled in administrator-request batches of 100. During migration, validation retains a bounded legacy fallback for unnormalized values.
-- The classic editor, CSV import, and REST release writes validate these fields. Releases and Artists use the classic edit screen on the hub; quick and bulk editing cannot assign formats, and spoke sites cannot edit catalog posts at all.
-- Use a per-site MySQL advisory lock while checking and saving a UPC through these paths. Direct programmatic WordPress writes must perform equivalent validation and locking.
-- Format displays and CSV exports read the taxonomy. The release-list audit caches findings and invalidates them when relevant release metadata or terms change.
-- CSV export validates and writes 100-release pages to temporary storage before streaming the download, keeping release and Artist lookups bounded while preserving the CSV schema.
-- Spoke synchronization uses a stable hub-site/post key and can adopt legacy shadows by current or previous UPC in one combined lookup. Synchronization errors are reported rather than silently overwriting conflicting records.
-
-### Post Meta Keys (Release Posts)
-- `upc_ean` (string) — Universal Product Code or EAN for the release.
-- `_mds_normalized_upc` (string) — Digit-only exact-match lookup key maintained from `upc_ean`.
-- `artist_id` (string) — Artist post ID or UUID.
-- `streaming_links` (JSON string) — Encoded array of streaming platform URLs: `{"Spotify": "url", "Apple Music": "url", ...}`.
-- `buy_now_link` (string) — Primary URL for purchase/buy now button (mirrored from `buy_now_links`).
-- `buy_now_links` (JSON string) — Multi-format Buy Now repeater entries (`format`, `url`, `is_primary`).
-- `buy_now_mode` (string) — Per-release Buy Now button behavior (`modal` or `primary_only`).
-- `release_routing_mode` (string) — Per-release routing override (`inherit`, `fallback`, `artist_website`, `buy_now`, `custom_url`, or extension mode such as `shop_product`).
-- `release_routing_url` (string) — Custom HTTP(S) redirect destination when `release_routing_mode` is `custom_url`.
-- `bandcamp_shortcode` (legacy string) — No longer read or written by core; owned and migrated by the Bandcamp extension.
-- `audio_preview_url` (string) — URL to preview audio file.
-- `release_format` (legacy string) — Obsolete; the taxonomy is authoritative. Conflicts require review, and successful saves remove this legacy value.
-- `_mds_previous_upcs` (JSON string) — Former UPCs used to identify legacy spoke releases after a correction.
-- `_mds_hub_release_key` (string, spoke posts) — Stable hub site ID and release post ID used for synchronization.
-- `record_label` (string) — Record label name.
-- `distributor` (string) — Distributor name.
-- `release_tags` (string) — Comma-separated tags.
-- `featured_image_url` (string) — Featured image URL (for virtual media sync).
-
-### Post Meta Keys (Artist Posts)
-- `_mds_artist_uuid` (string) — Unique artist identifier.
-- `artist_contact` (string) — Contact information.
-- `artist_homepage_url` (string) — Optional HTTP(S) homepage.
-- `artist_homepage_routing` (string) — Per-Artist redirect toggle (`0` or `1`).
-- `artist_releases_routing_mode` (string) — Default routing policy inherited by all Releases belonging to this Artist (`fallback`, `artist_website`, `buy_now_or_artist`, `buy_now_or_fallback`).
-- The deprecated `artist_featured_image` URL is no longer used or synchronized. On each site's administrator visits, up to 100 Artist records are cleaned per request until the per-site completion marker is set; sites not visited or with outstanding batches remain pending. The WordPress featured image is used instead.
-
-### Post Meta Keys (Attachments)
-- `_mds_is_hub_media` (string) — Hub site media URL (for virtual media fallback).
-- `_wp_attached_file` (string) — Attached file path.
-
-### wp_options Keys (Site-Level)
-- `mds_rm_fa_support` — Font Awesome source (`auto`, `cdn`, `plugin`, `theme`, `none`; legacy `internal` maps to `cdn`). Defaults to `auto`, which defers to an active Font Awesome plugin or registered FA stylesheet when detected (`MDS_RM_Assets::detect_font_awesome_plugin()`) and otherwise loads Font Awesome Free 6.7.2 from cdnjs with SHA-512 Subresource Integrity (`integrity`, `crossorigin="anonymous"`, `referrerpolicy="no-referrer"`). Filterable via `mds_rm_detected_font_awesome_plugin` and `mds_rm_font_awesome_cdn_url`.
-- Legacy widget options remain stored for review but do not style the Release Meta Block:
-- `mds_rm_widget_bg_color` — Widget background color.
-- `mds_rm_shortcode_gap` — Gap between shortcode elements.
-- `mds_rm_shortcode_align` — Shortcode alignment.
-- `mds_rm_links_icon_bg` — Streaming links icon background.
-- `mds_rm_links_color` — Streaming links text color.
-- `mds_rm_links_bg` — Streaming links background.
-- `mds_rm_links_radius` — Streaming links border radius.
-- `mds_rm_links_gap` — Gap between streaming link icons.
-- `mds_rm_links_padding` — Streaming links padding.
-- `mds_rm_links_align` — Streaming links alignment (flex-start, center, flex-end).
-- `mds_rm_buy_now_icon` — Buy Now button icon (Font Awesome class).
-- `mds_rm_buy_now_color` — Buy Now button text color.
-- `mds_rm_buy_now_bg` — Buy Now button background.
-- `mds_rm_meta_color` — Legacy meta bar text color.
-- `mds_rm_meta_bg` — Meta bar background.
-- `mds_rm_meta_radius` — Meta bar border radius.
-- `mds_rm_meta_gap` — Meta bar gap.
-- `mds_rm_meta_padding` — Meta bar padding.
-- `mds_rm_meta_align` — Meta bar alignment.
-- `mds_rm_woo_meta_bg` — WooCommerce product meta background.
-- `mds_rm_woo_meta_color` — WooCommerce product meta text color.
-- `mds_rm_woo_meta_gap` — WooCommerce product meta gap.
-- `mds_rm_woo_meta_align` — WooCommerce product meta alignment.
-- `mds_rm_audio_players` (array) — Active audio player types: 'html5' (legacy 'native' is accepted).
-- `mds_rm_providers` (array) — Global provider configuration (name, icon, color).
-- **`mds_rm_block_defaults`** (array) — Site-local block presentation defaults keyed by block slug. Native style values, table styles, field/link lists, and link/audio switches are validated before storage. Block rendering, including automatic fallback blocks, resolves these against saved attributes; legacy lists remain complete overrides and explicit field/style overrides take precedence. Shortcodes and Elementor do not consume these defaults.
-- **`mds_rm_template_defaults`** (array) — Site-local, theme-independent settings for the Release and Artist fallback templates (`MDS_RM_Template_Defaults`), managed under **Releases → Settings → Default Templates** (with automatic read-fallback to legacy Customizer `theme_mod` keys until saved). Replaces the retired `MDS Release Manager` Customizer panel.
-- `mds_rm_global_redirect` — Retired legacy option (no longer read or written by core; routing is governed per Artist and per Release via `MDS_RM_Artist_Routing`).
-- `mds_rm_artist_image_cleanup_complete` — Per-site marker for the deprecated Artist image URL cleanup.
-- `mds_rm_normalized_upc_migration_complete` — Per-site marker set after all existing Release UPC lookup keys have been backfilled in bounded batches.
-- `mds_rm_release_audit` (transient) — Cached IDs flagged by the Release list audit; invalidated when audited metadata or format terms change.
-- `mds_rm_network_sync_job` — Per-hub resumable manual-sync cursor, cumulative counts, and capped error details.
-- `mds_rm_db_templates` (array) — Database-backed template overrides: `{"css/frontend.css": "...", ...}`.
-
-### wp_site_options Keys (Multisite Network-Level)
-- `mds_rm_master_blog_id` — Hub site ID for multisite network.
-- `spoke_sites` (array) — Array of spoke site IDs.
-- `mds_rm_woo_sites` (array) — Existing sync targets and automatic-injection eligibility, read by the WooCommerce integration.
-- `mds_rm_wipe_on_uninstall` — Opt in to deleting network settings (including the stored spoke selection), plugin site options across the current network, and Release and Artist posts including Trash ('0' or '1').
-
-### Customizer Settings
-- `mds_rm_primary_color` — Primary accent color (default: #2271b1).
-- `mds_rm_layout_style` — Release Fallback Template layout: 'split' or 'stacked' (retained for compatibility).
-- `mds_rm_release_fallback_*` — Release fallback width, layout gaps, featured image and content typography.
-- `mds_rm_artist_fallback_*` — Artist fallback width, spacing, portrait, biography and contact styling.
-- Legacy widget Customizer values remain stored but are no longer exposed. The WooCommerce extension continues to honor the stored `mds_rm_woo_injection` placement.
-
-### REST API Endpoints
-
-**GET `/wp-json/mds/v1/releases`**
-- **Permission:** Public (`__return_true`).
-- **Query params:** `page` (default `1`) and `per_page` (default/max `100`).
-- **Response:** Paginated array of releases with `id`, `title`, and `upc`; totals are provided in `X-WP-Total` and `X-WP-TotalPages` headers.
-
-**GET `/wp-json/mds/v1/artists`**
-- **Permission:** `edit_posts`.
-- **Query params:** Required `search` term and optional `page`.
-- **Response:** Up to 20 Artist UUID/title choices and a page count for the Release editor picker.
-
-**POST `/wp-json/mds/v1/releases/{id}/preview`**
-- **Permission:** `edit_post` for the target Release ID.
-- **Body params:** Unsaved Release editor fields (`title`, `content`, `thumbnail_id`, `upc_ean`, `release_type`, `artist_id`, `record_label`, `distributor`, `streaming_links`, `buy_now_links`, `buy_now_mode`, `audio_preview_url`, `release_routing_mode`, `release_routing_url`).
-- **Response:** Non-destructive server-rendered Release Fallback HTML, stylesheet URLs, Buy Now modal script URL, and active Page Routing redirect notice for the Release editor Live Preview `<dialog>` modal (`js/release-preview-modal.js`).
-
-**POST `/wp-json/mds/v1/artists/{id}/preview`**
-- **Permission:** `edit_post` for the target Artist ID.
-- **Body params:** Unsaved Artist editor fields (`title`, `content`, `thumbnail_id`, `artist_contact`, `artist_homepage_url`, `artist_homepage_routing`).
-- **Response:** Non-destructive server-rendered Artist Fallback HTML (with live Discography block), stylesheet URLs, and active Homepage Redirect notice for the Artist editor Live Preview modal (`js/artist-editor.js`).
-
-**POST `/wp-json/mds/v1/artists/{id}/release-routing`**
-- **Permission:** `edit_post` for the target Artist ID.
-- **Body params:** `artist_releases_routing_mode` and `releases` array (`id`, `mode`, `url`).
-- **Response:** Updated counts, live resolved destination previews per release, and triggers a single `MDS_RM_Sync::broadcast_batch_to_spokes()` sync and cache purge.
-
-**POST `/wp-json/mds/v1/settings`**
-- **Permission:** `manage_options`.
-- **Body params:** Provider config, audio players, feature toggles, and optional JSON-encoded `mds_rm_block_defaults`.
-- **Response:** Success/error JSON.
-
-**POST `/wp-json/mds/v1/network-settings`**
-- **Permission:** `manage_network_options`.
-- **Body params:** Master hub ID, spoke sites, wipe-on-uninstall flag.
-- **Response:** Success/error JSON.
-
-**POST `/wp-json/mds/v1/sync-network`**
-- **Permission:** `manage_network_options`.
-- **Body params:** Optional `job_id` returned by a previous batch.
-- **Response:** One bounded batch of up to 10 catalog posts with `job_id`, cumulative counts, phase, errors, and `done`. Repeating the request with the returned ID resumes an interrupted job.
-
-The Release and Artist post types are also exposed through the WordPress core REST API (`/wp-json/wp/v2/release`, `/wp-json/wp/v2/artist`) via `show_in_rest`.
-
-### WordPress Abilities API (WordPress 6.9+)
-
-The plugin exposes core features as native MCP tools using the WordPress Abilities API, automatically discoverable by the official WordPress MCP Adapter.
-
-**Ability Category:** `mds_release_manager`
-- **Label:** "MDS Release Manager"
-- **Description:** "Manage artist releases, formats, and distribution settings"
-- **Registered on:** `wp_abilities_api_categories_init` hook
-
-**Registered Abilities:**
-
-1. **`mds_rm_get_releases`**
-   - **Label:** "Get Releases"
-   - **Permission:** `read` capability
-   - **Input:** Optional pagination (`page`, `per_page`)
-   - **Output:** Array of releases with ID, title, UPC, and format
-   - **MCP Public:** ✓ (`meta.mcp.public = true`)
-
-2. **`mds_rm_save_settings`**
-   - **Label:** "Save Plugin Settings"
-   - **Permission:** `manage_options` capability
-   - **Input:** Providers array (name/icon/color), audio players, feature toggles (global_redirect, fa_support)
-   - **Output:** Success/error response with message
-   - **MCP Public:** ✓
-
-3. **`mds_rm_save_network_settings`**
-   - **Label:** "Save Network Settings"
-   - **Permission:** `manage_network_options` capability
-   - **Input:** Master blog ID, wipe-on-uninstall flag
-   - **Output:** Success/error response with message
-   - **MCP Public:** ✓
-
-4. **`mds_rm_sync_network`**
-   - **Label:** "Sync Network Data"
-   - **Permission:** `manage_network_options` capability
-   - **Input:** Optional `job_id` to resume a prior batch
-   - **Output:** Batch progress (`done`, `job_id`, phase, cumulative counts), and any error details
-   - **MCP Public:** ✓
-
-**Implementation:**
-- Class: `MDS_RM_Abilities` in `includes/api/class-mds-rm-abilities.php`
-- Registered via `MDS_RM_Abilities::register_hooks()` in main plugin file
-- Includes graceful fallback: `if ( ! function_exists( 'wp_register_ability' ) ) return;`
-- Complete JSON Schema definitions for input/output with type, description, constraints
-- Strict capability checks via dedicated permission callback functions
-- All input sanitized consistently with REST API standards
-
----
-
-## 5. Coding Standards & Security Conventions
-
-### Naming Conventions
-- **Classes:** PSR-4 `MDS\ReleaseManager\Area\FeatureName` in `src/Area/FeatureName.php`. Legacy `MDS_RM_Feature_Name` names are aliases only (used in this document for brevity).
-- **Functions:** Lowercase with underscores and an `mds_rm_` prefix for global functions. Class methods omit the redundant prefix as they are migrated, e.g. `MDS_RM_Assets::enqueue_frontend_assets()`.
-- **Constants:** `MDS_RM_VERSION`, `MDS_RM_FILE`, `MDS_RM_PATH`, `MDS_RM_URL`, `MDS_RM_BASENAME`; `MDS_RELEASE_MANAGER_VERSION` and `MDS_RM_MAIN_FILE` are retained aliases.
-- **Hooks:** `mds_rm_` prefix. Example: `do_action( 'mds_rm_save_custom_meta' )`.
-- **Options:** `mds_rm_` prefix. Example: `get_option( 'mds_rm_links_color' )`.
-
-### Input Sanitization
-- **Text fields:** `wp_unslash()` → `sanitize_text_field()`.
-- **URLs:** `wp_unslash()` → `esc_url_raw()`.
-- **Numbers:** `absint()` or `intval()`.
-- **JSON:** `json_decode()` with second arg `true` for arrays.
-- **Always unslash `$_POST` before passing to sanitizers.**
-
-**Example:**
-```php
-$value = sanitize_text_field( wp_unslash( $_POST['field_name'] ?? '' ) );
-$url   = esc_url_raw( wp_unslash( $_POST['url_field'] ?? '' ) );
-```
-
-### Output Escaping
-- **HTML attributes:** `esc_attr()`.
-- **HTML text:** `esc_html()`.
-- **Full HTML (trusted markup):** `wp_kses_post()` or `wp_kses()` with allowed tags.
-- **JS inline:** `wp_json_encode()`.
-
-**Example:**
-```php
-echo '<div class="' . esc_attr( $class ) . '">' . esc_html( $title ) . '</div>';
-echo wp_kses_post( $trusted_html );
-```
-
-### Nonce Verification
-- **Admin forms:** `wp_verify_nonce( $_POST['_wpnonce'], 'action_name' )` before processing.
-- **Nonce field generation:** `wp_nonce_field( 'action_name', '_wpnonce' )`.
-- **REST API:** Use permission callback instead of nonce (nonces are for traditional form submissions).
-
-**Example:**
-```php
-if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['_wpnonce'] ), 'mds_rm_save_network_settings' ) ) {
-    wp_die( 'Security check failed' );
-}
-```
-
-### Type Declaration & Strict Comparison
-- **All new files must include `declare(strict_types=1);` immediately after the opening `<?php` tag**, before the file DocBlock. Placing anything (including comments or a UTF-8 byte-order mark) before the declaration triggers a fatal `strict_types declaration must be the very first statement` error.
-- **Save files without a UTF-8 BOM.**
-- **Use strict comparison:** `===`, `!==`, not `==`, `!=`.
-- **Type hints on function parameters and return types** where applicable. Coverage is being applied progressively; the admin interface, network admin, release model, discography, and artist routing classes are fully typed — match that standard in new and refactored code.
-
-**Example:**
-```php
-<?php
-declare(strict_types=1);
-
-/**
- * File DocBlock.
- *
- * @package MDS_Release_Manager
- */
-
-public static function mds_rm_get_id( int $post_id ): string {
-    return (string) $post_id;
-}
-```
-
-### Code Style
-- **WordPress coding style:** Tab indentation (existing code uses WordPress-style tabs — follow nearby code), single blank lines between methods.
-- **DocBlocks:** Use standard PHPDoc blocks with `@since`, `@param`, `@return` tags.
-- **Comments:** Only for non-obvious logic; avoid reiterating what code does.
-- **Final classes:** All classes in this plugin are `final` to prevent accidental inheritance.
-
-**Example:**
-```php
-/**
- * Renders the release widget.
- *
- * @since 0.9.0
- * @param array    $attributes Block attributes.
- * @param WP_Block $block      The parsed block.
- * @return string              The rendered widget.
- */
-public static function mds_rm_render_widget( array $attributes, WP_Block $block ): string {
-    // ...
-}
-```
-
-### Testing & Validation Commands
-- **Standalone PHP tests:** `tests/*.php` (8 harnesses: block-defaults, cache, customizer, release-links-audio, release-search, settings-save, settings-tabs, uninstall); run each with `php tests/<name>.php`.
-- **PHPCS:** `composer phpcs` / `composer phpcbf` (WPCS 3, PHPCompatibilityWP `8.0-`, `minimum_wp_version` 7.0; `tests/` excluded).
-- **E2E:** Playwright `tests/e2e/` against LocalWP (`npm run test:e2e`, requires Node).
-- **Build:** `composer install` / `composer dump-autoload` (no JS build step yet).
-
----
-
-## 6. Rules for Copilot
-
-### DO:
-1. **Always use `MDS_RM_` prefix** for new functions, constants, and hooks.
-2. **Maintain static class structure** — all classes are `final` with static methods; no instance creation.
-3. **Sanitize and escape rigorously** — `wp_unslash()` + `sanitize_*()` for input, `esc_*()` for output, `wp_kses_post()` for trusted HTML.
-4. **Use strict type declarations** — `declare(strict_types=1);` in every new file, with type hints on function parameters and return values.
-5. **Register hooks at plugin load time** via static `register_hooks()` method in each class. Call it once from `mds-release-manager.php`.
-6. **Respect multisite separation** — use `get_site_option()` for network-wide settings, `get_option()` for site-local settings. Use `switch_to_blog()` / `restore_current_blog()` when accessing data on other sites.
-7. **Route diagnostics through the logger.** `MDS_RM_Logger::diagnostic()` writes routine messages to the PHP log only when `WP_DEBUG` and `WP_DEBUG_LOG` are both `true`. `report_failure()` logs operational failures regardless of debug settings. `log()` still publishes to `mds_rm_log_message` under the same debug flags without writing to the PHP log.
-8. **Follow the autoloader pattern** — class files must be named `includes/class-mds-rm-*.php` to auto-load.
-9. **Cache-aware:** Call `MDS_RM_Sync::purge_cache()` when release data changes. It requests a purge only when LiteSpeed is available.
-10. **Provide extension hooks** — when adding new features, include `do_action()` or `apply_filters()` with `mds_rm_` prefix to allow third-party plugins to extend the functionality.
-
-### DON'T:
-1. **Never break static class patterns** — do not create instances or use inheritance.
-2. **Never hardcode prefix-less function names** — all custom functions must use `mds_rm_` prefix.
-3. **Never use deprecated WordPress functions** — check the WordPress Codex before using old APIs.
-4. **Never use global variables** except for `$wpdb`, `$post`, and standard WordPress globals.
-5. **Never commit secrets or credentials** into the codebase.
-6. **Never bypass sanitization/escaping** for "trusted" data; apply it consistently.
-7. **Never directly modify `$_POST`, $_GET, or $_FILES` — always unslash and sanitize into a local variable first.
-8. **Never use `eval()`, `create_function()`, or dynamic code execution.**
-9. **Never assume multisite topology** — always check `is_multisite()` and use appropriate option getters.
-10. **Never generate nonce fields in REST endpoints** — use capability checks in permission callback instead.
-
-### Common Patterns
-
-**Saving Release Meta:**
-```php
-$upc = sanitize_text_field( wp_unslash( $_POST['upc_ean'] ?? '' ) );
-$upc_clean = preg_replace( '/[^0-9]/', '', $upc );
-update_post_meta( $post_id, 'upc_ean', $upc_clean );
-
-do_action( 'mds_rm_save_custom_meta', $post_id, $_POST );
-```
-
-**Rendering Shortcode with Escaping:**
-```php
-$links_array = json_decode( get_post_meta( $post_id, 'streaming_links', true ), true );
-if ( ! is_array( $links_array ) ) {
-    $links_array = array();
-}
-// Process and render...
-echo wp_kses_post( MDS_RM_Template_Loader::kses_shortcode_html( $output ) );
-```
-
-**Registering a Customizer Setting:**
-```php
-$wp_customize->add_setting( 'mds_rm_my_setting', array( 'default' => 'default_value' ) );
-$wp_customize->add_control( 'mds_rm_my_setting', array(
-    'label'   => 'My Setting',
-    'section' => 'mds_rm_my_section',
-    'type'    => 'text',
-) );
-```
-
-**Multisite Option Check:**
-```php
-if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
-    // Current site is not the hub; skip feature or fetch from hub.
-}
+├── mds-release-manager.php          # Plugin bootstrap, constants, Composer autoloader
+├── uninstall.php                    # Safe option cleanup + opt-in full network wipe
+├── composer.json                    # PSR-4 autoloading + WPCS 3 / PHPCompatibilityWP
+├── package.json                     # @wordpress/scripts + Playwright E2E
+├── phpcs.xml.dist                   # WordPress Coding Standards ruleset
+├── playwright.config.js             # Playwright E2E configuration
+├── wpml-config.xml                  # WPML / Polylang translatable meta & options
+├── README.md                        # Developer & repository documentation
+├── readme.txt                       # WordPress.org directory readme
+├── USER-MANUAL.md                   # End-user & site-admin manual
+├── changelog.md                     # Append-only Keep a Changelog history
+├── .agents/
+│   ├── rules/project-config.md      # Plugin tokens & LocalWP paths
+│   └── technical-blueprint.md       # This architectural reference
+├── blocks/                          # Gutenberg blocks (API v3 block.json + editor scripts)
+│   ├── release-meta/                # mds-rm/release-meta
+│   ├── release-links/               # mds-rm/release-links
+│   ├── release-player/              # mds-rm/release-player
+│   ├── artist-discography/          # mds-rm/artist-discography
+│   ├── color-control.js             # Shared theme-palette ColorControl
+│   ├── core-block-extensions.js     # Core block metadata bindings
+│   ├── native-release-styles.js     # Shared Block Inspector & Block Defaults primitives
+│   ├── release-items.js             # Shared repeater/item controls
+│   ├── release-picker.js            # Cached searchable Release Picker hook
+│   └── style-control.js             # Shared responsive style utilities
+├── css/                             # Admin & frontend block/fallback stylesheets
+├── includes/                        # Admin PHP views & legacy class_alias() shims
+├── js/                              # Admin workspaces (Release/Artist Manager, Settings, Previews) & frontend Player/Modal
+├── languages/                       # mds-release-manager.pot
+├── src/                             # PSR-4 namespace MDS\ReleaseManager\
+│   ├── Config.php                   # Tier 2 constants, option keys, locale-aware transient helper
+│   ├── Plugin.php                   # Central hook orchestrator
+│   ├── Admin/                       # AdminInterface, CsvHandler, Editor, NetworkAdmin
+│   ├── Api/                         # Abilities, ExtensionApi, RestApi, VirtualMedia
+│   ├── Blocks/                      # BlockDefaults, GutenbergBlocks, ReleaseLinks, ReleaseLinksBlock, ReleaseMeta, ReleasePlayer
+│   ├── Core/                        # BuilderDetection, Cache, Logger, PostTypes, Providers, ReleaseModel, ReleaseSearch, Sync, TemplateLoader
+│   │   ├── Audio/                   # AudioApi, AudioProviderInterface, LocalPreviewProvider
+│   │   └── Sync/                    # MultisiteTransport, SyncQueue, SyncTransportInterface
+│   ├── Frontend/                    # ArtistRouting, Assets, Customizer, Discography, FrontendTemplates, Shortcodes, TemplateDefaults, ThemeScheme
+│   └── Integrations/Elementor/      # LinksWidget, ReleaseMetaTag, Tags, Widget
+├── templates/                       # Theme-overridable release-fallback.php & artist-fallback.php
+└── tests/                           # 11 standalone PHP tests + Playwright e2e/ suite
 ```
 
 ---
 
-## 7. Architecture Philosophy
+## 3. Data Model (CPTs, Taxonomies & Options)
 
-**Version 0.9.0+ Philosophy:**  
-MDS Release Manager transitioned from a monolithic plugin to an **extensible ecosystem**. Third-party integrations are no longer hardcoded; instead, they hook into documented `do_action()` and `apply_filters()` points with the `mds_rm_` prefix. Feature plugins must verify MDS Release Manager is active before hooking.
+### Custom Post Types & Taxonomies (`src/Core/PostTypes.php`)
+- **CPTs:** `release` (rewrite `release`, supports `title`, `editor`, `thumbnail`, `excerpt`) and `artist` (rewrite `artist`, submenu under `Releases`, supports `title`, `editor`, `thumbnail`, `excerpt`). On Spoke sites, `create_posts` is mapped to `do_not_allow`.
+- **Taxonomies (on `release`):**
+  - `release_type` (hierarchical — canonical Release Types: Single, EP, Album, Digital; term meta `_mds_release_type_icon`)
+  - `release_media_format` (non-hierarchical — editable Media Formats; term meta `_mds_media_format_icon`)
+  - `release_tag` (non-hierarchical — Release Tags)
 
-**Multisite Strategy:**  
-One designated **Hub site** stores authoritative release data; catalog editing is only possible there. **Spoke sites** hold read-only shadow records that the hub overwrites on each broadcast (including title, content, and excerpt), and may reference or display data via virtual media attachments or cross-site REST API calls. The network admin configures the hub and spoke topology via the network settings page.
+### Core Options (`src/Config.php`)
+- **Site Options:** `mds_rm_block_defaults`, `mds_rm_template_defaults`, `mds_rm_cache_settings`, `mds_rm_providers`, `mds_rm_audio_provider_priority`, `mds_rm_audio_disabled_providers`, `mds_rm_fa_support`, `mds_rm_network_sync_job`.
+- **Network Site Options:** `mds_rm_master_blog_id`, `mds_rm_spoke_sites`, `mds_rm_db_templates`, `mds_rm_wipe_on_uninstall`.
+
+### Key Post Meta Keys
+- **Release:** `artist_id` (Artist UUID), `upc_ean`, `_mds_normalized_upc`, `release_date`, `record_label`, `distributor`, `buy_now_link`, `buy_now_links` (multi-format repeater), `buy_now_mode` (`picker` | `direct`), `audio_preview_url`, `streaming_links`, `release_routing_mode`, `release_routing_url`, `_mds_hub_post_id`.
+- **Artist:** `_mds_artist_uuid`, `artist_website`, `artist_contact`, `artist_homepage_redirect`, `artist_releases_routing_mode`, `_mds_hub_post_id`.
+- **Virtual Attachments (Spokes):** `_mds_hub_media_id` (`"{hub_blog_id}:{hub_attachment_id}"`), `_mds_is_hub_media` (Hub URL), `_mds_hub_media_dims`.
 
 ---
 
-## Summary
+## 4. Gutenberg Blocks & Shortcodes
 
-- **Namespace/Prefix:** `MDS_RM_`
-- **Class Pattern:** Static, final classes with `register_hooks()` and static methods.
-- **Autoload:** SPL-based, file-to-class mapping via `includes/class-mds-rm-*.php`.
-- **Security:** Sanitize input (`wp_unslash()` + `sanitize_*()`, `esc_*()` output, nonce checks on traditional forms.
-- **Hooks:** Extensive custom action/filter hooks for third-party extensibility.
-- **Multisite:** Hub-and-spoke architecture with network options management.
-- **No External Dependencies:** Vanilla PHP + WordPress APIs only.
+All 4 blocks are registered via `block.json` (API v3) in the `mds-release-manager` block category:
+
+| Block Name | Block Title | Shortcode | Renderer Class |
+| :--- | :--- | :--- | :--- |
+| `mds-rm/release-meta` | Release Meta | `[release-meta]` | `MDS\ReleaseManager\Blocks\ReleaseMeta` |
+| `mds-rm/release-links` | Release Links | `[release-links]` | `MDS\ReleaseManager\Blocks\ReleaseLinks` |
+| `mds-rm/release-player` | Release Player | `[release-player]` | `MDS\ReleaseManager\Blocks\ReleasePlayer` |
+| `mds-rm/artist-discography` | Artist Discography | `[artist-discography]` | `MDS\ReleaseManager\Frontend\Discography` |
+
+---
+
+## 5. REST API & WordPress Abilities (`mds/v1`)
+
+| Route | Purpose |
+| :--- | :--- |
+| `GET /mds/v1/releases` | Paginated SQL-backed Release search (title, artist name, or exact UPC/EAN) |
+| `GET /mds/v1/artists` | Paginated SQL-backed Artist search |
+| `POST /mds/v1/releases/{id}/preview` | Server-rendered Live Release Preview modal HTML |
+| `POST /mds/v1/artists/{id}/preview` | Server-rendered Live Artist Preview modal HTML |
+| `POST /mds/v1/settings` | Save site settings (General, Cache, Default Templates, Block Defaults, Providers) |
+| `POST /mds/v1/purge-cache` | Manual cache purge across enabled cache adapters |
+| `POST /mds/v1/network-settings` | Save Multisite Hub/Spoke configuration |
+| `POST /mds/v1/sync-network` | Trigger resumable batched Hub-to-Spoke sync |
+| `GET /mds/v1/sync-network/status` | Poll asynchronous `SyncQueue` / batch job progress |
+| `POST /mds/v1/artists/{id}/release-routing` | Bulk/individual Artist Release Routing table updates |
+| `GET /mds/v1/releases/{id}/audio` | Just-in-Time Unified Audio API manifest resolution |
+| `GET /mds/v1/audio-providers` | List registered audio preview providers & priorities |
+
+**WordPress Abilities API (`src/Api/Abilities.php`):** Exposes core catalog and settings operations as WordPress Abilities with JSON Schema definitions and `meta.mcp.public` metadata for MCP discovery.
+
+---
+
+## 6. Public Hooks & Filters
+
+### Actions
+`mds_rm_loaded`, `mds_rm_register_custom_meta_boxes`, `mds_rm_save_release_meta`, `mds_rm_save_artist_meta`, `mds_rm_after_shadow_sync`, `mds_rm_purge_cache`, `mds_rm_after_cache_purge`, `mds_rm_before_discography_render`, `mds_rm_prime_release_picker_items`, `mds_rm_prime_artist_picker_items`, `mds_rm_prime_routing_destinations`, `mds_rm_log_message`.
+
+### Filters
+- **Context & Blocks:** `mds_rm_release_context_post`, `mds_rm_release_meta_context_upc`, `mds_rm_dynamic_block_context_attrs`, `mds_rm_discography_cell`, `mds_rm_detected_content_builder`.
+- **Audio & Providers:** `mds_rm_audio_providers`, `mds_rm_audio_manifest`, `mds_rm_default_media_formats`.
+- **Commerce & Routing:** `mds_rm_buy_now_links`, `mds_rm_buy_now_url`, `mds_rm_buy_now_display_mode`, `mds_rm_release_routing_modes`, `mds_rm_resolve_release_redirect_url`, `mds_rm_routing_destination_preview`.
+- **Sync & Multisite:** `mds_rm_register_sync_transports`, `mds_rm_sync_targets`, `mds_rm_sync_target_sites`, `mds_rm_spoke_protected_meta_keys`, `mds_rm_sync_excluded_meta_keys`.
+- **Admin, Theme & Assets:** `mds_rm_site_settings_tabs`, `mds_rm_network_settings_tabs`, `mds_rm_release_picker_item`, `mds_rm_artist_picker_item`, `mds_rm_theme_scheme`, `mds_rm_cache_adapters`, `mds_rm_detected_font_awesome_plugin`, `mds_rm_font_awesome_cdn_url`.
+
+---
+
+## 7. Build, Linting & Testing Toolchain
+
+- **PHP Linting:** `composer phpcs` / `composer phpcbf` (WPCS 3.1 + PHPCompatibilityWP targeting PHP 8.0+).
+- **JS/CSS Tooling:** `@wordpress/scripts` (`npm run build`, `npm run lint:js`, `npm run lint:css`).
+- **Standalone PHP Tests (`tests/*.php`):** `audio-api.php`, `block-defaults.php`, `block-styles-parity.php`, `cache.php`, `customizer.php`, `release-search.php`, `settings-save.php`, `settings-tabs.php`, `sync.php`, `theme-scheme.php`, `uninstall.php`.
+- **E2E Tests:** Playwright (`npm run test:e2e`, `tests/e2e/`).

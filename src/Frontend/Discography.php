@@ -201,7 +201,7 @@ final class Discography {
 		if ( true === ( $settings['striped'] ?? false ) ) {
 			$fields['stripe-background'] = 'color';
 			if ( ! isset( $settings['stripe-background'] ) || '' === $settings['stripe-background'] ) {
-				$settings['stripe-background'] = 'rgba(0,0,0,0.06)';
+				$settings['stripe-background'] = ThemeScheme::detect()['stripe'] ?? 'rgba(0,0,0,0.06)';
 			}
 		}
 

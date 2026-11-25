@@ -150,11 +150,12 @@
 		const [palette, customColor, spacing, customSpacing] = useSettings('color.palette', 'color.custom', 'spacing.spacingSizes', 'spacing.customSpacingSize');
 		const own = attributes[styleKey] || {};
 		const legacy = attributes.styles || {};
+		const legacyDesktop = legacy.desktop || {};
 		const inheritedDefaults = { ...defaults };
-		Object.keys(legacy.desktop || {}).forEach((key) => {
+		Object.keys(legacyDesktop).forEach((key) => {
 			if (!Object.prototype.hasOwnProperty.call(own, key)) delete inheritedDefaults[key];
 		});
-		const value = { ...inheritedDefaults, ...own };
+		const value = { ...inheritedDefaults, ...legacyDesktop, ...own };
 		Object.keys(own).forEach((key) => {
 			if (own[key] && typeof own[key] === 'object' && inheritedDefaults[key]) {
 				const inherited = typeof inheritedDefaults[key] === 'object' ? inheritedDefaults[key] : Object.fromEntries(sides.map((side) => [side, inheritedDefaults[key]]));
@@ -165,9 +166,22 @@
 		const spacePresets = presets(spacing, 'spacing');
 		function update(key, setting) {
 			const next = { ...own };
-			if (setting === '' || setting === undefined) delete next[key];
-			else next[key] = setting;
-			setAttributes({ [styleKey]: Object.keys(next).length ? next : undefined });
+			const patch = {};
+			if (setting === '' || setting === undefined) {
+				delete next[key];
+			} else {
+				next[key] = setting;
+			}
+			if (legacy.desktop && Object.prototype.hasOwnProperty.call(legacy.desktop, key)) {
+				const nextDesktop = { ...legacy.desktop };
+				delete nextDesktop[key];
+				const nextLegacy = { ...legacy };
+				if (Object.keys(nextDesktop).length) nextLegacy.desktop = nextDesktop;
+				else delete nextLegacy.desktop;
+				patch.styles = Object.keys(nextLegacy).length ? nextLegacy : {};
+			}
+			patch[styleKey] = Object.keys(next).length ? next : undefined;
+			setAttributes(patch);
 		}
 		function siteDefault(key) {
 			if (!Object.prototype.hasOwnProperty.call(inheritedDefaults, key)) return null;

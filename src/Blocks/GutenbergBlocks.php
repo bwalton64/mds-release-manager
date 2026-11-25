@@ -77,6 +77,11 @@ final class GutenbergBlocks {
 			true
 		);
 		wp_enqueue_script( 'mds-rm-blocks-js' );
+		wp_add_inline_script(
+			'mds-rm-blocks-js',
+			'window.mdsRmThemeScheme = ' . wp_json_encode( \MDS\ReleaseManager\Frontend\ThemeScheme::detect() ) . ';',
+			'before'
+		);
 		$admin_css = 'css/admin-styles.css';
 		wp_enqueue_style( 'mds-admin-view-styles', MDS_RM_URL . $admin_css, array(), filemtime( MDS_RM_PATH . $admin_css ) );
 		\MDS\ReleaseManager\Frontend\Assets::enqueue_font_awesome();
@@ -110,8 +115,9 @@ final class GutenbergBlocks {
 			'mds-rm-release-player-editor',
 			'window.mdsReleasePlayer = ' . wp_json_encode(
 				array(
-					'providers' => \MDS\ReleaseManager\Core\Audio\AudioApi::get_provider_descriptors(),
-					'defaults'  => BlockDefaults::get( 'release-player' ),
+					'providers'   => \MDS\ReleaseManager\Core\Audio\AudioApi::get_provider_descriptors(),
+					'defaults'    => BlockDefaults::get( 'release-player' ),
+					'themeScheme' => \MDS\ReleaseManager\Frontend\ThemeScheme::detect(),
 				)
 			) . ';',
 			'before'
@@ -119,7 +125,7 @@ final class GutenbergBlocks {
 
 		wp_add_inline_style(
 			'wp-block-editor',
-			'
+			\MDS\ReleaseManager\Frontend\ThemeScheme::css_variables() . '
         .mds-dynamic-block-active { position: relative; border: 1px dashed #2271b1; padding: 2px; }
         .mds-dynamic-block-active::after { 
             content: "Dynamic: MDS"; position: absolute; top: -10px; right: 0; 
@@ -212,7 +218,7 @@ final class GutenbergBlocks {
 			wp_register_script(
 				'mds-rm-release-player-editor',
 				MDS_RM_URL . $player_script,
-				array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'wp-i18n', 'mds-rm-release-picker', 'mds-rm-color-control' ),
+				array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'wp-i18n', 'mds-rm-release-picker', 'mds-rm-color-control', 'mds-rm-native-release-styles' ),
 				filemtime( MDS_RM_PATH . $player_script ),
 				true
 			);
@@ -221,6 +227,7 @@ final class GutenbergBlocks {
 		$player_style = 'css/release-player.css';
 		if ( file_exists( MDS_RM_PATH . $player_style ) ) {
 			wp_register_style( 'mds-rm-release-player', MDS_RM_URL . $player_style, array(), filemtime( MDS_RM_PATH . $player_style ) );
+			wp_add_inline_style( 'mds-rm-release-player', \MDS\ReleaseManager\Frontend\ThemeScheme::css_variables() );
 		}
 		register_block_type(
 			MDS_RM_PATH . 'blocks/release-player',
@@ -256,6 +263,9 @@ final class GutenbergBlocks {
 		$controls    = "blocks/{$slug}/controls.js";
 		$style       = "css/{$slug}.css";
 		wp_register_style( "mds-rm-{$slug}-editor-style", MDS_RM_URL . $style, array( 'dashicons' ), filemtime( MDS_RM_PATH . $style ) );
+		if ( 'release-meta' === $slug ) {
+			wp_add_inline_style( "mds-rm-{$slug}-editor-style", \MDS\ReleaseManager\Frontend\ThemeScheme::css_variables() );
+		}
 		$icon_picker_script = 'js/icon-picker.js';
 		if ( ! wp_script_is( 'mds-rm-icon-picker', 'registered' ) ) {
 			wp_register_script(
@@ -348,27 +358,30 @@ final class GutenbergBlocks {
 			return $block_content;
 		}
 
-		$meta_field   = $block['attrs']['mdsMetaField'];
+		$meta_field   = is_string( $block['attrs']['mdsMetaField'] ) ? sanitize_key( $block['attrs']['mdsMetaField'] ) : '';
 		$upc_override = $block['attrs']['mdsUpcOverride'] ?? '';
 
-		$post_id = isset( $block['context']['postId'] ) ? $block['context']['postId'] : get_the_ID();
+		if ( '' === $meta_field ) {
+			return $block_content;
+		}
+
+		$post_id = isset( $block['context']['postId'] ) ? absint( $block['context']['postId'] ) : absint( get_the_ID() );
 
 		if ( ! empty( $upc_override ) ) {
-			$args  = array(
-				'post_type'   => 'release',
-				'meta_key'    => 'upc_ean', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- An explicit block binding resolves by the stored UPC, not the current post.
-				'meta_value'  => preg_replace( '/[^0-9]/', '', $upc_override ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				'post_status' => 'any',
-				'numberposts' => 1,
-			);
-			$found = get_posts( $args );
-			if ( empty( $found ) ) {
+			$clean_upc = preg_replace( '/[^0-9]/', '', (string) $upc_override );
+			$resolved  = is_string( $clean_upc ) && '' !== $clean_upc
+				? ReleaseMeta::resolve_post( $clean_upc, 0 )
+				: null;
+			if ( ! $resolved ) {
 				return '';
 			}
 
-			$post_id = $found[0]->ID;
+			$post_id = (int) $resolved->ID;
 		}
 		if ( ! $post_id ) {
+			return '';
+		}
+		if ( 'release' === get_post_type( $post_id ) && ! ReleaseMeta::can_display( get_post( $post_id ) ) ) {
 			return '';
 		}
 
@@ -377,8 +390,8 @@ final class GutenbergBlocks {
 		if ( 0 === strpos( $meta_field, 'stream_' ) ) {
 			$provider = str_replace( 'stream_', '', $meta_field );
 			$json     = get_post_meta( $post_id, 'streaming_links', true );
-			$links    = json_decode( $json, true );
-			$val      = isset( $links[ $provider ] ) ? $links[ $provider ] : '';
+			$links    = json_decode( (string) $json, true );
+			$val      = is_array( $links ) && isset( $links[ $provider ] ) ? $links[ $provider ] : '';
 		} elseif ( 'buy_now_link' === $meta_field ) {
 			$val = \MDS\ReleaseManager\Core\ReleaseModel::get_primary_buy_now_url( (int) $post_id );
 		} elseif ( 'featured_image_url' === $meta_field ) {
@@ -402,6 +415,17 @@ final class GutenbergBlocks {
 			$date = get_post_field( 'post_date', $post_id );
 			$val  = ( ! empty( $date ) && '0000-00-00 00:00:00' !== $date ) ? substr( $date, 0, 4 ) : '';
 		} else {
+			$allowed_public_meta = array(
+				'upc_ean',
+				'record_label',
+				'distributor',
+				'release_date',
+				'audio_preview_url',
+				'artist_id',
+			);
+			if ( ! in_array( $meta_field, $allowed_public_meta, true ) || is_protected_meta( $meta_field, 'post' ) ) {
+				return '';
+			}
 			$val = get_post_meta( $post_id, $meta_field, true );
 			if ( ! $val ) {
 				$val = '';

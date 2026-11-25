@@ -591,17 +591,20 @@ final class ReleaseSearch {
 		if ( ! $uuids ) {
 			return array();
 		}
-		$titles  = array();
-		$artists = get_posts(
+		$titles       = array();
+		$unique_uuids = array_values( array_unique( $uuids ) );
+		$artists      = get_posts(
 			array(
-				'post_type'      => 'artist',
-				'post_status'    => 'publish',
-				'has_password'   => false,
-				'posts_per_page' => -1,
-				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Resolve Artist labels for a bounded Release set together.
+				'post_type'              => 'artist',
+				'post_status'            => 'publish',
+				'has_password'           => false,
+				'posts_per_page'         => count( $unique_uuids ),
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
+				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Resolve Artist labels for a bounded Release set together.
 					array(
 						'key'     => '_mds_artist_uuid',
-						'value'   => array_values( array_unique( $uuids ) ),
+						'value'   => $unique_uuids,
 						'compare' => 'IN',
 					),
 				),

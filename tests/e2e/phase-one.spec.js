@@ -100,15 +100,21 @@ test('editor lookup requests abort when their blocks unmount', async ({ page, fi
 	await trackLookupRequests(page);
 
 	await page.evaluate(() => {
-		wp.data.dispatch('core/block-editor').insertBlocks([
+		window.mdsRmCatalog = { preloaded: false, releases: [] };
+		const blocks = [
 			wp.blocks.createBlock('mds-rm/release-links'),
 			wp.blocks.createBlock('mds-rm/artist-discography'),
-		]);
+		];
+		wp.data.dispatch('core/block-editor').insertBlocks(blocks);
+		wp.data.dispatch('core/block-editor').selectBlock(blocks[0].clientId);
 	});
-	await expect.poll(() => page.evaluate(() => ({
-		release: window.__phaseOneLookupCalls.some((call) => call.path.includes('/mds/v1/release-links-choices')),
-		artist: window.__phaseOneLookupCalls.some((call) => call.path.startsWith('/wp/v2/artist')),
-	}))).toEqual({ release: true, artist: true });
+	await expect.poll(() => page.evaluate(() => window.__phaseOneLookupCalls.some((call) => call.path.includes('/mds/v1/release-links-choices')))).toBe(true);
+	await page.evaluate(() => {
+		const blocks = wp.data.select('core/block-editor').getBlocks();
+		const disco = blocks.find((b) => b.name === 'mds-rm/artist-discography');
+		if (disco) wp.data.dispatch('core/block-editor').selectBlock(disco.clientId);
+	});
+	await expect.poll(() => page.evaluate(() => window.__phaseOneLookupCalls.some((call) => call.path.startsWith('/wp/v2/artist')))).toBe(true);
 
 	await page.evaluate(() => {
 		const dispatch = wp.data.dispatch('core/block-editor');
@@ -120,21 +126,25 @@ test('editor lookup requests abort when their blocks unmount', async ({ page, fi
 });
 
 test('editor lookup requests time out and surface an error', async ({ page, fixture }) => {
-	test.setTimeout(30_000);
+	test.setTimeout(35_000);
 	await allowLocalRequests(page);
 	await login(page, fixture);
 	await openBlockEditor(page, fixture.state.host);
 	await trackLookupRequests(page);
 
 	await page.evaluate(() => {
-		wp.data.dispatch('core/block-editor').insertBlocks(wp.blocks.createBlock('mds-rm/release-links'));
+		window.mdsRmLookupTimeoutMs = 400;
+		window.mdsRmCatalog = { preloaded: false, releases: [] };
+		const block = wp.blocks.createBlock('mds-rm/release-links');
+		wp.data.dispatch('core/block-editor').insertBlocks(block);
+		wp.data.dispatch('core/block-editor').selectBlock(block.clientId);
 	});
 	await expect.poll(() => page.evaluate(() => window.__phaseOneLookupCalls.length)).toBeGreaterThan(0);
 	await expect.poll(() => page.evaluate(() => window.__phaseOneLookupCalls.every((call) => call.signal.aborted)), {
-		timeout: 20_000,
+		timeout: 22_000,
 		intervals: [100, 250, 500, 1000],
 	}).toBe(true);
 	await expect(page.getByRole('tabpanel', { name: 'Settings' })
-		.getByText('Release search failed. Change the search to try again.', { exact: true })).toBeVisible();
+		.getByText('Release search failed. Change the search to try again.', { exact: true })).toBeVisible({ timeout: 10_000 });
 	await expect.poll(() => page.evaluate(() => window.__phaseOneUnhandled)).toEqual([]);
 });

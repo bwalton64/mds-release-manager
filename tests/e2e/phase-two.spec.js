@@ -48,7 +48,7 @@ test('Release editor searches and selects Artists without loading the complete l
 	await allowLocalRequests(page);
 	await login(page, fixture);
 	await page.goto(`/wp-admin/post.php?post=${fixture.state.release}&action=edit`);
-	const nonce = await page.evaluate(() => window.mdsReleaseArtistPickerData.nonce);
+	const nonce = await page.evaluate(() => window.mdsReleaseEditorData.nonce);
 
 	const apiResponse = await page.request.get(`/wp-json/mds/v1/artists?search=${encodeURIComponent(fixture.artistTitle)}`, {
 		headers: { 'X-WP-Nonce': nonce },
@@ -58,13 +58,12 @@ test('Release editor searches and selects Artists without loading the complete l
 		items: [expect.objectContaining({ uuid: fixture.artistUuid, title: fixture.artistTitle })],
 	});
 
-	const search = page.getByLabel('Artist Profile', { exact: true });
-	await expect(search).toHaveAttribute('type', 'search');
 	await expect(page.locator('select#artist_id')).toHaveCount(0);
-	await search.fill(fixture.artistTitle);
+	const artistCombo = page.getByRole('combobox', { name: /Artist/i }).first();
+	await expect(artistCombo).toBeVisible();
+	await artistCombo.fill(fixture.artistTitle);
 	await page.getByRole('option', { name: fixture.artistTitle, exact: true }).click();
-	await expect(page.locator('input#artist_id')).toHaveValue(fixture.artistUuid);
-	await expect(page.locator('#mds-artist-selected')).toContainText(fixture.artistTitle);
+	await expect(page.locator('input[name="artist_id"]')).toHaveValue(fixture.artistUuid);
 });
 
 test('UPC validation detects both legacy and normalized duplicate keys', async () => {
