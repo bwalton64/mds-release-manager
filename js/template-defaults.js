@@ -41,6 +41,34 @@
 
 	const RELEASE_PANELS = ['layout', 'image', 'components', 'typography'];
 	const ARTIST_PANELS = ['layout', 'portrait', 'biography', 'discography', 'contact'];
+	const CANONICAL_RELEASE_SLOTS = ['meta', 'player', 'body', 'links'];
+
+	function normalizeReleaseSlots(order) {
+		if (typeof order === 'string') {
+			const legacyMap = {
+				meta_body_links: ['meta', 'player', 'body', 'links'],
+				meta_links_body: ['meta', 'player', 'links', 'body'],
+				links_meta_body: ['links', 'meta', 'player', 'body'],
+				body_meta_links: ['body', 'meta', 'player', 'links'],
+			};
+			return legacyMap[order] ? legacyMap[order].slice() : CANONICAL_RELEASE_SLOTS.slice();
+		}
+		if (!Array.isArray(order)) {
+			return CANONICAL_RELEASE_SLOTS.slice();
+		}
+		const clean = [];
+		order.forEach((slot) => {
+			if (CANONICAL_RELEASE_SLOTS.includes(slot) && !clean.includes(slot)) {
+				clean.push(slot);
+			}
+		});
+		CANONICAL_RELEASE_SLOTS.forEach((slot) => {
+			if (!clean.includes(slot)) {
+				clean.push(slot);
+			}
+		});
+		return clean;
+	}
 
 	function presetChoices(list, prefix) {
 		const entries = Array.isArray(list) ? list : ['default', 'theme', 'custom'].flatMap((origin) => list?.[origin] || []);
@@ -162,13 +190,7 @@
 			textAlign: s.content_align || 'left',
 		};
 
-		const orderMap = {
-			meta_body_links: ['meta', 'body', 'links'],
-			meta_links_body: ['meta', 'links', 'body'],
-			links_meta_body: ['links', 'meta', 'body'],
-			body_meta_links: ['body', 'meta', 'links'],
-		};
-		const slots = orderMap[s.component_order] || orderMap.meta_body_links;
+		const slots = normalizeReleaseSlots(s.component_order);
 
 		return el('div', { className: 'mds-tpl-preview-stage', style: containerStyle },
 			el('div', { style: gridStyle },
@@ -184,6 +206,26 @@
 								el('span', { style: pillStyle }, '2026'),
 								el('span', { style: pillStyle }, 'Midnight Records'),
 								el('span', { style: pillStyle }, 'Album')
+							);
+						}
+						if (slot === 'player' && s.show_player !== false) {
+							return el('div', {
+								key: 'player',
+								className: 'mds-tpl-preview-player',
+								style: { background: theme.surface, color: theme.text, border: `1px solid ${theme.border}` },
+							},
+								el('span', {
+									className: 'mds-tpl-preview-player__play',
+									style: { background: theme.accent, color: '#fff' },
+									'aria-hidden': true,
+								}, '▶'),
+								el('div', { className: 'mds-tpl-preview-player__info' },
+									el('span', { className: 'mds-tpl-preview-player__title' }, __('01. Neon Horizons (Preview)', 'mds-release-manager')),
+									el('span', { className: 'mds-tpl-preview-player__bar', style: { background: theme.border } },
+										el('span', { className: 'mds-tpl-preview-player__progress', style: { background: theme.accent } })
+									)
+								),
+								el('span', { className: 'mds-tpl-preview-player__time' }, '0:30')
 							);
 						}
 						if (slot === 'body') {
@@ -623,39 +665,123 @@
 			},
 				el(SectionInfo, {
 					title: __('Automatic Block Composition', 'mds-release-manager'),
-					summary: __('Controls the order and visibility of automatic Release Meta and Release Links components inside the details column.', 'mds-release-manager'),
-					inheritance: __('Manually inserted Release Meta or Release Links blocks/shortcodes in post content always take precedence.', 'mds-release-manager'),
+					summary: __('Reorder and toggle automatic Release Meta, Release Player, Description, and Release Links components inside the details column.', 'mds-release-manager'),
+					inheritance: __('Manually inserted Release Meta, Release Player, or Release Links blocks/shortcodes in post content always take precedence.', 'mds-release-manager'),
 				}),
-				el(ControlGroup, { title: __('Order & Toggles', 'mds-release-manager'), twoCol: true },
-					el(SelectControl, {
-						label: __('Component Order', 'mds-release-manager'),
-						help: __('Choose where streaming/Buy Now links appear relative to metadata and description.', 'mds-release-manager'),
-						value: r.component_order,
-						options: [
-							{ label: __('Release Meta → Description → Release Links (Default)', 'mds-release-manager'), value: 'meta_body_links' },
-							{ label: __('Release Meta → Release Links → Description', 'mds-release-manager'), value: 'meta_links_body' },
-							{ label: __('Release Links → Release Meta → Description', 'mds-release-manager'), value: 'links_meta_body' },
-							{ label: __('Description → Release Meta → Release Links', 'mds-release-manager'), value: 'body_meta_links' },
-						],
-						onChange: (val) => updateField('release', 'component_order', val),
-					}),
-					el('div', { className: 'mds-style-field' },
-						el(ToggleControl, {
-							label: __('Show Automatic Release Meta', 'mds-release-manager'),
-							help: __('Displays release year, label, distributor, and UPC automatically.', 'mds-release-manager'),
-							checked: Boolean(r.show_meta),
-							onChange: (val) => updateField('release', 'show_meta', Boolean(val)),
-							__nextHasNoMarginBottom: true,
-						}),
-						el(ToggleControl, {
-							label: __('Show Automatic Release Links', 'mds-release-manager'),
-							help: __('Displays streaming icons, Buy Now button, and audio preview automatically.', 'mds-release-manager'),
-							checked: Boolean(r.show_links),
-							onChange: (val) => updateField('release', 'show_links', Boolean(val)),
-							__nextHasNoMarginBottom: true,
-						})
-					)
-				)
+				(() => {
+					const orderedSlots = normalizeReleaseSlots(r.component_order);
+					const slotMeta = {
+						meta: {
+							label: __('Release Meta', 'mds-release-manager'),
+							description: __('Displays release year, label, distributor, format, and UPC/EAN automatically.', 'mds-release-manager'),
+							icon: 'dashicons-tag',
+							toggleKey: 'show_meta',
+						},
+						player: {
+							label: __('Release Player', 'mds-release-manager'),
+							description: __('Displays the mobile-first audio preview player and tracklist automatically.', 'mds-release-manager'),
+							icon: 'dashicons-controls-play',
+							toggleKey: 'show_player',
+						},
+						body: {
+							label: __('Description / Content', 'mds-release-manager'),
+							description: __('Post body content and liner notes (automatically rendered when non-empty).', 'mds-release-manager'),
+							icon: 'dashicons-editor-alignleft',
+							toggleKey: null,
+						},
+						links: {
+							label: __('Release Links', 'mds-release-manager'),
+							description: __('Displays streaming platform buttons and the Buy Now modal/link automatically.', 'mds-release-manager'),
+							icon: 'dashicons-admin-links',
+							toggleKey: 'show_links',
+						},
+					};
+
+					const moveSlot = (index, delta) => {
+						const nextIndex = index + delta;
+						if (nextIndex < 0 || nextIndex >= orderedSlots.length) {
+							return;
+						}
+						const nextOrder = orderedSlots.slice();
+						const [moved] = nextOrder.splice(index, 1);
+						nextOrder.splice(nextIndex, 0, moved);
+						updateField('release', 'component_order', nextOrder);
+						const movedLabel = slotMeta[moved]?.label || moved;
+						speak(
+							// translators: 1: Component name, 2: New 1-based position.
+							sprintf(__('Moved %1$s to position %2$d.', 'mds-release-manager'), movedLabel, nextIndex + 1),
+							'polite'
+						);
+					};
+
+					return el(ControlGroup, {
+						title: __('Component Stack Order', 'mds-release-manager'),
+						description: __('Use the up and down arrows to arrange how components stack vertically on Release pages, and toggle automatic components on or off.', 'mds-release-manager'),
+					},
+						el('div', { className: 'mds-tpl-order-list', role: 'list' },
+							orderedSlots.map((slotKey, index) => {
+								const info = slotMeta[slotKey];
+								if (!info) return null;
+								const isEnabled = info.toggleKey ? r[info.toggleKey] !== false : true;
+								return el('div', {
+									key: slotKey,
+									role: 'listitem',
+									className: `mds-tpl-order-item${isEnabled ? '' : ' is-disabled'}`,
+								},
+									el('div', { className: 'mds-tpl-order-item__main' },
+										el('span', { className: 'mds-tpl-order-item__pos', 'aria-hidden': true }, String(index + 1)),
+										el('span', { className: `dashicons ${info.icon} mds-tpl-order-item__icon`, 'aria-hidden': true }),
+										el('div', { className: 'mds-tpl-order-item__text' },
+											el('strong', { className: 'mds-tpl-order-item__title' }, info.label),
+											el('span', { className: 'mds-tpl-order-item__desc' }, info.description)
+										)
+									),
+									el('div', { className: 'mds-tpl-order-item__controls' },
+										info.toggleKey
+											? el(ToggleControl, {
+												label: sprintf(
+													/* translators: %s: Component name. */
+													__('Show %s', 'mds-release-manager'),
+													info.label
+												),
+												hideLabelFromVision: true,
+												checked: isEnabled,
+												onChange: (val) => updateField('release', info.toggleKey, Boolean(val)),
+												__nextHasNoMarginBottom: true,
+											})
+											: el('span', { className: 'mds-tpl-order-item__badge' }, __('Post Content', 'mds-release-manager')),
+										el('div', { className: 'mds-tpl-order-item__arrows' },
+											el(Button, {
+												icon: 'arrow-up-alt2',
+												size: 'small',
+												variant: 'secondary',
+												disabled: index === 0,
+												label: sprintf(
+													/* translators: %s: Component name. */
+													__('Move %s up', 'mds-release-manager'),
+													info.label
+												),
+												onClick: () => moveSlot(index, -1),
+											}),
+											el(Button, {
+												icon: 'arrow-down-alt2',
+												size: 'small',
+												variant: 'secondary',
+												disabled: index === orderedSlots.length - 1,
+												label: sprintf(
+													/* translators: %s: Component name. */
+													__('Move %s down', 'mds-release-manager'),
+													info.label
+												),
+												onClick: () => moveSlot(index, 1),
+											})
+										)
+									)
+								);
+							})
+						)
+					);
+				})()
 			),
 			el(PanelBody, {
 				title: __('Description Typography', 'mds-release-manager'),

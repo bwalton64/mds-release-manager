@@ -126,6 +126,8 @@ final class FrontendTemplates {
 		$visited_blocks = array();
 		$has_meta       = self::content_has_component( $post->post_content, 'mds-rm/release-meta', 'release-meta', $visited_blocks );
 		$visited_blocks = array();
+		$has_player     = self::content_has_component( $post->post_content, 'mds-rm/release-player', 'release-player', $visited_blocks );
+		$visited_blocks = array();
 		$has_links      = self::content_has_component( $post->post_content, 'mds-rm/release-links', 'release-links', $visited_blocks );
 		$layout         = (string) ( $tpl['layout'] ?? 'split' );
 		if ( ! in_array( $layout, array( 'split', 'stacked' ), true ) ) {
@@ -139,9 +141,10 @@ final class FrontendTemplates {
 			'image_position'  => (string) ( $tpl['image_position'] ?? 'left' ),
 			'sticky_image'    => ! empty( $tpl['sticky_image'] ),
 			'mobile_order'    => (string) ( $tpl['mobile_order'] ?? 'image_first' ),
-			'component_order' => (string) ( $tpl['component_order'] ?? 'meta_body_links' ),
+			'component_order' => TemplateDefaults::normalize_release_component_order( $tpl['component_order'] ?? null ),
 			'style'           => TemplateDefaults::get_release_style_attribute(),
 			'meta_html'       => ( ! empty( $tpl['show_meta'] ) && ! $has_meta ) ? self::render_fallback_block( 'mds-rm/release-meta', array( 'releaseId' => $post->ID ) ) : '',
+			'player_html'     => ( ! empty( $tpl['show_player'] ) && ! $has_player ) ? self::render_fallback_block( 'mds-rm/release-player', array( 'releaseId' => $post->ID ) ) : '',
 			'links_html'      => ( ! empty( $tpl['show_links'] ) && ! $has_links ) ? self::render_fallback_block( 'mds-rm/release-links', array( 'releaseId' => $post->ID ) ) : '',
 		);
 

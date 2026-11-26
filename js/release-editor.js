@@ -18,11 +18,16 @@
 	} = wp.components;
 
 	const BUY_NOW_ACTIONS_SLOT = 'mds-rm/release-editor/buy-now-actions';
+	const UPC_ACTIONS_SLOT = 'mds-rm/release-editor/upc-actions';
 	if (Fill && Slot) {
 		window.mdsRmEditorSlots = Object.freeze({
 			BUY_NOW_ACTIONS_SLOT,
+			UPC_ACTIONS_SLOT,
 			BuyNowActionsFill: function BuyNowActionsFill(props) {
 				return el(Fill, { name: BUY_NOW_ACTIONS_SLOT }, props.children);
+			},
+			UpcActionsFill: function UpcActionsFill(props) {
+				return el(Fill, { name: UPC_ACTIONS_SLOT }, props.children);
 			},
 		});
 	}
@@ -169,6 +174,88 @@
 			}
 			window.addEventListener('mds-rm:add-buy-now-link', handleAddBuyNowLink);
 			return () => window.removeEventListener('mds-rm:add-buy-now-link', handleAddBuyNowLink);
+		}, []);
+
+		// Expose live React editor state for companion plugins (e.g. MDS Metadata auto-diff).
+		useEffect(() => {
+			window.mdsRmGetReleaseEditorState = () => ({
+				postId: data.postId,
+				upcEan,
+				releaseType,
+				releaseTypes: Array.isArray(data.releaseTypes) ? data.releaseTypes : [],
+				artistId,
+				artistTitle,
+				recordLabel,
+				distributor,
+				streamingLinks,
+				providers: Array.isArray(data.providers) ? data.providers : [],
+			});
+			return () => {
+				if (window.mdsRmGetReleaseEditorState) {
+					delete window.mdsRmGetReleaseEditorState;
+				}
+			};
+		}, [upcEan, releaseType, artistId, artistTitle, recordLabel, distributor, streamingLinks]);
+
+		// Bridge for companion plugins (e.g. MDS Metadata) to apply researched metadata into React state.
+		useEffect(() => {
+			function handleApplyMetadata(event) {
+				const detail = event && event.detail ? event.detail : null;
+				if (!detail || typeof detail !== 'object') {
+					return;
+				}
+				if (typeof detail.upc_ean === 'string') {
+					setUpcEan(detail.upc_ean);
+				}
+				if (typeof detail.release_type === 'string' || typeof detail.release_type === 'number') {
+					setReleaseType(String(detail.release_type));
+				} else if (typeof detail.release_type_name === 'string' && detail.release_type_name.trim()) {
+					const targetName = detail.release_type_name.trim().toLowerCase();
+					const match = (data.releaseTypes || []).find(
+						(t) => String(t.name || '').trim().toLowerCase() === targetName
+					);
+					if (match) {
+						setReleaseType(String(match.id));
+					}
+				}
+				if (typeof detail.record_label === 'string') {
+					setRecordLabel(detail.record_label);
+				}
+				if (typeof detail.distributor === 'string') {
+					setDistributor(detail.distributor);
+				}
+				if (Array.isArray(detail.streaming_links) && detail.streaming_links.length > 0) {
+					setStreamingLinks((prev) => {
+						const next = prev.slice();
+						const existingUrls = new Set(
+							next.map((row) => String(row.url || '').trim().toLowerCase()).filter(Boolean)
+						);
+						detail.streaming_links.forEach((incoming) => {
+							if (!incoming || !incoming.url) {
+								return;
+							}
+							const cleanUrl = String(incoming.url).trim();
+							const cleanProvider = String(incoming.provider || '').trim();
+							if (!cleanUrl || existingUrls.has(cleanUrl.toLowerCase())) {
+								return;
+							}
+							existingUrls.add(cleanUrl.toLowerCase());
+							next.push({ provider: cleanProvider, url: cleanUrl });
+						});
+						return next;
+					});
+				}
+				if (detail.announce) {
+					speak(String(detail.announce), 'polite');
+				}
+			}
+			window.addEventListener('mds-rm:apply-release-metadata', handleApplyMetadata);
+			return () => window.removeEventListener('mds-rm:apply-release-metadata', handleApplyMetadata);
+		}, []);
+
+		// Notify companion plugins once the UPC actions host is mounted.
+		useEffect(() => {
+			window.dispatchEvent(new CustomEvent('mds-rm:release-editor-ready', { detail: { postId: data.postId } }));
 		}, []);
 
 		// Inject "Live Release Preview" button right next to WordPress's "Add New Release" (.page-title-action).
@@ -429,7 +516,22 @@
 												__next40pxDefaultSize: true,
 												__nextHasNoMarginBottom: true,
 											}),
-											upcBadge && el('span', { className: upcBadgeClass, 'aria-live': 'polite' }, upcBadge)
+											el('div', { className: 'mds-upc-header__meta' },
+												upcBadge && el('span', { className: upcBadgeClass, 'aria-live': 'polite' }, upcBadge),
+												el('div', { id: 'mds-rm-upc-actions-host', className: 'mds-upc-actions-host' }),
+												Slot && el(Slot, {
+													name: UPC_ACTIONS_SLOT,
+													fillProps: {
+														postId: data.postId,
+														upcEan,
+														artistTitle,
+														releaseType,
+														recordLabel,
+														distributor,
+														streamingLinks,
+													},
+												})
+											)
 										)
 									),
 									el('div', { className: 'mds-editor-field' },

@@ -58,8 +58,9 @@ final class TemplateDefaults {
 				'image_radius'        => 8,
 				'image_shadow'        => 'default',
 				'image_border_color'  => '',
-				'component_order'     => 'meta_body_links',
+				'component_order'     => array( 'meta', 'player', 'body', 'links' ),
 				'show_meta'           => true,
+				'show_player'         => true,
 				'show_links'          => true,
 				'content_font_family' => '',
 				'content_font_size'   => 16,
@@ -114,18 +115,64 @@ final class TemplateDefaults {
 		$stored   = get_option( self::OPTION_NAME, null );
 
 		if ( is_array( $stored ) ) {
+			$release                    = array_merge( $defaults['release'], is_array( $stored['release'] ?? null ) ? $stored['release'] : array() );
+			$release['component_order'] = self::normalize_release_component_order( $release['component_order'] ?? null );
 			return array(
-				'release' => array_merge( $defaults['release'], is_array( $stored['release'] ?? null ) ? $stored['release'] : array() ),
+				'release' => $release,
 				'artist'  => array_merge( $defaults['artist'], is_array( $stored['artist'] ?? null ) ? $stored['artist'] : array() ),
 			);
 		}
 
 		// Automatic read-fallback from legacy Customizer theme_mod keys.
-		$legacy = self::read_legacy_theme_mods();
+		$legacy                     = self::read_legacy_theme_mods();
+		$release                    = array_merge( $defaults['release'], $legacy['release'] );
+		$release['component_order'] = self::normalize_release_component_order( $release['component_order'] ?? null );
 		return array(
-			'release' => array_merge( $defaults['release'], $legacy['release'] ),
+			'release' => $release,
 			'artist'  => array_merge( $defaults['artist'], $legacy['artist'] ),
 		);
+	}
+
+	/**
+	 * Normalizes release component order from either the canonical array or legacy enum strings.
+	 *
+	 * Ensures all four canonical slots (`meta`, `player`, `body`, `links`) are present exactly once.
+	 *
+	 * @since 2.0.2
+	 * @param mixed $value Saved component order (array or legacy string).
+	 * @return string[] Canonical ordered list of slot slugs.
+	 */
+	public static function normalize_release_component_order( mixed $value ): array {
+		$canonical = array( 'meta', 'player', 'body', 'links' );
+
+		if ( is_string( $value ) ) {
+			$legacy_map = array(
+				'meta_body_links' => array( 'meta', 'player', 'body', 'links' ),
+				'meta_links_body' => array( 'meta', 'player', 'links', 'body' ),
+				'links_meta_body' => array( 'links', 'meta', 'player', 'body' ),
+				'body_meta_links' => array( 'body', 'meta', 'player', 'links' ),
+			);
+			return $legacy_map[ $value ] ?? $canonical;
+		}
+
+		if ( ! is_array( $value ) ) {
+			return $canonical;
+		}
+
+		$ordered = array();
+		foreach ( $value as $item ) {
+			if ( is_string( $item ) && in_array( $item, $canonical, true ) && ! in_array( $item, $ordered, true ) ) {
+				$ordered[] = $item;
+			}
+		}
+
+		foreach ( $canonical as $slot ) {
+			if ( ! in_array( $slot, $ordered, true ) ) {
+				$ordered[] = $slot;
+			}
+		}
+
+		return $ordered;
 	}
 
 	/**
@@ -242,8 +289,9 @@ final class TemplateDefaults {
 			'image_radius'        => array( 'int', 0, 100 ),
 			'image_shadow'        => array( 'enum', array( 'none', 'subtle', 'default', 'elevated' ) ),
 			'image_border_color'  => array( 'color' ),
-			'component_order'     => array( 'enum', array( 'meta_body_links', 'meta_links_body', 'links_meta_body', 'body_meta_links' ) ),
+			'component_order'     => array( 'slot_order', array( 'meta', 'player', 'body', 'links' ) ),
 			'show_meta'           => array( 'bool' ),
+			'show_player'         => array( 'bool' ),
 			'show_links'          => array( 'bool' ),
 			'content_font_family' => array( 'font_family' ),
 			'content_font_size'   => array( 'int', 12, 32 ),
@@ -386,6 +434,26 @@ final class TemplateDefaults {
 					}
 					$clean          = sanitize_text_field( $val );
 					$result[ $key ] = function_exists( 'mb_substr' ) ? mb_substr( $clean, 0, $rule[1] ) : substr( $clean, 0, $rule[1] );
+					break;
+
+				case 'slot_order':
+					if ( is_string( $val ) ) {
+						$legacy_keys = array( 'meta_body_links', 'meta_links_body', 'links_meta_body', 'body_meta_links' );
+						if ( ! in_array( $val, $legacy_keys, true ) ) {
+							return self::invalid_error();
+						}
+						$result[ $key ] = self::normalize_release_component_order( $val );
+						break;
+					}
+					if ( ! is_array( $val ) || empty( $val ) ) {
+						return self::invalid_error();
+					}
+					foreach ( $val as $slot ) {
+						if ( ! is_string( $slot ) || ! in_array( $slot, $rule[1], true ) ) {
+							return self::invalid_error();
+						}
+					}
+					$result[ $key ] = self::normalize_release_component_order( $val );
 					break;
 			}
 		}

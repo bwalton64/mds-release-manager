@@ -12,12 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 ( static function ( array $args ): void {
-	$has_image       = '' !== (string) ( $args['image'] ?? '' );
-	$layout          = (string) ( $args['layout'] ?? 'split' );
-	$image_position  = (string) ( $args['image_position'] ?? 'left' );
-	$sticky_image    = ! empty( $args['sticky_image'] );
-	$mobile_order    = (string) ( $args['mobile_order'] ?? 'image_first' );
-	$component_order = (string) ( $args['component_order'] ?? 'meta_body_links' );
+	$has_image      = '' !== (string) ( $args['image'] ?? '' );
+	$layout         = (string) ( $args['layout'] ?? 'split' );
+	$image_position = (string) ( $args['image_position'] ?? 'left' );
+	$sticky_image   = ! empty( $args['sticky_image'] );
+	$mobile_order   = (string) ( $args['mobile_order'] ?? 'image_first' );
+	$slots          = \MDS\ReleaseManager\Frontend\TemplateDefaults::normalize_release_component_order( $args['component_order'] ?? null );
 
 	$classes = array(
 		'mds-release-fallback',
@@ -33,14 +33,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	if ( 'content_first' === $mobile_order ) {
 		$classes[] = 'mds-release-fallback--mobile-content-first';
 	}
-
-	$order_map = array(
-		'meta_body_links' => array( 'meta', 'body', 'links' ),
-		'meta_links_body' => array( 'meta', 'links', 'body' ),
-		'links_meta_body' => array( 'links', 'meta', 'body' ),
-		'body_meta_links' => array( 'body', 'meta', 'links' ),
-	);
-	$slots     = $order_map[ $component_order ] ?? $order_map['meta_body_links'];
 	?>
 <div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo esc_attr( $args['style'] ); ?>">
 	<?php if ( $has_image ) : ?>
@@ -50,6 +42,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php foreach ( $slots as $slot ) : ?>
 			<?php if ( 'meta' === $slot && ! empty( $args['meta_html'] ) ) : ?>
 				<div class="mds-release-fallback__component"><?php echo $args['meta_html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered by the plugin's escaped Release Meta renderer. ?></div>
+			<?php elseif ( 'player' === $slot && ! empty( $args['player_html'] ) ) : ?>
+				<div class="mds-release-fallback__component"><?php echo $args['player_html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered by the plugin's escaped Release Player renderer. ?></div>
 			<?php elseif ( 'body' === $slot ) : ?>
 				<div class="mds-release-fallback__body"><?php echo $args['content']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content has already passed through WordPress's the_content filters. ?></div>
 			<?php elseif ( 'links' === $slot && ! empty( $args['links_html'] ) ) : ?>

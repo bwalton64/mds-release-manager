@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.0.4] - 2026-11-26
+
+### Added
+- Added **Release Player** (`show_player` + `player` slot) to **Releases → Settings → Default Templates** (`TemplateDefaults`, `FrontendTemplates`, `RestApi` live preview, `templates/release-fallback.php`) so automatic Release fallback pages render `mds-rm/release-player` unless manually placed in post content.
+- Replaced the **Component Order** dropdown in **Default Templates → Component Visibility & Order** (`js/template-defaults.js`, `css/admin-styles.css`) with a visual stack-order list featuring **Up / Down arrow buttons**, inline Show/Hide toggles, `wp.a11y.speak()` announcements, live Release Player preview, and backward-compatible normalization for legacy `component_order` strings.
+- Added `UPC_ACTIONS_SLOT` (`mds-rm/release-editor/upc-actions`), `#mds-rm-upc-actions-host`, live state accessor (`window.mdsRmGetReleaseEditorState`), and `mds-rm:apply-release-metadata` CustomEvent bridge in `js/release-editor.js` (with `.mds-upc-header__meta` layout styling in `css/admin-styles.css`) so companion plugins such as `mds-metadata` can mount UPC research tools and update Release fields without a page reload.
+
 ## [2.0.2] - 2026-11-25
 
 ### Added

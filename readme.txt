@@ -4,7 +4,7 @@ Tags: music, discography, artists, releases, streaming
 Requires at least: 7.0
 Tested up to: 7.x
 Requires PHP: 8.0
-Stable tag: 2.0.2
+Stable tag: 2.0.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -61,6 +61,12 @@ By default, **Font Awesome Integration** runs in **Auto** mode: if an active Fon
 Yes. Network activate the plugin and configure your Master Hub and Spoke sites under **Network Admin > Settings > MDS Release Manager**. Spokes remain read-only so your Hub stays the single source of truth.
 
 == Changelog ==
+
+= 2.0.4 =
+
+* Added **Release Player** (`show_player` + `player` slot) to **Releases > Settings > Default Templates** and automatic Release fallback pages (`templates/release-fallback.php`, Live Release Preview), suppressed automatically when `mds-rm/release-player` or `[release-player]` is placed manually in post content.
+* Replaced the **Component Order** dropdown in **Default Templates > Component Visibility & Order** with a visual stack-order list featuring **Up / Down arrow buttons**, inline Show/Hide toggles, `wp.a11y.speak()` announcements, and live Release Player preview.
+* Added the `mds-rm/release-editor/upc-actions` SlotFill, live editor state accessor (`window.mdsRmGetReleaseEditorState`), and `mds-rm:apply-release-metadata` CustomEvent bridge for companion metadata plugins.
 
 = 2.0.2 =
 

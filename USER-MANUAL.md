@@ -1,6 +1,6 @@
 # MDS Release Manager — User Manual
 
-**Version:** `2.0.2`  
+**Version:** `2.0.4`  
 **Requirements:** WordPress `7.0+` · PHP `8.0+` *(Optional companion plugins: MDS Audio Providers 2.0.0+, MDS WooCommerce)*
 
 ## Table of Contents

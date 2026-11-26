@@ -603,6 +603,16 @@ final class RestApi {
 				)
 			) : '';
 
+			$player_html = ! empty( $tpl['show_player'] ) ? render_block(
+				array(
+					'blockName'    => 'mds-rm/release-player',
+					'attrs'        => array( 'releaseId' => $post_id ),
+					'innerBlocks'  => array(),
+					'innerHTML'    => '',
+					'innerContent' => array(),
+				)
+			) : '';
+
 			$links_html = ! empty( $tpl['show_links'] ) ? render_block(
 				array(
 					'blockName'    => 'mds-rm/release-links',
@@ -622,9 +632,10 @@ final class RestApi {
 					'image_position'  => (string) ( $tpl['image_position'] ?? 'left' ),
 					'sticky_image'    => ! empty( $tpl['sticky_image'] ),
 					'mobile_order'    => (string) ( $tpl['mobile_order'] ?? 'image_first' ),
-					'component_order' => (string) ( $tpl['component_order'] ?? 'meta_body_links' ),
+					'component_order' => \MDS\ReleaseManager\Frontend\TemplateDefaults::normalize_release_component_order( $tpl['component_order'] ?? null ),
 					'style'           => \MDS\ReleaseManager\Frontend\TemplateDefaults::get_release_style_attribute(),
 					'meta_html'       => $meta_html,
+					'player_html'     => $player_html,
 					'links_html'      => $links_html,
 				)
 			);
