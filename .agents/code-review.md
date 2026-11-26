@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-Pre-release read-only audit for **MDS Release Manager 2.0.0** passed with **0 blocking (Critical/High) findings**.
+Pre-release read-only audit for **MDS Release Manager 2.0.1** passed with **0 blocking (Critical/High) findings**.
 
 - **PHP 8.0 Compatibility:** Zero PHP 8.1+ syntax leakage (`enum`, `readonly`, `never`, intersection types) across all PSR-4 classes.
 - **Security:** All REST endpoints enforce explicit `permission_callback` guards; all admin POST handlers verify nonces and narrow capabilities; all `$wpdb` queries use `$wpdb->prepare()`; all `switch_to_blog()` calls are paired with `restore_current_blog()` inside `try`/`finally` blocks; zero unsafe sinks (`eval`, `extract`, `unserialize`, shell exec).

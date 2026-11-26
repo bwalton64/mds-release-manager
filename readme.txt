@@ -4,7 +4,7 @@ Tags: music, discography, artists, releases, streaming
 Requires at least: 7.0
 Tested up to: 7.x
 Requires PHP: 8.0
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -61,6 +61,11 @@ By default, **Font Awesome Integration** runs in **Auto** mode: if an active Fon
 Yes. Network activate the plugin and configure your Master Hub and Spoke sites under **Network Admin > Settings > MDS Release Manager**. Spokes remain read-only so your Hub stays the single source of truth.
 
 == Changelog ==
+
+= 2.0.1 =
+
+* Fixed Network Admin settings save (`NetworkAdmin::register_hooks()`) where the form action name did not match the hooked `network_admin_edit_mds_rm_save_network_settings` handler.
+* Added centralized native WordPress `Update URI` GitHub Releases updater (`GitHubUpdater` + `ExtensionApi::register_github_updater()`) supporting private repos via `MDS_RM_GITHUB_TOKEN` and public repos with zero token.
 
 = 2.0.0 =
 

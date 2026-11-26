@@ -27,7 +27,7 @@ final class NetworkAdmin {
 	 */
 	public static function register_hooks(): void {
 		add_action( 'network_admin_menu', array( self::class, 'register_menu' ) );
-		add_action( 'network_admin_edit_save_network_settings', array( self::class, 'save_settings' ) );
+		add_action( 'network_admin_edit_mds_rm_save_network_settings', array( self::class, 'save_settings' ) );
 	}
 
 	/**
