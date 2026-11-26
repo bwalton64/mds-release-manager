@@ -2,7 +2,7 @@
 
 Comprehensive WordPress music catalog, artist discography, streaming links, and unified audio preview manager — built for single-site installs and Hub-and-Spoke WordPress Multisite networks.
 
-- **Version:** `1.0.0` (Extension API `2.0.0`)
+- **Version:** `2.0.2` (Extension API `2.0.0`)
 - **Requirements:** WordPress `7.0+` (Tested up to `7.x`) · PHP `8.0+`
 - **License:** GPL-2.0-or-later
 
@@ -23,7 +23,7 @@ Comprehensive WordPress music catalog, artist discography, streaming links, and 
 - **Theme-Adaptive Styling:** Automatic WCAG-aware theme color-scheme detection (`ThemeScheme`) for light and dark themes (including Twenty Twenty-Five variations), centralized **Default Templates**, and **Block Defaults** with sticky Live Preview.
 - **2-Tier Artist & Release Routing:** Artist-level default release policies with per-release overrides and extension routing hooks.
 - **Hub-and-Spoke Multisite Sync:** Diff-based broadcast with read-only spokes, asynchronous `SyncQueue`, and zero-duplication `VirtualMedia`.
-- **CSV Import/Export, Cache Management & Abilities API:** Streamed 13-column CSV tools, 9-plugin coalesced cache purging, Elementor widgets/tags, and WordPress Abilities API (`mds/v1`).
+- **Import/Export (CSV, JSON & XML), Cache Management & Abilities API:** 3-step React Import Wizard with Smart/AI column mapping, Duplicate/Identical-Record skipping, Hub+Spoke Purge & Reload, multi-format CSV/JSON/XML export & lossless backup restore, 9-plugin coalesced cache purging, Elementor widgets/tags, native GitHub Releases updater, and WordPress Abilities API (`mds/v1`).
 
 ---
 

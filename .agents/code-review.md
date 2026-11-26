@@ -1,17 +1,17 @@
-# MDS Release Manager — Code Review & Pre-Release Audit
+# Code Review Report — MDS Release Manager (v2.0.2 Pre-Release)
 
 - **Date:** 2026-11-25
-- **Scope:** Full repository (`mds-release-manager.php`, `src/**`, `includes/**`, `templates/**`, `blocks/**`, `js/**`, `css/**`, `uninstall.php`, `wpml-config.xml`)
-- **Summary:** `0 Critical | 0 High | 0 Medium | 2 Low`
+- **Scope:** Changes since `v2.0.1` (`src/Admin/CsvFieldMapper.php`, `src/Admin/CsvHandler.php`, `src/Frontend/Assets.php`, `includes/admin/views/csv-page.php`, `js/csv-wizard.js`, `css/admin-styles.css`, `tests/csv-mapper.php`)
+- **Summary:** 0 Critical | 0 High | 0 Medium | 1 Low
 
 ## Executive Summary
 
-Pre-release read-only audit for **MDS Release Manager 2.0.1** passed with **0 blocking (Critical/High) findings**.
+The `v2.0.2` Import/Export overhaul (Settings-parity UI, Smart Field Mapper + optional Gemini/OpenAI/filter AI assist, Hub+Spoke batched Purge & Reload, Duplicate & Identical-Record rules, and CSV/JSON/XML multi-format import/export) passes all architectural, PHP 8.0 compatibility, security, and performance checks. No Critical or High release blockers were found.
 
-- **PHP 8.0 Compatibility:** Zero PHP 8.1+ syntax leakage (`enum`, `readonly`, `never`, intersection types) across all PSR-4 classes.
-- **Security:** All REST endpoints enforce explicit `permission_callback` guards; all admin POST handlers verify nonces and narrow capabilities; all `$wpdb` queries use `$wpdb->prepare()`; all `switch_to_blog()` calls are paired with `restore_current_blog()` inside `try`/`finally` blocks; zero unsafe sinks (`eval`, `extract`, `unserialize`, shell exec).
-- **Performance & Runaway Guards:** Zero unbounded `posts_per_page => -1` queries in runtime code; `ReleaseSearch` uses SQL-backed pagination with 200-record preload cap; `SyncQueue` uses Action Scheduler / WP-Cron with MySQL `GET_LOCK` mutex; `VirtualMedia` skips Hub runtime filters.
-- **Storage, Uninstall & Multilingual Parity:** All active `mds_rm_*` options are cleaned up in `uninstall.php` (respecting `mds_rm_wipe_on_uninstall`) and user-facing options/meta/taxonomies are registered in `wpml-config.xml`.
+- **Security:** All 4 new REST endpoints (`POST /mds/v1/csv/{suggest-map,ai-map,purge,import-batch}`) enforce `manage_options` + `Sync::is_hub()`. Purge requires explicit `"PURGE"` confirmation and strictly targets `release` and `artist` post types (never WooCommerce `product` posts). XML parsing rejects `<!DOCTYPE` / `<!ENTITY` declarations and uses `LIBXML_NONET | LIBXML_NOCDATA`. AI target keys are strictly validated against `CsvFieldMapper::target_fields()`.
+- **PHP 8.0 Compatibility:** No PHP 8.1+ syntax leakage (`enum`, `readonly`, first-class callables, intersection types). All global classes (`\WP_REST_Request`, `\WP_REST_Server`, `\WP_Error`, `\WP_Post`, `\SplTempFileObject`, `\XMLWriter`) are properly namespaced.
+- **Performance & Runaway Prevention:** Purge and import operate in bounded batches (50 / 25 rows), `on_hub_delete_post` is temporarily unhooked in `try/finally` during Hub purge to avoid N×M per-post spoke thrashing, and `switch_to_blog()` is always wrapped in `try/finally { restore_current_blog(); }`.
+- **Storage & Uninstall Parity:** No new persistent `wp_options`, `wp_sitemeta`, or transient keys were introduced.
 
 ## Findings Checklist
 
@@ -19,5 +19,4 @@ Pre-release read-only audit for **MDS Release Manager 2.0.1** passed with **0 bl
 - None.
 
 ### Medium / Low Priority
-- **CR-001 (Low — Legacy Uninstall Cleanup):** `uninstall.php` retains `mds_rm_audio_players` and `mds_rm_audio_player_settings` in its site-option cleanup list even though the legacy `AudioPlayers` registry was retired in 2.0.0. Retaining these keys is intentional and beneficial so upgraded sites cleanly purge retired options on uninstall.
-- **CR-002 (Low — Unused Legacy Meta Keys):** Legacy `bandcamp_shortcode` and `release_format` post meta keys are no longer written by Core (owned by `mds-bandcamp-integration` and replaced by the `release_type` taxonomy, respectively) and remain documented as retired/migrated.
+- **CR-001 (Low — Non-JS Fallback):** The `<noscript>` fallback form in `includes/admin/views/csv-page.php` only supports classic MDS CSV uploads; JSON and XML imports require JavaScript in the 3-step wizard. Acceptable for WP-Admin (which requires JS for Gutenberg and `@wordpress/components`).

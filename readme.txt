@@ -4,7 +4,7 @@ Tags: music, discography, artists, releases, streaming
 Requires at least: 7.0
 Tested up to: 7.x
 Requires PHP: 8.0
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -61,6 +61,14 @@ By default, **Font Awesome Integration** runs in **Auto** mode: if an active Fon
 Yes. Network activate the plugin and configure your Master Hub and Spoke sites under **Network Admin > Settings > MDS Release Manager**. Spokes remain read-only so your Hub stays the single source of truth.
 
 == Changelog ==
+
+= 2.0.2 =
+
+* Redesigned **Releases > Import/Export** to match **Releases > Settings** with a 3-step React Import Wizard (**Upload & Mode > Map Columns & Validate > Run Import**).
+* Added **Purge & Reload** and standalone **Danger Zone: Purge Catalog Only** (`POST /mds/v1/csv/purge`) with mandatory `"PURGE"` confirmation, batched Hub + Multisite Spoke cleanup, and protection for WooCommerce `product` posts.
+* Added **Smart Column Mapping** (header synonyms + sample-data sniffing for DistroKid, TuneCore, CD Baby, Symphonic, Bandcamp, and MDS Export) plus optional AI assistance via Google Gemini (`MDS_RM_GEMINI_API_KEY`), OpenAI (`MDS_RM_OPENAI_API_KEY`), or `mds_rm_csv_ai_map_columns`.
+* Added **Duplicate & Identical-Record Rules** (skip identical records without DB writes or Spoke syncs, skip all existing UPCs, or force overwrite, plus within-CSV UPC deduplication).
+* Added **Multi-Format Export & Restore (CSV / JSON / XML)** with Artist, Release Type, and Status filters, Excel-safe UTF-8 BOM, separate `{Provider} Link` columns, a Blank CSV Template download, and lossless JSON/XML backup restoration (including Artist profiles and multi-format `buy_now_links`) with XXE/DOCTYPE protection.
 
 = 2.0.1 =
 

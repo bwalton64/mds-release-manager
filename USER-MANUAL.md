@@ -1,7 +1,7 @@
 # MDS Release Manager — User Manual
 
-**Version:** `2.0.1`  
-**Requirements:** WordPress `7.0+` · PHP `8.0+` *(Optional companion plugins: MDS Audio Providers 2.0.0+, MDS WooCommerce Integration)*
+**Version:** `2.0.2`  
+**Requirements:** WordPress `7.0+` · PHP `8.0+` *(Optional companion plugins: MDS Audio Providers 2.0.0+, MDS WooCommerce)*
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -78,8 +78,11 @@ flowchart LR
 - **Releases → Release Types:** Assign Font Awesome or Dashicons icons to canonical Release Types (`Single`, `EP`, `Album`, `Digital`) using the visual **Icon Picker**.
 - **Releases → Media Formats:** Add, edit, or assign icons to physical and digital purchase formats used by the Multi-Format Buy Now repeater and modal.
 
-### Importing & Exporting via CSV
-- Open **Releases → Import / Export CSV** to bulk-import Releases (validated for unique UPCs and valid Release Types) or export your full catalog in bounded batches.
+### Importing & Exporting Catalog Data (CSV, JSON & XML)
+- Open **Releases → Import/Export** to export or bulk-import your catalog:
+  - **Export Catalog:** Download your catalog in **CSV** (with separate `{Provider} Link` columns, legacy JSON column, or both, plus an Excel-safe UTF-8 BOM option), **JSON** (lossless backup including full Artist profiles and multi-format `buy_now_links`), or **XML** (`<mds_catalog>` feed). Filter by Artist, Release Type, or Post Status, or download a **Blank CSV Template**.
+  - **3-Step Import Wizard:** Upload any **CSV** (MDS Export, DistroKid, TuneCore, CD Baby, Symphonic, Bandcamp) or **JSON / XML** backup. Columns are automatically mapped via smart header synonyms and sample-data sniffing, with optional AI assistance (`MDS_RM_GEMINI_API_KEY` or `MDS_RM_OPENAI_API_KEY` in `wp-config.php`, or the `mds_rm_csv_ai_map_columns` filter).
+  - **Duplicate Rules & Purge & Reload:** Choose between **Update changed fields only — skip identical records** (default, zero DB writes/syncs for unchanged rows), **Skip all existing UPC/EANs**, or **Force overwrite**, plus within-CSV UPC deduplication. To rebuild from scratch, select **Purge & Reload** (or **Danger Zone: Purge Catalog Only**) and type `PURGE` to cleanly remove all `release` and `artist` entries across the Hub and configured Spoke sites while leaving WooCommerce `product` posts untouched.
 
 ---
 

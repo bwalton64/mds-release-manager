@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-11-25
+
+### Added
+- Upgraded **Releases → CSV Import/Export** (`js/csv-wizard.js`, `src/Admin/CsvFieldMapper.php`, `src/Admin/CsvHandler.php`) into an interactive 3-step React wizard (**Upload & Mode → Map Columns & Validate → Run Import**) with:
+  - **Purge & Reload** and standalone **Danger Zone: Purge Catalog Only** (`POST /mds/v1/csv/purge`), deleting all `release` and `artist` entries in bounded batches across the Hub and configured Multisite Spoke sites behind a mandatory `"PURGE"` confirmation gate while leaving linked WooCommerce `product` posts untouched.
+  - **Smart Column Mapping & Optional AI Assist** (`POST /mds/v1/csv/suggest-map`, `POST /mds/v1/csv/ai-map`), combining fuzzy header synonym matching and sample-data content sniffing (for MDS Export, DistroKid, TuneCore, CD Baby, Symphonic, and Bandcamp CSVs) with optional Google Gemini (`MDS_RM_GEMINI_API_KEY`), OpenAI (`MDS_RM_OPENAI_API_KEY`), or custom filter (`mds_rm_csv_ai_map_columns`) assistance, live dry-run validation, a configurable **Default Release Type Fallback**, and batched REST imports (`POST /mds/v1/csv/import-batch`) with live progress tracking (`tests/csv-mapper.php`).
+  - **Duplicate & Identical-Record Rules** (`CsvHandler::is_release_identical()`): configurable duplicate handling (**Update changed fields only — skip identical records** by default, **Skip all existing UPC/EANs**, or **Force overwrite all**) so unchanged releases skip database writes and Spoke broadcasts, plus within-CSV duplicate UPC/EAN deduplication and a live Step 3 breakdown of identical/existing/CSV-duplicate skips.
+  - **Multi-Format Import & Export (CSV / JSON / XML) & Settings-Style UI:** renamed the submenu to **Import/Export**, restyled `includes/admin/views/csv-page.php` to match **Releases → Settings** (`.mds-panel`, `.mds-section-info`, `.mds-control-group`, `.mds-accordion-toolbar`, `css/admin-defaults.css`), added **CSV / JSON / XML** export with Artist / Release Type / Post Status filters, CSV Streaming Links mode (**Separate Provider Columns**, **Single JSON Column**, or **Both**), Excel-safe UTF-8 BOM toggle, timestamped filenames, **Download Blank CSV Template**, and lossless **JSON & XML** import with full Artist profile restoration (`uuid`, `bio`, `website`, `portrait_url`, `routing_policy`), multi-format `buy_now_links` restoration, and XXE/DOCTYPE protection (`CsvHandler::parse_xml_catalog()`).
+
+### Fixed
+- Fixed stale `Release Format` column-name copy on `includes/admin/views/csv-page.php` and `CsvHandler::import_csv()` to accurately reference `Release Type`.
+
 ## [2.0.1] - 2026-11-25
 
 ### Fixed

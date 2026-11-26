@@ -299,7 +299,7 @@ final class Assets {
 		if ( $is_content_screen || $is_settings_screen || $is_csv_screen || $is_network_screen ) {
 			$stylesheet = 'css/admin-styles.css';
 			wp_enqueue_style( 'mds-admin-view-styles', MDS_RM_URL . $stylesheet, array(), filemtime( MDS_RM_PATH . $stylesheet ) );
-			if ( $is_content_screen || $is_settings_screen ) {
+			if ( $is_content_screen || $is_settings_screen || $is_csv_screen ) {
 				\MDS\ReleaseManager\Core\TemplateLoader::enqueue_editable_style( 'mds-admin-styles', $stylesheet, array( 'mds-admin-view-styles' ), 'css/admin-defaults.css' );
 			}
 		}
@@ -369,6 +369,55 @@ final class Assets {
 				);
 				wp_set_script_translations( 'mds-rm-artist-editor', 'mds-release-manager', MDS_RM_PATH . 'languages' );
 			}
+		}
+
+		if ( $is_csv_screen ) {
+			wp_enqueue_style( 'wp-components' );
+			$wizard_script = 'js/csv-wizard.js';
+			wp_enqueue_script(
+				'mds-rm-csv-wizard',
+				MDS_RM_URL . $wizard_script,
+				array( 'wp-element', 'wp-components', 'wp-i18n', 'wp-a11y', 'wp-api-fetch' ),
+				file_exists( MDS_RM_PATH . $wizard_script ) ? (string) filemtime( MDS_RM_PATH . $wizard_script ) : MDS_RM_VERSION,
+				true
+			);
+			$release_types = array( 'Single', 'EP', 'Album', 'Digital' );
+			$terms         = get_terms(
+				array(
+					'taxonomy'   => 'release_type',
+					'hide_empty' => false,
+				)
+			);
+			if ( is_array( $terms ) && ! empty( $terms ) ) {
+				$release_types = array_values(
+					array_unique(
+						array_merge(
+							$release_types,
+							array_map(
+								static fn( $term ): string => (string) $term->name,
+								$terms
+							)
+						)
+					)
+				);
+			}
+			wp_add_inline_script(
+				'mds-rm-csv-wizard',
+				'var mdsCsvWizardData = ' . wp_json_encode(
+					array(
+						'restBase'     => esc_url_raw( rest_url( 'mds/v1/csv' ) ),
+						'nonce'        => wp_create_nonce( 'wp_rest' ),
+						'isHub'        => \MDS\ReleaseManager\Core\Sync::is_hub(),
+						'isMultisite'  => is_multisite(),
+						'targetFields' => \MDS\ReleaseManager\Admin\CsvFieldMapper::target_fields(),
+						'aiStatus'     => \MDS\ReleaseManager\Admin\CsvFieldMapper::ai_status(),
+						'counts'       => \MDS\ReleaseManager\Admin\CsvHandler::catalog_counts(),
+						'releaseTypes' => $release_types,
+					)
+				) . ';',
+				'before'
+			);
+			wp_set_script_translations( 'mds-rm-csv-wizard', 'mds-release-manager', MDS_RM_PATH . 'languages' );
 		}
 
 		if ( $is_settings_screen || $is_network_screen ) {
