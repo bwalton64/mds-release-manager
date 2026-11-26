@@ -51,6 +51,9 @@ final class BuilderDetection {
 		if ( '' === $builder ) {
 			$builder = self::detect_beaver_builder( $post );
 		}
+		if ( '' === $builder ) {
+			$builder = self::detect_breakdance( $post );
+		}
 
 		$builder = apply_filters( 'mds_rm_detected_content_builder', $builder, $post );
 		return is_string( $builder ) ? sanitize_key( $builder ) : '';
@@ -146,6 +149,22 @@ final class BuilderDetection {
 		$enabled = get_post_meta( $post->ID, '_fl_builder_enabled', true );
 		if ( is_scalar( $enabled ) && in_array( (string) $enabled, array( '1', 'true', 'yes', 'on' ), true ) ) {
 			return 'beaver-builder';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Detects Breakdance builder posts.
+	 *
+	 * @since 2.2.0
+	 * @param WP_Post $post The post to inspect.
+	 * @return string The builder slug, or an empty string.
+	 */
+	private static function detect_breakdance( WP_Post $post ): string {
+		$bd_data = get_post_meta( $post->ID, '_breakdance_data', true );
+		if ( ! empty( $bd_data ) ) {
+			return 'breakdance';
 		}
 
 		return '';

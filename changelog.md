@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- Completed 5-widget **Elementor** parity in Core (`src/Integrations/Elementor/{PlayerWidget,DiscographyWidget,CatalogExplorerWidget}.php`, registered in `Tags.php`) so Elementor users have native thin widgets for **Release Meta**, **Release Links**, **Release Player**, **Artist Discography**, and **Catalog / Discography Explorer**.
+- Added **Breakdance** builder detection (`_breakdance_data`) to `BuilderDetection::detect_builder()` so Release and Artist fallback templates never duplicate Breakdance layouts.
+
 ## [2.1.0] - 2026-11-26
 
 ### Changed

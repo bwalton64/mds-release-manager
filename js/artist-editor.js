@@ -21,6 +21,26 @@
 		return;
 	}
 
+	// Extensible top-bar "Artist Tools" registry for companion plugins.
+	const artistToolsList = [];
+	window.mdsRmArtistTools = {
+		register(item) {
+			if (!item || !item.id || typeof item.onSelect !== 'function') {
+				return;
+			}
+			const existingIdx = artistToolsList.findIndex((t) => t.id === item.id);
+			if (existingIdx >= 0) {
+				artistToolsList[existingIdx] = item;
+			} else {
+				artistToolsList.push(item);
+			}
+			window.dispatchEvent(new CustomEvent('mds-rm:artist-tools-changed'));
+		},
+		getAll() {
+			return artistToolsList.slice();
+		},
+	};
+
 	function escapeHtml(str) {
 		return String(str || '')
 			.replace(/&/g, '&amp;')
@@ -128,11 +148,15 @@
 			return () => window.removeEventListener('mds-rm:apply-artist-metadata', handleApplyArtistMeta);
 		}, []);
 
-		// Inject "Live Artist Preview" button right next to "Add New Artist" (.page-title-action).
+		// Inject "Live Artist Preview" button and extensible "Artist Tools ▾" dropdown next to "Add New Artist".
 		useEffect(() => {
 			const existing = document.getElementById('mds-header-live-preview-btn');
 			if (existing) {
 				existing.remove();
+			}
+			const existingTools = document.getElementById('mds-header-artist-tools-wrap');
+			if (existingTools) {
+				existingTools.remove();
 			}
 			const addNewBtn = document.querySelector('.wrap .page-title-action');
 			if (!addNewBtn) {
@@ -148,9 +172,136 @@
 				setPreviewOpen(true);
 			});
 			addNewBtn.insertAdjacentElement('afterend', btn);
+
+			const toolsWrap = document.createElement('span');
+			toolsWrap.id = 'mds-header-artist-tools-wrap';
+			toolsWrap.className = 'mds-header-tools-wrap';
+			toolsWrap.hidden = true;
+
+			const toolsBtn = document.createElement('button');
+			toolsBtn.type = 'button';
+			toolsBtn.className = 'page-title-action mds-header-tools-btn';
+			toolsBtn.setAttribute('aria-haspopup', 'menu');
+			toolsBtn.setAttribute('aria-expanded', 'false');
+			toolsBtn.textContent = __('Artist Tools ▾', 'mds-release-manager');
+
+			const menu = document.createElement('div');
+			menu.className = 'mds-header-tools-menu';
+			menu.setAttribute('role', 'menu');
+			menu.hidden = true;
+
+			toolsWrap.appendChild(toolsBtn);
+			toolsWrap.appendChild(menu);
+			btn.insertAdjacentElement('afterend', toolsWrap);
+
+			function closeMenu() {
+				menu.hidden = true;
+				toolsBtn.setAttribute('aria-expanded', 'false');
+			}
+
+			function renderMenu() {
+				const items = window.mdsRmArtistTools.getAll();
+				toolsWrap.hidden = items.length === 0;
+				menu.innerHTML = '';
+				if (!items.length) {
+					closeMenu();
+					return;
+				}
+				const grouped = new Map();
+				items.forEach((item) => {
+					const cat = item.category || __('Tools', 'mds-release-manager');
+					if (!grouped.has(cat)) {
+						grouped.set(cat, []);
+					}
+					grouped.get(cat).push(item);
+				});
+				grouped.forEach((catItems, catLabel) => {
+					const groupEl = document.createElement('div');
+					groupEl.className = 'mds-header-tools-group';
+					groupEl.setAttribute('role', 'group');
+
+					const heading = document.createElement('div');
+					heading.className = 'mds-header-tools-group__label';
+					heading.textContent = catLabel;
+					groupEl.appendChild(heading);
+
+					catItems.forEach((item) => {
+						const itemBtn = document.createElement('button');
+						itemBtn.type = 'button';
+						itemBtn.className = 'mds-header-tools-item';
+						itemBtn.setAttribute('role', 'menuitem');
+
+						const titleRow = document.createElement('span');
+						titleRow.className = 'mds-header-tools-item__title';
+						if (item.icon) {
+							const iconSpan = document.createElement('span');
+							iconSpan.className = `${item.icon} mds-header-tools-item__icon`;
+							iconSpan.setAttribute('aria-hidden', 'true');
+							titleRow.appendChild(iconSpan);
+						}
+						const labelSpan = document.createElement('span');
+						labelSpan.textContent = item.label || item.id;
+						titleRow.appendChild(labelSpan);
+						if (item.badge) {
+							const badgeSpan = document.createElement('span');
+							badgeSpan.className = 'mds-header-tools-item__badge';
+							badgeSpan.textContent = item.badge;
+							titleRow.appendChild(badgeSpan);
+						}
+						itemBtn.appendChild(titleRow);
+
+						if (item.description) {
+							const desc = document.createElement('span');
+							desc.className = 'mds-header-tools-item__desc';
+							desc.textContent = item.description;
+							itemBtn.appendChild(desc);
+						}
+
+						itemBtn.addEventListener('click', (e) => {
+							e.preventDefault();
+							closeMenu();
+							item.onSelect();
+						});
+						groupEl.appendChild(itemBtn);
+					});
+					menu.appendChild(groupEl);
+				});
+			}
+
+			toolsBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				const nextOpen = menu.hidden;
+				menu.hidden = !nextOpen;
+				toolsBtn.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+			});
+
+			function onDocClick(e) {
+				if (!toolsWrap.contains(e.target)) {
+					closeMenu();
+				}
+			}
+			function onKeyDown(e) {
+				if (e.key === 'Escape' && !menu.hidden) {
+					closeMenu();
+					toolsBtn.focus();
+				}
+			}
+
+			document.addEventListener('click', onDocClick);
+			document.addEventListener('keydown', onKeyDown);
+			window.addEventListener('mds-rm:artist-tools-changed', renderMenu);
+			renderMenu();
+
 			return () => {
+				document.removeEventListener('click', onDocClick);
+				document.removeEventListener('keydown', onKeyDown);
+				window.removeEventListener('mds-rm:artist-tools-changed', renderMenu);
 				if (btn.parentNode) {
 					btn.parentNode.removeChild(btn);
+				}
+				if (toolsWrap.parentNode) {
+					toolsWrap.parentNode.removeChild(toolsWrap);
 				}
 			};
 		}, []);

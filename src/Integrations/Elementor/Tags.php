@@ -67,5 +67,8 @@ final class Tags {
 
 		$widgets_manager->register( new Widget() );
 		$widgets_manager->register( new LinksWidget() );
+		$widgets_manager->register( new PlayerWidget() );
+		$widgets_manager->register( new DiscographyWidget() );
+		$widgets_manager->register( new CatalogExplorerWidget() );
 	}
 }

@@ -1143,6 +1143,94 @@ dialog.mds-preview-dialog::backdrop {
 .mds-upc-actions-host:empty {
 	display: none;
 }
+
+/* Header Release Tools / Artist Tools Dropdown Menu */
+.mds-header-tools-wrap {
+	position: relative;
+	display: inline-block;
+	margin-left: 6px;
+}
+.mds-header-tools-wrap[hidden] {
+	display: none;
+}
+.mds-header-tools-menu {
+	position: absolute;
+	top: calc(100% + 6px);
+	left: 0;
+	z-index: 10000;
+	min-width: 310px;
+	max-width: 380px;
+	max-height: 75vh;
+	overflow-y: auto;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+	padding: 6px 0;
+}
+.mds-header-tools-group + .mds-header-tools-group {
+	border-top: 1px solid #e2e4e7;
+	margin-top: 4px;
+	padding-top: 4px;
+}
+.mds-header-tools-group__label {
+	padding: 6px 14px 4px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #646970;
+}
+.mds-header-tools-item {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	width: 100%;
+	padding: 8px 14px;
+	border: none;
+	background: transparent;
+	text-align: left;
+	cursor: pointer;
+	color: #1d2327;
+	font-size: 13px;
+}
+.mds-header-tools-item:hover,
+.mds-header-tools-item:focus-visible {
+	background: #f0f6fc;
+	color: var(--wp-admin-theme-color, #2271b1);
+	outline: none;
+}
+.mds-header-tools-item__title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+}
+.mds-header-tools-item__icon {
+	font-size: 15px;
+	width: 16px;
+	height: 16px;
+	color: #50575e;
+	flex-shrink: 0;
+}
+.mds-header-tools-item:hover .mds-header-tools-item__icon {
+	color: var(--wp-admin-theme-color, #2271b1);
+}
+.mds-header-tools-item__badge {
+	margin-left: auto;
+	font-size: 10px;
+	font-weight: 600;
+	padding: 1px 6px;
+	border-radius: 999px;
+	background: #edfaef;
+	color: #007017;
+}
+.mds-header-tools-item__desc {
+	font-size: 11.5px;
+	color: #646970;
+	padding-left: 24px;
+	line-height: 1.35;
+}
 .mds-react-repeater-row--stream {
 	display: grid;
 	grid-template-columns: minmax(150px, 210px) minmax(200px, 1fr) auto auto;
