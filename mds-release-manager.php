@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MDS Release Manager
  * Description: Comprehensive Artist Release Manager.
- * Version: 2.0.4
+ * Version: 2.1.0
  * Requires at least: 7.0
  * Requires PHP: 8.0
  * Author: Walton International Business Group
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'MDS_RM_VERSION' ) ) {
-	define( 'MDS_RM_VERSION', '2.0.4' );
+	define( 'MDS_RM_VERSION', '2.1.0' );
 }
 if ( ! defined( 'MDS_RM_API_VERSION' ) ) {
 	define( 'MDS_RM_API_VERSION', '2.0.0' );

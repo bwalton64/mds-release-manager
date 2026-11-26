@@ -14,11 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Handles CSV import and export for release posts.
+ * Handles multi-format (CSV, JSON, XML) catalog import, export, and purge operations.
  *
  * @since 0.9.0
  */
-final class CsvHandler {
+final class ImportExportHandler {
 
 	/**
 	 * Registers the CSV page and form handlers.
@@ -159,9 +159,9 @@ final class CsvHandler {
 
 		return rest_ensure_response(
 			array(
-				'suggestions'   => CsvFieldMapper::suggest_mapping( $clean_headers, $clean_samples ),
-				'target_fields' => CsvFieldMapper::target_fields(),
-				'ai_status'     => CsvFieldMapper::ai_status(),
+				'suggestions'   => ImportFieldMapper::suggest_mapping( $clean_headers, $clean_samples ),
+				'target_fields' => ImportFieldMapper::target_fields(),
+				'ai_status'     => ImportFieldMapper::ai_status(),
 			)
 		);
 	}
@@ -187,7 +187,7 @@ final class CsvHandler {
 
 		$clean_headers = array_values( array_map( 'strval', $headers ) );
 		$clean_samples = is_array( $sample_rows ) ? array_slice( $sample_rows, 0, 5 ) : array();
-		$result        = CsvFieldMapper::ai_suggest_mapping( $clean_headers, $clean_samples );
+		$result        = ImportFieldMapper::ai_suggest_mapping( $clean_headers, $clean_samples );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -197,7 +197,7 @@ final class CsvHandler {
 			array(
 				'suggestions' => $result['mapping'] ?? array(),
 				'provider'    => $result['provider'] ?? '',
-				'ai_status'   => CsvFieldMapper::ai_status(),
+				'ai_status'   => ImportFieldMapper::ai_status(),
 			)
 		);
 	}
@@ -1214,7 +1214,7 @@ final class CsvHandler {
 			$filter_status = 'any';
 		}
 
-		$provider_names = CsvFieldMapper::provider_names();
+		$provider_names = ImportFieldMapper::provider_names();
 
 		if ( 'template' === $export_action ) {
 			$template_csv = self::build_csv_template( $provider_names, $include_bom );

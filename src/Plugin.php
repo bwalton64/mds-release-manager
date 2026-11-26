@@ -44,6 +44,7 @@ final class Plugin {
 		\MDS\ReleaseManager\Core\Sync::register_hooks();
 		\MDS\ReleaseManager\Core\PostTypes::register_hooks();
 		\MDS\ReleaseManager\Core\ReleaseModel::register_hooks();
+		\MDS\ReleaseManager\Core\CatalogQuery::register_hooks();
 		\MDS\ReleaseManager\Admin\AdminInterface::register_hooks();
 		\MDS\ReleaseManager\Admin\Editor::register_hooks();
 		\MDS\ReleaseManager\Admin\NetworkAdmin::register_hooks();
@@ -52,7 +53,7 @@ final class Plugin {
 		\MDS\ReleaseManager\Api\RestApi::register_hooks();
 		\MDS\ReleaseManager\Frontend\Shortcodes::register_hooks();
 		\MDS\ReleaseManager\Integrations\Elementor\Tags::register_hooks();
-		\MDS\ReleaseManager\Admin\CsvHandler::register_hooks();
+		\MDS\ReleaseManager\Admin\ImportExportHandler::register_hooks();
 		\MDS\ReleaseManager\Blocks\GutenbergBlocks::register_hooks();
 		\MDS\ReleaseManager\Blocks\BlockDefaults::register_hooks();
 		\MDS\ReleaseManager\Api\VirtualMedia::register_hooks();

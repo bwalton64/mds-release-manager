@@ -27,6 +27,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class RestApi {
 
 	/**
+	 * Public REST handler: returns filtered, sorted, paginated release catalog cards.
+	 *
+	 * @since 2.1.0
+	 * @param WP_REST_Request $request Incoming REST request.
+	 * @return WP_REST_Response
+	 */
+	public static function get_catalog_api( WP_REST_Request $request ): WP_REST_Response {
+		$params = array(
+			'search'   => $request->get_param( 'q' ) ?? $request->get_param( 'search' ) ?? '',
+			'artist'   => $request->get_param( 'artist' ) ?? '',
+			'type'     => $request->get_param( 'type' ) ?? '',
+			'year'     => $request->get_param( 'year' ) ?? 0,
+			'tag'      => $request->get_param( 'tag' ) ?? '',
+			'label'    => $request->get_param( 'label' ) ?? '',
+			'format'   => $request->get_param( 'format' ) ?? '',
+			'sort'     => $request->get_param( 'sort' ) ?? 'date_desc',
+			'page'     => $request->get_param( 'page' ) ?? 1,
+			'per_page' => $request->get_param( 'per_page' ) ?? 12,
+		);
+
+		$result = \MDS\ReleaseManager\Core\CatalogQuery::query( $params );
+
+		$response = new WP_REST_Response( $result, 200 );
+		$response->header( 'Cache-Control', 'public, max-age=60' );
+		return $response;
+	}
+
+	/**
 	 * Registers REST API initialization.
 	 *
 	 * @since 0.9.0
@@ -68,6 +96,16 @@ final class RestApi {
 						},
 					),
 				),
+			)
+		);
+
+		register_rest_route(
+			'mds/v1',
+			'/catalog',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( self::class, 'get_catalog_api' ),
+				'permission_callback' => '__return_true',
 			)
 		);
 

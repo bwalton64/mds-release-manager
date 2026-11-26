@@ -2,7 +2,7 @@
 
 Comprehensive WordPress music catalog, artist discography, streaming links, and unified audio preview manager — built for single-site installs and Hub-and-Spoke WordPress Multisite networks.
 
-- **Version:** `2.0.4` (Extension API `2.0.0`)
+- **Version:** `2.1.0` (Extension API `2.0.0`)
 - **Requirements:** WordPress `7.0+` (Tested up to `7.x`) · PHP `8.0+`
 - **License:** GPL-2.0-or-later
 

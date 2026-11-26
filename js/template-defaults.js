@@ -464,6 +464,20 @@
 		const a = all.artist;
 
 		const releaseControls = el('div', { className: 'mds-tpl-accordions' },
+			el(ControlGroup, {
+				title: __('Release Archive Page (/release/)', 'mds-release-manager'),
+				description: __('Global setting for your site’s main Release post-type archive page.', 'mds-release-manager'),
+			},
+				el('div', { className: 'mds-style-field' },
+					el(ToggleControl, {
+						label: __('Use Catalog Explorer on /release/ Archive Page', 'mds-release-manager'),
+						help: __('Replaces the default /release/ archive with the searchable, filterable Catalog Explorer grid. You can also place the Catalog / Discography Explorer block or [catalog-explorer] shortcode on any page.', 'mds-release-manager'),
+						checked: Boolean(r.enable_catalog_archive),
+						onChange: (val) => updateField('release', 'enable_catalog_archive', Boolean(val)),
+						__nextHasNoMarginBottom: true,
+					})
+				)
+			),
 			el(PanelBody, {
 				title: __('Layout & Page Container', 'mds-release-manager'),
 				opened: Boolean(currentOpen.layout),

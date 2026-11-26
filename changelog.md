@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-26
+
+### Changed
+- Renamed `CsvHandler` → `ImportExportHandler` (`src/Admin/ImportExportHandler.php`) and `CsvFieldMapper` → `ImportFieldMapper` (`src/Admin/ImportFieldMapper.php`) to reflect multi-format (CSV, JSON, XML) import/export support while preserving all existing menu slugs, actions, and REST routes.
+- Extracted direct Gemini/OpenAI LLM column-mapping calls out of Free Core into `mds-metadata` (`MDS\Metadata\Ai\ImportColumnMapper`), keeping Core 100% self-contained with neutral `mds_rm_import_ai_status` / `mds_rm_import_ai_map_columns` extension filters and Clean-Core UI (hiding the AI mapping button when no AI extension is active).
+
+### Added
+- Added the native **Catalog / Discography Explorer** (`mds-rm/catalog-explorer` Gutenberg block, `[catalog-explorer]` shortcode, `GET /mds/v1/catalog` REST endpoint, `MDS\ReleaseManager\Core\CatalogQuery`, `MDS\ReleaseManager\Blocks\CatalogExplorer`, `js/catalog-explorer.js`, `css/catalog-explorer.css`) with server-rendered initial load, debounced live search (title, artist, UPC/EAN), faceted filtering (Artist, Release Type, Year, Release Tags, Record Label, Media Format) with transient-cached facet lists, sorting (Newest, Oldest, Title A–Z, Artist A–Z), active filter chips, bookmarkable URL query syncing, configurable **Numbered Pagination** or **Load More**, inline 1-click JIT Audio Preview buttons with single-playback coordination, and an optional **Use Catalog Explorer on `/release/` Archive Page** toggle in **Default Templates** (`templates/archive-release-catalog.php`, `tests/catalog-explorer.php`).
+
 ## [2.0.4] - 2026-11-26
 
 ### Added

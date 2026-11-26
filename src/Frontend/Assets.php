@@ -409,9 +409,9 @@ final class Assets {
 						'nonce'        => wp_create_nonce( 'wp_rest' ),
 						'isHub'        => \MDS\ReleaseManager\Core\Sync::is_hub(),
 						'isMultisite'  => is_multisite(),
-						'targetFields' => \MDS\ReleaseManager\Admin\CsvFieldMapper::target_fields(),
-						'aiStatus'     => \MDS\ReleaseManager\Admin\CsvFieldMapper::ai_status(),
-						'counts'       => \MDS\ReleaseManager\Admin\CsvHandler::catalog_counts(),
+						'targetFields' => \MDS\ReleaseManager\Admin\ImportFieldMapper::target_fields(),
+						'aiStatus'     => \MDS\ReleaseManager\Admin\ImportFieldMapper::ai_status(),
+						'counts'       => \MDS\ReleaseManager\Admin\ImportExportHandler::catalog_counts(),
 						'releaseTypes' => $release_types,
 					)
 				) . ';',

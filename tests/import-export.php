@@ -1,8 +1,8 @@
 <?php
 /**
- * Standalone unit tests for MDS\ReleaseManager\Admin\CsvFieldMapper.
+ * Standalone unit tests for MDS\ReleaseManager\Admin\ImportFieldMapper & ImportExportHandler.
  *
- * Run with: php tests/csv-mapper.php
+ * Run with: php tests/import-export.php
  *
  * @package MDS\ReleaseManager
  */
@@ -74,11 +74,11 @@ if ( ! function_exists( 'apply_filters' ) ) {
 	}
 }
 
-require_once __DIR__ . '/../src/Admin/CsvFieldMapper.php';
-require_once __DIR__ . '/../src/Admin/CsvHandler.php';
+require_once __DIR__ . '/../src/Admin/ImportFieldMapper.php';
+require_once __DIR__ . '/../src/Admin/ImportExportHandler.php';
 
-use MDS\ReleaseManager\Admin\CsvFieldMapper;
-use MDS\ReleaseManager\Admin\CsvHandler;
+use MDS\ReleaseManager\Admin\ImportFieldMapper;
+use MDS\ReleaseManager\Admin\ImportExportHandler;
 
 $failures = array();
 $assert   = static function ( bool $condition, string $label ) use ( &$failures ): void {
@@ -103,7 +103,7 @@ $mds_headers = array(
 	'About',
 	'Streaming Links',
 );
-$mds_map = CsvFieldMapper::suggest_mapping( $mds_headers, array() );
+$mds_map = ImportFieldMapper::suggest_mapping( $mds_headers, array() );
 $assert( 'upc_ean' === $mds_map[0]['target'] && 'high' === $mds_map[0]['confidence'], 'MDS UPC/EAN maps with high confidence' );
 $assert( 'title' === $mds_map[1]['target'], 'MDS Release Title maps to title' );
 $assert( 'artist' === $mds_map[2]['target'], 'MDS Artist maps' );
@@ -123,7 +123,7 @@ $dist_headers = array(
 	'Bandcamp Link',
 	'Cover Art',
 );
-$dist_map = CsvFieldMapper::suggest_mapping( $dist_headers, array() );
+$dist_map = ImportFieldMapper::suggest_mapping( $dist_headers, array() );
 $targets  = array_column( $dist_map, 'target' );
 $assert( 'upc_ean' === $targets[0], 'Barcode maps to upc_ean' );
 $assert( 'title' === $targets[1], 'Album Name maps to title' );
@@ -158,7 +158,7 @@ $cryptic_samples = array(
 		'{"Apple Music":"https://music.apple.com/us/album/456"}',
 	),
 );
-$sniff_map     = CsvFieldMapper::suggest_mapping( $cryptic_headers, $cryptic_samples );
+$sniff_map     = ImportFieldMapper::suggest_mapping( $cryptic_headers, $cryptic_samples );
 $sniff_targets = array_column( $sniff_map, 'target' );
 $assert( 'upc_ean' === $sniff_targets[0], 'Sniffed 12-13 digit UPC column' );
 $assert( 'release_date' === $sniff_targets[1], 'Sniffed ISO date column' );
@@ -170,12 +170,12 @@ $assert( 'streaming_links_json' === $sniff_targets[6], 'Sniffed JSON streaming_l
 
 // 4. Duplicate target prevention.
 $dup_headers = array( 'UPC', 'EAN', 'Barcode' );
-$dup_map     = CsvFieldMapper::suggest_mapping( $dup_headers, array() );
+$dup_map     = ImportFieldMapper::suggest_mapping( $dup_headers, array() );
 $assigned    = array_filter( array_column( $dup_map, 'target' ) );
 $assert( 1 === count( $assigned ), 'Only one column assigned to upc_ean when multiple UPC synonyms exist' );
 
 // 5. AI status & filter-backed AI mapping with allowlist sanitization.
-$status_before = CsvFieldMapper::ai_status();
+$status_before = ImportFieldMapper::ai_status();
 $assert( false === $status_before['available'], 'AI status is unavailable without keys or filter' );
 
 $GLOBALS['mds_test_filters']['mds_rm_csv_ai_map_columns'] = array(
@@ -187,10 +187,10 @@ $GLOBALS['mds_test_filters']['mds_rm_csv_ai_map_columns'] = array(
 		);
 	},
 );
-$status_after = CsvFieldMapper::ai_status();
+$status_after = ImportFieldMapper::ai_status();
 $assert( true === $status_after['available'] && 'custom' === $status_after['provider'], 'AI status reports custom provider when filter is hooked' );
 
-$ai_result = CsvFieldMapper::ai_suggest_mapping( array( 'X', 'Y', 'Z' ), array() );
+$ai_result = ImportFieldMapper::ai_suggest_mapping( array( 'X', 'Y', 'Z' ), array() );
 $assert( is_array( $ai_result ) && isset( $ai_result['mapping'] ), 'AI filter returned valid mapping payload' );
 if ( is_array( $ai_result ) && isset( $ai_result['mapping'] ) ) {
 	$ai_mapping = $ai_result['mapping'];
@@ -199,7 +199,7 @@ if ( is_array( $ai_result ) && isset( $ai_result['mapping'] ) ) {
 	$assert( 'artist' === $ai_mapping[2]['target'] && 'ai' === $ai_mapping[2]['confidence'], 'AI mapped col 2 to artist' );
 }
 
-// 6. Identical-record duplicate detection (`CsvHandler::is_release_identical`).
+// 6. Identical-record duplicate detection (`ImportExportHandler::is_release_identical`).
 $existing_release = array(
 	'title'              => 'Midnight Drive',
 	'artist_name'        => 'Neon Skyline',
@@ -233,19 +233,19 @@ $incoming_identical = array(
 		'Spotify'     => 'https://open.spotify.com/album/123',
 	),
 );
-$assert( true === CsvHandler::is_release_identical( $existing_release, $incoming_identical ), 'Identical release matches regardless of tag/link ordering and omitted optional fields' );
+$assert( true === ImportExportHandler::is_release_identical( $existing_release, $incoming_identical ), 'Identical release matches regardless of tag/link ordering and omitted optional fields' );
 
 $incoming_diff_title          = $incoming_identical;
 $incoming_diff_title['title'] = 'Midnight Drive (Deluxe)';
-$assert( false === CsvHandler::is_release_identical( $existing_release, $incoming_diff_title ), 'Different title is detected as changed' );
+$assert( false === ImportExportHandler::is_release_identical( $existing_release, $incoming_diff_title ), 'Different title is detected as changed' );
 
 $incoming_diff_link                               = $incoming_identical;
 $incoming_diff_link['streaming_links']['Spotify'] = 'https://open.spotify.com/album/999';
-$assert( false === CsvHandler::is_release_identical( $existing_release, $incoming_diff_link ), 'Different streaming URL is detected as changed' );
+$assert( false === ImportExportHandler::is_release_identical( $existing_release, $incoming_diff_link ), 'Different streaming URL is detected as changed' );
 
 $incoming_diff_cover                       = $incoming_identical;
 $incoming_diff_cover['featured_image_url'] = 'https://cdn.example.com/new-art.jpg';
-$assert( false === CsvHandler::is_release_identical( $existing_release, $incoming_diff_cover ), 'Explicitly provided different cover art URL is detected as changed' );
+$assert( false === ImportExportHandler::is_release_identical( $existing_release, $incoming_diff_cover ), 'Explicitly provided different cover art URL is detected as changed' );
 
 // 7. JSON, XML, and Blank CSV Template export serializers.
 $sample_catalog = array(
@@ -294,13 +294,13 @@ $sample_catalog = array(
 	),
 );
 
-$json_out = CsvHandler::build_json_export( $sample_catalog );
+$json_out = ImportExportHandler::build_json_export( $sample_catalog );
 $decoded  = json_decode( $json_out, true );
 $assert( is_array( $decoded ) && '2.1' === ( $decoded['schema_version'] ?? '' ), 'JSON export encodes schema_version 2.1' );
 $assert( '0088123456789' === ( $decoded['releases'][0]['upc_ean'] ?? '' ), 'JSON export preserves leading-zero UPC/EAN' );
 $assert( 'Vinyl LP' === ( $decoded['releases'][0]['buy_now_links'][0]['label'] ?? '' ), 'JSON export preserves multi-format buy_now_links' );
 
-$xml_out = CsvHandler::build_xml_export( $sample_catalog );
+$xml_out = ImportExportHandler::build_xml_export( $sample_catalog );
 $xml_obj = simplexml_load_string( $xml_out );
 $assert( false !== $xml_obj, 'XML export produces valid parseable XML' );
 if ( false !== $xml_obj ) {
@@ -309,12 +309,12 @@ if ( false !== $xml_obj ) {
 	$assert( 'Spotify' === (string) $xml_obj->releases->release[0]->streaming_links->link[0]['provider'], 'XML export includes streaming provider attribute' );
 }
 
-$template_csv = CsvHandler::build_csv_template( array( 'Spotify', 'Bandcamp' ), true );
+$template_csv = ImportExportHandler::build_csv_template( array( 'Spotify', 'Bandcamp' ), true );
 $assert( str_starts_with( $template_csv, "\xEF\xBB\xBF" ), 'CSV template prepends UTF-8 BOM when requested' );
 $assert( str_contains( $template_csv, 'Spotify Link' ) && str_contains( $template_csv, 'Bandcamp Link' ), 'CSV template includes configured provider columns' );
 
 // 8. XML catalog import round-trip & XXE/DOCTYPE rejection.
-$parsed_xml = CsvHandler::parse_xml_catalog( $xml_out );
+$parsed_xml = ImportExportHandler::parse_xml_catalog( $xml_out );
 $assert( is_array( $parsed_xml ) && ! is_wp_error( $parsed_xml ), 'parse_xml_catalog() parses exported XML cleanly' );
 if ( is_array( $parsed_xml ) ) {
 	$assert( 'Neon & Skyline' === ( $parsed_xml['artists'][0]['name'] ?? '' ), 'XML round-trip preserves Artist name and entity decoding' );
@@ -324,7 +324,7 @@ if ( is_array( $parsed_xml ) ) {
 }
 
 $xxe_payload = '<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><mds_catalog><releases><release><title>&xxe;</title></release></releases></mds_catalog>';
-$xxe_result  = CsvHandler::parse_xml_catalog( $xxe_payload );
+$xxe_result  = ImportExportHandler::parse_xml_catalog( $xxe_payload );
 $assert( is_wp_error( $xxe_result ) && 'mds_xml_forbidden_dtd' === $xxe_result->get_error_code(), 'parse_xml_catalog() rejects DOCTYPE/XXE payloads' );
 
 if ( ! empty( $failures ) ) {

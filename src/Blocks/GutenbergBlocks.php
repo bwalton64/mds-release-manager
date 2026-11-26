@@ -235,6 +235,34 @@ final class GutenbergBlocks {
 				'render_callback' => array( self::class, 'render_gutenberg_release_player' ),
 			)
 		);
+
+		$catalog_edit = 'blocks/catalog-explorer/edit.js';
+		if ( file_exists( MDS_RM_PATH . $catalog_edit ) ) {
+			wp_register_script(
+				'mds-rm-catalog-explorer-editor',
+				MDS_RM_URL . $catalog_edit,
+				array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-i18n' ),
+				(string) filemtime( MDS_RM_PATH . $catalog_edit ),
+				true
+			);
+			wp_set_script_translations( 'mds-rm-catalog-explorer-editor', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+		}
+		$catalog_css = 'css/catalog-explorer.css';
+		if ( file_exists( MDS_RM_PATH . $catalog_css ) ) {
+			wp_register_style(
+				'mds-rm-catalog-explorer',
+				MDS_RM_URL . $catalog_css,
+				array(),
+				(string) filemtime( MDS_RM_PATH . $catalog_css )
+			);
+			wp_add_inline_style( 'mds-rm-catalog-explorer', \MDS\ReleaseManager\Frontend\ThemeScheme::css_variables() );
+		}
+		register_block_type(
+			MDS_RM_PATH . 'blocks/catalog-explorer',
+			array(
+				'render_callback' => array( CatalogExplorer::class, 'render' ),
+			)
+		);
 	}
 
 	/**

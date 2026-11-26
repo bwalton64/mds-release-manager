@@ -113,6 +113,21 @@
 		const [previewRes, setPreviewRes] = useState(null);
 		const [viewport, setViewport] = useState('desktop');
 
+		// Bridge for companion plugins (e.g. MDS Metadata) to update Artist profile fields.
+		useEffect(() => {
+			function handleApplyArtistMeta(event) {
+				const detail = event && event.detail ? event.detail : null;
+				if (!detail || typeof detail !== 'object') {
+					return;
+				}
+				if (typeof detail.artist_website === 'string' && detail.artist_website.trim()) {
+					setHomepageUrl(detail.artist_website.trim());
+				}
+			}
+			window.addEventListener('mds-rm:apply-artist-metadata', handleApplyArtistMeta);
+			return () => window.removeEventListener('mds-rm:apply-artist-metadata', handleApplyArtistMeta);
+		}, []);
+
 		// Inject "Live Artist Preview" button right next to "Add New Artist" (.page-title-action).
 		useEffect(() => {
 			const existing = document.getElementById('mds-header-live-preview-btn');

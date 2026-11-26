@@ -19,11 +19,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Maps arbitrary CSV columns to canonical MDS Release Manager fields.
+ * Maps arbitrary import columns to canonical MDS Release Manager fields.
+ *
+ * Includes built-in header-synonym and sample-data heuristic detection plus
+ * neutral extension filters (`mds_rm_import_ai_status`, `mds_rm_import_ai_map_columns`)
+ * so companion extensions (such as MDS Metadata) can provide AI-assisted mapping.
  *
  * @since 2.1.0
  */
-final class CsvFieldMapper {
+final class ImportFieldMapper {
 
 	/**
 	 * Returns all valid target fields (core fields + configured streaming providers).
@@ -131,37 +135,49 @@ final class CsvFieldMapper {
 	}
 
 	/**
-	 * Reports whether optional AI column-mapping assistance is configured.
+	 * Reports whether an extension has registered AI column-mapping assistance.
+	 *
+	 * Core never makes direct external LLM calls; companion plugins (such as MDS Metadata)
+	 * register themselves via `mds_rm_import_ai_status` and `mds_rm_import_ai_map_columns`.
 	 *
 	 * @return array{available: bool, provider: string, label: string}
 	 */
 	public static function ai_status(): array {
-		if ( function_exists( 'has_filter' ) && has_filter( 'mds_rm_csv_ai_map_columns' ) ) {
+		$default = array(
+			'available' => false,
+			'provider'  => 'none',
+			'label'     => __( 'Not Configured', 'mds-release-manager' ),
+		);
+
+		if ( function_exists( 'apply_filters' ) ) {
+			/**
+			 * Filters the availability and provider label for AI-assisted import column mapping.
+			 *
+			 * @since 2.1.0
+			 * @param array{available: bool, provider: string, label: string} $status Default status.
+			 */
+			$filtered = apply_filters( 'mds_rm_import_ai_status', $default );
+			if ( is_array( $filtered ) && ! empty( $filtered['available'] ) ) {
+				return array(
+					'available' => true,
+					'provider'  => sanitize_key( (string) ( $filtered['provider'] ?? 'custom' ) ),
+					'label'     => (string) ( $filtered['label'] ?? __( 'AI Provider', 'mds-release-manager' ) ),
+				);
+			}
+		}
+
+		if (
+			function_exists( 'has_filter' )
+			&& ( has_filter( 'mds_rm_import_ai_map_columns' ) || has_filter( 'mds_rm_csv_ai_map_columns' ) )
+		) {
 			return array(
 				'available' => true,
 				'provider'  => 'custom',
 				'label'     => __( 'Custom AI Provider', 'mds-release-manager' ),
 			);
 		}
-		if ( defined( 'MDS_RM_GEMINI_API_KEY' ) && '' !== trim( (string) constant( 'MDS_RM_GEMINI_API_KEY' ) ) ) {
-			return array(
-				'available' => true,
-				'provider'  => 'gemini',
-				'label'     => 'Google Gemini',
-			);
-		}
-		if ( defined( 'MDS_RM_OPENAI_API_KEY' ) && '' !== trim( (string) constant( 'MDS_RM_OPENAI_API_KEY' ) ) ) {
-			return array(
-				'available' => true,
-				'provider'  => 'openai',
-				'label'     => 'OpenAI',
-			);
-		}
-		return array(
-			'available' => false,
-			'provider'  => 'none',
-			'label'     => __( 'Not Configured', 'mds-release-manager' ),
-		);
+
+		return $default;
 	}
 
 	/**
@@ -238,7 +254,7 @@ final class CsvFieldMapper {
 		if ( ! $status['available'] ) {
 			return new \WP_Error(
 				'mds_rm_ai_unconfigured',
-				__( 'AI mapping is not configured. Define MDS_RM_GEMINI_API_KEY or MDS_RM_OPENAI_API_KEY in wp-config.php to enable AI-assisted column mapping.', 'mds-release-manager' ),
+				__( 'No AI column-mapping provider is active.', 'mds-release-manager' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -255,24 +271,29 @@ final class CsvFieldMapper {
 		}
 
 		$raw_map = null;
-		if ( 'custom' === $status['provider'] && function_exists( 'apply_filters' ) ) {
+		if ( function_exists( 'apply_filters' ) ) {
 			/**
-			 * Filters AI-generated CSV column mappings.
+			 * Filters AI-generated import column mappings.
 			 *
-			 * Return an associative array mapping CSV column index (int) or header name (string)
-			 * to a valid target key from `CsvFieldMapper::target_fields()`, or `''` to skip.
+			 * Return an associative array mapping column index (int) or header name (string)
+			 * to a valid target key from `ImportFieldMapper::target_fields()`, or `''` to skip.
 			 *
 			 * @since 2.1.0
 			 * @param array<int|string, string>|null $raw_map       Default null.
-			 * @param string[]                       $headers       CSV headers.
+			 * @param string[]                       $headers       Column headers.
 			 * @param array<int, string[]>           $trimmed_rows  Up to 3 truncated sample rows.
 			 * @param array<string, array>           $valid_targets Allowed target field keys and labels.
 			 */
-			$raw_map = apply_filters( 'mds_rm_csv_ai_map_columns', null, $headers, $trimmed_rows, $valid_targets );
-		} elseif ( 'gemini' === $status['provider'] ) {
-			$raw_map = self::call_gemini( $headers, $trimmed_rows, $valid_targets );
-		} elseif ( 'openai' === $status['provider'] ) {
-			$raw_map = self::call_openai( $headers, $trimmed_rows, $valid_targets );
+			$raw_map = apply_filters( 'mds_rm_import_ai_map_columns', null, $headers, $trimmed_rows, $valid_targets );
+
+			if ( null === $raw_map && function_exists( 'has_filter' ) && has_filter( 'mds_rm_csv_ai_map_columns' ) ) {
+				/**
+				 * Legacy filter alias for AI-generated CSV column mappings.
+				 *
+				 * @since 2.0.2
+				 */
+				$raw_map = apply_filters( 'mds_rm_csv_ai_map_columns', null, $headers, $trimmed_rows, $valid_targets );
+			}
 		}
 
 		if ( is_wp_error( $raw_map ) ) {
@@ -573,133 +594,6 @@ final class CsvFieldMapper {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Calls Google Gemini API (`gemini-2.5-flash`) to map CSV headers to target keys.
-	 *
-	 * @param string[]             $headers       CSV headers.
-	 * @param array<int, string[]> $sample_rows   Truncated sample rows.
-	 * @param array<string, array> $valid_targets Allowed target field keys.
-	 * @return array<string, string>|\WP_Error
-	 */
-	private static function call_gemini( array $headers, array $sample_rows, array $valid_targets ) {
-		if ( ! function_exists( 'wp_remote_post' ) ) {
-			return new \WP_Error( 'mds_rm_http_unavailable', __( 'WordPress HTTP API is unavailable.', 'mds-release-manager' ) );
-		}
-		$api_key = trim( (string) constant( 'MDS_RM_GEMINI_API_KEY' ) );
-		$prompt  = self::build_ai_prompt( $headers, $sample_rows, $valid_targets );
-		$url     = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . rawurlencode( $api_key );
-
-		$response = wp_remote_post(
-			$url,
-			array(
-				'timeout' => 20,
-				'headers' => array( 'Content-Type' => 'application/json' ),
-				'body'    => wp_json_encode(
-					array(
-						'contents'         => array(
-							array(
-								'parts' => array(
-									array( 'text' => $prompt ),
-								),
-							),
-						),
-						'generationConfig' => array(
-							'temperature'      => 0.0,
-							'responseMimeType' => 'application/json',
-						),
-					)
-				),
-			)
-		);
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-		if ( 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-			return new \WP_Error( 'mds_rm_gemini_error', __( 'Gemini API returned an error while mapping columns.', 'mds-release-manager' ), array( 'status' => 502 ) );
-		}
-
-		$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
-		$text = $body['candidates'][0]['content']['parts'][0]['text'] ?? '';
-		$map  = is_string( $text ) ? json_decode( trim( $text ), true ) : null;
-		return is_array( $map ) ? $map : new \WP_Error( 'mds_rm_ai_parse', __( 'Could not parse Gemini mapping JSON.', 'mds-release-manager' ), array( 'status' => 502 ) );
-	}
-
-	/**
-	 * Calls OpenAI Chat Completions API (`gpt-4o-mini`) to map CSV headers to target keys.
-	 *
-	 * @param string[]             $headers       CSV headers.
-	 * @param array<int, string[]> $sample_rows   Truncated sample rows.
-	 * @param array<string, array> $valid_targets Allowed target field keys.
-	 * @return array<string, string>|\WP_Error
-	 */
-	private static function call_openai( array $headers, array $sample_rows, array $valid_targets ) {
-		if ( ! function_exists( 'wp_remote_post' ) ) {
-			return new \WP_Error( 'mds_rm_http_unavailable', __( 'WordPress HTTP API is unavailable.', 'mds-release-manager' ) );
-		}
-		$api_key  = trim( (string) constant( 'MDS_RM_OPENAI_API_KEY' ) );
-		$prompt   = self::build_ai_prompt( $headers, $sample_rows, $valid_targets );
-		$response = wp_remote_post(
-			'https://api.openai.com/v1/chat/completions',
-			array(
-				'timeout' => 20,
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $api_key,
-				),
-				'body'    => wp_json_encode(
-					array(
-						'model'           => 'gpt-4o-mini',
-						'temperature'     => 0,
-						'response_format' => array( 'type' => 'json_object' ),
-						'messages'        => array(
-							array(
-								'role'    => 'system',
-								'content' => 'Return ONLY a flat JSON object mapping each input CSV header string to one of the allowed target keys, or "" if unmapped.',
-							),
-							array(
-								'role'    => 'user',
-								'content' => $prompt,
-							),
-						),
-					)
-				),
-			)
-		);
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-		if ( 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-			return new \WP_Error( 'mds_rm_openai_error', __( 'OpenAI API returned an error while mapping columns.', 'mds-release-manager' ), array( 'status' => 502 ) );
-		}
-
-		$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
-		$text = $body['choices'][0]['message']['content'] ?? '';
-		$map  = is_string( $text ) ? json_decode( trim( $text ), true ) : null;
-		return is_array( $map ) ? $map : new \WP_Error( 'mds_rm_ai_parse', __( 'Could not parse OpenAI mapping JSON.', 'mds-release-manager' ), array( 'status' => 502 ) );
-	}
-
-	/**
-	 * Builds the structured prompt for AI column mapping.
-	 *
-	 * @param string[]             $headers       CSV headers.
-	 * @param array<int, string[]> $sample_rows   Sample rows.
-	 * @param array<string, array> $valid_targets Allowed targets.
-	 * @return string
-	 */
-	private static function build_ai_prompt( array $headers, array $sample_rows, array $valid_targets ): string {
-		$target_list = array();
-		foreach ( $valid_targets as $key => $meta ) {
-			$target_list[ $key ] = $meta['label'];
-		}
-		return "Map each CSV column header to the best matching music catalog target key (or empty string \"\" if unrelated). Each target key may be used at most once.\n"
-			. 'Allowed target keys: ' . wp_json_encode( $target_list ) . "\n"
-			. 'CSV headers: ' . wp_json_encode( $headers ) . "\n"
-			. 'Sample rows: ' . wp_json_encode( $sample_rows ) . "\n"
-			. 'Respond with ONLY a JSON object whose keys are the exact CSV header strings and whose values are allowed target keys or "".';
 	}
 
 	/**

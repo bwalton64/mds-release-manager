@@ -1,0 +1,60 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "mds-rm/catalog-explorer",
+	"version": "2.1.0",
+	"title": "Catalog / Discography Explorer",
+	"category": "mds-release-manager",
+	"icon": "grid-view",
+	"description": "Searchable, filterable, paginated release catalog grid with optional inline audio previews.",
+	"keywords": ["discography", "catalog", "releases", "search", "filter", "grid", "music"],
+	"textdomain": "mds-release-manager",
+	"supports": {
+		"html": false,
+		"align": ["wide", "full"]
+	},
+	"attributes": {
+		"artistId": {
+			"type": "string",
+			"default": ""
+		},
+		"perPage": {
+			"type": "number",
+			"default": 12
+		},
+		"columns": {
+			"type": "number",
+			"default": 3
+		},
+		"pagination": {
+			"type": "string",
+			"default": "numbered"
+		},
+		"defaultSort": {
+			"type": "string",
+			"default": "date_desc"
+		},
+		"showSearch": {
+			"type": "boolean",
+			"default": true
+		},
+		"showFilters": {
+			"type": "boolean",
+			"default": true
+		},
+		"showSort": {
+			"type": "boolean",
+			"default": true
+		},
+		"showAudio": {
+			"type": "boolean",
+			"default": true
+		},
+		"showLinks": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"editorScript": "mds-rm-catalog-explorer-editor",
+	"style": "mds-rm-catalog-explorer"
+}

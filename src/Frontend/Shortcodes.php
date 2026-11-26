@@ -30,6 +30,7 @@ final class Shortcodes {
 		add_shortcode( 'release-links', array( \MDS\ReleaseManager\Blocks\ReleaseLinks::class, 'shortcode' ) );
 		add_shortcode( 'release-player', array( \MDS\ReleaseManager\Blocks\ReleasePlayer::class, 'shortcode' ) );
 		add_shortcode( 'artist-discography', array( Discography::class, 'shortcode' ) );
+		add_shortcode( 'catalog-explorer', array( \MDS\ReleaseManager\Blocks\CatalogExplorer::class, 'shortcode' ) );
 	}
 
 	/**

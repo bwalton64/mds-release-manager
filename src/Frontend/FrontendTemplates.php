@@ -35,6 +35,26 @@ final class FrontendTemplates {
 		add_filter( 'the_content', array( self::class, 'filter_artist_content' ), 20 );
 		add_filter( 'post_thumbnail_html', array( self::class, 'filter_release_featured_image' ), 10, 2 );
 		add_filter( 'render_block', array( self::class, 'filter_release_author_group' ), 20, 3 );
+		add_filter( 'template_include', array( self::class, 'maybe_use_catalog_archive_template' ), 20 );
+	}
+
+	/**
+	 * Optionally renders the Catalog Explorer template on the `/release/` post-type archive.
+	 *
+	 * @since 2.1.0
+	 * @param string $template Resolved theme template path.
+	 * @return string Template path.
+	 */
+	public static function maybe_use_catalog_archive_template( string $template ): string {
+		if ( is_admin() || ! is_post_type_archive( 'release' ) ) {
+			return $template;
+		}
+		$tpl = TemplateDefaults::get( 'release' );
+		if ( empty( $tpl['enable_catalog_archive'] ) ) {
+			return $template;
+		}
+		$custom = MDS_RM_PATH . 'templates/archive-release-catalog.php';
+		return file_exists( $custom ) ? $custom : $template;
 	}
 
 	/** Enqueues fallback styles for eligible Artist pages. */

@@ -1475,23 +1475,22 @@
 						el(
 							'div',
 							{ className: 'mds-csv-map-toolbar__left' },
-							el(
-								Button,
-								{
-									variant: 'secondary',
-									disabled: !aiStatus.available || isAiMapping,
-									onClick: handleAiAssist,
-								},
-								isAiMapping
-									? __('Asking AI…', 'mds-release-manager')
-									: aiStatus.available
-										? sprintf(
+							aiStatus.available &&
+								el(
+									Button,
+									{
+										variant: 'secondary',
+										disabled: isAiMapping,
+										onClick: handleAiAssist,
+									},
+									isAiMapping
+										? __('Asking AI…', 'mds-release-manager')
+										: sprintf(
 												/* translators: %s: AI provider label. */
 												__('Ask AI to Map Columns (%s)', 'mds-release-manager'),
 												aiStatus.label
 											)
-										: __('Ask AI to Map Columns (Not Configured)', 'mds-release-manager')
-							),
+								),
 							isAiMapping && el(Spinner, null),
 							el(
 								Button,
@@ -1529,16 +1528,6 @@
 							)
 						)
 					),
-
-					!aiStatus.available &&
-						el(
-							'p',
-							{ className: 'description mds-csv-ai-hint' },
-							__(
-								'Tip: To enable AI-assisted column mapping for unusual distributor exports, define MDS_RM_GEMINI_API_KEY or MDS_RM_OPENAI_API_KEY in wp-config.php (or hook the mds_rm_csv_ai_map_columns filter).',
-								'mds-release-manager'
-							)
-						),
 
 					// Dry-run summary strip
 					el(

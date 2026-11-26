@@ -4,7 +4,7 @@ Tags: music, discography, artists, releases, streaming
 Requires at least: 7.0
 Tested up to: 7.x
 Requires PHP: 8.0
-Stable tag: 2.0.4
+Stable tag: 2.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -61,6 +61,12 @@ By default, **Font Awesome Integration** runs in **Auto** mode: if an active Fon
 Yes. Network activate the plugin and configure your Master Hub and Spoke sites under **Network Admin > Settings > MDS Release Manager**. Spokes remain read-only so your Hub stays the single source of truth.
 
 == Changelog ==
+
+= 2.1.0 =
+
+* Added the native **Catalog / Discography Explorer** (`mds-rm/catalog-explorer` Gutenberg block, `[catalog-explorer]` shortcode, `GET /mds/v1/catalog` public REST endpoint) with server-rendered initial load, live search (title, artist, UPC/EAN), faceted filters (Artist, Release Type, Year, Release Tags, Record Label, Media Format), sorting, active filter chips, bookmarkable URL query sync, configurable **Numbered Pagination** or **Load More**, inline 1-click JIT Audio Preview buttons, and an optional **Use Catalog Explorer on `/release/` Archive Page** toggle in **Default Templates**.
+* Renamed `CsvHandler` → `ImportExportHandler` and `CsvFieldMapper` → `ImportFieldMapper` for format-agnostic CSV/JSON/XML import/export support.
+* Moved direct Gemini/OpenAI LLM column mapping out of Free Core into companion `mds-metadata` via neutral `mds_rm_import_ai_status` / `mds_rm_import_ai_map_columns` filters for a 100% self-contained, Clean-Core WordPress.org experience.
 
 = 2.0.4 =
 

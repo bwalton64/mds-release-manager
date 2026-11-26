@@ -1,17 +1,17 @@
-# Code Review Report — MDS Release Manager (v2.0.2 Pre-Release)
+# Code Review Report — MDS Release Manager (v2.1.0 Pre-Release)
 
-- **Date:** 2026-11-25
-- **Scope:** Changes since `v2.0.1` (`src/Admin/CsvFieldMapper.php`, `src/Admin/CsvHandler.php`, `src/Frontend/Assets.php`, `includes/admin/views/csv-page.php`, `js/csv-wizard.js`, `css/admin-styles.css`, `tests/csv-mapper.php`)
-- **Summary:** 0 Critical | 0 High | 0 Medium | 1 Low
+- **Date:** 2026-11-26
+- **Scope:** Changes since `v2.0.4` (`src/Core/CatalogQuery.php`, `src/Blocks/CatalogExplorer.php`, `blocks/catalog-explorer/*`, `js/catalog-explorer.js`, `css/catalog-explorer.css`, `templates/archive-release-catalog.php`, `src/Admin/ImportExportHandler.php`, `src/Admin/ImportFieldMapper.php`, `js/csv-wizard.js`, `src/Frontend/TemplateDefaults.php`, `src/Frontend/FrontendTemplates.php`, `js/template-defaults.js`)
+- **Summary:** 0 Critical | 0 High | 0 Medium | 0 Low
 
 ## Executive Summary
 
-The `v2.0.2` Import/Export overhaul (Settings-parity UI, Smart Field Mapper + optional Gemini/OpenAI/filter AI assist, Hub+Spoke batched Purge & Reload, Duplicate & Identical-Record rules, and CSV/JSON/XML multi-format import/export) passes all architectural, PHP 8.0 compatibility, security, and performance checks. No Critical or High release blockers were found.
+All `v2.1.0` changes pass security, PHP 8.0 compatibility, performance, and WordPress.org Clean-Core tier-boundary checks with zero Critical or High blockers:
 
-- **Security:** All 4 new REST endpoints (`POST /mds/v1/csv/{suggest-map,ai-map,purge,import-batch}`) enforce `manage_options` + `Sync::is_hub()`. Purge requires explicit `"PURGE"` confirmation and strictly targets `release` and `artist` post types (never WooCommerce `product` posts). XML parsing rejects `<!DOCTYPE` / `<!ENTITY` declarations and uses `LIBXML_NONET | LIBXML_NOCDATA`. AI target keys are strictly validated against `CsvFieldMapper::target_fields()`.
-- **PHP 8.0 Compatibility:** No PHP 8.1+ syntax leakage (`enum`, `readonly`, first-class callables, intersection types). All global classes (`\WP_REST_Request`, `\WP_REST_Server`, `\WP_Error`, `\WP_Post`, `\SplTempFileObject`, `\XMLWriter`) are properly namespaced.
-- **Performance & Runaway Prevention:** Purge and import operate in bounded batches (50 / 25 rows), `on_hub_delete_post` is temporarily unhooked in `try/finally` during Hub purge to avoid N×M per-post spoke thrashing, and `switch_to_blog()` is always wrapped in `try/finally { restore_current_blog(); }`.
-- **Storage & Uninstall Parity:** No new persistent `wp_options`, `wp_sitemeta`, or transient keys were introduced.
+- **Security:** `GET /mds/v1/catalog` is strictly read-only and queries only `post_status = 'publish'` and `post_password = ''`, using prepared SQL statements and strict allowlists for sort keys, years, and pagination bounds (`per_page <= 48`). Client-side card rendering in `js/catalog-explorer.js` uses `createElement` / `textContent` exclusively (no raw `innerHTML`).
+- **Clean-Core Tier Boundary:** Direct Gemini/OpenAI LLM calls and API key hints have been extracted to `mds-metadata`; Free Core exposes only neutral `mds_rm_import_ai_status` and `mds_rm_import_ai_map_columns` filters and hides the AI mapping button when no AI extension is active.
+- **Performance:** Facet queries in `CatalogQuery::get_facets()` are cached in 15-minute transients and automatically invalidated on Release/Artist saves, deletes, and `mds_rm_after_cache_purge`. Inline card audio preview uses zero-bandwidth JIT resolution (`/mds/v1/releases/{id}/audio`) on click only.
+- **PHP 8.0 Compatibility & WPCS:** Zero PHP 8.1+ syntax leakage; full PSR-4 autoloading under `MDS\ReleaseManager\`.
 
 ## Findings Checklist
 
@@ -19,4 +19,4 @@ The `v2.0.2` Import/Export overhaul (Settings-parity UI, Smart Field Mapper + op
 - None.
 
 ### Medium / Low Priority
-- **CR-001 (Low — Non-JS Fallback):** The `<noscript>` fallback form in `includes/admin/views/csv-page.php` only supports classic MDS CSV uploads; JSON and XML imports require JavaScript in the 3-step wizard. Acceptable for WP-Admin (which requires JS for Gutenberg and `@wordpress/components`).
+- None.

@@ -2,7 +2,7 @@
 	"name": "mds/mds-release-manager",
 	"description": "Comprehensive Artist Release Manager for WordPress.",
 	"type": "wordpress-plugin",
-	"version": "2.0.4",
+	"version": "2.1.0",
 	"license": "GPL-2.0-or-later",
 	"require": {
 		"php": ">=8.0"
