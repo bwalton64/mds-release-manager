@@ -1,4 +1,15 @@
 
+/* Official Musty Dungeon Studios (MDS) Brand Icon */
+.mds-brand-icon {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	vertical-align: -0.125em;
+	background-color: currentColor;
+	-webkit-mask: url('../assets/icon.svg') no-repeat center / contain;
+	mask: url('../assets/icon.svg') no-repeat center / contain;
+}
+
 .mds-woo-release-container { display: flex; flex-direction: column; margin-bottom: 25px; width: 100%; }
 .mds-woo-meta-bar { display: flex; flex-wrap: wrap; align-items: center; font-size: 0.95em; font-weight: 500; line-height: 1.4; }
 .mds-woo-meta-bar .mds-meta-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }

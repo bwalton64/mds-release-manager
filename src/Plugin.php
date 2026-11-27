@@ -40,15 +40,19 @@ final class Plugin {
 	public static function init(): void {
 		\MDS\ReleaseManager\Frontend\Assets::register_hooks();
 		\MDS\ReleaseManager\Core\Cache::register_hooks();
+		\MDS\ReleaseManager\Core\Security\CredentialsAdmin::register_hooks();
 		\MDS\ReleaseManager\Core\Audio\AudioApi::register_hooks();
 		\MDS\ReleaseManager\Core\Sync::register_hooks();
 		\MDS\ReleaseManager\Core\PostTypes::register_hooks();
 		\MDS\ReleaseManager\Core\ReleaseModel::register_hooks();
 		\MDS\ReleaseManager\Core\CatalogQuery::register_hooks();
+		\MDS\ReleaseManager\Admin\Dashboard::register_hooks();
 		\MDS\ReleaseManager\Admin\AdminInterface::register_hooks();
 		\MDS\ReleaseManager\Admin\Editor::register_hooks();
 		\MDS\ReleaseManager\Admin\NetworkAdmin::register_hooks();
+		\MDS\ReleaseManager\Frontend\ThemeScheme::register_hooks();
 		\MDS\ReleaseManager\Frontend\FrontendTemplates::register_hooks();
+		\MDS\ReleaseManager\Frontend\BlockTemplates::register_hooks();
 		\MDS\ReleaseManager\Frontend\ArtistRouting::register_hooks();
 		\MDS\ReleaseManager\Api\RestApi::register_hooks();
 		\MDS\ReleaseManager\Frontend\Shortcodes::register_hooks();
@@ -65,7 +69,7 @@ final class Plugin {
 				'repo'           => 'bwalton64/mds-release-manager',
 				'version'        => MDS_RM_VERSION,
 				'name'           => 'MDS Release Manager',
-				'author'         => 'Walton International Business Group',
+				'author'         => 'Musty Dungeon Studios',
 				'homepage'       => 'https://mustydungeon.com',
 				'token_constant' => 'MDS_RM_GITHUB_TOKEN',
 				'requires'       => '7.0',

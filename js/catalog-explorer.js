@@ -64,7 +64,7 @@
 		} else {
 			const ph = createEl('span', 'mds-catalog-card__placeholder');
 			ph.setAttribute('aria-hidden', 'true');
-			ph.appendChild(createEl('span', 'dashicons dashicons-album'));
+			ph.appendChild(createEl('span', 'mds-brand-icon'));
 			coverLink.appendChild(ph);
 		}
 		media.appendChild(coverLink);

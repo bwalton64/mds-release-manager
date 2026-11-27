@@ -2,9 +2,10 @@
 
 Comprehensive WordPress music catalog, artist discography, streaming links, and unified audio preview manager — built for single-site installs and Hub-and-Spoke WordPress Multisite networks.
 
-- **Version:** `2.1.0` (Extension API `2.0.0`)
+- **Version:** `2.2.0` (Extension API `2.0.0`)
 - **Requirements:** WordPress `7.0+` (Tested up to `7.x`) · PHP `8.0+`
-- **License:** GPL-2.0-or-later
+- **Author:** Musty Dungeon Studios (a wholly owned subsidiary of Walton International Business Group LLC) — https://mustydungeon.com
+- **License:** GPL-3.0-or-later
 
 > Looking for end-user and site-admin instructions? See [USER-MANUAL.md](USER-MANUAL.md).  
 > Looking for version history? See [changelog.md](changelog.md).  

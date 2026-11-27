@@ -1,23 +1,59 @@
 {
-	"$schema": "https://schemas.wp.org/trunk/block.json",
-	"apiVersion": 3,
-	"name": "mds-rm/release-links",
-	"title": "Release Links",
-	"category": "mds-release-manager",
-	"icon": "album",
-	"textdomain": "mds-release-manager",
-	"usesContext": ["postId", "postType"],
-	"attributes": {
-		"releaseId": { "type": "integer", "default": 0 },
-		"linkStyles": { "type": "object" },
-		"upcOverride": { "type": "string", "default": "" },
-		"items": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
-		"itemOverrides": { "type": "object", "additionalProperties": true },
-		"itemOrder": { "type": "array", "items": { "type": "string" } },
-		"newTab": { "type": "boolean" },
-		"buyNowMode": { "type": "string", "enum": ["picker", "direct"] },
-		"styles": { "type": "object", "default": {}, "additionalProperties": true }
-	},
-	"editorScript": "mds-rm-release-links-editor",
-	"editorStyle": "mds-rm-release-links-editor-style"
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "mds-rm/release-links",
+  "title": "Release Links",
+  "category": "mds-release-manager",
+  "textdomain": "mds-release-manager",
+  "usesContext": [
+    "postId",
+    "postType"
+  ],
+  "attributes": {
+    "releaseId": {
+      "type": "integer",
+      "default": 0
+    },
+    "linkStyles": {
+      "type": "object"
+    },
+    "upcOverride": {
+      "type": "string",
+      "default": ""
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "itemOverrides": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "itemOrder": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "newTab": {
+      "type": "boolean"
+    },
+    "buyNowMode": {
+      "type": "string",
+      "enum": [
+        "picker",
+        "direct"
+      ]
+    },
+    "styles": {
+      "type": "object",
+      "default": {},
+      "additionalProperties": true
+    }
+  },
+  "editorScript": "mds-rm-release-links-editor",
+  "editorStyle": "mds-rm-release-links-editor-style"
 }

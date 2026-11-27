@@ -115,3 +115,13 @@
 		opacity: var(--mds-meta-icon-opacity-mobile, var(--mds-meta-icon-opacity-tablet, var(--mds-meta-icon-opacity-desktop, .8)));
 	}
 }
+
+.mds-release-meta .mds-brand-icon {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	vertical-align: -0.125em;
+	background-color: currentColor;
+	-webkit-mask: url('../assets/icon.svg') no-repeat center / contain;
+	mask: url('../assets/icon.svg') no-repeat center / contain;
+}

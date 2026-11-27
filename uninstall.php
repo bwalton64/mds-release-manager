@@ -49,9 +49,12 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 		'mds_rm_global_redirect',
 		'mds_rm_block_defaults',
 		'mds_rm_template_defaults',
+		'mds_rm_active_scheme_fingerprint',
 		'mds_rm_cache_settings',
 		'mds_rm_network_sync_job',
 		'mds_rm_network_sync_lock',
+		'mds_rm_secret_vault',
+		'mds_rm_secret_audit',
 		'mds_rm_release_type_migrated',
 		'mds_rm_seeded_media_formats_hash',
 		'mds_rm_media_formats_seeded',
@@ -66,6 +69,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 		if ( function_exists( 'delete_transient' ) ) {
 			delete_transient( 'mds_rm_release_audit' );
+			delete_transient( 'mds_rm_scheme_reset_notice' );
 		}
 
 		global $wpdb;

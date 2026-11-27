@@ -31,6 +31,8 @@ final class Config {
 	public const OPTION_AUDIO_DISABLED_PROVIDERS = 'mds_rm_audio_disabled_providers';
 	public const OPTION_FA_SUPPORT               = 'mds_rm_fa_support';
 	public const OPTION_NETWORK_SYNC_JOB         = 'mds_rm_network_sync_job';
+	public const OPTION_SECRET_VAULT             = 'mds_rm_secret_vault';
+	public const OPTION_SECRET_AUDIT             = 'mds_rm_secret_audit';
 
 	/**
 	 * Multisite network-level option keys.

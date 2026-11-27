@@ -8,7 +8,7 @@
 	const ICON_PRESETS = [
 		{ label: __('Choose a common icon…', 'mds-release-manager'), value: '' },
 		{ label: __('No icon', 'mds-release-manager'), value: '__none' },
-		{ label: __('Album (Dashicons)', 'mds-release-manager'), value: 'dashicons dashicons-album' },
+		{ label: __('MDS Official Logo', 'mds-release-manager'), value: 'mds-brand-icon' },
 		{ label: __('Calendar (Dashicons)', 'mds-release-manager'), value: 'dashicons dashicons-calendar-alt' },
 		{ label: __('Artist (Dashicons)', 'mds-release-manager'), value: 'dashicons dashicons-groups' },
 		{ label: __('Tag (Dashicons)', 'mds-release-manager'), value: 'dashicons dashicons-tag' },
@@ -131,12 +131,47 @@
 		);
 	}
 
+	function ThemeSchemeBar({ scheme, onResetColors }) {
+		if (!scheme || typeof scheme !== 'object') return null;
+		const modeLabel = scheme.isDark ? __('Dark', 'mds-release-manager') : __('Light', 'mds-release-manager');
+		const sourceLabel = scheme.sourceLabel || __('Active Theme', 'mds-release-manager');
+		const themeLabel = scheme.themeName || __('Active Theme', 'mds-release-manager');
+		return el('div', { className: 'mds-theme-preset-bar' },
+			el('div', { className: 'mds-theme-preset-bar__status' },
+				el('span', { className: 'mds-theme-preset-bar__swatches', 'aria-hidden': true },
+					scheme.background && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.background }, title: __('Background', 'mds-release-manager') }),
+					scheme.surface && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.surface }, title: __('Surface', 'mds-release-manager') }),
+					scheme.text && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.text }, title: __('Text', 'mds-release-manager') }),
+					scheme.border && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.border }, title: __('Border', 'mds-release-manager') }),
+					scheme.accent && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.accent }, title: __('Accent', 'mds-release-manager') })
+				),
+				el('div', null,
+					el('span', { className: 'mds-theme-preset-bar__title' },
+						// translators: 1: Active theme name. 2: Detection source (e.g. Elementor Kit or WordPress Global Styles). 3: Light or Dark.
+						sprintf(__('Detected Theme Scheme: %1$s · %2$s (%3$s)', 'mds-release-manager'), themeLabel, sourceLabel, modeLabel)
+					),
+					el('span', { className: 'mds-theme-preset-bar__sub' },
+						__('Auto-applied as your baseline across Default Templates and Block Defaults. Switching themes or color schemes automatically resets color overrides to match.', 'mds-release-manager')
+					)
+				)
+			),
+			typeof onResetColors === 'function' && el('div', { className: 'mds-theme-preset-bar__actions' },
+				el(Button, {
+					variant: 'secondary',
+					size: 'compact',
+					onClick: onResetColors,
+				}, __('Reset Color Overrides to Baseline', 'mds-release-manager'))
+			)
+		);
+	}
+
 	window.mdsRmStylePrimitives = {
 		ICON_PRESETS,
 		SectionInfo,
 		ControlGroup,
 		AccordionToolbar,
 		RepeaterCard,
+		ThemeSchemeBar,
 	};
 
 	function presets(list, type) {

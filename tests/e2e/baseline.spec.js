@@ -191,6 +191,10 @@ test('fallback blocks reflect site-wide settings saved in the admin', async ({ p
 	await page.getByRole('link', { name: 'Block Defaults', exact: true }).click();
 	const tab = page.locator('#tab-block-defaults');
 	await expect(tab.locator('.mds-theme-preset-bar')).toBeVisible();
+	const showPreviewBtn = tab.getByRole('button', { name: 'Show Live Preview', exact: true });
+	if (await showPreviewBtn.isVisible()) {
+		await showPreviewBtn.click();
+	}
 	await expect(tab.locator('#mds-bd-live-preview-release-meta')).toBeVisible();
 
 	// Release Meta background
@@ -347,7 +351,7 @@ test('baseline: frontend fallbacks, Gutenberg metadata, and settings save', asyn
 	await test.step('CSV, network settings, and Artist admin views remain usable', async () => {
 		await page.goto('/wp-admin/edit.php?post_type=release&page=mds-release-csv');
 		await expect(page.getByRole('button', { name: 'Export to CSV' })).toBeVisible();
-		await expect(page.getByLabel('CSV File')).toBeVisible();
+		await expect(page.getByLabel('CSV File (or JSON / XML)')).toBeVisible();
 
 		runWpCli(['super-admin', 'add', fixture.username]);
 		await page.goto('/wp-admin/network/settings.php?page=mds-release-network-settings');

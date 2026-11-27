@@ -6,9 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-27
+
 ### Added
-- Completed 5-widget **Elementor** parity in Core (`src/Integrations/Elementor/{PlayerWidget,DiscographyWidget,CatalogExplorerWidget}.php`, registered in `Tags.php`) so Elementor users have native thin widgets for **Release Meta**, **Release Links**, **Release Player**, **Artist Discography**, and **Catalog / Discography Explorer**.
-- Added **Breakdance** builder detection (`_breakdance_data`) to `BuilderDetection::detect_builder()` so Release and Artist fallback templates never duplicate Breakdance layouts.
+- **Release Manager Top-Level Menu & Dashboard (`src/Admin/Dashboard.php`, `js/dashboard.js`):** Renamed the top-level WordPress admin menu from **Releases** to **Release Manager** and added a native `@wordpress/components` **Dashboard** as the default landing page at the top of the submenu (KPI summary cards, Catalog Health & Completeness checklist, Recent Releases, Active Theme Scheme & Templates card, Multisite Hub/Spoke status, `parent_file`/`submenu_file` highlighting, and automatic legacy URL redirects).
+- **Designated Release Archive Page & Full Archive Styling (`src/Core/PostTypes.php`, `src/Frontend/TemplateDefaults.php`, `src/Frontend/FrontendTemplates.php`, `templates/archive-release-catalog.php`, `js/template-defaults.js`):**
+  - Added a dedicated 3rd **Release Archive Template** panel in **Default Templates** with full styling controls (columns, per-page, sort, pagination, container spacing, card background/border/radius/shadow/aspect ratio, hover lift, toolbar/module toggles) and a real-time Live Preview.
+  - Adopted the Designated Archive Page pattern (title- and language-agnostic): assign any published WordPress Page to host the Release Archive URL, title, intro content, and native WordPress navigation menu highlighting while keeping individual releases at `/release/{slug}/`, with automatic rewrite flushing and `— Release Archive Page` post-state badges.
+- **WordPress 7.x Native Block Templates (`src/Frontend/BlockTemplates.php`):** Registered `mds-release-manager//archive-release`, `single-release`, and `single-artist` via `register_block_template()` for native Site Editor and built-in Template Selector support on Block Themes.
+- **Intelligent Multi-Source Theme Scheme & Auto-Reset (`src/Frontend/ThemeScheme.php`, `blocks/native-release-styles.js`):**
+  - Upgraded `ThemeScheme::detect()` with a priority detection waterfall covering **Elementor Active Kits**, **Bricks Theme Styles**, **WordPress Global Styles**, **Kadence / Astra / GeneratePress**, Core Customizer, and the extensible `mds_rm_theme_scheme_sources` filter.
+  - Added `ThemeScheme::fingerprint()` + automatic color-override baseline resets (preserving layout, columns, and component order) whenever the active theme or builder scheme changes.
+  - Unified the **Detected Theme Scheme** banner (`ThemeSchemeBar`) across both **Default Templates** and **Block Defaults**, replacing manual Light/Dark preset buttons with automatic detection and a single **Reset Color Overrides to Baseline** action.
+- **Official Musty Dungeon Studios Brand Logo & GPL-3.0 Licensing (`src/Core/BrandIcon.php`, `src/Api/ExtensionApi.php`, `src/Core/GitHubUpdater.php`, `LICENSE`, `CONTRIBUTING.md`):**
+  - Replaced `dashicons-album` everywhere across menus, Gutenberg blocks, pickers, previews, and Elementor with the official MDS logo (`assets/icon.svg`, `icon-128x128.png`, `icon-256x256.png`, `.mds-brand-icon`), exposed shared `ExtensionApi::get_brand_icon_*()` helpers, and wired updater modal icons into `GitHubUpdater`.
+  - Updated license to **GPL-3.0-or-later** with Musty Dungeon Studios (a wholly owned subsidiary of Walton International Business Group LLC) attribution, `https://mustydungeon.com` canonical URLs, and a dual-licensing `CONTRIBUTING.md` CLA.
+- Completed 5-widget **Elementor** parity in Core (`PlayerWidget`, `DiscographyWidget`, `CatalogExplorerWidget`) and added **Breakdance** builder detection (`_breakdance_data`) to `BuilderDetection`.
+
+### Changed
+- Retired the user-facing term **"Fallback"** across Default Templates, admin notices, and previews in favor of **Release Page Template**, **Artist Page Template**, and **Release Archive Template**.
+- Updated `uninstall.php` to clean up `mds_rm_active_scheme_fingerprint` and `mds_rm_scheme_reset_notice`.
 
 ## [2.1.0] - 2026-11-26
 

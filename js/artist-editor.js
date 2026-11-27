@@ -658,7 +658,7 @@
 															el('td', null,
 																row.thumbUrl
 																	? el('img', { src: row.thumbUrl, alt: '', width: 40, height: 40, style: { borderRadius: '3px', objectFit: 'cover' } })
-																	: el('span', { className: 'dashicons dashicons-album mds-routing-thumb-placeholder', 'aria-hidden': true })
+																	: el('span', { className: 'mds-brand-icon mds-routing-thumb-placeholder', 'aria-hidden': true })
 															),
 															el('td', null,
 																el('strong', null,

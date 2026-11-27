@@ -97,8 +97,8 @@
 		{ cls: 'fas fa-envelope', label: 'Contact Email', cat: 'meta', kw: 'booking press' },
 		{ cls: 'fas fa-location-dot', label: 'Location', cat: 'meta', kw: 'venue city tour' },
 
-		// WordPress Dashicons
-		{ cls: 'dashicons dashicons-album', label: 'Album (Dashicon)', cat: 'dashicons', kw: 'disc release music' },
+		// MDS Brand & WordPress Dashicons
+		{ cls: 'mds-brand-icon', label: 'MDS Official Logo', cat: 'music', kw: 'mds brand logo disc release music' },
 		{ cls: 'dashicons dashicons-format-audio', label: 'Audio (Dashicon)', cat: 'dashicons', kw: 'music note sound' },
 		{ cls: 'dashicons dashicons-playlist-audio', label: 'Playlist (Dashicon)', cat: 'dashicons', kw: 'tracks songs' },
 		{ cls: 'dashicons dashicons-controls-play', label: 'Play (Dashicon)', cat: 'dashicons', kw: 'stream preview' },

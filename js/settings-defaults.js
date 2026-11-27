@@ -8,7 +8,7 @@
 	const input = document.getElementById('mds-rm-block-defaults');
 	let all = Array.isArray(config.defaults) ? {} : { ...config.defaults };
 	const emptyBlocks = [];
-	const { ICON_PRESETS, SectionInfo, ControlGroup, AccordionToolbar, RepeaterCard } = window.mdsRmStylePrimitives;
+	const { ICON_PRESETS, SectionInfo, ControlGroup, AccordionToolbar, RepeaterCard, ThemeSchemeBar } = window.mdsRmStylePrimitives;
 
 	const PANEL_IDS = {
 		'release-meta': ['items', 'container', 'typography', 'icons'],
@@ -756,7 +756,7 @@
 			el('div', { className: 'mds-rm-player__main' },
 				showArtwork && el('div', { className: 'mds-rm-player__art' },
 					el('div', { className: 'mds-bd-preview-art', 'aria-hidden': true },
-						el('span', { className: 'dashicons dashicons-album' })
+						el('span', { className: 'mds-brand-icon' })
 					)
 				),
 				el('div', { className: 'mds-rm-player__controls' },
@@ -1060,41 +1060,6 @@
 		);
 	}
 
-	function ThemePresetBar({ onApplyPreset }) {
-		const scheme = config.themeScheme || {};
-		const presets = Array.isArray(config.stylePresets) ? config.stylePresets : [];
-		if (!presets.length) return null;
-
-		const modeLabel = scheme.isDark ? __('Dark', 'mds-release-manager') : __('Light', 'mds-release-manager');
-		return el('div', { className: 'mds-theme-preset-bar' },
-			el('div', { className: 'mds-theme-preset-bar__status' },
-				el('span', { className: 'mds-theme-preset-bar__swatches', 'aria-hidden': true },
-					scheme.background && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.background }, title: __('Theme Background', 'mds-release-manager') }),
-					scheme.text && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.text }, title: __('Theme Text', 'mds-release-manager') }),
-					scheme.accent && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.accent }, title: __('Theme Accent', 'mds-release-manager') })
-				),
-				el('div', null,
-					el('span', { className: 'mds-theme-preset-bar__title' },
-						// translators: 1: Active theme name. 2: Detected color scheme (Light or Dark).
-						sprintf(__('Detected Theme Scheme: %1$s (%2$s)', 'mds-release-manager'), scheme.themeName || __('Active Theme', 'mds-release-manager'), modeLabel)
-					),
-					el('span', { className: 'mds-theme-preset-bar__sub' },
-						__('Unset colors automatically adapt to your active theme or style variation. Or override with a starter preset across all four blocks:', 'mds-release-manager')
-					)
-				)
-			),
-			el('div', { className: 'mds-theme-preset-bar__actions' },
-				presets.map((preset) => el(Button, {
-					key: preset.id,
-					variant: preset.id === 'auto' ? 'secondary' : 'tertiary',
-					size: 'compact',
-					title: preset.description || '',
-					onClick: () => onApplyPreset(preset),
-				}, preset.label))
-			)
-		);
-	}
-
 	function BlockDefaultsTabs() {
 		const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 		const [canvasMode, setCanvasMode] = useState('theme');
@@ -1113,15 +1078,31 @@
 			speak(sprintf(__('Preview canvas switched to %s.', 'mds-release-manager'), next), 'polite');
 		}
 
-		function applyPreset(preset) {
-			if (!preset || !preset.blocks) return;
+		function resetColorOverrides() {
 			const nextAll = { ...all };
-			Object.entries(preset.blocks).forEach(([slug, patch]) => {
-				const current = { ...(nextAll[slug] || {}) };
-				Object.entries(patch).forEach(([k, v]) => {
-					if (v === null || v === undefined) delete current[k];
-					else current[k] = v;
-				});
+			const colorKeys = {
+				'release-meta': { nested: 'metaStyles', keys: ['background', 'color', 'icon_color', 'border_color'] },
+				'release-links': { nested: 'linkStyles', keys: ['background', 'color', 'border_color', 'button_background', 'button_color', 'button_border_color'] },
+				'release-player': { keys: ['backgroundColor', 'textColor', 'mutedColor', 'accentColor', 'playIconColor', 'borderColor'] },
+				'artist-discography': { nested: 'tableStyles', keys: ['header-background', 'header-color', 'body-background', 'body-color', 'stripe-background', 'cell-border-color', 'link-color'] },
+			};
+			Object.entries(colorKeys).forEach(([slug, spec]) => {
+				if (!nextAll[slug] || typeof nextAll[slug] !== 'object') return;
+				const current = { ...nextAll[slug] };
+				if (spec.nested && current[spec.nested] && typeof current[spec.nested] === 'object') {
+					const nestedCopy = { ...current[spec.nested] };
+					spec.keys.forEach((k) => delete nestedCopy[k]);
+					if (Object.keys(nestedCopy).length) current[spec.nested] = nestedCopy;
+					else delete current[spec.nested];
+				} else if (spec.keys) {
+					spec.keys.forEach((k) => delete current[k]);
+				}
+				if (slug === 'artist-discography' && current.style && current.style.color) {
+					const styleCopy = { ...current.style };
+					delete styleCopy.color;
+					if (Object.keys(styleCopy).length) current.style = styleCopy;
+					else delete current.style;
+				}
 				if (Object.keys(current).length) nextAll[slug] = current;
 				else delete nextAll[slug];
 			});
@@ -1129,11 +1110,8 @@
 			input.value = JSON.stringify(all);
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 			setPresetRevision((r) => r + 1);
-			if (preset.id === 'tt5-evening') setCanvasMode('dark');
-			else if (preset.id === 'tt5-light') setCanvasMode('light');
-			else if (preset.id === 'auto') setCanvasMode('theme');
-			// translators: %s: Preset name.
-			speak(sprintf(__('Applied "%s" preset to Block Defaults. Click Save Settings to persist.', 'mds-release-manager'), preset.label), 'polite');
+			setCanvasMode('theme');
+			speak(__('Reset block color overrides to the detected theme baseline. Click Save Settings to persist.', 'mds-release-manager'), 'polite');
 		}
 
 		const tabs = [
@@ -1143,7 +1121,7 @@
 			{ name: 'artist-discography', title: __('Artist Discography', 'mds-release-manager') },
 		];
 		return el(Fragment, null,
-			el(ThemePresetBar, { onApplyPreset: applyPreset }),
+			el(ThemeSchemeBar, { scheme: config.themeScheme || {}, onResetColors: resetColorOverrides }),
 			el(TabPanel, {
 				className: 'mds-block-defaults-tabs',
 				activeClass: 'is-active',

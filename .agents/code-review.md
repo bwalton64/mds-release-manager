@@ -1,22 +1,19 @@
-# Code Review Report — MDS Release Manager (v2.1.0 Pre-Release)
+# Code Review & Pre-Release Audit — MDS Release Manager (`v2.2.0`)
 
-- **Date:** 2026-11-26
-- **Scope:** Changes since `v2.0.4` (`src/Core/CatalogQuery.php`, `src/Blocks/CatalogExplorer.php`, `blocks/catalog-explorer/*`, `js/catalog-explorer.js`, `css/catalog-explorer.css`, `templates/archive-release-catalog.php`, `src/Admin/ImportExportHandler.php`, `src/Admin/ImportFieldMapper.php`, `js/csv-wizard.js`, `src/Frontend/TemplateDefaults.php`, `src/Frontend/FrontendTemplates.php`, `js/template-defaults.js`)
-- **Summary:** 0 Critical | 0 High | 0 Medium | 0 Low
+- **Date:** 2026-11-27
+- **Scope:** Full diff since `v2.1.0` (`src/Admin/Dashboard.php`, `src/Core/BrandIcon.php`, `src/Frontend/BlockTemplates.php`, `src/Frontend/ThemeScheme.php`, `src/Frontend/TemplateDefaults.php`, `src/Frontend/FrontendTemplates.php`, `src/Frontend/Assets.php`, `src/Core/PostTypes.php`, `src/Core/GitHubUpdater.php`, `src/Api/ExtensionApi.php`, `src/Core/Security/*`, `js/dashboard.js`, `js/template-defaults.js`, `js/settings-defaults.js`, `blocks/native-release-styles.js`, `templates/archive-release-catalog.php`, `uninstall.php`)
+- **Summary:** 0 Critical | 0 High | 0 Medium | 1 Low
 
 ## Executive Summary
 
-All `v2.1.0` changes pass security, PHP 8.0 compatibility, performance, and WordPress.org Clean-Core tier-boundary checks with zero Critical or High blockers:
-
-- **Security:** `GET /mds/v1/catalog` is strictly read-only and queries only `post_status = 'publish'` and `post_password = ''`, using prepared SQL statements and strict allowlists for sort keys, years, and pagination bounds (`per_page <= 48`). Client-side card rendering in `js/catalog-explorer.js` uses `createElement` / `textContent` exclusively (no raw `innerHTML`).
-- **Clean-Core Tier Boundary:** Direct Gemini/OpenAI LLM calls and API key hints have been extracted to `mds-metadata`; Free Core exposes only neutral `mds_rm_import_ai_status` and `mds_rm_import_ai_map_columns` filters and hides the AI mapping button when no AI extension is active.
-- **Performance:** Facet queries in `CatalogQuery::get_facets()` are cached in 15-minute transients and automatically invalidated on Release/Artist saves, deletes, and `mds_rm_after_cache_purge`. Inline card audio preview uses zero-bandwidth JIT resolution (`/mds/v1/releases/{id}/audio`) on click only.
-- **PHP 8.0 Compatibility & WPCS:** Zero PHP 8.1+ syntax leakage; full PSR-4 autoloading under `MDS\ReleaseManager\`.
+No release-blocking **Critical** or **High** findings were identified. All new classes use PHP `8.0+` strict types with zero PHP `8.1+` syntax leakage, proper escaping/sanitization, bounded SQL queries (`no_found_rows => true`, lightweight `COUNT` aggregates), clean `parent_file`/`submenu_file` menu handling, and backward-compatible legacy URL redirects.
 
 ## Findings Checklist
 
 ### Critical / High Priority
-- None.
+
+- *None.*
 
 ### Medium / Low Priority
-- None.
+
+- **CR-001 (Low — Storage / Uninstall Parity):** `uninstall.php` does not yet delete the newly added `mds_rm_active_scheme_fingerprint` option and `mds_rm_scheme_reset_notice` transient created by `src/Frontend/ThemeScheme.php`. Add both keys to `uninstall.php` cleanup before packaging `v2.2.0`.

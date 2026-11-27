@@ -1,7 +1,8 @@
 # MDS Release Manager — User Manual
 
-**Version:** `2.1.0`  
-**Requirements:** WordPress `7.0+` · PHP `8.0+` *(Optional companion plugins: MDS Audio Providers 2.0.0+, MDS WooCommerce)*
+**Version:** `2.2.0`  
+**Author:** Musty Dungeon Studios (Walton International Business Group LLC) · https://mustydungeon.com  
+**Requirements:** WordPress `7.0+` · PHP `8.0+` *(Optional companion plugins: MDS Audio Providers, MDS Commerce, MDS Metadata, MDS Page Builders)*
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -32,9 +33,9 @@ flowchart LR
 ## 2. Installation & Setup
 
 ### Single-Site Installation
-1. Go to **Plugins → Add New → Upload Plugin** and upload `mds-release-manager-2.0.0.zip`.
+1. Go to **Plugins → Add New → Upload Plugin** and upload `mds-release-manager-2.2.0.zip`.
 2. Click **Install Now**, then **Activate**.
-3. Open **Releases → Settings** to review your streaming providers, cache integration, and default block/template styles.
+3. Open **Release Manager** to view the new **Dashboard**, or go to **Release Manager → Settings** to configure streaming providers, Default Templates (Release Page, Artist Page, Release Archive), and Block Defaults.
 
 ### Multisite (Hub-and-Spoke) Setup
 1. In **Network Admin → Plugins**, **Network Activate** **MDS Release Manager**.

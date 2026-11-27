@@ -4,9 +4,9 @@ Tags: music, discography, artists, releases, streaming
 Requires at least: 7.0
 Tested up to: 7.x
 Requires PHP: 8.0
-Stable tag: 2.1.0
-License: GPL-2.0-or-later
-License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+Stable tag: 2.2.0
+License: GPLv3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Manage music releases, artist discographies, release metadata, streaming links, and audio previews in WordPress.
 
@@ -61,6 +61,14 @@ By default, **Font Awesome Integration** runs in **Auto** mode: if an active Fon
 Yes. Network activate the plugin and configure your Master Hub and Spoke sites under **Network Admin > Settings > MDS Release Manager**. Spokes remain read-only so your Hub stays the single source of truth.
 
 == Changelog ==
+
+= 2.2.0 =
+
+* Renamed the top-level WordPress admin menu to **Release Manager** and added a native React **Dashboard** as the default landing page (catalog KPIs, completeness health checklist, recent releases, active theme scheme, and Multisite Hub/Spoke status).
+* Added a dedicated **Release Archive Template** panel under **Release Manager > Settings > Default Templates** with full styling controls, live preview, and **Designated Archive Page** routing (assign any published WordPress Page in any language to inherit its slug, title, intro content, and navigation menu highlighting).
+* Registered native WordPress 7.x block templates (`archive-release`, `single-release`, `single-artist`) via `register_block_template()` for Site Editor and built-in Template Selector support.
+* Upgraded `ThemeScheme` with multi-source detection (**Elementor Active Kit**, **Bricks Theme Styles**, **WordPress Global Styles**, **Kadence/Astra/GeneratePress**), automatic color-override baseline resets on theme/scheme switch, and a unified `ThemeSchemeBar` across Default Templates and Block Defaults.
+* Replaced `dashicons-album` everywhere with the official **Musty Dungeon Studios** SVG/PNG logo (`BrandIcon` + `ExtensionApi` helpers + GitHub updater modal icons), retired user-facing "Fallback" terminology, completed 5-widget Elementor parity, added Breakdance detection, and updated licensing to **GPL-3.0-or-later**.
 
 = 2.1.0 =
 

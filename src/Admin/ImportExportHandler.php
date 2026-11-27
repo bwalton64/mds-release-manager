@@ -1160,7 +1160,7 @@ final class ImportExportHandler {
 	 */
 	public static function register_csv_page(): void {
 		add_submenu_page(
-			'edit.php?post_type=release',
+			Dashboard::MENU_SLUG,
 			__( 'Import/Export', 'mds-release-manager' ),
 			__( 'Import/Export', 'mds-release-manager' ),
 			'manage_options',
@@ -1854,7 +1854,7 @@ final class ImportExportHandler {
 			add_query_arg(
 				'settings-updated',
 				'true',
-				admin_url( 'edit.php?post_type=release&page=mds-release-csv' )
+				admin_url( 'admin.php?page=mds-release-csv' )
 			)
 		);
 		exit;

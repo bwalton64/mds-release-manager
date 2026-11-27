@@ -351,7 +351,7 @@ final class AdminInterface {
 			'artistModes'               => $artist_modes,
 			'releaseModes'              => $release_modes,
 			'releases'                  => $releases,
-			'settingsUrl'               => admin_url( 'edit.php?post_type=release&page=mds-release-settings' ),
+			'settingsUrl'               => admin_url( 'admin.php?page=mds-release-settings' ),
 		);
 	}
 
@@ -491,7 +491,7 @@ final class AdminInterface {
 			'routingMode'         => (string) $args['release_routing_mode'],
 			'routingUrl'          => (string) $args['release_routing_url'],
 			'routingModes'        => $routing_modes,
-			'routingPreviewLabel' => (string) ( $args['release_routing_preview']['label'] ?? __( 'Release Fallback Page', 'mds-release-manager' ) ),
+			'routingPreviewLabel' => (string) ( $args['release_routing_preview']['label'] ?? __( 'Default Release Page', 'mds-release-manager' ) ),
 			'settingsUrl'         => (string) $args['settings_url'],
 			'mediaFormatsUrl'     => (string) $args['media_formats_url'],
 		);
@@ -625,7 +625,7 @@ final class AdminInterface {
 			'release_routing_modes'    => \MDS\ReleaseManager\Frontend\ArtistRouting::release_modes(),
 			'release_routing_preview'  => \MDS\ReleaseManager\Frontend\ArtistRouting::describe_release_destination( $post->ID ),
 			'audio_preview_url'        => $audio_preview_url,
-			'settings_url'             => admin_url( 'edit.php?post_type=release&page=mds-release-settings' ),
+			'settings_url'             => admin_url( 'admin.php?page=mds-release-settings' ),
 			'media_formats_url'        => admin_url( 'edit-tags.php?taxonomy=release_media_format&post_type=release' ),
 			'release_formats'          => $release_formats,
 			'all_formats'              => $all_formats,
@@ -931,9 +931,9 @@ final class AdminInterface {
 	 */
 	public static function register_settings_page(): void {
 		add_submenu_page(
-			'edit.php?post_type=release',
-			'Release Settings',
-			'Settings',
+			Dashboard::MENU_SLUG,
+			__( 'Release Manager Settings', 'mds-release-manager' ),
+			__( 'Settings', 'mds-release-manager' ),
 			'manage_options',
 			'mds-release-settings',
 			array( self::class, 'settings_page' )
@@ -941,24 +941,41 @@ final class AdminInterface {
 	}
 
 	/**
-	 * Removes the redundant "Add New Release" submenu item and enforces a consistent
-	 * submenu order: All Releases & All Artists at the top, taxonomies/extensions in
-	 * the middle, and Settings & CSV Import/Export at the bottom.
+	 * Enforces a consistent Release Manager submenu order: Dashboard first,
+	 * All Releases & All Artists next, taxonomies/extensions in the middle,
+	 * and Settings & Import/Export at the bottom. Also migrates any third-party
+	 * items still registered under the legacy `edit.php?post_type=release` parent.
 	 *
 	 * @since 2.1.0
 	 * @return void
 	 */
 	public static function organize_releases_submenu(): void {
-		$parent = 'edit.php?post_type=release';
-
-		remove_submenu_page( $parent, 'post-new.php?post_type=release' );
+		$parent = Dashboard::MENU_SLUG;
+		$legacy = 'edit.php?post_type=release';
 
 		global $submenu;
+		if ( isset( $submenu[ $legacy ] ) && is_array( $submenu[ $legacy ] ) ) {
+			if ( ! isset( $submenu[ $parent ] ) || ! is_array( $submenu[ $parent ] ) ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Migrating legacy submenu items to Release Manager parent.
+				$submenu[ $parent ] = array();
+			}
+			foreach ( $submenu[ $legacy ] as $legacy_item ) {
+				$legacy_slug = isset( $legacy_item[2] ) ? (string) $legacy_item[2] : '';
+				if ( '' !== $legacy_slug && 'post-new.php?post_type=release' !== $legacy_slug && 'edit.php?post_type=release' !== $legacy_slug ) {
+					// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Migrating legacy submenu items to Release Manager parent.
+					$submenu[ $parent ][] = $legacy_item;
+				}
+			}
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Clearing legacy parent after migration.
+			unset( $submenu[ $legacy ] );
+		}
+
 		if ( ! isset( $submenu[ $parent ] ) || ! is_array( $submenu[ $parent ] ) ) {
 			return;
 		}
 
 		$top_slugs    = array(
+			Dashboard::MENU_SLUG,
 			'edit.php?post_type=release',
 			'edit.php?post_type=artist',
 		);

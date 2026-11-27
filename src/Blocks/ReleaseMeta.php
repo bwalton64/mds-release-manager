@@ -46,7 +46,7 @@ final class ReleaseMeta {
 			),
 			'release_type'         => array(
 				'label'   => 'Release Type',
-				'icon'    => 'dashicons dashicons-album',
+				'icon'    => 'mds-brand-icon',
 				'enabled' => false,
 			),
 			'release_media_format' => array(
@@ -61,7 +61,7 @@ final class ReleaseMeta {
 			),
 			'release_title'        => array(
 				'label'   => 'Release Title',
-				'icon'    => 'dashicons dashicons-album',
+				'icon'    => 'mds-brand-icon',
 				'enabled' => false,
 			),
 			'artist'               => array(

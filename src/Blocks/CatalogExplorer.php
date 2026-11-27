@@ -105,20 +105,24 @@ final class CatalogExplorer {
 	public static function render( array $attributes = array() ): string {
 		self::enqueue_assets();
 
+		$archive_defaults = ( function_exists( 'is_post_type_archive' ) && is_post_type_archive( 'release' ) )
+			? \MDS\ReleaseManager\Frontend\TemplateDefaults::get( 'archive' )
+			: array();
+
 		$scoped_artist_input = trim( (string) ( $attributes['artistId'] ?? '' ) );
 		$scoped_artist_uuid  = CatalogQuery::resolve_artist_uuid( $scoped_artist_input );
-		$per_page            = min( 48, max( 1, (int) ( $attributes['perPage'] ?? 12 ) ) );
-		$raw_columns         = (int) ( $attributes['columns'] ?? 3 );
-		$columns             = in_array( $raw_columns, array( 2, 3, 4 ), true ) ? $raw_columns : 3;
-		$raw_pagination      = (string) ( $attributes['pagination'] ?? 'numbered' );
-		$pagination          = in_array( $raw_pagination, array( 'numbered', 'load_more' ), true ) ? $raw_pagination : 'numbered';
-		$raw_default_sort    = (string) ( $attributes['defaultSort'] ?? 'date_desc' );
+		$per_page            = min( 48, max( 1, (int) ( $attributes['perPage'] ?? ( $archive_defaults['per_page'] ?? 12 ) ) ) );
+		$raw_columns         = (int) ( $attributes['columns'] ?? ( $archive_defaults['columns'] ?? 3 ) );
+		$columns             = in_array( $raw_columns, array( 2, 3, 4, 5 ), true ) ? $raw_columns : 3;
+		$raw_pagination      = (string) ( $attributes['pagination'] ?? ( $archive_defaults['pagination'] ?? 'numbered' ) );
+		$pagination          = in_array( $raw_pagination, array( 'numbered', 'load_more', 'none' ), true ) ? $raw_pagination : 'numbered';
+		$raw_default_sort    = (string) ( $attributes['defaultSort'] ?? ( $archive_defaults['default_sort'] ?? 'date_desc' ) );
 		$default_sort        = in_array( $raw_default_sort, CatalogQuery::VALID_SORTS, true ) ? $raw_default_sort : 'date_desc';
-		$show_search         = ! isset( $attributes['showSearch'] ) || (bool) $attributes['showSearch'];
+		$show_search         = array_key_exists( 'showSearch', $attributes ) ? (bool) $attributes['showSearch'] : ( ! array_key_exists( 'show_search', $archive_defaults ) || (bool) $archive_defaults['show_search'] );
 		$show_filters        = ! isset( $attributes['showFilters'] ) || (bool) $attributes['showFilters'];
-		$show_sort           = ! isset( $attributes['showSort'] ) || (bool) $attributes['showSort'];
-		$show_audio          = ! isset( $attributes['showAudio'] ) || (bool) $attributes['showAudio'];
-		$show_links          = ! isset( $attributes['showLinks'] ) || (bool) $attributes['showLinks'];
+		$show_sort           = array_key_exists( 'showSort', $attributes ) ? (bool) $attributes['showSort'] : ( ! array_key_exists( 'show_sort', $archive_defaults ) || (bool) $archive_defaults['show_sort'] );
+		$show_audio          = array_key_exists( 'showAudio', $attributes ) ? (bool) $attributes['showAudio'] : ( ! array_key_exists( 'show_audio', $archive_defaults ) || (bool) $archive_defaults['show_audio'] );
+		$show_links          = array_key_exists( 'showLinks', $attributes ) ? (bool) $attributes['showLinks'] : ( ! array_key_exists( 'show_links', $archive_defaults ) || (bool) $archive_defaults['show_links'] );
 
 		// Read initial URL query params for bookmarkable SSR state (read-only frontend filter params).
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
@@ -355,7 +359,7 @@ final class CatalogExplorer {
 					<?php if ( ! empty( $card['coverUrl'] ) ) : ?>
 						<img src="<?php echo esc_url( (string) $card['coverUrl'] ); ?>" alt="<?php echo esc_attr( (string) $card['title'] ); ?>" loading="lazy" class="mds-catalog-card__img" />
 					<?php else : ?>
-						<span class="mds-catalog-card__placeholder" aria-hidden="true"><span class="dashicons dashicons-album"></span></span>
+						<span class="mds-catalog-card__placeholder" aria-hidden="true"><span class="mds-brand-icon"></span></span>
 					<?php endif; ?>
 				</a>
 				<?php if ( ! empty( $card['releaseType'] ) ) : ?>

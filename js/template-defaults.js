@@ -21,7 +21,7 @@
 		return;
 	}
 
-	const { SectionInfo, ControlGroup, AccordionToolbar } = window.mdsRmStylePrimitives;
+	const { SectionInfo, ControlGroup, AccordionToolbar, ThemeSchemeBar } = window.mdsRmStylePrimitives;
 	const emptyBlocks = [];
 
 	const SHADOW_MAP = {
@@ -41,6 +41,7 @@
 
 	const RELEASE_PANELS = ['layout', 'image', 'components', 'typography'];
 	const ARTIST_PANELS = ['layout', 'portrait', 'biography', 'discography', 'contact'];
+	const ARCHIVE_PANELS = ['routing', 'grid', 'cards', 'modules'];
 	const CANONICAL_RELEASE_SLOTS = ['meta', 'player', 'body', 'links'];
 
 	function normalizeReleaseSlots(order) {
@@ -195,7 +196,7 @@
 		return el('div', { className: 'mds-tpl-preview-stage', style: containerStyle },
 			el('div', { style: gridStyle },
 				s.show_image && el('div', { className: 'mds-tpl-preview-cover', style: coverStyle },
-					el('span', { className: 'dashicons dashicons-album', 'aria-hidden': true }),
+					el('span', { className: 'mds-brand-icon', 'aria-hidden': true }),
 					s.sticky_image && s.layout === 'split' && el('span', { className: 'mds-tpl-preview-badge' }, __('Sticky', 'mds-release-manager'))
 				),
 				el('div', { style: mainStyle },
@@ -334,34 +335,114 @@
 		);
 	}
 
-	function TemplatePresetBar({ scheme, presets, onApplyPreset }) {
-		if (!Array.isArray(presets) || !presets.length) return null;
-		const modeLabel = scheme.isDark ? __('Dark', 'mds-release-manager') : __('Light', 'mds-release-manager');
-		return el('div', { className: 'mds-theme-preset-bar' },
-			el('div', { className: 'mds-theme-preset-bar__status' },
-				el('span', { className: 'mds-theme-preset-bar__swatches', 'aria-hidden': true },
-					scheme.background && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.background }, title: __('Theme Background', 'mds-release-manager') }),
-					scheme.text && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.text }, title: __('Theme Text', 'mds-release-manager') }),
-					scheme.accent && el('span', { className: 'mds-theme-preset-bar__dot', style: { backgroundColor: scheme.accent }, title: __('Theme Accent', 'mds-release-manager') })
-				),
-				el('div', null,
-					el('span', { className: 'mds-theme-preset-bar__title' },
-						// translators: 1: Active theme name. 2: Detected color scheme (Light or Dark).
-						sprintf(__('Detected Theme Scheme: %1$s (%2$s)', 'mds-release-manager'), scheme.themeName || __('Active Theme', 'mds-release-manager'), modeLabel)
-					),
-					el('span', { className: 'mds-theme-preset-bar__sub' },
-						__('Unset colors automatically adapt to your active theme or Twenty Twenty-Five variation. Or apply a starter preset to both templates:', 'mds-release-manager')
-					)
-				)
+	function ArchiveLivePreview({ s, canvasMode, scheme }) {
+		const theme = resolveCanvasPalette(canvasMode, scheme);
+		const cols = Math.max(2, Math.min(5, Number(s.columns) || 3));
+		const gap = `${Math.max(6, Math.round((Number(s.grid_gap) || 24) * 0.45))}px`;
+		const radius = `${Math.min(18, Math.round((Number(s.card_radius) || 8) * 0.85))}px`;
+		const borderW = `${Math.max(0, Number(s.card_border_width) || 0)}px`;
+		const shadow = SHADOW_MAP.release[s.card_shadow] || 'none';
+		const selectedPage = (config.archivePages || []).find((p) => Number(p.id) === Number(s.page_id));
+		const headingText = selectedPage ? selectedPage.title : __('Releases', 'mds-release-manager');
+		const sampleCards = [
+			{ title: 'Neon Horizons', artist: 'The Midnight Drive', year: '2026' },
+			{ title: 'Echoes of Glass', artist: 'Solaris', year: '2025' },
+			{ title: 'Velvet Static', artist: 'The Midnight Drive', year: '2024' },
+			{ title: 'Northbound EP', artist: 'Clara Vance', year: '2023' },
+			{ title: 'Analog Dreams', artist: 'Solaris', year: '2022' },
+		].slice(0, Math.max(cols, 3));
+
+		return el('div', {
+			className: 'mds-tpl-preview-stage',
+			style: {
+				background: s.container_bg || theme.bg,
+				color: theme.text,
+				padding: `${Math.max(10, Math.round((Number(s.padding_vertical) || 0) * 0.35))}px ${Math.max(10, Math.round((Number(s.padding_horizontal) || 0) * 0.45))}px`,
+				borderRadius: '6px',
+			},
+		},
+			s.show_page_title && el('div', { style: { fontWeight: 700, fontSize: '15px', marginBottom: '8px', color: theme.text } }, headingText),
+			(s.show_search || s.show_artist_filter || s.show_type_filter || s.show_sort) && el('div', {
+				style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px', fontSize: '10px' },
+			},
+				s.show_search && el('span', { style: { padding: '3px 8px', borderRadius: '4px', border: `1px solid ${theme.border}`, background: theme.surface, color: theme.muted } }, __('Search releases…', 'mds-release-manager')),
+				s.show_artist_filter && el('span', { style: { padding: '3px 6px', borderRadius: '4px', border: `1px solid ${theme.border}`, background: theme.surface } }, __('All Artists ▾', 'mds-release-manager')),
+				s.show_type_filter && el('span', { style: { padding: '3px 6px', borderRadius: '4px', border: `1px solid ${theme.border}`, background: theme.surface } }, __('All Types ▾', 'mds-release-manager')),
+				s.show_sort && el('span', { style: { marginLeft: 'auto', padding: '3px 6px', borderRadius: '4px', border: `1px solid ${theme.border}`, background: theme.surface } }, __('Newest ▾', 'mds-release-manager'))
 			),
-			el('div', { className: 'mds-theme-preset-bar__actions' },
-				presets.map((preset) => el(Button, {
-					key: preset.id,
-					variant: preset.id === 'auto' ? 'secondary' : 'tertiary',
-					size: 'compact',
-					title: preset.description || '',
-					onClick: () => onApplyPreset(preset),
-				}, preset.label))
+			el('div', {
+				style: {
+					display: 'grid',
+					gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+					gap,
+				},
+			},
+				sampleCards.map((card, idx) => el('div', {
+					key: idx,
+					style: {
+						background: s.card_bg || theme.surface,
+						border: borderW !== '0px' ? `${borderW} solid ${s.card_border_color || theme.border}` : 'none',
+						borderRadius: radius,
+						boxShadow: shadow,
+						overflow: 'hidden',
+						display: 'flex',
+						flexDirection: 'column',
+					},
+				},
+					el('div', {
+						style: {
+							aspectRatio: s.cover_aspect === 'auto' ? '1 / 1' : (s.cover_aspect || '1/1'),
+							background: theme.border,
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							position: 'relative',
+						},
+					},
+						el('span', { className: 'mds-brand-icon', style: { fontSize: '20px', opacity: 0.55 }, 'aria-hidden': true }),
+						s.show_audio && el('span', {
+							style: {
+								position: 'absolute',
+								right: '5px',
+								bottom: '5px',
+								width: '18px',
+								height: '18px',
+								borderRadius: '50%',
+								background: theme.accent,
+								color: '#fff',
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								fontSize: '8px',
+							},
+							'aria-hidden': true,
+						}, '▶')
+					),
+					el('div', { style: { padding: '6px', fontSize: '10px', lineHeight: 1.3 } },
+						el('div', { style: { fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, card.title),
+						el('div', { style: { color: theme.muted, fontSize: '9px' } }, `${card.artist} · ${card.year}`),
+						s.show_links && el('div', { style: { marginTop: '4px', display: 'flex', gap: '4px' } },
+							el('span', { style: { padding: '1px 5px', borderRadius: '3px', background: theme.accent, color: '#fff', fontSize: '8px', fontWeight: 600 } }, __('Buy', 'mds-release-manager')),
+							el('span', { style: { padding: '1px 5px', borderRadius: '3px', border: `1px solid ${theme.border}`, fontSize: '8px' } }, __('Listen', 'mds-release-manager'))
+						)
+					)
+				))
+			),
+			s.pagination !== 'none' && el('div', {
+				style: { display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '10px', fontSize: '10px' },
+			},
+				s.pagination === 'load_more'
+					? el('span', { style: { padding: '3px 10px', borderRadius: '4px', border: `1px solid ${theme.border}`, background: theme.surface } }, __('Load More', 'mds-release-manager'))
+					: [1, 2, 3].map((n) => el('span', {
+						key: n,
+						style: {
+							padding: '2px 7px',
+							borderRadius: '4px',
+							border: `1px solid ${theme.border}`,
+							background: n === 1 ? theme.accent : theme.surface,
+							color: n === 1 ? '#fff' : theme.text,
+						},
+					}, String(n)))
 			)
 		);
 	}
@@ -373,11 +454,11 @@
 			'typography.fontFamilies'
 		);
 		const scheme = config.themeScheme || {};
-		const presets = Array.isArray(config.templatePresets) ? config.templatePresets : [];
 
 		const [all, setAll] = useState(() => ({
 			release: { ...config.defaults.release, ...(config.values?.release || {}) },
 			artist: { ...config.defaults.artist, ...(config.values?.artist || {}) },
+			archive: { ...config.defaults.archive, ...(config.values?.archive || {}) },
 		}));
 		const [activeTemplate, setActiveTemplate] = useState('release');
 		const [isPreviewOpen, setIsPreviewOpen] = useState(true);
@@ -385,6 +466,7 @@
 		const [openPanels, setOpenPanels] = useState({
 			release: { layout: true, image: false, components: false, typography: false },
 			artist: { layout: true, portrait: false, biography: false, discography: false, contact: false },
+			archive: { routing: true, grid: false, cards: false, modules: false },
 		});
 
 		const fontFamilyOptions = [
@@ -439,7 +521,9 @@
 			);
 		}
 
-		const panelIds = activeTemplate === 'release' ? RELEASE_PANELS : ARTIST_PANELS;
+		const panelIds = activeTemplate === 'release'
+			? RELEASE_PANELS
+			: (activeTemplate === 'artist' ? ARTIST_PANELS : ARCHIVE_PANELS);
 		const currentOpen = openPanels[activeTemplate];
 		const openCount = panelIds.filter((id) => currentOpen[id]).length;
 
@@ -462,22 +546,9 @@
 
 		const r = all.release;
 		const a = all.artist;
+		const ar = all.archive;
 
 		const releaseControls = el('div', { className: 'mds-tpl-accordions' },
-			el(ControlGroup, {
-				title: __('Release Archive Page (/release/)', 'mds-release-manager'),
-				description: __('Global setting for your site’s main Release post-type archive page.', 'mds-release-manager'),
-			},
-				el('div', { className: 'mds-style-field' },
-					el(ToggleControl, {
-						label: __('Use Catalog Explorer on /release/ Archive Page', 'mds-release-manager'),
-						help: __('Replaces the default /release/ archive with the searchable, filterable Catalog Explorer grid. You can also place the Catalog / Discography Explorer block or [catalog-explorer] shortcode on any page.', 'mds-release-manager'),
-						checked: Boolean(r.enable_catalog_archive),
-						onChange: (val) => updateField('release', 'enable_catalog_archive', Boolean(val)),
-						__nextHasNoMarginBottom: true,
-					})
-				)
-			),
 			el(PanelBody, {
 				title: __('Layout & Page Container', 'mds-release-manager'),
 				opened: Boolean(currentOpen.layout),
@@ -1186,6 +1257,293 @@
 			)
 		);
 
+		const archivePages = Array.isArray(config.archivePages) ? config.archivePages : [];
+		const selectedArchivePage = archivePages.find((p) => Number(p.id) === Number(ar.page_id));
+		const archivePageOptions = [
+			{ label: __('None — use default /release/ archive', 'mds-release-manager'), value: '0' },
+			...archivePages.map((p) => ({
+				label: `${p.title} (/${p.uri}/)`,
+				value: String(p.id),
+			})),
+		];
+
+		const archiveControls = el('div', { className: 'mds-tpl-accordions' },
+			el(PanelBody, {
+				title: __('Archive Routing & Page Assignment', 'mds-release-manager'),
+				opened: Boolean(currentOpen.routing),
+				onToggle: () => togglePanel('routing'),
+			},
+				el(SectionInfo, {
+					title: __('About the Release Archive Page', 'mds-release-manager'),
+					summary: __('Assign any published WordPress Page (in any language, with any title or slug) as your Release Archive Page. It automatically inherits the page’s URL slug, title, and navigation menu highlighting while keeping individual releases at /release/…', 'mds-release-manager'),
+					inheritance: __('On Block Themes (WordPress 7.x), the native "Release Archive" block template is also registered in Appearance → Editor → Templates.', 'mds-release-manager'),
+				}),
+				el(ControlGroup, { title: __('Catalog Archive Activation', 'mds-release-manager') },
+					el('div', { className: 'mds-style-field' },
+						el(ToggleControl, {
+							label: __('Enable Release Archive Catalog View', 'mds-release-manager'),
+							help: __('Renders the searchable, filterable Catalog Explorer grid on your Release Archive URL.', 'mds-release-manager'),
+							checked: Boolean(ar.enabled),
+							onChange: (val) => updateField('archive', 'enabled', Boolean(val)),
+							__nextHasNoMarginBottom: true,
+						})
+					),
+					el('div', { className: 'mds-style-field' },
+						el(SelectControl, {
+							label: __('Designated Archive Page', 'mds-release-manager'),
+							help: __('Choose any published WordPress Page to host the Release Archive URL, title, and navigation menu item. Permalinks refresh automatically on save.', 'mds-release-manager'),
+							value: String(ar.page_id || 0),
+							options: archivePageOptions,
+							onChange: (val) => updateField('archive', 'page_id', parseInt(val, 10) || 0),
+							__next40pxDefaultSize: true,
+							__nextHasNoMarginBottom: true,
+						})
+					),
+					el('div', { className: 'mds-style-field', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' } },
+						config.createPageUrl && el(Button, {
+							variant: 'secondary',
+							size: 'compact',
+							href: config.createPageUrl,
+							target: '_blank',
+						}, __('Create New Page', 'mds-release-manager')),
+						selectedArchivePage && selectedArchivePage.editUrl && el(Button, {
+							variant: 'tertiary',
+							size: 'compact',
+							href: selectedArchivePage.editUrl,
+							target: '_blank',
+						}, __('Edit Assigned Page', 'mds-release-manager')),
+						(selectedArchivePage?.viewUrl || config.defaultArchiveUrl) && el(Button, {
+							variant: 'tertiary',
+							size: 'compact',
+							href: selectedArchivePage ? selectedArchivePage.viewUrl : config.defaultArchiveUrl,
+							target: '_blank',
+						}, __('View Archive', 'mds-release-manager')),
+						config.siteEditorUrl && el(Button, {
+							variant: 'tertiary',
+							size: 'compact',
+							href: config.siteEditorUrl,
+							target: '_blank',
+						}, __('Open in Site Editor', 'mds-release-manager'))
+					)
+				),
+				el(ControlGroup, { title: __('Heading & Intro Content', 'mds-release-manager'), twoCol: true },
+					el('div', { className: 'mds-style-field' },
+						el(ToggleControl, {
+							label: __('Show Page / Archive Title', 'mds-release-manager'),
+							checked: Boolean(ar.show_page_title),
+							onChange: (val) => updateField('archive', 'show_page_title', Boolean(val)),
+							__nextHasNoMarginBottom: true,
+						})
+					),
+					el('div', { className: 'mds-style-field' },
+						el(ToggleControl, {
+							label: __('Show Assigned Page Intro Content', 'mds-release-manager'),
+							help: __('Displays any content added in the assigned WordPress Page editor above the catalog grid.', 'mds-release-manager'),
+							checked: Boolean(ar.show_page_intro),
+							onChange: (val) => updateField('archive', 'show_page_intro', Boolean(val)),
+							__nextHasNoMarginBottom: true,
+						})
+					)
+				)
+			),
+			el(PanelBody, {
+				title: __('Grid, Query & Container', 'mds-release-manager'),
+				opened: Boolean(currentOpen.grid),
+				onToggle: () => togglePanel('grid'),
+			},
+				el(ControlGroup, { title: __('Grid & Query Defaults', 'mds-release-manager'), twoCol: true },
+					el(RangeControl, {
+						label: __('Desktop Columns', 'mds-release-manager'),
+						min: 2, max: 5, step: 1,
+						value: ar.columns,
+						onChange: (val) => updateField('archive', 'columns', val ?? config.defaults.archive.columns),
+					}),
+					el(RangeControl, {
+						label: __('Releases Per Page', 'mds-release-manager'),
+						min: 6, max: 48, step: 3,
+						value: ar.per_page,
+						onChange: (val) => updateField('archive', 'per_page', val ?? config.defaults.archive.per_page),
+					}),
+					el(SelectControl, {
+						label: __('Default Sort Order', 'mds-release-manager'),
+						value: ar.default_sort,
+						options: [
+							{ label: __('Newest First', 'mds-release-manager'), value: 'date_desc' },
+							{ label: __('Oldest First', 'mds-release-manager'), value: 'date_asc' },
+							{ label: __('Title (A–Z)', 'mds-release-manager'), value: 'title_asc' },
+							{ label: __('Title (Z–A)', 'mds-release-manager'), value: 'title_desc' },
+						],
+						onChange: (val) => updateField('archive', 'default_sort', val),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					}),
+					el(SelectControl, {
+						label: __('Pagination Style', 'mds-release-manager'),
+						value: ar.pagination,
+						options: [
+							{ label: __('Numbered Pages', 'mds-release-manager'), value: 'numbered' },
+							{ label: __('Load More Button', 'mds-release-manager'), value: 'load_more' },
+							{ label: __('None (Single Page)', 'mds-release-manager'), value: 'none' },
+						],
+						onChange: (val) => updateField('archive', 'pagination', val),
+						__next40pxDefaultSize: true,
+						__nextHasNoMarginBottom: true,
+					})
+				),
+				el(ControlGroup, { title: __('Container & Spacing', 'mds-release-manager'), twoCol: true },
+					el(RangeControl, {
+						label: __('Max Width (px)', 'mds-release-manager'),
+						min: 600, max: 2000, step: 20,
+						value: ar.max_width,
+						onChange: (val) => updateField('archive', 'max_width', val ?? config.defaults.archive.max_width),
+					}),
+					el(RangeControl, {
+						label: __('Grid Gap (px)', 'mds-release-manager'),
+						min: 8, max: 64, step: 2,
+						value: ar.grid_gap,
+						onChange: (val) => updateField('archive', 'grid_gap', val ?? config.defaults.archive.grid_gap),
+					}),
+					el(RangeControl, {
+						label: __('Vertical Padding (px)', 'mds-release-manager'),
+						min: 0, max: 120, step: 4,
+						value: ar.padding_vertical,
+						onChange: (val) => updateField('archive', 'padding_vertical', val ?? config.defaults.archive.padding_vertical),
+					}),
+					el(RangeControl, {
+						label: __('Horizontal Padding (px)', 'mds-release-manager'),
+						min: 0, max: 120, step: 4,
+						value: ar.padding_horizontal,
+						onChange: (val) => updateField('archive', 'padding_horizontal', val ?? config.defaults.archive.padding_horizontal),
+					}),
+					el(ColorField, {
+						label: __('Container Background', 'mds-release-manager'),
+						help: __('Leave blank to inherit the detected theme background.', 'mds-release-manager'),
+						value: ar.container_bg,
+						palette, customColor,
+						onChange: (val) => updateField('archive', 'container_bg', val),
+					})
+				)
+			),
+			el(PanelBody, {
+				title: __('Card Styling', 'mds-release-manager'),
+				opened: Boolean(currentOpen.cards),
+				onToggle: () => togglePanel('cards'),
+			},
+				el(ControlGroup, { title: __('Card Surface & Borders', 'mds-release-manager'), twoCol: true },
+					el(ColorField, {
+						label: __('Card Background', 'mds-release-manager'),
+						help: __('Leave blank to inherit the detected theme surface.', 'mds-release-manager'),
+						value: ar.card_bg,
+						palette, customColor,
+						onChange: (val) => updateField('archive', 'card_bg', val),
+					}),
+					el(ColorField, {
+						label: __('Card Border Color', 'mds-release-manager'),
+						help: __('Leave blank to inherit the detected theme border.', 'mds-release-manager'),
+						value: ar.card_border_color,
+						palette, customColor,
+						onChange: (val) => updateField('archive', 'card_border_color', val),
+					}),
+					el(RangeControl, {
+						label: __('Card Border Width (px)', 'mds-release-manager'),
+						min: 0, max: 4, step: 1,
+						value: ar.card_border_width,
+						onChange: (val) => updateField('archive', 'card_border_width', val ?? config.defaults.archive.card_border_width),
+					}),
+					el(RangeControl, {
+						label: __('Card Corner Radius (px)', 'mds-release-manager'),
+						min: 0, max: 32, step: 1,
+						value: ar.card_radius,
+						onChange: (val) => updateField('archive', 'card_radius', val ?? config.defaults.archive.card_radius),
+					}),
+					el(SegmentedControl, {
+						label: __('Cover Aspect Ratio', 'mds-release-manager'),
+						value: ar.cover_aspect,
+						options: [
+							{ label: __('1:1 Square', 'mds-release-manager'), value: '1/1' },
+							{ label: __('4:3 Landscape', 'mds-release-manager'), value: '4/3' },
+							{ label: __('Auto', 'mds-release-manager'), value: 'auto' },
+						],
+						onChange: (val) => updateField('archive', 'cover_aspect', val),
+					}),
+					el(SegmentedControl, {
+						label: __('Card Shadow', 'mds-release-manager'),
+						value: ar.card_shadow,
+						options: [
+							{ label: __('None', 'mds-release-manager'), value: 'none' },
+							{ label: __('Subtle', 'mds-release-manager'), value: 'subtle' },
+							{ label: __('Elevated', 'mds-release-manager'), value: 'elevated' },
+						],
+						onChange: (val) => updateField('archive', 'card_shadow', val),
+					}),
+					el('div', { className: 'mds-style-field' },
+						el(ToggleControl, {
+							label: __('Subtle Hover Lift Effect', 'mds-release-manager'),
+							checked: Boolean(ar.hover_lift),
+							onChange: (val) => updateField('archive', 'hover_lift', Boolean(val)),
+							__nextHasNoMarginBottom: true,
+						})
+					)
+				)
+			),
+			el(PanelBody, {
+				title: __('Toolbar & Card Modules', 'mds-release-manager'),
+				opened: Boolean(currentOpen.modules),
+				onToggle: () => togglePanel('modules'),
+			},
+				el(ControlGroup, { title: __('Visible Controls & Card Actions', 'mds-release-manager'), twoCol: true },
+					el(ToggleControl, {
+						label: __('Show Search Input', 'mds-release-manager'),
+						checked: Boolean(ar.show_search),
+						onChange: (val) => updateField('archive', 'show_search', Boolean(val)),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Artist Filter', 'mds-release-manager'),
+						checked: Boolean(ar.show_artist_filter),
+						onChange: (val) => updateField('archive', 'show_artist_filter', Boolean(val)),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Release Type Filter', 'mds-release-manager'),
+						checked: Boolean(ar.show_type_filter),
+						onChange: (val) => updateField('archive', 'show_type_filter', Boolean(val)),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Media Format Filter', 'mds-release-manager'),
+						checked: Boolean(ar.show_format_filter),
+						onChange: (val) => updateField('archive', 'show_format_filter', Boolean(val)),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Year Filter', 'mds-release-manager'),
+						checked: Boolean(ar.show_year_filter),
+						onChange: (val) => updateField('archive', 'show_year_filter', Boolean(val)),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Sort Selector', 'mds-release-manager'),
+						checked: Boolean(ar.show_sort),
+						onChange: (val) => updateField('archive', 'show_sort', Boolean(val)),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Inline Audio Preview Button', 'mds-release-manager'),
+						checked: Boolean(ar.show_audio),
+						onChange: (val) => updateField('archive', 'show_audio', Boolean(val)),
+						__nextHasNoMarginBottom: true,
+					}),
+					el(ToggleControl, {
+						label: __('Show Quick Buy / Listen Links', 'mds-release-manager'),
+						checked: Boolean(ar.show_links),
+						onChange: (val) => updateField('archive', 'show_links', Boolean(val)),
+						__nextHasNoMarginBottom: true,
+					})
+				)
+			)
+		);
+
 		function cycleCanvas() {
 			const order = ['theme', 'light', 'dark'];
 			const next = order[(order.indexOf(canvasMode) + 1) % order.length];
@@ -1193,17 +1551,34 @@
 			speak(sprintf(__('Preview canvas switched to %s.', 'mds-release-manager'), next), 'polite');
 		}
 
-		function applyPreset(preset) {
-			if (!preset || !preset.templates) return;
+		function resetColorOverrides() {
 			persist({
-				release: { ...all.release, ...(preset.templates.release || {}) },
-				artist: { ...all.artist, ...(preset.templates.artist || {}) },
+				release: {
+					...all.release,
+					container_bg: '',
+					container_border: '',
+					image_border_color: '',
+					content_color: '',
+				},
+				artist: {
+					...all.artist,
+					container_bg: '',
+					container_border: '',
+					image_border_color: '',
+					body_color: '',
+					contact_background: '',
+					contact_color: '',
+					contact_border_color: '',
+				},
+				archive: {
+					...all.archive,
+					container_bg: '',
+					card_bg: '',
+					card_border_color: '',
+				},
 			});
-			if (preset.id === 'tt5-evening') setCanvasMode('dark');
-			else if (preset.id === 'tt5-light') setCanvasMode('light');
-			else if (preset.id === 'auto') setCanvasMode('theme');
-			// translators: %s: Preset name.
-			speak(sprintf(__('Applied "%s" preset to Default Templates. Click Save Settings to persist.', 'mds-release-manager'), preset.label), 'polite');
+			setCanvasMode('theme');
+			speak(__('Reset template color overrides to the detected theme baseline. Click Save Settings to persist.', 'mds-release-manager'), 'polite');
 		}
 
 		const canvasBtnLabel = canvasMode === 'theme'
@@ -1215,16 +1590,33 @@
 			? sprintf(__('Active Theme (%s)', 'mds-release-manager'), scheme.themeName || (scheme.isDark ? __('Dark', 'mds-release-manager') : __('Light', 'mds-release-manager')))
 			: (canvasMode === 'dark' ? __('Dark canvas', 'mds-release-manager') : __('Light canvas', 'mds-release-manager'));
 
+		const activeControls = activeTemplate === 'release'
+			? releaseControls
+			: (activeTemplate === 'artist' ? artistControls : archiveControls);
+
+		const activePreviewLabel = activeTemplate === 'release'
+			? __('Live Preview — Release Page', 'mds-release-manager')
+			: (activeTemplate === 'artist'
+				? __('Live Preview — Artist Page', 'mds-release-manager')
+				: __('Live Preview — Release Archive', 'mds-release-manager'));
+
+		const activeResetLabel = activeTemplate === 'release'
+			? __('Reset Release Template', 'mds-release-manager')
+			: (activeTemplate === 'artist'
+				? __('Reset Artist Template', 'mds-release-manager')
+				: __('Reset Archive Template', 'mds-release-manager'));
+
 		return el('div', { className: 'mds-tpl-workspace' },
-			el(TemplatePresetBar, { scheme, presets, onApplyPreset: applyPreset }),
+			el(ThemeSchemeBar, { scheme, onResetColors: resetColorOverrides }),
 			el('div', { className: 'mds-tpl-header-bar' },
 				el('div', { className: 'mds-tpl-switcher' },
 					el(SegmentedControl, {
 						label: __('Template to Customize', 'mds-release-manager'),
 						value: activeTemplate,
 						options: [
-							{ label: __('Release Fallback Template', 'mds-release-manager'), value: 'release' },
-							{ label: __('Artist Fallback Template', 'mds-release-manager'), value: 'artist' },
+							{ label: __('Release Page Template', 'mds-release-manager'), value: 'release' },
+							{ label: __('Artist Page Template', 'mds-release-manager'), value: 'artist' },
+							{ label: __('Release Archive Template', 'mds-release-manager'), value: 'archive' },
 						],
 						onChange: (val) => setActiveTemplate(val),
 					})
@@ -1247,10 +1639,7 @@
 						size: 'compact',
 						isDestructive: true,
 						onClick: () => resetSection(activeTemplate),
-					}, activeTemplate === 'release'
-						? __('Reset Release Template', 'mds-release-manager')
-						: __('Reset Artist Template', 'mds-release-manager')
-					)
+					}, activeResetLabel)
 				)
 			),
 			el('div', { className: `mds-bd-workspace${isPreviewOpen ? ' has-preview' : ''}` },
@@ -1261,27 +1650,24 @@
 						onExpandAll: () => setAllPanels(true),
 						onCollapseAll: () => setAllPanels(false),
 					}),
-					activeTemplate === 'release' ? releaseControls : artistControls
+					activeControls
 				),
 				isPreviewOpen && el('aside', {
 					id: 'mds-tpl-live-preview-pane',
 					className: 'mds-tpl-preview-col',
 					role: 'region',
-					'aria-label': activeTemplate === 'release'
-						? __('Release Fallback Template Live Preview', 'mds-release-manager')
-						: __('Artist Fallback Template Live Preview', 'mds-release-manager'),
+					'aria-label': activePreviewLabel,
 				},
 					el('div', { className: 'mds-tpl-preview-card' },
 						el('div', { className: 'mds-tpl-preview-card__header' },
-							el('strong', null, activeTemplate === 'release'
-								? __('Live Preview — Release Fallback', 'mds-release-manager')
-								: __('Live Preview — Artist Fallback', 'mds-release-manager')
-							),
+							el('strong', null, activePreviewLabel),
 							el('span', { className: 'mds-tpl-preview-card__hint' }, canvasHint)
 						),
 						activeTemplate === 'release'
 							? el(ReleaseLivePreview, { s: r, canvasMode, scheme })
-							: el(ArtistLivePreview, { s: a, canvasMode, scheme }),
+							: (activeTemplate === 'artist'
+								? el(ArtistLivePreview, { s: a, canvasMode, scheme })
+								: el(ArchiveLivePreview, { s: ar, canvasMode, scheme })),
 						el('p', { className: 'mds-bd-preview-caption' },
 							__('Updates in real time as you adjust controls. Click Save Settings to apply site-wide.', 'mds-release-manager')
 						)

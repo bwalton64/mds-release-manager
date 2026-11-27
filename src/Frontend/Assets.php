@@ -264,13 +264,35 @@ final class Assets {
 	 * @since 0.9.0
 	 */
 	public static function admin_assets(): void {
-		$screen             = get_current_screen();
-		$is_content_screen  = $screen
+		$screen              = get_current_screen();
+		$is_content_screen   = $screen
 			&& in_array( $screen->base, array( 'post', 'edit' ), true )
 			&& in_array( $screen->post_type, array( 'release', 'artist' ), true );
-		$is_settings_screen = $screen && 'release_page_mds-release-settings' === $screen->id;
-		$is_csv_screen      = $screen && 'release_page_mds-release-csv' === $screen->id;
-		$is_network_screen  = $screen && 'settings_page_mds-release-network-settings-network' === $screen->id;
+		$is_dashboard_screen = $screen && 'toplevel_page_' . \MDS\ReleaseManager\Admin\Dashboard::MENU_SLUG === $screen->id;
+		$is_settings_screen  = $screen && str_ends_with( (string) $screen->id, '_page_mds-release-settings' );
+		$is_csv_screen       = $screen && str_ends_with( (string) $screen->id, '_page_mds-release-csv' );
+		$is_network_screen   = $screen && 'settings_page_mds-release-network-settings-network' === $screen->id;
+
+		if ( $is_dashboard_screen ) {
+			wp_enqueue_style( 'wp-components' );
+			$stylesheet = 'css/admin-styles.css';
+			wp_enqueue_style( 'mds-admin-view-styles', MDS_RM_URL . $stylesheet, array(), filemtime( MDS_RM_PATH . $stylesheet ) );
+			$dash_script = 'js/dashboard.js';
+			wp_enqueue_script(
+				'mds-rm-dashboard',
+				MDS_RM_URL . $dash_script,
+				array( 'wp-element', 'wp-components', 'wp-i18n' ),
+				filemtime( MDS_RM_PATH . $dash_script ),
+				true
+			);
+			wp_add_inline_script(
+				'mds-rm-dashboard',
+				'window.mdsRmDashboardData = ' . wp_json_encode( \MDS\ReleaseManager\Admin\Dashboard::get_data() ) . ';',
+				'before'
+			);
+			wp_set_script_translations( 'mds-rm-dashboard', 'mds-release-manager', MDS_RM_PATH . 'languages' );
+			return;
+		}
 
 		$icon_picker_script = 'js/icon-picker.js';
 		if ( ! wp_script_is( 'mds-rm-icon-picker', 'registered' ) ) {
@@ -486,15 +508,38 @@ final class Assets {
 				filemtime( MDS_RM_PATH . $template_defaults_script ),
 				true
 			);
+			$archive_pages = array();
+			if ( function_exists( 'get_pages' ) ) {
+				$pages = get_pages(
+					array(
+						'post_status' => 'publish',
+						'sort_column' => 'post_title',
+					)
+				);
+				foreach ( $pages as $pg ) {
+					$archive_pages[] = array(
+						'id'      => (int) $pg->ID,
+						'title'   => (string) $pg->post_title,
+						'uri'     => trim( (string) get_page_uri( $pg->ID ), '/' ),
+						'editUrl' => (string) get_edit_post_link( $pg->ID, 'raw' ),
+						'viewUrl' => (string) get_permalink( $pg->ID ),
+					);
+				}
+			}
+
 			wp_add_inline_script(
 				'mds-template-defaults',
 				'window.mdsRmThemeScheme = ' . wp_json_encode( ThemeScheme::detect() ) . '; var mdsRmTemplateDefaultsData = ' . wp_json_encode(
 					array(
-						'editorSettings'  => get_block_editor_settings( array(), $context ),
-						'values'          => TemplateDefaults::get_all(),
-						'defaults'        => TemplateDefaults::defaults(),
-						'themeScheme'     => ThemeScheme::detect(),
-						'templatePresets' => ThemeScheme::template_presets(),
+						'editorSettings'    => get_block_editor_settings( array(), $context ),
+						'values'            => TemplateDefaults::get_all(),
+						'defaults'          => TemplateDefaults::defaults(),
+						'themeScheme'       => ThemeScheme::detect(),
+						'templatePresets'   => ThemeScheme::template_presets(),
+						'archivePages'      => $archive_pages,
+						'createPageUrl'     => admin_url( 'post-new.php?post_type=page' ),
+						'siteEditorUrl'     => ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) ? admin_url( 'site-editor.php?path=%2Fwp_template' ) : '',
+						'defaultArchiveUrl' => (string) get_post_type_archive_link( 'release' ),
 					)
 				) . ';',
 				'before'

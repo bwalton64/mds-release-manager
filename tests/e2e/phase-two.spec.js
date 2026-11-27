@@ -132,7 +132,7 @@ test('CSV export preserves the row format across page boundaries', async ({ page
 			csv += chunk.toString();
 		}
 
-		expect(csv.startsWith('UPC/EAN,"Release Title",Artist,"Release Date"')).toBe(true);
+		expect(csv.replace(/^\uFEFF/, '').startsWith('UPC/EAN,"Release Title",Artist,"Release Date"')).toBe(true);
 		expect(csv).toContain(`Phase Two Export ${state.marker} 100`);
 		expect(csv.split(/\r?\n/).length).toBeGreaterThan(101);
 	} finally {

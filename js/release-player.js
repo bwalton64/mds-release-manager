@@ -365,6 +365,20 @@
 				this.timeEl.textContent = formatTime( current ) + ' / ' + formatTime( limit );
 			}
 
+			const relMatch = this.restUrl.match( /\/releases\/(\d+)/ );
+			const releaseId = parseInt( this.root.dataset.releaseId || ( relMatch ? relMatch[ 1 ] : '0' ), 10 ) || 0;
+			window.dispatchEvent(
+				new CustomEvent( 'mds-rm:player-timeupdate', {
+					detail: {
+						releaseId,
+						trackIndex: this.trackIndex,
+						trackTitle: track.title || '',
+						currentTime: current,
+						isPlaying: this.isPlaying,
+					},
+				} )
+			);
+
 			if ( ! this.isPlaying || this.isCrossfading || limit <= 0 ) {
 				return;
 			}

@@ -92,8 +92,8 @@ final class GitHubUpdater {
 			'repo'           => $repo,
 			'version'        => $version,
 			'name'           => (string) ( $config['name'] ?? $slug ),
-			'author'         => (string) ( $config['author'] ?? 'Walton International Business Group' ),
-			'homepage'       => (string) ( $config['homepage'] ?? 'https://github.com/' . $repo ),
+			'author'         => (string) ( $config['author'] ?? 'Musty Dungeon Studios' ),
+			'homepage'       => (string) ( $config['homepage'] ?? 'https://mustydungeon.com' ),
 			'token_constant' => (string) ( $config['token_constant'] ?? 'MDS_RM_GITHUB_TOKEN' ),
 			'requires'       => (string) ( $config['requires'] ?? '7.0' ),
 			'tested'         => (string) ( $config['tested'] ?? '7.0' ),
@@ -166,6 +166,7 @@ final class GitHubUpdater {
 			'tested'       => $config['tested'],
 			'requires'     => $config['requires'],
 			'requires_php' => $config['requires_php'],
+			'icons'        => BrandIcon::updater_icons( $config['slug'] ),
 		);
 	}
 
@@ -207,6 +208,7 @@ final class GitHubUpdater {
 			'requires_php'  => $config['requires_php'],
 			'last_updated'  => $release['published_at'] ?? '',
 			'download_link' => $release['package'] ?? '',
+			'icons'         => BrandIcon::updater_icons( $config['slug'] ),
 			'sections'      => array(
 				'description' => sprintf(
 					/* translators: %s: Plugin name. */
@@ -399,6 +401,15 @@ final class GitHubUpdater {
 			$token = trim( (string) constant( $token_constant ) );
 		} elseif ( defined( 'MDS_RM_GITHUB_TOKEN' ) ) {
 			$token = trim( (string) constant( 'MDS_RM_GITHUB_TOKEN' ) );
+		} elseif ( class_exists( \MDS\ReleaseManager\Core\Security\SecretVault::class ) ) {
+			$token = \MDS\ReleaseManager\Core\Security\SecretVault::get(
+				'github',
+				'token',
+				array(
+					'const' => array( $token_constant, 'MDS_RM_GITHUB_TOKEN' ),
+					'env'   => array( $token_constant, 'MDS_RM_GITHUB_TOKEN' ),
+				)
+			);
 		}
 
 		if ( function_exists( 'apply_filters' ) ) {

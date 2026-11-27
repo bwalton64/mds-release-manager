@@ -17,10 +17,12 @@ namespace MDS\ReleaseManager\Api;
 use MDS\ReleaseManager\Blocks\ReleaseLinks;
 use MDS\ReleaseManager\Blocks\ReleaseMeta;
 use MDS\ReleaseManager\Core\Audio\AudioApi;
+use MDS\ReleaseManager\Core\BrandIcon;
 use MDS\ReleaseManager\Core\Cache;
 use MDS\ReleaseManager\Core\GitHubUpdater;
 use MDS\ReleaseManager\Core\ReleaseModel;
 use MDS\ReleaseManager\Core\ReleaseSearch;
+use MDS\ReleaseManager\Core\Security\SecretVault;
 use MDS\ReleaseManager\Core\Sync;
 use MDS\ReleaseManager\Frontend\Assets;
 use MDS\ReleaseManager\Frontend\ThemeScheme;
@@ -127,6 +129,133 @@ final class ExtensionApi {
 	 */
 	public static function register_github_updater( array $config ): bool {
 		return GitHubUpdater::register( $config );
+	}
+
+	/**
+	 * Resolves a plaintext secret from the centralized Hub SecretVault cascade.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string               $service Canonical service namespace (e.g. `spotify`, `github`).
+	 * @param string               $field   Field key (e.g. `client_id`, `client_secret`, `token`).
+	 * @param array<string, mixed> $options Optional `env` and `const` override name lists.
+	 * @return string Plaintext secret, or empty string if unset.
+	 */
+	public static function get_secret( string $service, string $field, array $options = array() ): string {
+		return SecretVault::get( $service, $field, $options );
+	}
+
+	/**
+	 * Resolves a secret along with source, cipher, and key metadata.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string               $service Canonical service namespace.
+	 * @param string               $field   Field key.
+	 * @param array<string, mixed> $options Optional `env` and `const` override name lists.
+	 * @return array{value: string, source: string, cipher: string, key_id: string, needs_rotation: bool}
+	 */
+	public static function get_secret_with_meta( string $service, string $field, array $options = array() ): array {
+		return SecretVault::get_with_meta( $service, $field, $options );
+	}
+
+	/**
+	 * Encrypts and stores a secret in the centralized Hub SecretVault.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $service   Canonical service namespace.
+	 * @param string $field     Field key.
+	 * @param string $plaintext Secret value to store (empty string deletes the entry).
+	 * @return array{saved: bool, cipher: string, key_id: string, security_level: string}
+	 */
+	public static function set_secret( string $service, string $field, string $plaintext ): array {
+		return SecretVault::set( $service, $field, $plaintext );
+	}
+
+	/**
+	 * Deletes a secret from the centralized Hub SecretVault.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $service Canonical service namespace.
+	 * @param string $field   Field key.
+	 * @return bool True on success.
+	 */
+	public static function delete_secret( string $service, string $field ): bool {
+		return SecretVault::delete( $service, $field );
+	}
+
+	/**
+	 * Returns safe, masked status metadata for a secret (never exposes plaintext).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string               $service Canonical service namespace.
+	 * @param string               $field   Field key.
+	 * @param array<string, mixed> $options Optional `env`, `const`, and `is_secret` flags.
+	 * @return array{configured: bool, source: string, masked: string, cipher: string, key_id: string, is_override: bool}
+	 */
+	public static function get_secret_status( string $service, string $field, array $options = array() ): array {
+		return SecretVault::get_status( $service, $field, $options );
+	}
+
+	/**
+	 * Returns the current cryptographic security posture of the centralized Hub SecretVault.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return array<string, mixed> Security posture descriptor.
+	 */
+	public static function get_secret_vault_posture(): array {
+		return SecretVault::get_security_posture();
+	}
+
+	/**
+	 * Returns inline SVG markup for the official Musty Dungeon Studios (MDS) logo.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param array<string, string> $attrs Optional SVG attributes (`class`, `width`, `height`, `fill`, `aria-hidden`, `aria-label`).
+	 * @return string Inline `<svg>` markup.
+	 */
+	public static function get_brand_icon_svg( array $attrs = array() ): string {
+		return BrandIcon::svg( $attrs );
+	}
+
+	/**
+	 * Returns a base64 SVG data URI of the official MDS logo for WP Admin `menu_icon`.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $fill SVG fill color (default `black` for WP Admin color-scheme tinting).
+	 * @return string Base64 data URI string.
+	 */
+	public static function get_brand_icon_data_uri( string $fill = 'black' ): string {
+		return BrandIcon::data_uri( $fill );
+	}
+
+	/**
+	 * Returns the public URL to the canonical MDS SVG logo (`assets/icon.svg`).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return string Public URL.
+	 */
+	public static function get_brand_icon_url(): string {
+		return BrandIcon::url();
+	}
+
+	/**
+	 * Returns WordPress `plugins_api` / updater `icons` URLs (`svg`, `1x`, `2x`, `default`).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $slug Optional plugin slug to check for plugin-local `assets/` icons first.
+	 * @return array<string, string> Icon URLs keyed by size.
+	 */
+	public static function get_brand_updater_icons( string $slug = '' ): array {
+		return BrandIcon::updater_icons( $slug );
 	}
 
 	/**

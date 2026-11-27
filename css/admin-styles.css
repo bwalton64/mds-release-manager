@@ -1,4 +1,15 @@
 
+/* Official Musty Dungeon Studios (MDS) Brand Icon */
+.mds-brand-icon {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	vertical-align: -0.125em;
+	background-color: currentColor;
+	-webkit-mask: url('../assets/icon.svg') no-repeat center / contain;
+	mask: url('../assets/icon.svg') no-repeat center / contain;
+}
+
 #mds-settings-form,
 #mds-network-settings-form,
 .mds-csv-wrap > .mds-panel { margin-top: 20px; }
@@ -1808,4 +1819,203 @@ dialog.mds-preview-dialog::backdrop {
 	font-size: 10px;
 	opacity: 0.75;
 	flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Release Manager Dashboard (toplevel_page_mds-release-manager)
+   ========================================================================== */
+.mds-dash {
+	max-width: 1280px;
+	margin: 12px 0 32px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+.mds-dash-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 18px 22px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+}
+.mds-dash-header__brand {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+.mds-dash-header__logo {
+	font-size: 36px;
+	color: #1d2327;
+	flex-shrink: 0;
+}
+.mds-dash-header__title {
+	margin: 0;
+	padding: 0;
+	font-size: 22px;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.mds-dash-header__subtitle {
+	margin: 4px 0 0;
+	color: #50575e;
+	font-size: 13px;
+}
+.mds-dash-badge {
+	font-size: 11px;
+	font-weight: 600;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: #f0f0f1;
+	color: #1d2327;
+}
+.mds-dash-badge.is-hub {
+	background: #e6f4ea;
+	color: #137333;
+}
+.mds-dash-badge.is-spoke {
+	background: #e8f0fe;
+	color: #1967d2;
+}
+.mds-dash-header__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+.mds-dash-kpi-grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 16px;
+}
+.mds-dash-kpi__label {
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: #50575e;
+}
+.mds-dash-kpi__value {
+	font-size: 28px;
+	font-weight: 700;
+	line-height: 1.2;
+	margin: 6px 0 4px;
+	color: #1d2327;
+}
+.mds-dash-kpi__sub {
+	font-size: 12px;
+	color: #646970;
+}
+.mds-dash-columns {
+	display: grid;
+	grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+	gap: 20px;
+	align-items: start;
+}
+.mds-dash-col-main,
+.mds-dash-col-side {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+.mds-dash-checklist {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mds-dash-checklist li {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 0;
+	border-bottom: 1px solid #f0f0f1;
+}
+.mds-dash-checklist li:last-child {
+	border-bottom: 0;
+}
+.mds-dash-checklist strong.is-warn {
+	color: #b32d2e;
+}
+.mds-dash-checklist strong.is-ok,
+.mds-dash-ok {
+	color: #137333;
+	font-weight: 600;
+	margin: 0;
+}
+.mds-dash-recent-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.mds-dash-recent-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 0;
+	border-bottom: 1px solid #f0f0f1;
+}
+.mds-dash-recent-item:last-child {
+	border-bottom: 0;
+}
+.mds-dash-recent-item__media {
+	width: 40px;
+	height: 40px;
+	border-radius: 4px;
+	background: #f0f0f1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+.mds-dash-recent-item__media img {
+	width: 40px;
+	height: 40px;
+	object-fit: cover;
+}
+.mds-dash-recent-item__info {
+	min-width: 0;
+	flex: 1;
+}
+.mds-dash-recent-item__title {
+	font-weight: 600;
+	text-decoration: none;
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.mds-dash-recent-item__meta,
+.mds-dash-muted {
+	font-size: 12px;
+	color: #646970;
+}
+.mds-dash-recent-item__actions {
+	display: flex;
+	gap: 4px;
+	flex-shrink: 0;
+}
+.mds-dash-scheme-meta {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+@media (max-width: 960px) {
+	.mds-dash-kpi-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.mds-dash-columns {
+		grid-template-columns: 1fr;
+	}
+}
+@media (max-width: 600px) {
+	.mds-dash-kpi-grid {
+		grid-template-columns: 1fr;
+	}
 }

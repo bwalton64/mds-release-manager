@@ -696,7 +696,7 @@ final class RestApi {
 		if ( '' !== $redirect_url ) {
 			$routing_notice = sprintf(
 				/* translators: %s: Active redirect URL. */
-				__( 'Page Routing active: visitors will be redirected (302) to %s instead of seeing this fallback layout.', 'mds-release-manager' ),
+				__( 'Page Routing active: visitors will be redirected (302) to %s instead of seeing this default layout.', 'mds-release-manager' ),
 				$redirect_url
 			);
 		}
@@ -788,7 +788,7 @@ final class RestApi {
 		if ( $homepage_routing && \MDS\ReleaseManager\Frontend\ArtistRouting::valid_url( $homepage_url, $post_id ) ) {
 			$routing_notice = sprintf(
 				/* translators: %s: Active artist homepage redirect URL. */
-				__( 'Homepage Redirect active: visitors will be redirected (302) to %s instead of seeing this fallback profile.', 'mds-release-manager' ),
+				__( 'Homepage Redirect active: visitors will be redirected (302) to %s instead of seeing this default profile.', 'mds-release-manager' ),
 				$homepage_url
 			);
 		}

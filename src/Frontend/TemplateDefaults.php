@@ -102,14 +102,44 @@ final class TemplateDefaults {
 				'contact_border_color' => '',
 				'contact_border_width' => 0,
 			),
+			'archive' => array(
+				'enabled'            => false,
+				'page_id'            => 0,
+				'show_page_title'    => true,
+				'show_page_intro'    => true,
+				'columns'            => 3,
+				'per_page'           => 12,
+				'default_sort'       => 'date_desc',
+				'pagination'         => 'numbered',
+				'max_width'          => 1200,
+				'grid_gap'           => 24,
+				'padding_vertical'   => 32,
+				'padding_horizontal' => 20,
+				'container_bg'       => '',
+				'card_bg'            => '',
+				'card_border_color'  => '',
+				'card_border_width'  => 1,
+				'card_radius'        => 8,
+				'cover_aspect'       => '1/1',
+				'card_shadow'        => 'none',
+				'hover_lift'         => true,
+				'show_search'        => true,
+				'show_artist_filter' => true,
+				'show_type_filter'   => true,
+				'show_format_filter' => true,
+				'show_year_filter'   => true,
+				'show_sort'          => true,
+				'show_audio'         => true,
+				'show_links'         => true,
+			),
 		);
 	}
 
 	/**
-	 * Returns merged settings for both templates, falling back to legacy
-	 * `theme_mod` values when the option has not yet been saved.
+	 * Returns merged settings for all templates (`release`, `artist`, `archive`),
+	 * falling back to legacy `theme_mod` values when the option has not yet been saved.
 	 *
-	 * @return array{release: array<string, mixed>, artist: array<string, mixed>}
+	 * @return array{release: array<string, mixed>, artist: array<string, mixed>, archive: array<string, mixed>}
 	 */
 	public static function get_all(): array {
 		$defaults = self::defaults();
@@ -118,9 +148,16 @@ final class TemplateDefaults {
 		if ( is_array( $stored ) ) {
 			$release                    = array_merge( $defaults['release'], is_array( $stored['release'] ?? null ) ? $stored['release'] : array() );
 			$release['component_order'] = self::normalize_release_component_order( $release['component_order'] ?? null );
+			$artist                     = array_merge( $defaults['artist'], is_array( $stored['artist'] ?? null ) ? $stored['artist'] : array() );
+			$stored_archive             = is_array( $stored['archive'] ?? null ) ? $stored['archive'] : array();
+			if ( ! array_key_exists( 'enabled', $stored_archive ) && ! empty( $release['enable_catalog_archive'] ) ) {
+				$stored_archive['enabled'] = true;
+			}
+			$archive = array_merge( $defaults['archive'], $stored_archive );
 			return array(
 				'release' => $release,
-				'artist'  => array_merge( $defaults['artist'], is_array( $stored['artist'] ?? null ) ? $stored['artist'] : array() ),
+				'artist'  => $artist,
+				'archive' => $archive,
 			);
 		}
 
@@ -131,7 +168,20 @@ final class TemplateDefaults {
 		return array(
 			'release' => $release,
 			'artist'  => array_merge( $defaults['artist'], $legacy['artist'] ),
+			'archive' => $defaults['archive'],
 		);
+	}
+
+	/**
+	 * Returns the assigned Designated Release Archive Page ID (0 when using default `/release/`).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return int Published page ID or 0.
+	 */
+	public static function get_archive_page_id(): int {
+		$archive = self::get( 'archive' );
+		return absint( $archive['page_id'] ?? 0 );
 	}
 
 	/**
@@ -336,6 +386,37 @@ final class TemplateDefaults {
 			'contact_border_width' => array( 'int', 0, 8 ),
 		);
 
+		$archive_spec = array(
+			'enabled'            => array( 'bool' ),
+			'page_id'            => array( 'int', 0, 999999999 ),
+			'show_page_title'    => array( 'bool' ),
+			'show_page_intro'    => array( 'bool' ),
+			'columns'            => array( 'int', 2, 5 ),
+			'per_page'           => array( 'int', 6, 48 ),
+			'default_sort'       => array( 'enum', array( 'date_desc', 'date_asc', 'title_asc', 'title_desc' ) ),
+			'pagination'         => array( 'enum', array( 'numbered', 'load_more', 'none' ) ),
+			'max_width'          => array( 'int', 600, 2000 ),
+			'grid_gap'           => array( 'int', 8, 64 ),
+			'padding_vertical'   => array( 'int', 0, 120 ),
+			'padding_horizontal' => array( 'int', 0, 120 ),
+			'container_bg'       => array( 'color' ),
+			'card_bg'            => array( 'color' ),
+			'card_border_color'  => array( 'color' ),
+			'card_border_width'  => array( 'int', 0, 4 ),
+			'card_radius'        => array( 'int', 0, 32 ),
+			'cover_aspect'       => array( 'enum', array( '1/1', '4/3', 'auto' ) ),
+			'card_shadow'        => array( 'enum', array( 'none', 'subtle', 'elevated' ) ),
+			'hover_lift'         => array( 'bool' ),
+			'show_search'        => array( 'bool' ),
+			'show_artist_filter' => array( 'bool' ),
+			'show_type_filter'   => array( 'bool' ),
+			'show_format_filter' => array( 'bool' ),
+			'show_year_filter'   => array( 'bool' ),
+			'show_sort'          => array( 'bool' ),
+			'show_audio'         => array( 'bool' ),
+			'show_links'         => array( 'bool' ),
+		);
+
 		$validated_release = self::validate_section( $raw['release'] ?? array(), $defaults['release'], $release_spec );
 		if ( is_wp_error( $validated_release ) ) {
 			return $validated_release;
@@ -346,9 +427,18 @@ final class TemplateDefaults {
 			return $validated_artist;
 		}
 
+		$validated_archive = self::validate_section( $raw['archive'] ?? array(), $defaults['archive'], $archive_spec );
+		if ( is_wp_error( $validated_archive ) ) {
+			return $validated_archive;
+		}
+
+		// Keep legacy release.enable_catalog_archive mirror in sync for backward compatibility.
+		$validated_release['enable_catalog_archive'] = ! empty( $validated_archive['enabled'] );
+
 		return array(
 			'release' => $validated_release,
 			'artist'  => $validated_artist,
+			'archive' => $validated_archive,
 		);
 	}
 
@@ -644,6 +734,43 @@ final class TemplateDefaults {
 		}
 		if ( '' !== (string) $s['contact_border_color'] && absint( $s['contact_border_width'] ) > 0 ) {
 			$styles[] = '--mds-artist-contact-border:' . absint( $s['contact_border_width'] ) . 'px solid ' . $s['contact_border_color'];
+		}
+
+		return implode( ';', $styles );
+	}
+
+	/**
+	 * Builds safe inline CSS custom properties for the Release Archive template.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return string CSS custom-property declarations.
+	 */
+	public static function get_archive_style_attribute(): string {
+		$s      = self::get( 'archive' );
+		$styles = array(
+			'--mds-archive-max-width:' . absint( $s['max_width'] ?? 1200 ) . 'px',
+			'--mds-archive-grid-gap:' . absint( $s['grid_gap'] ?? 24 ) . 'px',
+			'--mds-archive-padding-y:' . absint( $s['padding_vertical'] ?? 32 ) . 'px',
+			'--mds-archive-padding-x:' . absint( $s['padding_horizontal'] ?? 20 ) . 'px',
+			'--mds-archive-card-radius:' . absint( $s['card_radius'] ?? 8 ) . 'px',
+			'--mds-archive-card-border-width:' . absint( $s['card_border_width'] ?? 1 ) . 'px',
+		);
+
+		if ( '' !== (string) ( $s['container_bg'] ?? '' ) ) {
+			$styles[] = '--mds-archive-container-bg:' . $s['container_bg'];
+		}
+		if ( '' !== (string) ( $s['card_bg'] ?? '' ) ) {
+			$styles[] = '--mds-archive-card-bg:' . $s['card_bg'];
+		}
+		if ( '' !== (string) ( $s['card_border_color'] ?? '' ) ) {
+			$styles[] = '--mds-archive-card-border-color:' . $s['card_border_color'];
+		}
+		if ( '1/1' !== (string) ( $s['cover_aspect'] ?? '1/1' ) ) {
+			$styles[] = '--mds-archive-cover-aspect:' . $s['cover_aspect'];
+		}
+		if ( 'none' !== (string) ( $s['card_shadow'] ?? 'none' ) ) {
+			$styles[] = '--mds-archive-card-shadow:' . self::shadow_css( (string) $s['card_shadow'], 'release' );
 		}
 
 		return implode( ';', $styles );

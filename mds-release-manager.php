@@ -1,20 +1,23 @@
 <?php
 /**
  * Plugin Name: MDS Release Manager
+ * Plugin URI: https://mustydungeon.com
  * Description: Comprehensive Artist Release Manager.
- * Version: 2.1.0
+ * Version: 2.2.0
  * Requires at least: 7.0
  * Requires PHP: 8.0
- * Author: Walton International Business Group
+ * Author: Musty Dungeon Studios
  * Author URI: https://mustydungeon.com
- * License: GPL-2.0-or-later
- * License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * License: GPL-3.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Update URI: https://github.com/bwalton64/mds-release-manager
  * Text Domain: mds-release-manager
  * Domain Path: /languages
  * Network: true
  *
- * @package MDS\ReleaseManager
+ * @package   MDS\ReleaseManager
+ * @copyright 2026 Musty Dungeon Studios (Walton International Business Group LLC)
+ * @license   GPL-3.0-or-later
  */
 
 declare(strict_types=1);
@@ -24,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'MDS_RM_VERSION' ) ) {
-	define( 'MDS_RM_VERSION', '2.1.0' );
+	define( 'MDS_RM_VERSION', '2.2.0' );
 }
 if ( ! defined( 'MDS_RM_API_VERSION' ) ) {
 	define( 'MDS_RM_API_VERSION', '2.0.0' );

@@ -27,6 +27,9 @@
     ];
 
     addFilter('blocks.registerBlockType', 'mds-rm/add-attributes', function(settings, name) {
+        if (name.indexOf('mds-rm/') === 0 || name.indexOf('mds-commerce/') === 0) {
+            settings.icon = el('span', { className: 'mds-brand-icon', 'aria-hidden': true });
+        }
         if (allowedBlocks.includes(name)) {
             settings.attributes = Object.assign(settings.attributes || {}, {
                 mdsMetaField: { type: 'string', default: '' },

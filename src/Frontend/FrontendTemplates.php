@@ -36,10 +36,57 @@ final class FrontendTemplates {
 		add_filter( 'post_thumbnail_html', array( self::class, 'filter_release_featured_image' ), 10, 2 );
 		add_filter( 'render_block', array( self::class, 'filter_release_author_group' ), 20, 3 );
 		add_filter( 'template_include', array( self::class, 'maybe_use_catalog_archive_template' ), 20 );
+		add_filter( 'get_the_archive_title', array( self::class, 'filter_release_archive_title' ), 15 );
+		add_filter( 'document_title_parts', array( self::class, 'filter_release_archive_document_title' ), 15 );
 	}
 
 	/**
-	 * Optionally renders the Catalog Explorer template on the `/release/` post-type archive.
+	 * Inherits the Designated Archive Page's title on the Release archive view.
+	 *
+	 * @since 2.2.0
+	 * @param string $title Default archive title.
+	 * @return string Archive title.
+	 */
+	public static function filter_release_archive_title( string $title ): string {
+		if ( ! is_post_type_archive( 'release' ) ) {
+			return $title;
+		}
+		$page_id = TemplateDefaults::get_archive_page_id();
+		if ( $page_id > 0 && 'publish' === get_post_status( $page_id ) ) {
+			$page_title = get_the_title( $page_id );
+			if ( '' !== $page_title ) {
+				return $page_title;
+			}
+		}
+		return $title;
+	}
+
+	/**
+	 * Inherits the Designated Archive Page's title in the `<title>` document tag.
+	 *
+	 * @since 2.2.0
+	 * @param array<string, string> $parts Document title parts.
+	 * @return array<string, string> Filtered document title parts.
+	 */
+	public static function filter_release_archive_document_title( array $parts ): array {
+		if ( ! is_post_type_archive( 'release' ) ) {
+			return $parts;
+		}
+		$page_id = TemplateDefaults::get_archive_page_id();
+		if ( $page_id > 0 && 'publish' === get_post_status( $page_id ) ) {
+			$page_title = get_the_title( $page_id );
+			if ( '' !== $page_title ) {
+				$parts['title'] = $page_title;
+			}
+		}
+		return $parts;
+	}
+
+	/**
+	 * Optionally renders the Release Archive template on Classic/Hybrid themes when enabled.
+	 *
+	 * On Block Themes (WordPress 6.7+ / 7.x), `BlockTemplates` registers the native
+	 * `mds-release-manager//archive-release` template directly in the Site Editor.
 	 *
 	 * @since 2.1.0
 	 * @param string $template Resolved theme template path.
@@ -49,8 +96,11 @@ final class FrontendTemplates {
 		if ( is_admin() || ! is_post_type_archive( 'release' ) ) {
 			return $template;
 		}
-		$tpl = TemplateDefaults::get( 'release' );
-		if ( empty( $tpl['enable_catalog_archive'] ) ) {
+		$archive = TemplateDefaults::get( 'archive' );
+		if ( empty( $archive['enabled'] ) ) {
+			return $template;
+		}
+		if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() && function_exists( 'register_block_template' ) ) {
 			return $template;
 		}
 		$custom = MDS_RM_PATH . 'templates/archive-release-catalog.php';

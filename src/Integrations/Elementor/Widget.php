@@ -42,7 +42,7 @@ class Widget extends \Elementor\Widget_Base {
 	 * @return string Icon classes.
 	 */
 	public function get_icon() {
-		return 'dashicons dashicons-album';
+		return 'mds-brand-icon';
 	}
 
 	/**
@@ -104,7 +104,7 @@ class Widget extends \Elementor\Widget_Base {
 				'options' => array(
 					'custom'                           => __( 'Custom icon classes', 'mds-release-manager' ),
 					'none'                             => __( 'No icon', 'mds-release-manager' ),
-					'dashicons dashicons-album'        => 'Album (Dashicons)',
+					'mds-brand-icon'                   => __( 'MDS Official Logo', 'mds-release-manager' ),
 					'dashicons dashicons-calendar-alt' => 'Calendar (Dashicons)',
 					'dashicons dashicons-groups'       => 'Artist (Dashicons)',
 					'dashicons dashicons-tag'          => 'Tag (Dashicons)',
