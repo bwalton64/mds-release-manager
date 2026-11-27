@@ -1,12 +1,12 @@
-# Code Review & Pre-Release Audit — MDS Release Manager (`v2.2.0`)
+# Code Review & Audit — MDS Release Manager (`v2.2.0`)
 
 - **Date:** 2026-11-27
-- **Scope:** Full diff since `v2.1.0` (`src/Admin/Dashboard.php`, `src/Core/BrandIcon.php`, `src/Frontend/BlockTemplates.php`, `src/Frontend/ThemeScheme.php`, `src/Frontend/TemplateDefaults.php`, `src/Frontend/FrontendTemplates.php`, `src/Frontend/Assets.php`, `src/Core/PostTypes.php`, `src/Core/GitHubUpdater.php`, `src/Api/ExtensionApi.php`, `src/Core/Security/*`, `js/dashboard.js`, `js/template-defaults.js`, `js/settings-defaults.js`, `blocks/native-release-styles.js`, `templates/archive-release-catalog.php`, `uninstall.php`)
-- **Summary:** 0 Critical | 0 High | 0 Medium | 1 Low
+- **Scope:** Full plugin source (`66` PHP files, JS/CSS/blocks, `uninstall.php`, `wpml-config.xml`, licensing & branding assets)
+- **Summary:** 0 Critical | 0 High | 0 Medium | 0 Low
 
 ## Executive Summary
 
-No release-blocking **Critical** or **High** findings were identified. All new classes use PHP `8.0+` strict types with zero PHP `8.1+` syntax leakage, proper escaping/sanitization, bounded SQL queries (`no_found_rows => true`, lightweight `COUNT` aggregates), clean `parent_file`/`submenu_file` menu handling, and backward-compatible legacy URL redirects.
+All 66 PHP files pass PHP 8.0 compatibility (zero PHP 8.1+ syntax leakage), `ABSPATH` guard checks, security/escaping/nonce checks, Multisite `switch_to_blog()` `try/finally` hygiene, and `uninstall.php` storage parity (including `mds_rm_active_scheme_fingerprint` and `mds_rm_scheme_reset_notice`). Public REST routes (`GET /mds/v1/releases`, `GET /mds/v1/catalog`) are intentionally read-only and properly bounded.
 
 ## Findings Checklist
 
@@ -16,4 +16,4 @@ No release-blocking **Critical** or **High** findings were identified. All new c
 
 ### Medium / Low Priority
 
-- **CR-001 (Low — Storage / Uninstall Parity):** `uninstall.php` does not yet delete the newly added `mds_rm_active_scheme_fingerprint` option and `mds_rm_scheme_reset_notice` transient created by `src/Frontend/ThemeScheme.php`. Add both keys to `uninstall.php` cleanup before packaging `v2.2.0`.
+- *None.*
