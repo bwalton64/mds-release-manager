@@ -81,13 +81,38 @@ final class Sync {
 	}
 
 	/**
+	 * Determines whether the plugin is running in Networked Multisite (Hub-and-Spoke) mode.
+	 *
+	 * Returns false on single-site installs and on Multisite sub-sites where the plugin
+	 * is activated standalone rather than Network Activated.
+	 *
+	 * @since 2.2.1
+	 * @return bool True when running Network Activated on WordPress Multisite.
+	 */
+	public static function is_network_mode(): bool {
+		if ( ! is_multisite() ) {
+			return false;
+		}
+		if ( ! defined( 'MDS_RM_BASENAME' ) ) {
+			return true;
+		}
+		if ( ! function_exists( 'is_plugin_active_for_network' ) && defined( 'ABSPATH' ) && file_exists( ABSPATH . 'wp-admin/includes/plugin.php' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		if ( function_exists( 'is_plugin_active_for_network' ) ) {
+			return (bool) is_plugin_active_for_network( MDS_RM_BASENAME );
+		}
+		return true;
+	}
+
+	/**
 	 * Returns the hub (master) site ID for the network.
 	 *
 	 * @since 1.0.0
-	 * @return int The hub site ID, or the current site ID outside multisite.
+	 * @return int The hub site ID, or the current site ID outside networked multisite.
 	 */
 	public static function hub_id(): int {
-		if ( ! is_multisite() ) {
+		if ( ! self::is_network_mode() ) {
 			return (int) get_current_blog_id();
 		}
 
@@ -97,13 +122,13 @@ final class Sync {
 	/**
 	 * Determines whether the current site is the hub.
 	 *
-	 * Single-site installations always count as the hub.
+	 * Single-site and standalone Multisite installations always count as the hub.
 	 *
 	 * @since 1.0.0
 	 * @return bool True when catalog editing is allowed on this site.
 	 */
 	public static function is_hub(): bool {
-		return ! is_multisite() || get_current_blog_id() === self::hub_id();
+		return ! self::is_network_mode() || get_current_blog_id() === self::hub_id();
 	}
 
 	/**
@@ -114,7 +139,7 @@ final class Sync {
 	 * @return int[] Validated Spoke blog IDs.
 	 */
 	public static function base_spoke_sites(): array {
-		if ( ! is_multisite() ) {
+		if ( ! self::is_network_mode() ) {
 			return array();
 		}
 

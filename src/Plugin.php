@@ -40,12 +40,16 @@ final class Plugin {
 	public static function init(): void {
 		\MDS\ReleaseManager\Frontend\Assets::register_hooks();
 		\MDS\ReleaseManager\Core\Cache::register_hooks();
+		\MDS\ReleaseManager\Core\GatewayBridge::register_hooks();
 		\MDS\ReleaseManager\Core\Security\CredentialsAdmin::register_hooks();
 		\MDS\ReleaseManager\Core\Audio\AudioApi::register_hooks();
 		\MDS\ReleaseManager\Core\Sync::register_hooks();
 		\MDS\ReleaseManager\Core\PostTypes::register_hooks();
 		\MDS\ReleaseManager\Core\ReleaseModel::register_hooks();
+		\MDS\ReleaseManager\Core\ArtworkGallery::register_hooks();
+		\MDS\ReleaseManager\Core\TdmCompliance::register_hooks();
 		\MDS\ReleaseManager\Core\CatalogQuery::register_hooks();
+		\MDS\ReleaseManager\Frontend\SchemaPublisher::register_hooks();
 		\MDS\ReleaseManager\Admin\Dashboard::register_hooks();
 		\MDS\ReleaseManager\Admin\AdminInterface::register_hooks();
 		\MDS\ReleaseManager\Admin\Editor::register_hooks();
@@ -62,21 +66,6 @@ final class Plugin {
 		\MDS\ReleaseManager\Blocks\BlockDefaults::register_hooks();
 		\MDS\ReleaseManager\Api\VirtualMedia::register_hooks();
 		\MDS\ReleaseManager\Api\Abilities::register_hooks();
-		\MDS\ReleaseManager\Core\GitHubUpdater::register(
-			array(
-				'basename'       => MDS_RM_BASENAME,
-				'slug'           => 'mds-release-manager',
-				'repo'           => 'bwalton64/mds-release-manager',
-				'version'        => MDS_RM_VERSION,
-				'name'           => 'MDS Release Manager',
-				'author'         => 'Musty Dungeon Studios',
-				'homepage'       => 'https://mustydungeon.com',
-				'token_constant' => 'MDS_RM_GITHUB_TOKEN',
-				'requires'       => '7.0',
-				'tested'         => '7.0',
-				'requires_php'   => '8.0',
-			)
-		);
 
 		/**
 		 * Fires once MDS Release Manager core components are bootstrapped.

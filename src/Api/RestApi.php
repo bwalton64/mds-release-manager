@@ -485,6 +485,13 @@ final class RestApi {
 			update_option( 'mds_rm_fa_support', \MDS\ReleaseManager\Frontend\Assets::sanitize_font_awesome_source( wp_unslash( $params['mds_rm_fa_support'] ) ) );
 		}
 
+		if ( isset( $params['mds_rm_wipe_on_uninstall_present'] ) && ( ! method_exists( \MDS\ReleaseManager\Core\Sync::class, 'is_network_mode' ) || ! \MDS\ReleaseManager\Core\Sync::is_network_mode() ) ) {
+			update_site_option(
+				'mds_rm_wipe_on_uninstall',
+				! empty( $params['mds_rm_wipe_on_uninstall'] ) ? '1' : '0'
+			);
+		}
+
 		if ( null !== $block_defaults ) {
 			update_option( 'mds_rm_block_defaults', $block_defaults, true );
 		}

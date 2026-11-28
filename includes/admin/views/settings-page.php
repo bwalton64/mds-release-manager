@@ -99,11 +99,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<button type="button" class="button button-secondary" id="mds-purge-cache-now-btn"><?php esc_html_e( 'Purge Cache Now', 'mds-release-manager' ); ?></button>
 					<span id="mds-purge-cache-status" role="status" style="margin-left:10px;font-weight:600;"></span>
 				</p>
-				<hr />
-				<h2><?php esc_html_e( 'Network Synchronization', 'mds-release-manager' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Manually force a broadcast of all Artists and Releases from this Hub site to all configured Spoke sites. This is useful if a Spoke site was added recently or if sync was interrupted.', 'mds-release-manager' ); ?></p>
-				<button type="button" class="button button-secondary" id="mds-run-manual-sync-btn"><?php esc_html_e( 'Run Manual Sync', 'mds-release-manager' ); ?></button>
-				<span id="mds-manual-sync-status"></span>
+				<?php if ( ! empty( $args['is_network_mode'] ) ) : ?>
+					<hr />
+					<h2><?php esc_html_e( 'Network Synchronization', 'mds-release-manager' ); ?></h2>
+					<p class="description"><?php esc_html_e( 'Manually force a broadcast of all Artists and Releases from this Hub site to all configured Spoke sites. This is useful if a Spoke site was added recently or if sync was interrupted.', 'mds-release-manager' ); ?></p>
+					<button type="button" class="button button-secondary" id="mds-run-manual-sync-btn"><?php esc_html_e( 'Run Manual Sync', 'mds-release-manager' ); ?></button>
+					<span id="mds-manual-sync-status"></span>
+				<?php endif; ?>
 				<hr />
 				<h2><?php esc_html_e( 'Font Awesome Integration', 'mds-release-manager' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Choose how Font Awesome icons are loaded for Release Meta and Release Links. Auto mode defers to an installed Font Awesome plugin when detected, and otherwise loads Font Awesome Free 6.7.2 from cdnjs with Subresource Integrity (SRI).', 'mds-release-manager' ); ?></p>
@@ -126,6 +128,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<?php esc_html_e( 'Status: No Font Awesome plugin detected. Auto mode will load Font Awesome Free 6.7.2 from cdnjs.', 'mds-release-manager' ); ?>
 					<?php endif; ?>
 				</p>
+				<?php if ( empty( $args['is_network_mode'] ) ) : ?>
+					<hr />
+					<h2><?php esc_html_e( 'Uninstall Data Cleanup', 'mds-release-manager' ); ?></h2>
+					<input type="hidden" name="mds_rm_wipe_on_uninstall_present" value="1" />
+					<p>
+						<label for="mds-rm-wipe-on-uninstall">
+							<input type="checkbox" id="mds-rm-wipe-on-uninstall" name="mds_rm_wipe_on_uninstall" value="1" <?php checked( ! empty( $args['wipe_on_uninstall'] ) ); ?> />
+							<?php esc_html_e( 'Permanently delete all Releases, Artists, and plugin data when MDS Release Manager is uninstalled', 'mds-release-manager' ); ?>
+						</label>
+					</p>
+					<p class="description"><?php esc_html_e( 'Leave unchecked to preserve your Releases and Artists in the database if you uninstall or reinstall the plugin.', 'mds-release-manager' ); ?></p>
+				<?php endif; ?>
 			</div>
 
 			<div class="mds-admin-save-actions">
@@ -136,8 +150,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<div id="tab-default-templates" class="mds-tab-pane">
 			<div class="mds-panel mds-panel--wide">
-				<h2><?php esc_html_e( 'Default Fallback Templates', 'mds-release-manager' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Customize the automatic page layouts rendered for Release and Artist pages when no page builder or custom redirect is active. Settings here are theme-independent and survive theme switches.', 'mds-release-manager' ); ?></p>
+				<h2><?php esc_html_e( 'Default Templates', 'mds-release-manager' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Customize the automatic page layouts rendered for Release, Artist, and Release Archive pages when no page builder or custom redirect is active. Color overrides reset automatically whenever you switch themes or color schemes.', 'mds-release-manager' ); ?></p>
 				<div id="mds-default-templates-root"></div>
 			</div>
 			<div class="mds-admin-save-actions">

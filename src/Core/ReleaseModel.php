@@ -604,6 +604,29 @@ final class ReleaseModel {
 			$primary = (string) $links[0]['url'];
 		}
 
+		if ( '' === $primary ) {
+			$artist_uuid = (string) get_post_meta( $post_id, 'artist_id', true );
+			if ( '' !== $artist_uuid && function_exists( 'get_posts' ) ) {
+				$artist_ids = get_posts(
+					array(
+						'post_type'      => 'artist',
+						'post_status'    => 'publish',
+						'posts_per_page' => 1,
+						'fields'         => 'ids',
+						'meta_key'       => '_mds_artist_uuid', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Targeted UUID lookup.
+						'meta_value'     => $artist_uuid, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Targeted UUID lookup.
+						'no_found_rows'  => true,
+					)
+				);
+				if ( ! empty( $artist_ids[0] ) ) {
+					$artist_store = (string) get_post_meta( (int) $artist_ids[0], 'artist_default_store_url', true );
+					if ( '' !== $artist_store ) {
+						$primary = $artist_store;
+					}
+				}
+			}
+		}
+
 		/**
 		 * Filters the primary Buy Now destination URL for a Release.
 		 *
@@ -1139,7 +1162,7 @@ final class ReleaseModel {
 		if ( 'release' !== $postarr['post_type'] || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
 			return $empty;
 		}
-		if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
+		if ( ! Sync::is_hub() ) {
 			return $empty;
 		}
 		$post_id = isset( $postarr['ID'] ) ? (int) $postarr['ID'] : 0;

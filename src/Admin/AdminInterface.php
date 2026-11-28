@@ -346,6 +346,7 @@ final class AdminInterface {
 			'nonce'                     => wp_create_nonce( 'wp_rest' ),
 			'permalink'                 => (string) get_permalink( $post->ID ),
 			'homepageUrl'               => (string) get_post_meta( $post->ID, 'artist_homepage_url', true ),
+			'defaultStoreUrl'           => (string) get_post_meta( $post->ID, 'artist_default_store_url', true ),
 			'homepageRouting'           => '1' === (string) get_post_meta( $post->ID, 'artist_homepage_routing', true ),
 			'artistReleasesRoutingMode' => \MDS\ReleaseManager\Frontend\ArtistRouting::sanitize_artist_release_mode( get_post_meta( $post->ID, 'artist_releases_routing_mode', true ) ),
 			'artistModes'               => $artist_modes,
@@ -646,7 +647,7 @@ final class AdminInterface {
 	 * @return void
 	 */
 	public static function save_artist_meta_data( int $post_id ): void {
-		if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
+		if ( ! \MDS\ReleaseManager\Core\Sync::is_hub() ) {
 			return;
 		}
 
@@ -685,6 +686,10 @@ final class AdminInterface {
 
 		if ( isset( $_POST['artist_homepage_url'] ) && is_string( $_POST['artist_homepage_url'] ) ) {
 			update_post_meta( $post_id, 'artist_homepage_url', esc_url_raw( wp_unslash( $_POST['artist_homepage_url'] ) ) );
+		}
+
+		if ( isset( $_POST['artist_default_store_url'] ) && is_string( $_POST['artist_default_store_url'] ) ) {
+			update_post_meta( $post_id, 'artist_default_store_url', esc_url_raw( wp_unslash( $_POST['artist_default_store_url'] ) ) );
 		}
 
 		update_post_meta( $post_id, 'artist_homepage_routing', isset( $_POST['artist_homepage_routing'] ) ? '1' : '0' );
@@ -740,7 +745,7 @@ final class AdminInterface {
 	 * @return void
 	 */
 	public static function save_release_meta_data( int $post_id ): void {
-		if ( is_multisite() && get_current_blog_id() !== (int) get_site_option( 'mds_rm_master_blog_id', get_main_site_id() ) ) {
+		if ( ! \MDS\ReleaseManager\Core\Sync::is_hub() ) {
 			return;
 		}
 
@@ -1049,6 +1054,8 @@ final class AdminInterface {
 			'extension_tabs'          => self::extension_tabs( 'mds_rm_site_settings_tabs', array( 'general-settings', 'default-templates', 'block-defaults', 'integrations' ) ),
 			'block_defaults'          => get_option( 'mds_rm_block_defaults', array() ),
 			'template_defaults'       => \MDS\ReleaseManager\Frontend\TemplateDefaults::get_all(),
+			'is_network_mode'         => \MDS\ReleaseManager\Core\Sync::is_network_mode(),
+			'wipe_on_uninstall'       => '1' === (string) get_site_option( 'mds_rm_wipe_on_uninstall', '0' ),
 			'settings'                => array(
 				'global_redirect' => '1' === (string) get_option( 'mds_rm_global_redirect', '0' ),
 			),

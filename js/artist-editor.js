@@ -113,6 +113,7 @@
 
 		// Profile state
 		const [homepageUrl, setHomepageUrl] = useState(data.homepageUrl || '');
+		const [defaultStoreUrl, setDefaultStoreUrl] = useState(data.defaultStoreUrl || '');
 		const [homepageRouting, setHomepageRouting] = useState(Boolean(data.homepageRouting));
 
 		// Release Routing state
@@ -497,6 +498,7 @@
 			// Always-mounted hidden POST inputs so standard WordPress Update/Publish persists every field cleanly.
 			el('div', { className: 'mds-hidden-post-inputs', 'aria-hidden': true, style: { display: 'none' } },
 				el('input', { type: 'hidden', name: 'artist_homepage_url', value: homepageUrl }),
+				el('input', { type: 'hidden', name: 'artist_default_store_url', value: defaultStoreUrl }),
 				homepageRouting && el('input', { type: 'hidden', name: 'artist_homepage_routing', value: '1' }),
 				el('input', { type: 'hidden', name: 'artist_releases_routing_mode', value: artistPolicy })
 			),
@@ -546,6 +548,18 @@
 										help: __('When enabled with a valid external URL, visiting this Artist page redirects to their official website instead of showing the fallback profile.', 'mds-release-manager'),
 										checked: homepageRouting,
 										onChange: setHomepageRouting,
+										__nextHasNoMarginBottom: true,
+									})
+								),
+								el('div', { style: { marginTop: '16px' } },
+									el(TextControl, {
+										label: __('Default Store / Buy Now URL', 'mds-release-manager'),
+										help: __('Optional fallback Buy Now URL used automatically on Releases by this artist that do not set their own Buy Now link.', 'mds-release-manager'),
+										type: 'url',
+										placeholder: 'https://...',
+										value: defaultStoreUrl,
+										onChange: setDefaultStoreUrl,
+										__next40pxDefaultSize: true,
 										__nextHasNoMarginBottom: true,
 									})
 								),

@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- **Artist Default Store URL (`artist_default_store_url`):** Added a clean, zero-config free-tier fallback Buy Now URL on the Artist CPT (`AdminInterface`, `js/artist-editor.js`, and `ReleaseModel::get_primary_buy_now_url()`) used automatically when a Release does not set its own Buy Now link.
+- **AJAX Catalog Export (`POST /mds/v1/csv/export`):** Converted CSV/JSON/XML catalog exports and blank template downloads in `ImportExportHandler` and `includes/admin/views/csv-page.php` to zero-postback REST Blob downloads.
+
+### Removed
+- **WordPress.org Hygiene:** Removed the external GitHub `Update URI` header from `mds-release-manager.php`, removed `GitHubUpdater::register()` from `src/Plugin.php`, and removed legacy `admin_post_mds_rm_export_csv` / `admin_post_mds_rm_import_csv` hooks.
+
 ## [2.2.0] - 2026-11-27
 
 ### Added

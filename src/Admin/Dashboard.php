@@ -275,7 +275,7 @@ final class Dashboard {
 			? (string) get_the_title( $archive_page_id )
 			: __( 'Default (/release/)', 'mds-release-manager' );
 
-		$is_multisite = is_multisite();
+		$is_multisite = Sync::is_network_mode();
 		$spoke_count  = 0;
 		if ( $is_multisite && function_exists( 'get_sites' ) ) {
 			$sites       = get_sites(

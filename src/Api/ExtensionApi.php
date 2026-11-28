@@ -19,6 +19,7 @@ use MDS\ReleaseManager\Blocks\ReleaseMeta;
 use MDS\ReleaseManager\Core\Audio\AudioApi;
 use MDS\ReleaseManager\Core\BrandIcon;
 use MDS\ReleaseManager\Core\Cache;
+use MDS\ReleaseManager\Core\GatewayBridge;
 use MDS\ReleaseManager\Core\GitHubUpdater;
 use MDS\ReleaseManager\Core\ReleaseModel;
 use MDS\ReleaseManager\Core\ReleaseSearch;
@@ -129,6 +130,56 @@ final class ExtensionApi {
 	 */
 	public static function register_github_updater( array $config ): bool {
 		return GitHubUpdater::register( $config );
+	}
+
+	/**
+	 * Registers a companion plugin with Core's neutral Cloud Gateway Bridge.
+	 *
+	 * Strictly dormant unless at least one companion plugin registers.
+	 *
+	 * @since 2.3.0
+	 *
+	 * @param array<string, string> $config Companion config (`slug`, `basename`, `version`, optional `name`, `api_url`).
+	 * @return bool True when registered.
+	 */
+	public static function register_gateway_plugin( array $config ): bool {
+		return GatewayBridge::register_plugin( $config );
+	}
+
+	/**
+	 * Executes an authenticated RPC call via the suite-wide MDS Cloud Gateway connection.
+	 *
+	 * @since 2.3.0
+	 *
+	 * @param string               $service Gateway proxy service slug (e.g. `ai-enrich`, `metadata-lookup`).
+	 * @param array<string, mixed> $payload Request parameters.
+	 * @return array<string, mixed>|\WP_Error
+	 */
+	public static function gateway_call( string $service, array $payload = array() ) {
+		return GatewayBridge::call( $service, $payload );
+	}
+
+	/**
+	 * Returns safe, masked Cloud Gateway connection status.
+	 *
+	 * @since 2.3.0
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function get_gateway_status(): array {
+		return GatewayBridge::get_status();
+	}
+
+	/**
+	 * Checks whether the active Cloud Gateway license satisfies a minimum tier.
+	 *
+	 * @since 2.3.0
+	 *
+	 * @param string $min_tier Minimum tier (`free`, `pro`, `label`, `agency`).
+	 * @return bool
+	 */
+	public static function has_gateway_tier( string $min_tier ): bool {
+		return GatewayBridge::has_tier( $min_tier );
 	}
 
 	/**
@@ -552,5 +603,92 @@ final class ExtensionApi {
 
 		$filtered['releaseId'] = (int) $release->ID;
 		return $filtered;
+	}
+
+	/**
+	 * Reads the canonical tracklist for a Release post (with legacy fallback).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $post_id Release post ID.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function get_tracklist( int $post_id ): array {
+		return \MDS\ReleaseManager\Core\TracklistStore::get_tracklist( $post_id );
+	}
+
+	/**
+	 * Saves the canonical tracklist for a Release post.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int   $post_id Release post ID.
+	 * @param mixed $raw     Tracklist array or JSON string.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function save_tracklist( int $post_id, $raw ): array {
+		return \MDS\ReleaseManager\Core\TracklistStore::save_tracklist( $post_id, $raw );
+	}
+
+	/**
+	 * Reads the Release Artwork Gallery entries (with legacy fallback).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $post_id Release post ID.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function get_artwork_gallery( int $post_id ): array {
+		return \MDS\ReleaseManager\Core\ArtworkGallery::get_gallery( $post_id );
+	}
+
+	/**
+	 * Returns ordered attachment IDs for the Release Artwork Gallery (for WooCommerce / themes).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $post_id Release post ID.
+	 * @return int[]
+	 */
+	public static function get_artwork_gallery_ids( int $post_id ): array {
+		return \MDS\ReleaseManager\Core\ArtworkGallery::get_gallery_ids( $post_id );
+	}
+
+	/**
+	 * Saves the ordered Release Artwork Gallery.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int                              $post_id Release post ID.
+	 * @param array<int, array<string, mixed>> $items   Ordered gallery items.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function save_artwork_gallery( int $post_id, array $items ): array {
+		return \MDS\ReleaseManager\Core\ArtworkGallery::save_gallery( $post_id, $items );
+	}
+
+	/**
+	 * Reads structured song lyrics for a Release post (with legacy fallback).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $post_id Release post ID.
+	 * @return array{schema_version:int,tracks:array<string,array<string,mixed>>}
+	 */
+	public static function get_lyrics( int $post_id ): array {
+		return \MDS\ReleaseManager\Core\LyricsStore::get( $post_id );
+	}
+
+	/**
+	 * Saves structured song lyrics for a Release post.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int   $post_id Release post ID.
+	 * @param mixed $raw     Lyrics array or JSON string.
+	 * @return array{schema_version:int,tracks:array<string,array<string,mixed>>}
+	 */
+	public static function save_lyrics( int $post_id, $raw ): array {
+		return \MDS\ReleaseManager\Core\LyricsStore::save( $post_id, $raw );
 	}
 }

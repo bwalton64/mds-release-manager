@@ -36,6 +36,9 @@ final class NetworkAdmin {
 	 * @since 0.9.0
 	 */
 	public static function register_menu(): void {
+		if ( ! \MDS\ReleaseManager\Core\Sync::is_network_mode() ) {
+			return;
+		}
 		add_submenu_page(
 			'settings.php',
 			'MDS Release Manager',

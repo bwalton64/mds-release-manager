@@ -10,10 +10,8 @@
  * Author URI: https://mustydungeon.com
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
- * Update URI: https://github.com/bwalton64/mds-release-manager
  * Text Domain: mds-release-manager
  * Domain Path: /languages
- * Network: true
  *
  * @package   MDS\ReleaseManager
  * @copyright 2026 Musty Dungeon Studios (Walton International Business Group LLC)

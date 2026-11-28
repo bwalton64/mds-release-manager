@@ -27,8 +27,6 @@ final class ImportExportHandler {
 	 */
 	public static function register_hooks(): void {
 		add_action( 'admin_menu', array( self::class, 'register_csv_page' ) );
-		add_action( 'admin_post_mds_rm_export_csv', array( self::class, 'export_csv' ) );
-		add_action( 'admin_post_mds_rm_import_csv', array( self::class, 'import_csv' ) );
 		add_action( 'rest_api_init', array( self::class, 'register_rest_routes' ) );
 	}
 
@@ -76,6 +74,16 @@ final class ImportExportHandler {
 			array(
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => array( self::class, 'rest_import_batch' ),
+				'permission_callback' => $permission_callback,
+			)
+		);
+
+		register_rest_route(
+			'mds/v1',
+			'/csv/export',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( self::class, 'rest_export_catalog' ),
 				'permission_callback' => $permission_callback,
 			)
 		);
@@ -1191,6 +1199,160 @@ final class ImportExportHandler {
 	 *
 	 * @since 0.9.0
 	 */
+	/**
+	 * REST API endpoint: builds and returns CSV/JSON/XML export payload for zero-postback AJAX downloads.
+	 *
+	 * @since 2.2.1
+	 *
+	 * @param \WP_REST_Request $request REST request containing export options.
+	 * @return \WP_REST_Response
+	 */
+	public static function rest_export_catalog( \WP_REST_Request $request ): \WP_REST_Response {
+		$params           = $request->get_json_params();
+		$params           = is_array( $params ) ? $params : $request->get_params();
+		$export_action    = sanitize_key( (string) ( $params['export_action'] ?? 'export' ) );
+		$export_format    = sanitize_key( (string) ( $params['export_format'] ?? 'csv' ) );
+		$streaming_format = sanitize_key( (string) ( $params['streaming_format'] ?? 'columns' ) );
+		$filter_artist    = sanitize_text_field( (string) ( $params['filter_artist'] ?? '' ) );
+		$filter_type      = absint( $params['filter_type'] ?? 0 );
+		$filter_status    = sanitize_key( (string) ( $params['filter_status'] ?? 'any' ) );
+		$include_bom      = isset( $params['include_bom'] ) ? (bool) $params['include_bom'] : true;
+
+		if ( ! in_array( $export_format, array( 'csv', 'json', 'xml' ), true ) ) {
+			$export_format = 'csv';
+		}
+		if ( ! in_array( $streaming_format, array( 'columns', 'json', 'both' ), true ) ) {
+			$streaming_format = 'columns';
+		}
+		if ( ! in_array( $filter_status, array( 'any', 'publish' ), true ) ) {
+			$filter_status = 'any';
+		}
+
+		$provider_names = ImportFieldMapper::provider_names();
+
+		if ( 'template' === $export_action ) {
+			return new \WP_REST_Response(
+				array(
+					'ok'       => true,
+					'filename' => 'mds-releases-template.csv',
+					'mime'     => 'text/csv;charset=utf-8',
+					'content'  => self::build_csv_template( $provider_names, $include_bom ),
+				),
+				200
+			);
+		}
+
+		$catalog = self::collect_export_catalog(
+			array(
+				'artist_uuid' => $filter_artist,
+				'type_id'     => $filter_type,
+				'status'      => $filter_status,
+			)
+		);
+
+		$date_stamp    = gmdate( 'Y-m-d' );
+		$filename_base = 'mds-releases';
+		if ( '' !== $filter_artist && ! empty( $catalog['artists'] ) ) {
+			$artist_slug = sanitize_title( (string) ( $catalog['artists'][0]['name'] ?? '' ) );
+			if ( '' !== $artist_slug ) {
+				$filename_base .= '-' . $artist_slug;
+			}
+		}
+		$filename_base .= '-' . $date_stamp;
+
+		if ( 'json' === $export_format ) {
+			return new \WP_REST_Response(
+				array(
+					'ok'       => true,
+					'filename' => $filename_base . '.json',
+					'mime'     => 'application/json;charset=utf-8',
+					'content'  => self::build_json_export( $catalog ),
+				),
+				200
+			);
+		}
+
+		if ( 'xml' === $export_format ) {
+			return new \WP_REST_Response(
+				array(
+					'ok'       => true,
+					'filename' => $filename_base . '.xml',
+					'mime'     => 'application/xml;charset=utf-8',
+					'content'  => self::build_xml_export( $catalog ),
+				),
+				200
+			);
+		}
+
+		// Build CSV string in memory using existing helpers.
+		$headers = array( 'UPC/EAN', 'Release Title', 'Artist', 'Release Date', 'Release Type', 'Record Label', 'Distributor', 'Buy Now URL', 'Audio Preview URL', 'Cover Art URL', 'Description', 'Excerpt', 'Media Formats', 'Release Tags' );
+		if ( in_array( $streaming_format, array( 'columns', 'both' ), true ) ) {
+			foreach ( $provider_names as $provider_name ) {
+				$headers[] = 'Streaming: ' . $provider_name;
+			}
+		}
+		if ( in_array( $streaming_format, array( 'json', 'both' ), true ) ) {
+			$headers[] = 'Streaming Links (JSON)';
+		}
+
+		$fh = fopen( 'php://temp', 'r+' );
+		if ( false === $fh ) {
+			return new \WP_REST_Response( array( 'ok' => false, 'error' => __( 'Failed to initialize export stream.', 'mds-release-manager' ) ), 500 );
+		}
+		if ( $include_bom ) {
+			fwrite( $fh, "\xEF\xBB\xBF" );
+		}
+		fputcsv( $fh, $headers );
+
+		foreach ( (array) ( $catalog['releases'] ?? array() ) as $rel ) {
+			$links = isset( $rel['streaming_links'] ) && is_array( $rel['streaming_links'] ) ? $rel['streaming_links'] : array();
+			$row   = array(
+				(string) ( $rel['upc_ean'] ?? '' ),
+				(string) ( $rel['title'] ?? '' ),
+				(string) ( $rel['artist_name'] ?? '' ),
+				(string) ( $rel['release_date'] ?? '' ),
+				(string) ( $rel['release_type'] ?? '' ),
+				(string) ( $rel['record_label'] ?? '' ),
+				(string) ( $rel['distributor'] ?? '' ),
+				(string) ( $rel['buy_now_link'] ?? '' ),
+				(string) ( $rel['audio_preview_url'] ?? '' ),
+				(string) ( $rel['cover_art_url'] ?? '' ),
+				(string) ( $rel['description'] ?? '' ),
+				(string) ( $rel['excerpt'] ?? '' ),
+				implode( ', ', (array) ( $rel['media_formats'] ?? array() ) ),
+				implode( ', ', (array) ( $rel['release_tags'] ?? array() ) ),
+			);
+			if ( in_array( $streaming_format, array( 'columns', 'both' ), true ) ) {
+				foreach ( $provider_names as $provider_name ) {
+					$row[] = (string) ( $links[ $provider_name ] ?? '' );
+				}
+			}
+			if ( in_array( $streaming_format, array( 'json', 'both' ), true ) ) {
+				$row[] = ! empty( $links ) ? (string) wp_json_encode( $links ) : '';
+			}
+			fputcsv( $fh, $row );
+		}
+
+		rewind( $fh );
+		$csv_content = (string) stream_get_contents( $fh );
+		fclose( $fh );
+
+		return new \WP_REST_Response(
+			array(
+				'ok'       => true,
+				'filename' => $filename_base . '.csv',
+				'mime'     => 'text/csv;charset=utf-8',
+				'content'  => $csv_content,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Exports releases to CSV, JSON, or XML.
+	 *
+	 * @since 0.9.0
+	 */
 	public static function export_csv(): void {
 		self::verify_csv_request();
 
@@ -1906,10 +2068,10 @@ final class ImportExportHandler {
 		}
 
 		$args = array(
-			'admin_url'     => admin_url( 'admin-post.php' ),
-			'nonce_field'   => wp_nonce_field( 'mds_csv_action', 'mds_csv_nonce', true, false ),
-			'artists'       => $artist_options,
-			'release_types' => $type_options,
+			'rest_export_url' => esc_url_raw( rest_url( 'mds/v1/csv/export' ) ),
+			'rest_nonce'      => wp_create_nonce( 'wp_rest' ),
+			'artists'         => $artist_options,
+			'release_types'   => $type_options,
 		);
 
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The template escapes the URL and emits the nonce field.
